@@ -1110,3 +1110,17 @@ body.warn-page{
     scroll-behavior:auto !important;
   }
 }
+/* 语言切换：当前语种高亮 */
+.topbar-right a.on{
+  color:var(--gold-soft);
+  font-weight:700;
+  position:relative;
+}
+.topbar-right a.on::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:-3px;
+  height:2px;
+  background:var(--gold);
+  border-radius:2px;
+}
