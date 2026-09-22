@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>星链对讲 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+.p2p-wrap{max-width:760px;margin:0 auto;padding:34px 20px 60px}
+.p2p-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.p2p-section{padding:20px;border-bottom:1px solid var(--line-soft)}
+.p2p-section:last-child{border-bottom:0}
+.p2p-section h3{margin:0 0 12px;font-size:16px;color:var(--blue);padding-left:10px;border-left:4px solid var(--gold);letter-spacing:1px}
+.p2p-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.p2p-id{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;background:var(--gold-bg);border:1px dashed var(--gold);padding:8px 14px;border-radius:8px;color:var(--red-dark);letter-spacing:1px;flex:1 1 200px;word-break:break-all}
+.p2p-input{flex:1 1 220px;padding:10px 14px;border:1.5px solid var(--line);border-radius:var(--radius-sm);outline:0;font-size:14.5px}
+.p2p-input:focus{border-color:var(--red);box-shadow:0 0 0 4px rgba(200,16,46,.1)}
+.p2p-btn{background:var(--red);color:#fff;border:0;padding:10px 20px;border-radius:var(--radius-sm);font-weight:600;letter-spacing:1px;cursor:pointer;transition:background .2s}
+.p2p-btn:hover{background:var(--red-dark)}
+.p2p-btn.ghost{background:#fff;color:var(--blue);border:1.5px solid var(--line)}
+.p2p-btn.ghost:hover{border-color:var(--red);color:var(--red)}
+.p2p-btn:disabled{opacity:.45;cursor:not-allowed}
+.p2p-status{font-size:13px;color:var(--muted);margin-top:10px}
+.p2p-status.ok{color:#1f6b40}
+.p2p-status.warn{color:var(--red)}
+.p2p-chat{height:340px;overflow-y:auto;padding:16px;background:#f7f4ec;display:flex;flex-direction:column;gap:10px}
+.p2p-msg{max-width:78%;padding:9px 14px;border-radius:14px;font-size:14.5px;line-height:1.6;word-wrap:break-word}
+.p2p-msg.self{align-self:flex-end;background:var(--red);color:#fff;border-bottom-right-radius:3px}
+.p2p-msg.other{align-self:flex-start;background:#fff;color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:3px}
+.p2p-msg.system{align-self:center;background:transparent;color:var(--muted);font-size:12.5px;padding:4px}
+.p2p-send{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line-soft);background:#fff}
+.p2p-send input{flex:1;padding:11px 16px;border:1.5px solid var(--line);border-radius:var(--radius-pill);outline:0;font-size:14.5px}
+.p2p-send input:focus{border-color:var(--red);box-shadow:0 0 0 4px rgba(200,16,46,.1)}
+.p2p-send button{background:var(--red);color:#fff;border:0;padding:0 24px;border-radius:var(--radius-pill);font-weight:600;letter-spacing:1px;cursor:pointer}
+.p2p-send button:hover{background:var(--red-dark)}
+.p2p-send button:disabled{opacity:.45;cursor:not-allowed}
+</style>
+</head>
+<body data-page="chat">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="index.html">首页</a><i>›</i><span>星链对讲</span></div>
+    <h1>星链对讲</h1>
+    <p>点对点通信 · 无需注册 · 数据不经过中央服务器</p>
+  </div>
+</section>
+
+<main class="p2p-wrap">
+  <div class="p2p-card">
+
+    <!-- 你的房间号 -->
+    <div class="p2p-section">
+      <h3>我的房间号</h3>
+      <div class="p2p-row">
+        <div class="p2p-id" id="myId">正在生成…</div>
+        <button class="p2p-btn ghost" id="copyId" type="button">复制</button>
+      </div>
+      <div class="p2p-status">把这个号码发给对方，对方输入后即可建立连接。</div>
+    </div>
+
+    <!-- 连接对方 -->
+    <div class="p2p-section">
+      <h3>连接对方</h3>
+      <div class="p2p-row">
+        <input class="p2p-input" id="targetId" type="text" placeholder="粘贴对方的房间号…" autocomplete="off">
+        <button class="p2p-btn" id="connectBtn" type="button">连接</button>
+        <button class="p2p-btn ghost" id="disconnectBtn" type="button" disabled>断开</button>
+      </div>
+      <div class="p2p-status" id="connStatus">未连接</div>
+    </div>
+
+    <!-- 聊天区 -->
+    <div class="p2p-chat" id="chatBox">
+      <div class="p2p-msg system">等待连接……</div>
+    </div>
+
+    <form class="p2p-send" id="sendForm">
+      <input id="msgInput" type="text" placeholder="连接建立后即可发送消息…" maxlength="500" autocomplete="off" disabled>
+      <button type="submit" id="sendBtn" disabled>发送</button>
+    </form>
+
+  </div>
+</main>
+
+<div id="site-footer"></div>
+
+<!-- PeerJS SDK -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="assets/js/main.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  var myIdEl   = document.getElementById('myId');
+  var copyBtn  = document.getElementById('copyId');
+  var targetEl = document.getElementById('targetId');
+  var connBtn  = document.getElementById('connectBtn');
+  var discBtn  = document.getElementById('disconnectBtn');
+  var statusEl = document.getElementById('connStatus');
+  var chatBox  = document.getElementById('chatBox');
+  var sendForm = document.getElementById('sendForm');
+  var msgInput = document.getElementById('msgInput');
+  var sendBtn  = document.getElementById('sendBtn');
+
+  var peer = null;
+  var conn = null;
+
+  /* ---------- 工具 ---------- */
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
+    });
+  }
+  function addMsg(text, type) {
+    var el = document.createElement('div');
+    el.className = 'p2p-msg ' + (type || 'system');
+    el.innerHTML = esc(text);
+    chatBox.appendChild(el);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = 'p2p-status' + (cls ? ' ' + cls : '');
+  }
+  function enableChat(on) {
+    msgInput.disabled = !on;
+    sendBtn.disabled  = !on;
+    discBtn.disabled  = !on;
+    if (on) msgInput.focus();
+  }
+
+  /* ---------- 初始化 Peer ---------- */
+  peer = new Peer();
+
+  peer.on('open', function (id) {
+    myIdEl.textContent = id;
+  });
+
+  peer.on('error', function (err) {
+    console.error('[PeerJS]', err);
+    setStatus('连接出错：' + err.type, 'warn');
+  });
+
+  /* ---------- 收到对方连接请求 ---------- */
+  peer.on('connection', function (incoming) {
+    if (conn) {
+      incoming.close();
+      return;
+    }
+    conn = incoming;
+    bindConnection();
+    setStatus('已连接（对方主动接入）', 'ok');
+    addMsg('对方已接入，可以开始聊天', 'system');
+    enableChat(true);
+  });
+
+  /* ---------- 主动连接 ---------- */
+  connBtn.addEventListener('click', function () {
+    var target = targetEl.value.trim();
+    if (!target) { window.siteToast && window.siteToast('请输入对方房间号'); return; }
+    if (target === peer.id) { window.siteToast && window.siteToast('不能连接自己'); return; }
+    if (conn && conn.open) { window.siteToast && window.siteToast('已处于连接状态'); return; }
+
+    setStatus('正在连接 ' + target + ' …');
+    conn = peer.connect(target, { reliable: true });
+    bindConnection();
+  });
+
+  /* ---------- 绑定连接事件 ---------- */
+  function bindConnection() {
+    conn.on('open', function () {
+      setStatus('已连接', 'ok');
+      addMsg('连接已建立', 'system');
+      enableChat(true);
+    });
+
+    conn.on('data', function (data) {
+      if (typeof data === 'string') {
+        addMsg(data, 'other');
+      } else if (data && data.text) {
+        addMsg(data.text, 'other');
+      }
+    });
+
+    conn.on('close', function () {
+      setStatus('连接已断开');
+      addMsg('对方已断开连接', 'system');
+      enableChat(false);
+      conn = null;
+    });
+
+    conn.on('error', function (err) {
+      console.error('[Conn]', err);
+      setStatus('连接异常：' + err.type, 'warn');
+    });
+  }
+
+  /* ---------- 发送消息 ---------- */
+  sendForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var text = msgInput.value.trim();
+    if (!text) return;
+    if (!conn || !conn.open) {
+      window.siteToast && window.siteToast('尚未连接');
+      return;
+    }
+    conn.send(text);
+    addMsg(text, 'self');
+    msgInput.value = '';
+    msgInput.focus();
+  });
+
+  /* ---------- 断开连接 ---------- */
+  discBtn.addEventListener('click', function () {
+    if (conn) { conn.close(); conn = null; }
+    setStatus('未连接');
+    addMsg('已断开连接', 'system');
+    enableChat(false);
+  });
+
+  /* ---------- 复制房间号 ---------- */
+  copyBtn.addEventListener('click', function () {
+    var id = myIdEl.textContent;
+    if (!id || id.indexOf('正在') !== -1) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(id).then(function () {
+        window.siteToast && window.siteToast('房间号已复制');
+      }).catch(function () {
+        window.siteToast && window.siteToast('复制失败，请手动选择');
+      });
+    } else {
+      window.siteToast && window.siteToast('房间号：' + id);
+    }
+  });
+
+  /* ---------- 页面关闭时清理 ---------- */
+  window.addEventListener('beforeunload', function () {
+    if (conn) conn.close();
+    if (peer) peer.destroy();
+  });
+
+})();
+</script>
+
+</body>
+</html>

@@ -35,6 +35,7 @@
         { id:'students',   text:'学生天地', href:'students.html' },
         { id:'videohub',   text:'视觉蓬中', href:'videohub.html' },
         { id:'campusnet',  text:'校园网',   href:'campusnet.html' },
+        { id:'chat',  text:'星链对讲', href:'chat-p2p.html' },
         { id:'moral',      text:'德育之窗', href:'moral.html' },
         { id:'admissions', text:'招生招聘', href:'admissions.html' },
         { id:'history',    text:'校史馆',   href:'history.html' },
