@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>视觉蓬中 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="videohub">
+
+<div id="site-header"></div>
+
+<section class="video-hero">
+  <div class="video-hero-inner">
+    <div class="crumb"><a href="index.html">首页</a><i>›</i><span>视觉蓬中</span></div>
+    <h1>视觉蓬中</h1>
+    <p>校园影像 · 研学纪实 · 社团风采 · 活动回顾</p>
+  </div>
+</section>
+
+<main class="video-main">
+  <div class="video-grid">
+
+    <!-- 播放器区 -->
+    <section class="video-player-col">
+      <div class="video-player-wrap">
+        <video id="mainPlayer" controls preload="metadata" playsinline>
+          <source src="video/1.mp4" type="video/mp4">
+          您的浏览器不支持视频播放。
+        </video>
+      </div>
+
+      <div class="video-info">
+        <h1 id="videoTitle">蓬溪格勒人民高等中学 · 优秀俄语作业</h1>
+
+        <div class="video-meta">
+          <span>2022-09-01</span>
+          <span>作业展示</span>
+          <span>时长 02:49</span>
+          <span>播放 12,438</span>
+        </div>
+
+        <p class="video-desc">
+           《惊鸿学园》是蓬溪格勒人民高等中学学生自制的 AI 短剧系列，全部由高二十二班「惊鸿十二」创作小组使用生成式人工智能工具完成。从剧本、分镜、人物设定到画面与配音，均由学生独立操刀，讲述一群高中生在红星下的课堂、社团与研学旅途中发生的故事。本系列共五集，既是学生对校园生活的温柔记录，也是一次关于「技术如何为讲述服务」的集体实验。
+        </p>
+
+        <div class="video-actions">
+          <button id="videoLike" type="button">点赞</button>
+          <button id="videoFav" type="button">收藏</button>
+          <button id="videoShare" type="button">分享</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 播放列表 -->
+    <aside class="video-side-col">
+      <div class="video-side-head">
+        <h3>播放列表</h3>
+        <span class="video-count">共 6 个视频</span>
+      </div>
+
+      <ul class="video-list" id="videoList">
+
+        <!-- 1. 官方宣传片 -->
+        <li class="video-item active"
+            data-src="video/1.mp4"
+            data-title="蓬溪格勒人民高等中学 · 官方宣传片">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>蓬溪格勒人民高等中学 · 优秀俄语作业 <span class="video-badge up">已上线</span></h4>
+            <div class="video-item-meta"><span>08:47</span><span>作业展示</span></div>
+          </div>
+        </li>
+
+        <!-- 2. 惊鸿学园 EP01 -->
+        <li class="video-item"
+            data-src="video/jinghong-1.mp4"
+            data-title="惊鸿学园 EP01 · 入学">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>惊鸿学园 EP01 · 魔法平台 <span class="video-badge up">已上线</span></h4>
+            <div class="video-item-meta"><span>12:34</span><span>惊鸿学园</span></div>
+          </div>
+        </li>
+
+        <!-- 3. 惊鸿学园 EP02 -->
+        <li class="video-item"
+            data-src="video/jinghong-2.mp4"
+            data-title="惊鸿学园 EP02 · 课堂">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>惊鸿学园 EP02 · 魔法禁区 <span class="video-badge up">已上线</span></h4>
+            <div class="video-item-meta"><span>15:20</span><span>惊鸿学园</span></div>
+          </div>
+        </li>
+
+        <!-- 4. 惊鸿学园 EP03 -->
+        <li class="video-item"
+            data-src="video/jinghong-3.mp4"
+            data-title="惊鸿学园 EP03 · 社团">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>惊鸿学园 EP03 · 时空 <span class="video-badge up">已上线</span></h4>
+            <div class="video-item-meta"><span>14:08</span><span>惊鸿学园</span></div>
+          </div>
+        </li>
+
+        <!-- 5. 惊鸿学园 EP04 -->
+        <li class="video-item"
+            data-src="video/jinghong-4.mp4"
+            data-title="惊鸿学园 EP04 · 研学">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>惊鸿学园 EP04 · 核心小组 <span class="video-badge up">已上线</span></h4>
+            <div class="video-item-meta"><span>18:52</span><span>惊鸿学园</span></div>
+          </div>
+        </li>
+
+        <!-- 6. 惊鸿学园 EP05 -->
+        <li class="video-item"
+            data-src="video/jinghong-5.mp4"
+            data-title="惊鸿学园 EP05 · 毕业">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>惊鸿学园 EP05 · 毕业 <span class="video-badge up">已上线</span></h4>
+            <div class="video-item-meta"><span>21:15</span><span>惊鸿学园</span></div>
+          </div>
+        </li>
+
+      </ul>
+
+      <div class="video-tip">
+        提示：视频资源播放失败请更新亚斯浏览器至1.41版本及以上
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

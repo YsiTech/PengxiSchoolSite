@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Видео Понксина · Понксиградская школа</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body data-page="videohub" data-lang="ru">
+
+<div id="site-header"></div>
+
+<section class="video-hero">
+  <div class="video-hero-inner">
+    <div class="crumb"><a href="index.html">Главная</a><i>›</i><span>Видео</span></div>
+    <h1>Видео Понксина</h1>
+    <p>Кампус · Москва · клубы · события</p>
+  </div>
+</section>
+
+<main class="video-main">
+  <div class="video-grid">
+
+    <section class="video-player-col">
+      <div class="video-player-wrap">
+        <video id="mainPlayer" controls preload="metadata" playsinline>
+          <source src="../video/1.mp4" type="video/mp4">
+          Ваш браузер не поддерживает видео.
+        </video>
+      </div>
+
+      <div class="video-info">
+        <h1 id="videoTitle">Понксиградская народная средняя школа — официальный фильм</h1>
+
+        <div class="video-meta">
+          <span>01.09.2022</span>
+          <span>Кампус</span>
+          <span>08:47</span>
+          <span>12 438 просмотров</span>
+        </div>
+
+        <p class="video-desc">
+          Фильм снят Краснозвёздным сетевым центром АСР. В нём — утренняя маглев-линия, линейка на площади Возрождения, урок русского языка в классе 12–2, наблюдения клуба «Звёздная карта», мастерская маглев-моделизма и кадры поездки в Москву.
+        </p>
+
+        <div class="video-actions">
+          <button id="videoLike" type="button">Нравится</button>
+          <button id="videoFav" type="button">В избранное</button>
+          <button id="videoShare" type="button">Поделиться</button>
+        </div>
+      </div>
+    </section>
+
+    <aside class="video-side-col">
+      <div class="video-side-head">
+        <h3>Плейлист</h3>
+        <span class="video-count">Всего: 6</span>
+      </div>
+
+      <ul class="video-list" id="videoList">
+
+        <li class="video-item active"
+            data-src="../video/1.mp4"
+            data-title="Понксиградская народная средняя школа — официальный фильм">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>Официальный фильм школы <span class="video-badge up">Доступно</span></h4>
+            <div class="video-item-meta"><span>08:47</span><span>Кампус</span></div>
+          </div>
+        </li>
+
+        <li class="video-item"
+            data-src="../video/jinghong-1.mp4"
+            data-title="Академия Цзинхун · Эпизод 01 — Поступление">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>Академия Цзинхун · Эпизод 01 — Поступление <span class="video-badge up">Доступно</span></h4>
+            <div class="video-item-meta"><span>12:34</span><span>Академия Цзинхун</span></div>
+          </div>
+        </li>
+
+        <li class="video-item"
+            data-src="../video/jinghong-2.mp4"
+            data-title="Академия Цзинхун · Эпизод 02 — Урок">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>Академия Цзинхун · Эпизод 02 — Урок <span class="video-badge up">Доступно</span></h4>
+            <div class="video-item-meta"><span>15:20</span><span>Академия Цзинхун</span></div>
+          </div>
+        </li>
+
+        <li class="video-item"
+            data-src="../video/jinghong-3.mp4"
+            data-title="Академия Цзинхун · Эпизод 03 — Клубы">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>Академия Цзинхун · Эпизод 03 — Клубы <span class="video-badge up">Доступно</span></h4>
+            <div class="video-item-meta"><span>14:08</span><span>Академия Цзинхун</span></div>
+          </div>
+        </li>
+
+        <li class="video-item"
+            data-src="../video/jinghong-4.mp4"
+            data-title="Академия Цзинхун · Эпизод 04 — Москва">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>Академия Цзинхун · Эпизод 04 — Москва <span class="video-badge up">Доступно</span></h4>
+            <div class="video-item-meta"><span>18:52</span><span>Академия Цзинхун</span></div>
+          </div>
+        </li>
+
+        <li class="video-item"
+            data-src="../video/jinghong-5.mp4"
+            data-title="Академия Цзинхун · Эпизод 05 — Выпуск">
+          <div class="video-thumb">▶</div>
+          <div class="video-item-body">
+            <h4>Академия Цзинхун · Эпизод 05 — Выпуск <span class="video-badge up">Доступно</span></h4>
+            <div class="video-item-meta"><span>21:15</span><span>Академия Цзинхун</span></div>
+          </div>
+        </li>
+
+      </ul>
+
+      <div class="video-tip">
+        Видео хранятся в папке <code>video/</code>. Чтобы добавить новое, скопируйте элемент списка и измените <code>data-src</code> и заголовок.
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="../assets/js/main.js"></script>
+</body>
+</html>
