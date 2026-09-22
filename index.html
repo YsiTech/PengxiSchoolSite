@@ -2,137 +2,150 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>蓬溪格勒人民高等中学 · 官方网站</title>
-<meta name="description" content="亚斯共和国首都重点中学 · 亚斯-苏联青少年交流示范校">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>统一身份认证 · 蓬溪格勒人民高等中学</title>
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/login.css">
 </head>
-<body data-page="index">
+<body data-page="login">
 
-<div id="site-header"></div>
+<div class="auth-page">
 
-<section class="hero">
-  <div class="hero-inner">
-    <div class="hero-tag">亚斯共和国教育部主管 · 蓬溪格勒市教育局主办</div>
-    <h1>在<em>红星</em>下求知<br>在友谊中成长</h1>
-    <p>蓬溪格勒人民高等中学位于亚斯共和国首都蓬溪格勒，是亚斯-苏联青少年交流示范校。我们以基础俄语、亚斯史纲要、国际社会学为特色，培养有全球视野的社会主义建设者。</p>
-    <div class="btns">
-      <a class="btn" href="moscow.html">进入莫斯科研学专题</a>
-      <a class="btn ghost" href="history.html">查看校史馆</a>
+  <header class="auth-topbar">
+    <a class="auth-back" href="mainsite.html">
+      <span class="ar">←</span>
+      <span>返回首页</span>
+    </a>
+    <span class="auth-topbar-title">统一身份认证</span>
+  </header>
+
+  <main class="auth-main">
+
+    <div class="auth-card">
+
+      <div class="auth-brand">
+        <div class="auth-logo"><span class="star">★</span></div>
+        <h1>蓬溪格勒人民高等中学</h1>
+        <p class="auth-brand-ru">Понксиградская народная средняя школа высшей ступени</p>
+        <p class="auth-brand-sub">亚斯共和国教育部统一身份认证 · 校园服务平台</p>
+      </div>
+
+      <div class="auth-tabs" role="tablist">
+        <button class="auth-tab on" data-tab="login" type="button" role="tab">登录</button>
+        <button class="auth-tab" data-tab="register" type="button" role="tab">注册</button>
+      </div>
+
+      <!-- ==================== 登录 ==================== -->
+      <form class="auth-form on" id="loginForm" novalidate>
+
+        <div class="auth-field">
+          <label for="loginEmail">邮箱</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">@</span>
+            <input id="loginEmail" type="email" placeholder="请输入注册邮箱"
+                   autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="loginPassword">密码</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🔒</span>
+            <input id="loginPassword" type="password" placeholder="请输入密码" autocomplete="current-password">
+            <button class="auth-eye" type="button" data-for="loginPassword" aria-label="显示密码">👁</button>
+          </div>
+        </div>
+
+        <div class="auth-row-inline">
+          <label class="auth-remember">
+            <input id="rememberMe" type="checkbox">
+            <span>记住我</span>
+          </label>
+          <a class="auth-forgot" href="reset-password.html">忘记密码？</a>
+        </div>
+
+        <div class="auth-hint" id="loginHint"></div>
+
+        <button class="auth-submit" type="submit">
+          <span class="auth-submit-text">登 录</span>
+        </button>
+      </form>
+
+      <!-- ==================== 注册 ==================== -->
+      <form class="auth-form" id="registerForm" novalidate>
+
+        <div class="auth-field">
+          <label for="regEmail">邮箱</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">@</span>
+            <input id="regEmail" type="email" placeholder="用于登录和找回密码"
+                   autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="regNickname">昵称</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">👤</span>
+            <input id="regNickname" type="text" placeholder="用于页面显示" maxlength="16" autocomplete="nickname">
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="regPassword">密码</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🔒</span>
+            <input id="regPassword" type="password" placeholder="至少 6 位" autocomplete="new-password">
+            <button class="auth-eye" type="button" data-for="regPassword" aria-label="显示密码">👁</button>
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="regPassword2">确认密码</label>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🔒</span>
+            <input id="regPassword2" type="password" placeholder="再次输入密码" autocomplete="new-password">
+            <button class="auth-eye" type="button" data-for="regPassword2" aria-label="显示密码">👁</button>
+          </div>
+        </div>
+
+        <div class="auth-hint" id="registerHint"></div>
+
+        <button class="auth-submit" type="submit">
+          <span class="auth-submit-text">创建账号</span>
+        </button>
+
+        <p class="auth-terms">
+          注册即表示同意 <a href="#" onclick="return false;">《校园网服务协议》</a> 与 <a href="#" onclick="return false;">《隐私政策》</a>
+        </p>
+      </form>
+
+      <div class="auth-divider"><span>或</span></div>
+
+      <button class="auth-guest" id="guestBtn" type="button">
+        <span class="auth-guest-icon">☆</span>
+        <span>游客登录 · 免注册体验</span>
+      </button>
+
+      <p class="auth-guest-tip">游客身份仅供体验，可随时升级为正式账号</p>
+
+      <div class="auth-foot">
+        登录后可访问 <b>视觉蓬中</b> · <b>校园网订购</b> · <b>星图</b>
+      </div>
+
     </div>
-    <div class="hero-meta">
-      <span>建校 1911 年</span>
-      <span>首都重点中学</span>
-      <span>磁浮通勤专线直达</span>
-      <span>亚斯-苏联交流示范校</span>
-    </div>
-  </div>
-</section>
 
-<div class="marquee">
-  <div class="marquee-track">
-    <span>★ 我校与苏联总统学院附属中学开展本年度交流活动</span>
-    <span>★ 高二年级赴苏联莫斯科研学团顺利完成行前准备</span>
-    <span>★ 高二十二班在“烽火英语杯”中斩获佳绩</span>
-    <span>★ 星图社举办“磁悬浮与未来城市”主题讲座</span>
-    <span>★ 校园磁悬浮通勤专线试运行公告</span>
-    <span>★ 惊鸿文学社年度作品集《红星下的课堂》发布</span>
-    <!-- 复制一份，保证跑马灯无缝 -->
-    <span>★ 我校与苏联总统学院附属中学开展本年度交流活动</span>
-    <span>★ 高二年级赴苏联莫斯科研学团顺利完成行前准备</span>
-    <span>★ 高二十二班在“烽火英语杯”中斩获佳绩</span>
-    <span>★ 星图社举办“磁悬浮与未来城市”主题讲座</span>
-    <span>★ 校园磁悬浮通勤专线试运行公告</span>
-    <span>★ 惊鸿文学社年度作品集《红星下的课堂》发布</span>
-  </div>
+    <p class="auth-copyright">
+      © <span id="year"></span> 蓬溪格勒人民高等中学 · 技术支持：亚斯红日网络科技中心
+    </p>
+
+  </main>
+
 </div>
 
-<main class="container main-grid">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/login.js"></script>
 
-  <section class="col-main">
-
-    <div class="card">
-      <div class="card-head"><h3>校园新闻</h3><a class="more" href="news.html">更多 →</a></div>
-      <ul class="news">
-        <li><a href="news.html"><span class="n-title">高二十二班在“烽火英语杯”中斩获佳绩</span><span class="n-date">2022-08-18</span></a></li>
-        <li><a href="moscow.html"><span class="n-title">高二年级赴苏联莫斯科研学活动正式启动</span><span class="n-date">2022-08-19</span></a></li>
-        <li><a href="news.html"><span class="n-title">我校与苏联总统学院附属中学开展线上交流</span><span class="n-date">2022-09-12</span></a></li>
-        <li><a href="news.html"><span class="n-title">师生参观莫斯科大学核物理研究所教育中心</span><span class="n-date">2022-09-10</span></a></li>
-        <li><a href="news.html"><span class="n-title">星图社举办“磁悬浮与未来城市”主题讲座</span><span class="n-date">2022-09-08</span></a></li>
-        <li><a href="students.html"><span class="n-title">惊鸿文学社发布年度作品集《红星下的课堂》</span><span class="n-date">2022-09-05</span></a></li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>专题 · 莫斯科研学</h3><a class="more" href="moscow.html">进入专题 →</a></div>
-      <div class="feature">
-        <div class="feature-art" style="--c1:#c8102e;--c2:#1a2b4c">莫斯科<small>МОСКВА</small></div>
-        <div class="feature-body">
-          <h4>社会主义城市的现代化变迁</h4>
-          <p>高二年级研学团将启程前往苏联莫斯科，开展为期一周的研学活动。研学主题为“社会主义城市的现代化变迁”，相关背景资料与提纲已发至班级群。</p>
-          <p class="muted small">红场 · 克里姆林宫 · 莫斯科大学 · 国民经济成就展览馆 · 总统学院附属中学</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>学生天地</h3><a class="more" href="students.html">更多 →</a></div>
-      <div class="tiles">
-        <a class="tile" href="students.html"><b>星图社</b><span>天文观测 · 轨道计算</span></a>
-        <a class="tile" href="students.html"><b>红星电子社</b><span>天问终端 · RedStarOS 应用</span></a>
-        <a class="tile" href="students.html"><b>俄语戏剧社</b><span>契诃夫 · 双语排演</span></a>
-        <a class="tile" href="students.html"><b>磁浮模型社</b><span>悬浮模型 · 线路设计</span></a>
-        <a class="tile" href="students.html"><b>惊鸿文学社</b><span>校刊 · 征文 · 诗歌</span></a>
-        <a class="tile" href="students.html"><b>惊鸿十二班</b><span>高二十二班班级主页</span></a>
-      </div>
-    </div>
-
-  </section>
-
-  <aside class="col-side">
-
-    <div class="card notice">
-      <div class="card-head"><h3>通知公告</h3><a class="more" href="news.html">更多 →</a></div>
-      <ul class="news compact">
-        <li><a href="news.html"><span class="n-title">关于 2022-2023 学年第一学期期末考试安排的通知</span></a></li>
-        <li><a href="moscow.html"><span class="n-title">关于组织高二年级赴苏联莫斯科研学活动的通知</span></a></li>
-        <li><a href="teaching.html"><span class="n-title">高二十二班何希老师公开课安排</span></a></li>
-        <li><a href="news.html"><span class="n-title">校园磁悬浮通勤专线试运行公告</span></a></li>
-        <li><a href="contact.html"><span class="n-title">天问手机校园服务系统升级维护通知</span></a></li>
-      </ul>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>快速通道</h3></div>
-      <div class="quick">
-        <a href="admissions.html">招生报名</a>
-        <a href="history.html">校史馆</a>
-        <a href="contact.html">联系我们</a>
-        <a href="teaching.html">课程体系</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head"><h3>友情链接</h3></div>
-      <ul class="links">
-        <li><a href="#">亚斯共和国教育部</a></li>
-        <li><a href="#">苏联教育部</a></li>
-        <li><a href="#">莫斯科国立大学</a></li>
-        <li><a href="#">蓬溪格勒磁悬浮集团</a></li>
-        <li><a href="#">亚斯红日网络科技中心</a></li>
-      </ul>
-    </div>
-
-    <div class="card motto">
-      <div class="motto-cn">真理 · 劳动 · 友谊 · 前进</div>
-      <div class="motto-ru">Истина · Труд · Дружба · Вперёд</div>
-    </div>
-
-  </aside>
-
-</main>
-
-<div id="site-footer"></div>
-<script src="assets/js/main.js"></script>
 </body>
 </html>

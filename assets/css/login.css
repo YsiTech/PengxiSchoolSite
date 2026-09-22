@@ -1,0 +1,653 @@
+/* ===================================================================
+   蓬溪格勒人民高等中学 · 登录 / 找回密码
+   响应式 · 移动端友好
+   =================================================================== */
+
+/* ============================================================
+   整页
+   ============================================================ */
+.auth-page{
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(1200px 500px at 85% -10%,rgba(212,175,55,.20),transparent 60%),
+    linear-gradient(140deg,#1a2b4c 0%,#243b63 45%,#8a0c22 100%),
+    repeating-linear-gradient(90deg,transparent 0 38px,rgba(255,255,255,.05) 38px 39px);
+  position:relative;
+  overflow-x:hidden;
+}
+.auth-page::before{
+  content:"";
+  position:absolute;inset:0;
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 22%,rgba(255,255,255,.55),transparent),
+    radial-gradient(1.2px 1.2px at 42% 68%,rgba(255,255,255,.45),transparent),
+    radial-gradient(1.6px 1.6px at 68% 22%,rgba(255,255,255,.55),transparent),
+    radial-gradient(1.3px 1.3px at 88% 58%,rgba(255,255,255,.5),transparent),
+    radial-gradient(1.5px 1.5px at 28% 82%,rgba(255,255,255,.45),transparent);
+  pointer-events:none;
+  z-index:1;
+}
+
+/* ============================================================
+   顶部返回条
+   ============================================================ */
+.auth-topbar{
+  position:relative;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 24px;
+  max-width:520px;
+  width:100%;
+  margin:0 auto;
+}
+.auth-back{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:rgba(255,255,255,.75);
+  font-size:13.5px;
+  letter-spacing:.4px;
+  padding:6px 12px 6px 8px;
+  border-radius:999px;
+  transition:color .2s,background .2s;
+}
+.auth-back:hover{color:#f0d98a;background:rgba(255,255,255,.06)}
+.auth-back .ar{font-size:16px;line-height:1}
+.auth-topbar-title{
+  color:rgba(255,255,255,.55);
+  font-size:12.5px;
+  letter-spacing:2px;
+}
+
+/* ============================================================
+   主体
+   ============================================================ */
+.auth-main{
+  position:relative;
+  z-index:2;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:8px 20px 32px;
+}
+
+/* ============================================================
+   卡片
+   ============================================================ */
+.auth-card{
+  width:100%;
+  max-width:440px;
+  background:#fff;
+  border-radius:16px;
+  padding:34px 32px 26px;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.40),
+    0 0 0 1px rgba(255,255,255,.06);
+  animation:authIn .4s cubic-bezier(.2,.9,.3,1);
+}
+@keyframes authIn{
+  from{opacity:0;transform:translateY(18px) scale(.98)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* ============================================================
+   品牌
+   ============================================================ */
+.auth-brand{text-align:center;margin-bottom:26px}
+.auth-logo{
+  width:72px;height:72px;
+  margin:0 auto 14px;
+  border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,#e02040,#c8102e 55%,#9d0c24);
+  display:grid;place-items:center;
+  position:relative;
+  box-shadow:
+    0 0 0 4px #fff,
+    0 0 0 6px #d4af37,
+    0 10px 26px rgba(200,16,46,.35);
+}
+.auth-logo .star{
+  color:#f0d98a;
+  font-size:32px;
+  line-height:1;
+  animation:starSpin 30s linear infinite;
+}
+@keyframes starSpin{to{transform:rotate(360deg)}}
+.auth-logo::after{
+  content:"";
+  position:absolute;inset:-12px;
+  border-radius:50%;
+  border:1.5px dashed rgba(212,175,55,.5);
+}
+
+.auth-brand h1{
+  margin:0 0 6px;
+  font-size:20px;
+  letter-spacing:1.5px;
+  color:#1a2b4c;
+  font-weight:800;
+}
+.auth-brand-ru{
+  margin:0 0 4px;
+  font-size:11.5px;
+  color:#a89e8e;
+  letter-spacing:.3px;
+  line-height:1.5;
+}
+.auth-brand-sub{
+  margin:0;
+  font-size:12.5px;
+  color:#6b6256;
+  letter-spacing:.3px;
+}
+
+/* ============================================================
+   Tab
+   ============================================================ */
+.auth-tabs{
+  display:flex;
+  background:#f2f5fa;
+  border-radius:10px;
+  padding:4px;
+  margin-bottom:24px;
+}
+.auth-tab{
+  flex:1;
+  padding:11px 0;
+  border:0;
+  background:transparent;
+  font-family:inherit;
+  font-size:14.5px;
+  font-weight:600;
+  color:#6b6256;
+  cursor:pointer;
+  border-radius:7px;
+  letter-spacing:1.5px;
+  transition:color .2s,background .2s,box-shadow .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.auth-tab:hover{color:#1a2b4c}
+.auth-tab.on{
+  background:#fff;
+  color:#1a2b4c;
+  box-shadow:0 2px 8px rgba(31,35,40,.1);
+}
+
+/* ============================================================
+   表单
+   ============================================================ */
+.auth-form{display:none}
+.auth-form.on{display:block;animation:formIn .28s ease}
+@keyframes formIn{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.auth-field{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-bottom:15px;
+}
+.auth-field label{
+  font-size:13px;
+  font-weight:600;
+  color:#1a2b4c;
+  letter-spacing:.4px;
+}
+
+.auth-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  background:#fff;
+  border:1.5px solid #e4dccb;
+  border-radius:10px;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.auth-input-wrap:focus-within{
+  border-color:#c8102e;
+  box-shadow:0 0 0 4px rgba(200,16,46,.10);
+}
+.auth-input-icon{
+  flex:0 0 auto;
+  padding:0 4px 0 14px;
+  color:#b8ad98;
+  font-size:14px;
+  line-height:1;
+  user-select:none;
+  pointer-events:none;
+}
+.auth-input-wrap input{
+  flex:1;
+  min-width:0;
+  border:0;
+  outline:0;
+  background:transparent;
+  padding:14px 14px 14px 10px;
+  font-size:16px;
+  font-family:inherit;
+  color:#1f2328;
+  caret-color:#c8102e;
+  border-radius:10px;
+}
+.auth-input-wrap input::placeholder{
+  color:#b8ad98;
+  font-size:14.5px;
+}
+.auth-input-wrap input:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 1000px #fff inset;
+  -webkit-text-fill-color:#1f2328;
+  transition:background-color 9999s ease-in-out 0s;
+}
+
+/* 眼睛按钮 */
+.auth-eye{
+  flex:0 0 auto;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  padding:10px 14px;
+  font-size:15px;
+  opacity:.5;
+  transition:opacity .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.auth-eye:hover{opacity:.9}
+.auth-eye.on{opacity:.9}
+
+/* ============================================================
+   记住我 / 忘记密码 行
+   ============================================================ */
+.auth-row-inline{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:-4px 0 14px;
+  flex-wrap:wrap;
+}
+.auth-remember{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color:#6b6256;
+  cursor:pointer;
+  user-select:none;
+}
+.auth-remember input{
+  width:16px;
+  height:16px;
+  accent-color:#c8102e;
+  cursor:pointer;
+  margin:0;
+}
+.auth-forgot{
+  font-size:13px;
+  color:#c8102e;
+  letter-spacing:.3px;
+  transition:color .2s;
+}
+.auth-forgot:hover{color:#9d0c24;text-decoration:underline;text-underline-offset:3px}
+
+/* ============================================================
+   提示
+   ============================================================ */
+.auth-hint{
+  font-size:12.5px;
+  min-height:20px;
+  line-height:1.6;
+  margin-bottom:12px;
+  transition:color .2s;
+  word-break:break-word;
+}
+.auth-hint.warn{color:#c8102e}
+.auth-hint.ok{color:#1f8f55}
+
+/* ============================================================
+   提交按钮
+   ============================================================ */
+.auth-submit{
+  width:100%;
+  padding:15px 0;
+  border:0;
+  border-radius:10px;
+  background:linear-gradient(135deg,#c8102e,#9d0c24);
+  color:#fff;
+  font-family:inherit;
+  font-size:15.5px;
+  font-weight:700;
+  letter-spacing:3px;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(200,16,46,.28);
+  transition:transform .15s,box-shadow .2s,opacity .2s;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+  overflow:hidden;
+}
+.auth-submit:hover{
+  box-shadow:0 12px 26px rgba(200,16,46,.4);
+  transform:translateY(-1px);
+}
+.auth-submit:active{transform:translateY(0) scale(.985)}
+.auth-submit:disabled{
+  opacity:.65;
+  cursor:not-allowed;
+  transform:none;
+  box-shadow:none;
+}
+.auth-submit.loading::after{
+  content:"";
+  position:absolute;
+  right:16px;top:50%;
+  width:14px;height:14px;
+  margin-top:-7px;
+  border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* 注册条款 */
+.auth-terms{
+  margin:12px 0 0;
+  font-size:11.5px;
+  color:#a89e8e;
+  text-align:center;
+  line-height:1.7;
+  letter-spacing:.2px;
+}
+.auth-terms a{color:#c8102e}
+.auth-terms a:hover{text-decoration:underline;text-underline-offset:2px}
+
+/* ============================================================
+   分隔
+   ============================================================ */
+.auth-divider{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:22px 0 16px;
+  color:#b8ad98;
+  font-size:12px;
+  letter-spacing:2px;
+}
+.auth-divider::before,
+.auth-divider::after{
+  content:"";
+  flex:1;
+  height:1px;
+  background:linear-gradient(90deg,transparent,#e4dccb,transparent);
+}
+
+/* ============================================================
+   游客登录
+   ============================================================ */
+.auth-guest{
+  width:100%;
+  padding:14px 0;
+  border:1.5px solid #e4dccb;
+  border-radius:10px;
+  background:#fff;
+  color:#1a2b4c;
+  font-family:inherit;
+  font-size:14.5px;
+  font-weight:600;
+  letter-spacing:1px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transition:border-color .2s,background .2s,color .2s,transform .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.auth-guest:hover{
+  border-color:#d4af37;
+  background:#fff8e8;
+  color:#8a6d12;
+}
+.auth-guest:active{transform:scale(.985)}
+.auth-guest:disabled{opacity:.5;cursor:not-allowed}
+.auth-guest-icon{
+  font-size:17px;
+  color:#d4af37;
+  line-height:1;
+}
+.auth-guest.loading::after{
+  content:"";
+  width:14px;height:14px;
+  margin-left:6px;
+  border:2px solid rgba(26,43,76,.25);
+  border-top-color:#1a2b4c;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+.auth-guest-tip{
+  margin:10px 0 0;
+  font-size:11.5px;
+  color:#a89e8e;
+  text-align:center;
+  line-height:1.6;
+  letter-spacing:.2px;
+}
+
+/* ============================================================
+   页脚
+   ============================================================ */
+.auth-foot{
+  margin-top:22px;
+  padding-top:18px;
+  border-top:1px solid #efe9dc;
+  text-align:center;
+  font-size:12.5px;
+  color:#6b6256;
+  line-height:1.8;
+  letter-spacing:.3px;
+}
+.auth-foot b{
+  color:#1a2b4c;
+  font-weight:600;
+  padding:0 2px;
+}
+
+/* ============================================================
+   版权
+   ============================================================ */
+.auth-copyright{
+  margin:24px 0 0;
+  font-size:11.5px;
+  color:rgba(255,255,255,.42);
+  text-align:center;
+  letter-spacing:.3px;
+  line-height:1.6;
+}
+
+/* ============================================================
+   找回密码页 · 专属
+   ============================================================ */
+.auth-intro{
+  text-align:center;
+  margin-bottom:22px;
+}
+.auth-intro h2{
+  margin:0 0 8px;
+  font-size:17px;
+  color:#1a2b4c;
+  letter-spacing:1px;
+  font-weight:700;
+}
+.auth-intro p{
+  margin:0;
+  font-size:13px;
+  color:#6b6256;
+  line-height:1.7;
+}
+
+.auth-tips{
+  margin-top:22px;
+  padding:16px 18px;
+  background:#fbf9f4;
+  border:1px solid #efe9dc;
+  border-radius:10px;
+  font-size:12.5px;
+  color:#6b6256;
+  line-height:1.85;
+}
+.auth-tips p{margin:0 0 8px;color:#1a2b4c;font-weight:600;letter-spacing:.4px}
+.auth-tips ul{margin:0;padding-left:18px}
+.auth-tips li{margin-bottom:4px}
+
+/* 成功状态 */
+.auth-success{
+  text-align:center;
+  padding:16px 8px 8px;
+}
+.auth-success-icon{
+  width:64px;height:64px;
+  margin:0 auto 16px;
+  border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,#2bb673,#1f8f55);
+  color:#fff;
+  font-size:34px;
+  font-weight:700;
+  display:grid;place-items:center;
+  box-shadow:0 0 0 6px rgba(31,143,85,.15);
+  animation:successPop .4s cubic-bezier(.2,.9,.3,1.2);
+}
+@keyframes successPop{
+  0%{transform:scale(.6);opacity:0}
+  100%{transform:scale(1);opacity:1}
+}
+.auth-success h2{
+  margin:0 0 10px;
+  font-size:18px;
+  color:#1a2b4c;
+  letter-spacing:1px;
+}
+.auth-success p{
+  margin:0 0 8px;
+  font-size:13.5px;
+  color:#6b6256;
+  line-height:1.75;
+}
+.auth-success-email{
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  color:#c8102e;
+  font-size:14px;
+  padding:6px 14px;
+  background:#fff8e8;
+  border-radius:8px;
+  display:inline-block;
+  margin:6px 0 12px !important;
+  word-break:break-all;
+  max-width:100%;
+}
+.auth-success-tip{
+  font-size:12.5px;
+  color:#a89e8e;
+  margin-top:12px;
+}
+
+/* 双按钮 */
+.auth-actions-row{
+  display:flex;
+  gap:12px;
+  margin-top:22px;
+  flex-wrap:wrap;
+}
+.auth-btn-secondary{
+  flex:1;
+  min-width:130px;
+  padding:12px 16px;
+  border:1.5px solid #e4dccb;
+  border-radius:10px;
+  background:#fff;
+  color:#1a2b4c;
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:600;
+  letter-spacing:.6px;
+  cursor:pointer;
+  text-align:center;
+  text-decoration:none;
+  transition:border-color .2s,background .2s,color .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.auth-btn-secondary:hover{
+  border-color:#c8102e;
+  color:#c8102e;
+  background:#fdecef;
+}
+.auth-btn-secondary:active{transform:scale(.98)}
+
+/* 隐藏工具类 */
+.hide{display:none !important}
+
+/* ============================================================
+   移动端
+   ============================================================ */
+@media (max-width:520px){
+  .auth-topbar{padding:14px 16px}
+  .auth-topbar-title{font-size:11.5px}
+  .auth-back{font-size:12.5px;padding:6px 10px 6px 6px}
+
+  .auth-main{padding:4px 14px 24px}
+  .auth-card{
+    padding:26px 20px 22px;
+    border-radius:14px;
+  }
+  .auth-logo{width:62px;height:62px}
+  .auth-logo .star{font-size:28px}
+  .auth-brand h1{font-size:17.5px;letter-spacing:1.2px}
+  .auth-brand-ru{font-size:10.5px}
+  .auth-brand-sub{font-size:12px}
+  .auth-brand{margin-bottom:20px}
+
+  .auth-tab{font-size:14px;letter-spacing:1.2px;padding:10px 0}
+  .auth-tabs{margin-bottom:20px}
+
+  .auth-input-wrap input{padding:13px 12px 13px 8px}
+  .auth-input-icon{padding-left:12px}
+  .auth-eye{padding:10px 12px}
+
+  .auth-submit{padding:14px 0;font-size:15px;letter-spacing:2px}
+  .auth-guest{padding:13px 0;font-size:14px}
+  .auth-foot{font-size:12px;margin-top:18px;padding-top:16px}
+  .auth-copyright{font-size:11px;margin-top:18px}
+  .auth-intro h2{font-size:16px}
+  .auth-success h2{font-size:16.5px}
+}
+
+@media (max-height:600px) and (orientation:landscape){
+  .auth-brand{margin-bottom:14px}
+  .auth-logo{width:52px;height:52px;margin-bottom:10px}
+  .auth-logo .star{font-size:24px}
+  .auth-brand h1{font-size:16px}
+  .auth-brand-ru{display:none}
+  .auth-card{padding:20px 24px 18px}
+  .auth-field{margin-bottom:12px}
+}
+
+@media (prefers-contrast:high){
+  .auth-input-wrap{border-width:2px}
+  .auth-tab.on{outline:2px solid #1a2b4c}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+  }
+}

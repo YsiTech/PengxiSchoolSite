@@ -2003,3 +2003,73 @@ body.warn-page{
   background:#c8102e;
   color:#fff !important;
 }
+/* ===================================================================
+   页头 · 登录状态
+   =================================================================== */
+
+.auth-nav{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  margin-left:4px;
+}
+
+.auth-nav .auth-login,
+.auth-nav .auth-logout{
+  display:inline-block;
+  color:#fff;
+  opacity:.9;
+  padding:3px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.35);
+  letter-spacing:.4px;
+  transition:background .2s,border-color .2s,color .2s,opacity .2s;
+  white-space:nowrap;
+}
+.auth-nav .auth-login:hover,
+.auth-nav .auth-logout:hover{
+  background:rgba(255,255,255,.14);
+  border-color:#f0d98a;
+  color:#f0d98a;
+  opacity:1;
+}
+
+.auth-nav .auth-user{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  color:#f0d98a;
+  font-weight:600;
+  letter-spacing:.3px;
+  max-width:180px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.auth-nav .auth-dot{
+  width:7px;height:7px;
+  border-radius:50%;
+  background:#5cd190;
+  box-shadow:0 0 0 3px rgba(92,209,144,.22);
+  flex:0 0 auto;
+}
+.auth-nav .auth-tag{
+  display:inline-block;
+  font-size:10px;
+  padding:1px 6px;
+  border-radius:3px;
+  background:rgba(212,175,55,.22);
+  color:#f0d98a;
+  border:1px solid rgba(212,175,55,.45);
+  letter-spacing:.5px;
+  font-weight:500;
+}
+
+/* 移动端 */
+@media (max-width:520px){
+  .auth-nav .auth-user{max-width:110px;font-size:12px}
+  .auth-nav .auth-login,
+  .auth-nav .auth-logout{padding:2px 10px;font-size:12px}
+  .auth-nav .auth-tag{font-size:9px;padding:0 5px}
+}

@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>登录 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="login">
+
+<div class="login-bg">
+
+  <a class="login-back" href="index.html">← 返回首页</a>
+
+  <div class="login-card">
+
+    <div class="login-head">
+      <div class="login-badge">★</div>
+      <h1>蓬溪格勒人民高等中学</h1>
+      <p>亚斯共和国教育部统一身份认证 · 校园服务平台</p>
+    </div>
+
+    <div class="login-tabs">
+      <button class="login-tab on" data-tab="login" type="button">登录</button>
+      <button class="login-tab" data-tab="register" type="button">注册</button>
+    </div>
+
+    <!-- 登录表单 -->
+    <form class="login-form on" id="loginForm" autocomplete="off">
+      <div class="login-field">
+        <label for="loginUser">用户名</label>
+        <input id="loginUser" type="text" placeholder="请输入用户名" autocomplete="username" required>
+      </div>
+      <div class="login-field">
+        <label for="loginPass">密码</label>
+        <input id="loginPass" type="password" placeholder="请输入密码" autocomplete="current-password" required>
+      </div>
+      <div class="login-hint" id="loginHint"></div>
+      <button class="login-submit" type="submit">登录</button>
+      <div class="login-demo">
+        演示账号：<code>guest</code> · 密码：<code>1911</code>
+      </div>
+    </form>
+
+    <!-- 注册表单 -->
+    <form class="login-form" id="registerForm" autocomplete="off">
+      <div class="login-field">
+        <label for="regUser">用户名</label>
+        <input id="regUser" type="text" placeholder="3-20 位，中英文 / 数字 / 下划线" required>
+      </div>
+      <div class="login-field">
+        <label for="regNick">昵称（选填）</label>
+        <input id="regNick" type="text" placeholder="用于页面显示，默认同用户名">
+      </div>
+      <div class="login-field">
+        <label for="regPass">密码</label>
+        <input id="regPass" type="password" placeholder="至少 6 位" required>
+      </div>
+      <div class="login-field">
+        <label for="regPass2">确认密码</label>
+        <input id="regPass2" type="password" placeholder="再次输入密码" required>
+      </div>
+      <div class="login-hint" id="registerHint"></div>
+      <button class="login-submit" type="submit">创建账号</button>
+    </form>
+
+    <div class="login-foot">
+      登录后可使用 <b>视觉蓬中</b> · <b>校园网订购</b> · <b>星图</b>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="assets/js/auth.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* 已登录则直接跳走 */
+  var redirect = '';
+  try {
+    redirect = new URLSearchParams(location.search).get('redirect') || '';
+  } catch (e) {}
+  if (Auth.isLoggedIn() && !redirect) {
+    location.replace('index.html');
+    return;
+  }
+
+  /* Tab 切换 */
+  document.querySelectorAll('.login-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var name = tab.dataset.tab;
+      document.querySelectorAll('.login-tab').forEach(function (t) {
+        t.classList.toggle('on', t === tab);
+      });
+      document.querySelectorAll('.login-form').forEach(function (f) {
+        f.classList.toggle('on', f.id === (name === 'login' ? 'loginForm' : 'registerForm'));
+      });
+      var h = document.getElementById(name === 'login' ? 'loginHint' : 'registerHint');
+      if (h) h.textContent = '';
+    });
+  });
+
+  function setHint(id, msg, ok) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = msg || '';
+    el.className = 'login-hint' + (ok ? ' ok' : (msg ? ' warn' : ''));
+  }
+
+  function go() {
+    if (redirect) {
+      location.href = redirect;
+    } else {
+      location.href = 'index.html';
+    }
+  }
+
+  /* 登录 */
+  document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var u = document.getElementById('loginUser').value;
+    var p = document.getElementById('loginPass').value;
+    var res = Auth.login(u, p);
+    if (!res.ok) {
+      setHint('loginHint', res.msg, false);
+      return;
+    }
+    setHint('loginHint', '登录成功，正在跳转…', true);
+    setTimeout(go, 400);
+  });
+
+  /* 注册 */
+  document.getElementById('registerForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var u  = document.getElementById('regUser').value;
+    var n  = document.getElementById('regNick').value;
+    var p  = document.getElementById('regPass').value;
+    var p2 = document.getElementById('regPass2').value;
+
+    if (p !== p2) {
+      setHint('registerHint', '两次输入的密码不一致', false);
+      return;
+    }
+    var res = Auth.register(u, p, n);
+    if (!res.ok) {
+      setHint('registerHint', res.msg, false);
+      return;
+    }
+    setHint('registerHint', '注册成功，正在登录…', true);
+    Auth.login(u, p);
+    setTimeout(go, 600);
+  });
+
+})();
+</script>
+
+</body>
+</html>

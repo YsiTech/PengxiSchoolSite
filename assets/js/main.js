@@ -2,7 +2,8 @@
    蓬溪格勒人民高等中学 · 官方网站
    main.js  —  亚斯共和国 / 平行世界设定站
    功能：双语 · 导航渲染 · 搜索（页头+独立页）· 视频中心
-         校园网订购 · 校徽彩蛋 · 回到顶部 · 滚动显现
+         校园网订购 · 星图 · 校徽彩蛋 · 回到顶部 · 滚动显现
+         登录状态显示
    =================================================================== */
 
 (function () {
@@ -28,14 +29,14 @@
       searchBtn: '搜索',
 
       nav: [
-        { id:'index',      text:'首页',     href:'index.html' },
+        { id:'index',      text:'首页',     href:'mainsite.html' },
         { id:'about',      text:'学校概况', href:'about.html' },
         { id:'news',       text:'新闻中心', href:'news.html' },
         { id:'teaching',   text:'教学教研', href:'teaching.html' },
         { id:'students',   text:'学生天地', href:'students.html' },
         { id:'videohub',   text:'视觉蓬中', href:'videohub.html' },
         { id:'campusnet',  text:'校园网',   href:'campusnet.html' },
-        { id:'chat',  text:'星链对讲', href:'chat-p2p.html' },
+        { id:'xingtu',     text:'星图',     href:'xingtu.html' },
         { id:'moral',      text:'德育之窗', href:'moral.html' },
         { id:'admissions', text:'招生招聘', href:'admissions.html' },
         { id:'history',    text:'校史馆',   href:'history.html' },
@@ -57,9 +58,9 @@
       footerServiceItems: [
         { text:'视觉蓬中', href:'videohub.html' },
         { text:'校园网订购', href:'campusnet.html' },
+        { text:'星图', href:'xingtu.html' },
         { text:'校史馆', href:'history.html' },
-        { text:'联系我们', href:'contact.html' },
-        { text:'天问终端服务', href:'contact.html' }
+        { text:'联系我们', href:'contact.html' }
       ],
       footerLinksItems: [
         { text:'亚斯共和国教育部', href:'#' },
@@ -114,13 +115,14 @@
       searchBtn: 'Поиск',
 
       nav: [
-        { id:'index',      text:'Главная',    href:'index.html' },
+        { id:'index',      text:'Главная',    href:'mainsite.html' },
         { id:'about',      text:'О школе',    href:'about.html' },
         { id:'news',       text:'Новости',    href:'news.html' },
         { id:'teaching',   text:'Учёба',      href:'teaching.html' },
         { id:'students',   text:'Учащимся',   href:'students.html' },
         { id:'videohub',   text:'Видео',      href:'videohub.html' },
         { id:'campusnet',  text:'Сеть',       href:'campusnet.html' },
+        { id:'xingtu',     text:'Созвездие',  href:'xingtu.html' },
         { id:'moral',      text:'Воспитание', href:'moral.html' },
         { id:'admissions', text:'Приём',      href:'admissions.html' },
         { id:'history',    text:'История',    href:'history.html' },
@@ -142,9 +144,9 @@
       footerServiceItems: [
         { text:'Видеоцентр', href:'videohub.html' },
         { text:'Заказ сети', href:'campusnet.html' },
+        { text:'Созвездие', href:'xingtu.html' },
         { text:'История', href:'history.html' },
-        { text:'Контакты', href:'contact.html' },
-        { text:'Терминал «Тяньвэнь»', href:'contact.html' }
+        { text:'Контакты', href:'contact.html' }
       ],
       footerLinksItems: [
         { text:'Министерство образования АСР', href:'#' },
@@ -196,13 +198,14 @@
      2. 搜索索引
      ============================================================ */
   var SEARCH_INDEX = [
-    { href:'index.html',      type:'page', zh:['首页','蓬溪格勒人民高等中学官方网站 · 在红星下求知'],       ru:['Главная','Официальный сайт школы'],       k:'首页 主页 网站 学校 главная' },
+    { href:'mainsite.html',   type:'page', zh:['首页','蓬溪格勒人民高等中学官方网站 · 在红星下求知'],       ru:['Главная','Официальный сайт школы'],       k:'首页 主页 网站 学校 главная' },
     { href:'about.html',      type:'page', zh:['学校概况','学校简介 · 校长致辞 · 校史沿革 · 领导班子'],     ru:['О школе','Описание · директор · история'], k:'学校 概况 简介 校长 领导 школа about' },
     { href:'news.html',       type:'page', zh:['新闻中心','校园新闻 · 通知公告 · 媒体聚焦 · 莫斯科研学'],  ru:['Новости','Школьные новости · объявления'], k:'新闻 通知 公告 消息 новости news' },
     { href:'teaching.html',   type:'page', zh:['教学教研','课程体系 · 俄语特色 · 教研组 · 竞赛成果'],      ru:['Учёба','Учебный план · русский · кафедры'], k:'教学 教研 课程 老师 teaching учёба' },
     { href:'students.html',   type:'page', zh:['学生天地','学生会 · 社团活动 · 优秀作品 · 惊鸿十二班'],    ru:['Учащимся','Совет · клубы · работы · класс 12–2'], k:'学生 社团 活动 惊鸿 students' },
     { href:'videohub.html',   type:'page', zh:['视觉蓬中','校园影像 · 研学纪实 · 社团风采 · 活动回顾'],    ru:['Видео Понксина','Кампус · Москва · клубы · события'], k:'视频 影像 宣传片 视频中心 видео' },
     { href:'campusnet.html',  type:'page', zh:['校园网订购','套餐选择 · 亚斯卢布结算 · 校园卡/卢布账户/银行转账'], ru:['Заказ сети','Тарифы · оплата в яс-рублях'], k:'校园网 订购 套餐 宽带 wifi 网络 亚斯卢布 campus net' },
+    { href:'xingtu.html',     type:'page', zh:['星图','多人文字 · 文件 · 一对一语音视频 · 点对点通信'],      ru:['Созвездие','Чат · файлы · аудио · видео'], k:'星图 聊天 语音 视频 文件 对讲 созвездие' },
     { href:'moral.html',      type:'page', zh:['德育之窗','亚斯先锋队 · 志愿服务 · 劳动教育'],            ru:['Воспитание','Пионеры · волонтёрство · труд'], k:'德育 先锋队 志愿 劳动 воспитание' },
     { href:'admissions.html', type:'page', zh:['招生招聘','招生简章 · 报名入口 · 教师招聘'],              ru:['Приём','Правила приёма · вакансии'],  k:'招生 报名 招聘 admissions приём' },
     { href:'history.html',    type:'page', zh:['校史馆','建校 1911 年 · 与共和国同行 · 校史沿革'],         ru:['История','Основана в 1911 г. · хронология'], k:'校史 历史 1911 history история' },
@@ -315,7 +318,7 @@
   }
 
   /* ============================================================
-     6. 站头渲染（最先执行，保证导航一定出现）
+     6. 站头渲染
      ============================================================ */
   function renderHeader() {
     var host = $('#site-header');
@@ -329,7 +332,7 @@
     }).join('');
 
     /* 语言切换 */
-    var pageFile = (location.pathname.split('/').pop() || 'index.html').split('?')[0];
+    var pageFile = (location.pathname.split('/').pop() || 'mainsite.html').split('?')[0];
     var asHref = IS_RU ? '../' + pageFile : pageFile;
     var ruHref = IS_RU ? pageFile : 'ru/' + pageFile;
     var asCls = IS_RU ? '' : ' class="on"';
@@ -342,12 +345,13 @@
           '<div class="topbar-right">' +
             '<a href="' + asHref + '"' + asCls + '>' + T.langAs + '</a>' +
             '<a href="' + ruHref + '"' + ruCls + '>' + T.langRu + '</a>' +
+            '<span class="auth-nav"></span>' +
           '</div>' +
         '</div>' +
       '</div>' +
       '<header class="site-header">' +
         '<div class="header-inner">' +
-          '<a class="badge" id="schoolBadge" href="index.html" title="' + T.schoolName + '">★</a>' +
+          '<a class="badge" id="schoolBadge" href="mainsite.html" title="' + T.schoolName + '">★</a>' +
           '<div class="school-name">' +
             '<h1>' + T.schoolName + '</h1>' +
             '<p>Понксиградская народная средняя школа высшей ступени</p>' +
@@ -404,7 +408,7 @@
   }
 
   /* ============================================================
-     8. 搜索表单初始化（通用）
+     8. 搜索表单初始化
      ============================================================ */
   function setupSearchForm(form, input) {
     if (!form || !input) return;
@@ -777,7 +781,6 @@
       var pay  = form.querySelector('input[name="pay"]:checked');
       var btn  = form.querySelector('button[type="submit"]');
 
-      var oldText = btn ? btn.textContent : '';
       if (btn) { btn.disabled = true; btn.textContent = '正在提交…'; }
 
       setTimeout(function () {
@@ -904,7 +907,7 @@
   }
 
   /* ============================================================
-     16. 页面特定逻辑（联系表单、报名按钮等）
+     16. 页面特定逻辑
      ============================================================ */
   function initPageExtras() {
     var page = document.body.dataset.page;
@@ -965,7 +968,7 @@
   }
 
   /* ============================================================
-     19. 启动：分步执行，任何一步出错都不影响前面
+     19. 启动
      ============================================================ */
   function safeCall(name, fn) {
     try { fn(); }
@@ -988,6 +991,13 @@
     safeCall('initPageExtras', initPageExtras);
     safeCall('initConsole', initConsole);
     safeCall('initShortcuts', initShortcuts);
+
+    /* 挂载右上角登录状态 */
+    safeCall('mountAuthNav', function () {
+      if (window.Auth && Auth.mountNavStatus) {
+        Auth.mountNavStatus(IS_RU ? 'ru' : 'zh');
+      }
+    });
   }
 
   if (document.readyState === 'loading') {
