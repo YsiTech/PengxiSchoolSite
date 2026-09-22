@@ -21,6 +21,16 @@
 
 <main class="section profile-main">
 
+  <!-- 游客受限提示（默认隐藏，脚本检测到游客会显示） -->
+  <div class="profile-guest-banner hide" id="guestBanner">
+    <div class="pgb-icon">!</div>
+    <div class="pgb-body">
+      <b>游客账号 · 功能受限</b>
+      <p>你当前是游客身份，无法访问 <b>视觉蓬中</b>、<b>校园网订购</b> 和 <b>星图</b>，也无法跨设备登录。请退出并使用邮箱注册正式账号。</p>
+    </div>
+    <button class="pgb-btn" id="upgradeBtn" type="button">退出并注册</button>
+  </div>
+
   <div class="profile-grid">
 
     <!-- 左：头像卡片 -->
@@ -103,16 +113,6 @@
         <div class="profile-actions">
           <button class="btn red" type="button" id="changePasswordBtn">修改密码</button>
         </div>
-      </div>
-
-      <!-- 游客提示 -->
-      <div class="card hide" id="guestNotice">
-        <div class="card-head">
-          <h3>游客账号</h3>
-        </div>
-        <p class="muted small" style="margin:0">
-          你当前是游客身份。游客账号无法跨设备登录。如需长期使用，请退出后注册正式账号。
-        </p>
       </div>
 
       <!-- 账号操作 -->
