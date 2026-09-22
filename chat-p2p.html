@@ -7,43 +7,26 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
 /* ============================================================
-   星图 · 整合页样式
+   星图 · 多人版样式
    ============================================================ */
-.xt-wrap{max-width:920px;margin:0 auto;padding:34px 20px 60px}
+.xt-wrap{max-width:980px;margin:0 auto;padding:34px 20px 60px}
 .xt-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 
-/* 连接面板 */
-.xt-connect{padding:18px 20px;background:linear-gradient(135deg,#1a2b4c,#12203a);color:#dfe7f5}
-.xt-connect h3{margin:0 0 12px;font-size:14px;color:var(--gold-soft);letter-spacing:2px;font-weight:600}
-.xt-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.xt-id{
-  font-family:ui-monospace,Menlo,Consolas,monospace;
-  font-size:14px;
-  background:rgba(255,255,255,.08);
-  border:1px dashed rgba(212,175,55,.55);
-  padding:8px 14px;
-  border-radius:8px;
-  color:var(--gold-soft);
-  letter-spacing:1px;
-  flex:1 1 200px;
-  word-break:break-all;
-}
+/* 加入面板 */
+.xt-join{padding:24px 22px;background:linear-gradient(135deg,#1a2b4c,#12203a);color:#dfe7f5}
+.xt-join h3{margin:0 0 16px;color:var(--gold-soft);font-size:14px;letter-spacing:2px;font-weight:600}
+.xt-join-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .xt-input{
-  flex:1 1 200px;
-  padding:10px 14px;
-  border:1.5px solid rgba(255,255,255,.15);
-  border-radius:var(--radius-sm);
-  background:rgba(255,255,255,.06);
-  color:#fff;
-  outline:0;
-  font-size:14px;
+  flex:1 1 200px;padding:11px 16px;border:1.5px solid rgba(255,255,255,.15);
+  border-radius:var(--radius-sm);background:rgba(255,255,255,.06);color:#fff;
+  outline:0;font-size:14.5px;transition:border-color .2s,background .2s;
 }
 .xt-input::placeholder{color:#8fa3c2}
 .xt-input:focus{border-color:var(--gold);background:rgba(255,255,255,.1)}
 .xt-btn{
-  background:var(--red);color:#fff;border:0;padding:10px 20px;
+  background:var(--red);color:#fff;border:0;padding:11px 22px;
   border-radius:var(--radius-sm);font-weight:600;letter-spacing:1px;
-  cursor:pointer;transition:background .2s,opacity .2s;font-size:14px;
+  cursor:pointer;font-size:14px;transition:background .2s,opacity .2s;
 }
 .xt-btn:hover{background:var(--red-dark)}
 .xt-btn.ghost{background:transparent;color:#dfe7f5;border:1.5px solid rgba(255,255,255,.3)}
@@ -51,166 +34,125 @@
 .xt-btn.gold{background:var(--gold);color:#241b08}
 .xt-btn.gold:hover{background:#e5c455}
 .xt-btn:disabled{opacity:.4;cursor:not-allowed}
-.xt-status{font-size:12.5px;color:#9fb0cc;margin-top:10px;display:flex;align-items:center;gap:8px}
+.xt-status{font-size:12.5px;color:#9fb0cc;margin-top:12px;display:flex;align-items:center;gap:8px}
 .xt-status .dot{width:8px;height:8px;border-radius:50%;background:#5b6b8b;transition:background .2s}
 .xt-status.ok{color:#8fe3b0}
 .xt-status.ok .dot{background:#1f8f55;box-shadow:0 0 0 3px rgba(31,143,85,.2)}
 .xt-status.warn{color:#ff9aa8}
 .xt-status.warn .dot{background:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.2)}
 
+/* 房间状态 */
+.xt-room{padding:16px 22px;background:#f2f5fa;border-bottom:1px solid var(--line-soft);display:none}
+.xt-room.on{display:block}
+.xt-room-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.xt-room-id{
+  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;
+  background:var(--gold-bg);border:1px dashed var(--gold);
+  padding:6px 14px;border-radius:8px;color:var(--red-dark);letter-spacing:1.5px;
+}
+.xt-room-meta{font-size:12.5px;color:var(--muted)}
+.xt-members{display:flex;gap:8px;flex-wrap:wrap}
+.xt-mem{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12.5px;padding:5px 12px;border-radius:99px;
+  background:#fff;border:1px solid var(--line);color:var(--ink-soft);
+}
+.xt-mem-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.xt-mem.me{background:var(--red-soft);border-color:#f6cdd5;color:var(--red-dark);font-weight:600}
+.xt-mem.host{background:var(--gold-bg);border-color:#ead9a8;color:#8a6d12}
+.xt-mem.host::after{content:"房主";font-size:10px;padding:1px 5px;background:var(--gold);color:#241b08;border-radius:3px;letter-spacing:.5px;margin-left:2px}
+
 /* Tabs */
 .xt-tabs{display:flex;background:#f2f5fa;border-bottom:1px solid var(--line-soft);overflow-x:auto}
 .xt-tab{
-  flex:1;padding:15px 16px;border:0;background:transparent;
-  cursor:pointer;font-size:14.5px;font-weight:600;color:var(--muted);
-  letter-spacing:1px;position:relative;transition:color .2s,background .2s;
-  white-space:nowrap;min-width:90px;
+  flex:1;padding:15px 16px;border:0;background:transparent;cursor:pointer;
+  font-size:14.5px;font-weight:600;color:var(--muted);letter-spacing:1px;
+  position:relative;transition:color .2s,background .2s;white-space:nowrap;min-width:90px;
 }
 .xt-tab:hover{background:#e8eef7;color:var(--blue)}
 .xt-tab.on{color:var(--blue);background:#fff}
-.xt-tab.on::after{
-  content:"";position:absolute;left:16px;right:16px;bottom:0;height:3px;
-  background:var(--red);border-radius:3px 3px 0 0;
-}
-.xt-tab .badge{
-  display:inline-block;background:var(--red);color:#fff;border-radius:99px;
-  font-size:10.5px;padding:1px 7px;margin-left:5px;vertical-align:1px;font-weight:700;
-}
+.xt-tab.on::after{content:"";position:absolute;left:16px;right:16px;bottom:0;height:3px;background:var(--red);border-radius:3px 3px 0 0}
+.xt-tab .badge{display:inline-block;background:var(--red);color:#fff;border-radius:99px;font-size:10.5px;padding:1px 7px;margin-left:5px;vertical-align:1px;font-weight:700}
 .xt-tab .badge.hide{display:none}
 
 /* Panels */
 .xt-panel{display:none}
 .xt-panel.on{display:block}
-
-/* 通用 panel 内边距 */
 .xt-panel-inner{padding:18px 20px}
-.xt-panel-title{
-  font-size:13px;color:var(--muted);letter-spacing:1.5px;
-  text-transform:uppercase;margin:0 0 14px;
-}
 
 /* 聊天 */
-.xt-chat-body{
-  height:360px;overflow-y:auto;padding:16px 20px;background:#f7f4ec;
-  display:flex;flex-direction:column;gap:10px;
-}
+.xt-chat-body{height:400px;overflow-y:auto;padding:16px 20px;background:#f7f4ec;display:flex;flex-direction:column;gap:10px}
 .xt-msg{max-width:78%;padding:9px 14px;border-radius:14px;font-size:14.5px;line-height:1.6;word-wrap:break-word}
 .xt-msg.self{align-self:flex-end;background:var(--red);color:#fff;border-bottom-right-radius:3px}
 .xt-msg.other{align-self:flex-start;background:#fff;color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:3px}
-.xt-msg.system{align-self:center;background:transparent;color:var(--muted);font-size:12.5px;padding:4px}
-.xt-msg .meta{font-size:11px;opacity:.7;margin-bottom:3px}
-.xt-msg.self .meta{color:#ffd9df}
+.xt-msg.system{align-self:center;background:transparent;color:var(--muted);font-size:12.5px;padding:4px;text-align:center}
+.xt-msg .meta{font-size:11px;opacity:.85;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.xt-msg .avatar{width:16px;height:16px;border-radius:50%;display:inline-grid;place-items:center;font-size:9px;color:#fff;font-weight:700;letter-spacing:0}
+.xt-msg.self .meta{color:#ffd9df;justify-content:flex-end}
 .xt-msg.other .meta{color:var(--muted)}
 .xt-send{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--line-soft);background:#fff}
-.xt-send input{
-  flex:1;padding:11px 16px;border:1.5px solid var(--line);border-radius:var(--radius-pill);
-  outline:0;font-size:14.5px;
-}
+.xt-send input{flex:1;padding:11px 16px;border:1.5px solid var(--line);border-radius:var(--radius-pill);outline:0;font-size:14.5px}
 .xt-send input:focus{border-color:var(--red);box-shadow:0 0 0 4px rgba(200,16,46,.1)}
-.xt-send button{
-  background:var(--red);color:#fff;border:0;padding:0 24px;border-radius:var(--radius-pill);
-  font-weight:600;letter-spacing:1px;cursor:pointer;
-}
+.xt-send input:disabled{background:#f8f6f0;color:var(--muted)}
+.xt-send button{background:var(--red);color:#fff;border:0;padding:0 24px;border-radius:var(--radius-pill);font-weight:600;letter-spacing:1px;cursor:pointer}
 .xt-send button:hover{background:var(--red-dark)}
 .xt-send button:disabled{opacity:.45;cursor:not-allowed}
-.xt-send input:disabled{background:#f8f6f0;color:var(--muted)}
 
-/* 语音 */
-.xt-voice-stage{
-  padding:38px 20px 32px;text-align:center;
-  background:linear-gradient(150deg,#1a2b4c,#12203a);color:#fff;
-  position:relative;
+/* 呼叫成员列表 */
+.xt-call-list{padding:18px 20px}
+.xt-call-hint{font-size:13px;color:var(--muted);margin-bottom:14px}
+.xt-call-item{
+  display:flex;align-items:center;gap:14px;padding:14px 16px;
+  border:1px solid var(--line);border-radius:var(--radius-sm);
+  background:#fff;margin-bottom:10px;transition:border-color .2s,box-shadow .2s;
 }
-.xt-avatar{
-  width:130px;height:130px;margin:0 auto 18px;border-radius:50%;
-  background:radial-gradient(circle at 32% 28%,#e02040,var(--red) 55%,var(--red-dark));
-  display:grid;place-items:center;font-size:52px;color:var(--gold-soft);
-  box-shadow:0 0 0 6px rgba(212,175,55,.25);position:relative;
-}
-.xt-avatar::after{
-  content:"";position:absolute;inset:-14px;border-radius:50%;
-  border:1.5px dashed rgba(212,175,55,.55);
-  animation:xtSpin 26s linear infinite;
-}
-.xt-avatar.talking::before{
-  content:"";position:absolute;inset:-10px;border-radius:50%;
-  border:3px solid rgba(200,16,46,.6);
-  animation:xtPulse 1.4s ease-in-out infinite;
-}
+.xt-call-item:hover{border-color:var(--gold);box-shadow:var(--shadow-sm)}
+.xt-call-item .avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px}
+.xt-call-item .name{flex:1;font-size:14.5px;color:var(--ink);font-weight:600}
+.xt-call-item .tag{font-size:11px;color:var(--muted);padding:2px 8px;border-radius:99px;background:#f2f5fa;border:1px solid var(--line-soft)}
+.xt-call-item button{background:var(--red);color:#fff;border:0;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
+.xt-call-item button:hover{background:var(--red-dark)}
+.xt-call-item.me{opacity:.55;pointer-events:none}
+
+/* 语音/视频舞台 */
+.xt-media-stage{padding:38px 20px 32px;text-align:center;background:linear-gradient(150deg,#1a2b4c,#12203a);color:#fff;position:relative}
+.xt-avatar{width:130px;height:130px;margin:0 auto 18px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#e02040,var(--red) 55%,var(--red-dark));display:grid;place-items:center;font-size:52px;color:var(--gold-soft);box-shadow:0 0 0 6px rgba(212,175,55,.25);position:relative}
+.xt-avatar::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:1.5px dashed rgba(212,175,55,.55);animation:xtSpin 26s linear infinite}
+.xt-avatar.talking::before{content:"";position:absolute;inset:-10px;border-radius:50%;border:3px solid rgba(200,16,46,.6);animation:xtPulse 1.4s ease-in-out infinite}
 @keyframes xtSpin{to{transform:rotate(360deg)}}
 @keyframes xtPulse{0%,100%{box-shadow:0 0 0 0 rgba(200,16,46,.6)}50%{box-shadow:0 0 0 22px rgba(200,16,46,0)}}
 .xt-v-name{font-size:18px;letter-spacing:2px;margin-bottom:6px}
 .xt-v-timer{font-size:26px;font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:3px;color:var(--gold-soft)}
 .xt-v-tip{font-size:13px;color:#9fb0cc;margin-top:8px}
 .xt-controls{display:flex;gap:12px;justify-content:center;padding:20px;background:#fff;flex-wrap:wrap}
-.xt-ctl{
-  min-width:60px;height:56px;padding:0 18px;border-radius:30px;border:0;
-  display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  font-size:13.5px;font-weight:600;cursor:pointer;color:#fff;letter-spacing:.5px;
-  transition:transform .18s,background .2s,opacity .2s;
-}
+.xt-ctl{min-width:60px;height:56px;padding:0 18px;border-radius:30px;border:0;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13.5px;font-weight:600;cursor:pointer;color:#fff;letter-spacing:.5px;transition:transform .18s,background .2s,opacity .2s}
 .xt-ctl:hover{transform:translateY(-2px)}
 .xt-ctl:disabled{opacity:.35;cursor:not-allowed;transform:none}
 .xt-ctl .ic{font-size:16px;line-height:1}
 .xt-ctl.mic,.xt-ctl.cam{background:#5b6b8b}
 .xt-ctl.mic.on,.xt-ctl.cam.on{background:var(--gold);color:#241b08}
-.xt-ctl.call{background:#1f8f55}
-.xt-ctl.call:hover{background:#176e42}
 .xt-ctl.hang{background:var(--red)}
 .xt-ctl.hang:hover{background:var(--red-dark)}
 
 /* 视频 */
-.xt-video-stage{
-  position:relative;background:#0d1522;aspect-ratio:16/9;overflow:hidden;
-}
+.xt-video-stage{position:relative;background:#0d1522;aspect-ratio:16/9;overflow:hidden}
 .xt-remote{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0d1522}
-.xt-local{
-  position:absolute;right:16px;bottom:16px;width:24%;max-width:190px;
-  aspect-ratio:16/9;object-fit:cover;border-radius:12px;
-  border:2px solid rgba(255,255,255,.6);box-shadow:0 8px 24px rgba(0,0,0,.5);
-  background:#000;z-index:3;transition:opacity .2s;
-}
+.xt-local{position:absolute;right:16px;bottom:16px;width:24%;max-width:190px;aspect-ratio:16/9;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,.6);box-shadow:0 8px 24px rgba(0,0,0,.5);background:#000;z-index:3;transition:opacity .2s}
 .xt-local.off{opacity:0}
-.xt-placeholder{
-  position:absolute;inset:0;display:grid;place-items:center;
-  color:#5b6b8b;text-align:center;padding:20px;z-index:1;pointer-events:none;
-}
-.xt-placeholder .ph-avatar{
-  width:110px;height:110px;margin:0 auto 14px;border-radius:50%;
-  background:radial-gradient(circle at 32% 28%,#e02040,var(--red) 55%,var(--red-dark));
-  display:grid;place-items:center;font-size:44px;color:var(--gold-soft);
-  box-shadow:0 0 0 6px rgba(212,175,55,.25);
-}
-.xt-placeholder .ph-name{font-size:17px;letter-spacing:2px;color:#dfe7f5;margin-bottom:4px}
-.xt-placeholder .ph-tip{font-size:12.5px;color:#5b6b8b}
-.xt-video-topbar{
-  position:absolute;top:0;left:0;right:0;padding:14px 18px;
-  display:flex;align-items:center;justify-content:space-between;gap:14px;
-  background:linear-gradient(180deg,rgba(13,21,34,.85),transparent);
-  z-index:2;pointer-events:none;
-}
+.xt-video-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#5b6b8b;text-align:center;padding:20px;z-index:1;pointer-events:none}
+.xt-video-placeholder .ph-avatar{width:110px;height:110px;margin:0 auto 14px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#e02040,var(--red) 55%,var(--red-dark));display:grid;place-items:center;font-size:44px;color:var(--gold-soft);box-shadow:0 0 0 6px rgba(212,175,55,.25)}
+.xt-video-placeholder .ph-name{font-size:17px;letter-spacing:2px;color:#dfe7f5;margin-bottom:4px}
+.xt-video-placeholder .ph-tip{font-size:12.5px;color:#5b6b8b}
+.xt-video-topbar{position:absolute;top:0;left:0;right:0;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:linear-gradient(180deg,rgba(13,21,34,.85),transparent);z-index:2;pointer-events:none}
 .xt-video-peer{color:#fff;font-size:14px;letter-spacing:1px;text-shadow:0 2px 6px rgba(0,0,0,.6)}
-.xt-video-timer{
-  font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;
-  color:var(--gold-soft);letter-spacing:2px;text-shadow:0 2px 6px rgba(0,0,0,.6);
-}
-.xt-rec{
-  display:none;align-items:center;gap:6px;font-size:11.5px;color:#fff;
-  background:rgba(200,16,46,.85);padding:3px 10px;border-radius:999px;letter-spacing:1.5px;
-}
+.xt-video-timer{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;color:var(--gold-soft);letter-spacing:2px;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.xt-rec{display:none;align-items:center;gap:6px;font-size:11.5px;color:#fff;background:rgba(200,16,46,.85);padding:3px 10px;border-radius:999px;letter-spacing:1.5px}
 .xt-rec.on{display:inline-flex}
-.xt-rec::before{
-  content:"";width:8px;height:8px;border-radius:50%;background:#fff;
-  animation:xtBlink 1.4s ease-in-out infinite;
-}
+.xt-rec::before{content:"";width:8px;height:8px;border-radius:50%;background:#fff;animation:xtBlink 1.4s ease-in-out infinite}
 @keyframes xtBlink{0%,100%{opacity:1}50%{opacity:.25}}
 
 /* 文件 */
-.xt-drop{
-  border:2px dashed var(--line);border-radius:var(--radius);
-  padding:34px 20px;text-align:center;cursor:pointer;background:#fbf9f4;
-  transition:border-color .2s,background .2s;
-}
+.xt-drop{border:2px dashed var(--line);border-radius:var(--radius);padding:34px 20px;text-align:center;cursor:pointer;background:#fbf9f4;transition:border-color .2s,background .2s}
 .xt-drop:hover,.xt-drop.over{border-color:var(--red);background:var(--red-soft)}
 .xt-drop b{display:block;font-size:15px;color:var(--blue);margin-bottom:6px}
 .xt-drop span{font-size:12.5px;color:var(--muted)}
@@ -221,20 +163,10 @@
 .xt-name{font-size:14px;color:var(--ink);font-weight:600;word-break:break-all;flex:1 1 auto;min-width:0}
 .xt-size{font-size:12.5px;color:var(--muted);white-space:nowrap}
 .xt-bar{height:6px;background:#efe9dc;border-radius:99px;overflow:hidden}
-.xt-bar-fill{
-  height:100%;background:linear-gradient(90deg,var(--red),var(--gold));
-  width:0%;transition:width .18s ease;border-radius:99px;
-}
-.xt-item-meta{
-  font-size:12px;color:var(--muted);margin-top:6px;
-  display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
-}
+.xt-bar-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--gold));width:0%;transition:width .18s ease;border-radius:99px}
+.xt-item-meta{font-size:12px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .xt-item-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-.xt-item-actions a,.xt-item-actions button{
-  font-size:12.5px;padding:5px 12px;border-radius:99px;
-  border:1px solid var(--line);background:#fff;color:var(--ink-soft);
-  cursor:pointer;text-decoration:none;transition:.18s;
-}
+.xt-item-actions a,.xt-item-actions button{font-size:12.5px;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer;text-decoration:none;transition:.18s}
 .xt-item-actions a{background:var(--red);color:#fff;border-color:var(--red)}
 .xt-item-actions a:hover{background:var(--red-dark)}
 .xt-item-actions button:hover{border-color:var(--red);color:var(--red)}
@@ -243,20 +175,16 @@
 .xt-empty{text-align:center;padding:20px 10px;color:var(--muted);font-size:13px}
 
 /* 来电弹窗 */
-.xt-incoming{
-  position:fixed;inset:0;background:rgba(26,43,76,.85);
-  display:grid;place-items:center;z-index:1000;padding:20px;
-}
+.xt-incoming{position:fixed;inset:0;background:rgba(26,43,76,.85);display:grid;place-items:center;z-index:1000;padding:20px}
 .xt-incoming.hide{display:none}
-.xt-incoming-box{
-  background:#fff;border-radius:var(--radius);padding:30px;text-align:center;
-  max-width:360px;width:100%;box-shadow:var(--shadow-lg);
-  animation:xtIn .28s ease;
-}
+.xt-incoming-box{background:#fff;border-radius:var(--radius);padding:30px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-lg);animation:xtIn .28s ease}
 @keyframes xtIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 .xt-incoming-box h3{margin:0 0 6px;color:var(--blue);letter-spacing:1px}
 .xt-incoming-box p{margin:0 0 20px;color:var(--muted);font-size:13px}
 .xt-incoming-box .xt-controls{padding:0;background:transparent}
+.xt-incoming-box .xt-ctl{padding:12px 28px;height:auto;min-width:120px}
+
+.hide{display:none !important}
 
 @media (max-width:760px){
   .xt-wrap{padding:20px 12px 50px}
@@ -264,6 +192,7 @@
   .xt-local{width:34%;right:10px;bottom:10px}
   .xt-tab{padding:13px 10px;font-size:13.5px}
   .xt-ctl{min-width:52px;height:50px;padding:0 14px;font-size:12.5px}
+  .xt-join{padding:18px 16px}
 }
 </style>
 </head>
@@ -275,107 +204,126 @@
   <div class="page-hero-inner">
     <div class="crumb"><a href="index.html">首页</a><i>›</i><span>星图</span></div>
     <h1>星图</h1>
-    <p>文字 · 语音 · 视频 · 文件 · 点对点通信，无需注册，数据不经过中央服务器</p>
+    <p>多人文字 · 文件 · 一对一语音视频 · 无需注册，数据不经过任何服务器</p>
   </div>
 </section>
 
 <main class="xt-wrap">
   <div class="xt-card">
 
-    <!-- ============ 连接面板 ============ -->
-    <div class="xt-connect">
-      <h3>连接</h3>
-      <div class="xt-row">
-        <div class="xt-id" id="myId">正在生成房间号…</div>
-        <button class="xt-btn ghost" id="copyId" type="button">复制</button>
+    <!-- ============ 加入面板 ============ -->
+    <div class="xt-join" id="joinPanel">
+      <h3>进入房间</h3>
+      <div class="xt-join-row">
+        <input class="xt-input" id="nickInput" type="text" placeholder="你的昵称（最多 12 字）" maxlength="12" autocomplete="off">
+        <input class="xt-input" id="roomInput" type="text" placeholder="房间号（英文/数字）" maxlength="20" autocomplete="off">
       </div>
-      <div class="xt-row" style="margin-top:10px">
-        <input class="xt-input" id="targetId" type="text" placeholder="粘贴对方房间号…" autocomplete="off">
-        <button class="xt-btn" id="connectBtn" type="button">连接</button>
-        <button class="xt-btn ghost" id="disconnectBtn" type="button" disabled>断开</button>
+      <div class="xt-join-row" style="margin-top:12px">
+        <button class="xt-btn gold" id="createBtn" type="button">创建房间</button>
+        <button class="xt-btn" id="joinBtn" type="button">加入房间</button>
       </div>
-      <div class="xt-status" id="connStatus"><span class="dot"></span><span id="connText">未连接</span></div>
+      <div class="xt-status" id="joinStatus"><span class="dot"></span><span id="joinText">输入昵称与房间号开始</span></div>
     </div>
 
-    <!-- ============ Tabs ============ -->
-    <div class="xt-tabs" role="tablist">
-      <button class="xt-tab on" data-tab="chat"  type="button">文字</button>
-      <button class="xt-tab"    data-tab="voice" type="button">语音 <span class="badge hide" data-badge="voice">●</span></button>
-      <button class="xt-tab"    data-tab="video" type="button">视频 <span class="badge hide" data-badge="video">●</span></button>
-      <button class="xt-tab"    data-tab="file"  type="button">文件</button>
-    </div>
-
-    <!-- ============ 文字 ============ -->
-    <div class="xt-panel on" data-panel="chat">
-      <div class="xt-chat-body" id="chatBody">
-        <div class="xt-msg system">先与对方建立连接，然后即可开始聊天</div>
-      </div>
-      <form class="xt-send" id="chatForm">
-        <input id="chatInput" type="text" placeholder="连接建立后即可发送消息…" maxlength="500" autocomplete="off" disabled>
-        <button type="submit" id="chatSend" disabled>发送</button>
-      </form>
-    </div>
-
-    <!-- ============ 语音 ============ -->
-    <div class="xt-panel" data-panel="voice">
-      <div class="xt-voice-stage">
-        <div class="xt-avatar" id="voiceAvatar">★</div>
-        <div class="xt-v-name" id="voiceName">等待接通</div>
-        <div class="xt-v-timer" id="voiceTimer">--:--</div>
-        <div class="xt-v-tip" id="voiceTip">点击下方按钮呼叫对方，或等待对方来电</div>
-      </div>
-      <div class="xt-controls">
-        <button class="xt-ctl mic"  id="voiceMicBtn"  type="button" disabled><span class="ic">🎤</span>麦克风</button>
-        <button class="xt-ctl call" id="voiceCallBtn" type="button" disabled><span class="ic">📞</span>呼叫</button>
-        <button class="xt-ctl hang" id="voiceHangBtn" type="button" disabled><span class="ic">✕</span>挂断</button>
-      </div>
-    </div>
-
-    <!-- ============ 视频 ============ -->
-    <div class="xt-panel" data-panel="video">
-      <div class="xt-video-stage">
-        <div class="xt-video-topbar">
-          <span class="xt-video-peer" id="videoPeer">等待接通</span>
-          <span class="xt-rec" id="videoRec">通话中</span>
-          <span class="xt-video-timer" id="videoTimer">--:--</span>
+    <!-- ============ 房间状态 ============ -->
+    <div class="xt-room" id="roomPanel">
+      <div class="xt-room-top">
+        <div>
+          <span class="xt-room-id" id="roomIdShow">—</span>
+          <span class="xt-room-meta">成员 <b id="memberCount">0</b></span>
         </div>
-        <div class="xt-placeholder" id="videoPlaceholder">
-          <div>
-            <div class="ph-avatar">★</div>
-            <div class="ph-name" id="videoPhName">等待接通</div>
-            <div class="ph-tip" id="videoPhTip">点击“呼叫”开始视频通话</div>
+        <button class="xt-btn ghost" id="leaveBtn" type="button" style="color:var(--blue);border-color:var(--line)">离开房间</button>
+      </div>
+      <div class="xt-members" id="memberList"></div>
+    </div>
+
+    <!-- ============ 主面板 ============ -->
+    <div id="mainPanel" class="hide">
+
+      <!-- Tabs -->
+      <div class="xt-tabs" role="tablist">
+        <button class="xt-tab on" data-tab="chat"  type="button">文字</button>
+        <button class="xt-tab"    data-tab="voice" type="button">语音 <span class="badge hide" data-badge="voice">●</span></button>
+        <button class="xt-tab"    data-tab="video" type="button">视频 <span class="badge hide" data-badge="video">●</span></button>
+        <button class="xt-tab"    data-tab="file"  type="button">文件</button>
+      </div>
+
+      <!-- 文字 -->
+      <div class="xt-panel on" data-panel="chat">
+        <div class="xt-chat-body" id="chatBody">
+          <div class="xt-msg system">欢迎进入星图 · 多人频道</div>
+        </div>
+        <form class="xt-send" id="chatForm">
+          <input id="chatInput" type="text" placeholder="说点什么……" maxlength="500" autocomplete="off">
+          <button type="submit" id="chatSend">发送</button>
+        </form>
+      </div>
+
+      <!-- 语音 -->
+      <div class="xt-panel" data-panel="voice">
+        <div class="xt-media-stage" id="voiceStage">
+          <div class="xt-avatar" id="voiceAvatar">🎤</div>
+          <div class="xt-v-name" id="voiceName">未在通话</div>
+          <div class="xt-v-timer" id="voiceTimer">--:--</div>
+          <div class="xt-v-tip" id="voiceTip">从下方列表选择一位成员呼叫</div>
+        </div>
+        <div class="xt-call-list">
+          <div class="xt-call-hint">选择要呼叫的成员（一对一）</div>
+          <div id="voiceCallList"></div>
+        </div>
+        <div class="xt-controls">
+          <button class="xt-ctl mic"  id="voiceMicBtn"  type="button" disabled><span class="ic">🎤</span>麦克风</button>
+          <button class="xt-ctl hang" id="voiceHangBtn" type="button" disabled><span class="ic">✕</span>挂断</button>
+        </div>
+      </div>
+
+      <!-- 视频 -->
+      <div class="xt-panel" data-panel="video">
+        <div class="xt-video-stage">
+          <div class="xt-video-topbar">
+            <span class="xt-video-peer" id="videoPeer">未在通话</span>
+            <span class="xt-rec" id="videoRec">通话中</span>
+            <span class="xt-video-timer" id="videoTimer">--:--</span>
+          </div>
+          <div class="xt-video-placeholder" id="videoPlaceholder">
+            <div>
+              <div class="ph-avatar">📹</div>
+              <div class="ph-name" id="videoPhName">未在通话</div>
+              <div class="ph-tip" id="videoPhTip">从下方列表选择一位成员呼叫</div>
+            </div>
+          </div>
+          <video id="remoteVideo" class="xt-remote" autoplay playsinline></video>
+          <video id="localVideo" class="xt-local" autoplay muted playsinline></video>
+        </div>
+        <div class="xt-call-list">
+          <div class="xt-call-hint">选择要呼叫的成员（一对一）</div>
+          <div id="videoCallList"></div>
+        </div>
+        <div class="xt-controls">
+          <button class="xt-ctl mic" id="videoMicBtn" type="button" disabled><span class="ic">🎤</span>麦克风</button>
+          <button class="xt-ctl cam" id="videoCamBtn" type="button" disabled><span class="ic">📹</span>摄像头</button>
+          <button class="xt-ctl hang" id="videoHangBtn" type="button" disabled><span class="ic">✕</span>挂断</button>
+        </div>
+      </div>
+
+      <!-- 文件 -->
+      <div class="xt-panel" data-panel="file">
+        <div class="xt-panel-inner">
+          <div class="xt-drop" id="dropZone">
+            <div class="big">＋</div>
+            <b>点击选择文件</b>
+            <span>或将文件拖拽到此处 · 发送给房间内所有成员 · 单文件建议不超过 200MB</span>
+            <input type="file" id="fileInput" multiple style="display:none">
+          </div>
+          <div class="xt-list" id="transferList">
+            <div class="xt-empty" id="fileEmpty">还没有传输任务</div>
           </div>
         </div>
-        <video id="remoteVideo" class="xt-remote" autoplay playsinline></video>
-        <video id="localVideo" class="xt-local" autoplay muted playsinline></video>
       </div>
-      <div class="xt-controls">
-        <button class="xt-ctl mic" id="videoMicBtn" type="button" disabled><span class="ic">🎤</span>麦克风</button>
-        <button class="xt-ctl cam" id="videoCamBtn" type="button" disabled><span class="ic">📹</span>摄像头</button>
-        <button class="xt-ctl call" id="videoCallBtn" type="button" disabled><span class="ic">📹</span>呼叫</button>
-        <button class="xt-ctl hang" id="videoHangBtn" type="button" disabled><span class="ic">✕</span>挂断</button>
-      </div>
-    </div>
 
-    <!-- ============ 文件 ============ -->
-    <div class="xt-panel" data-panel="file">
-      <div class="xt-panel-inner">
-        <div class="xt-drop" id="dropZone">
-          <div class="big">＋</div>
-          <b>点击选择文件</b>
-          <span>或将文件拖拽到此处 · 支持多选 · 单文件建议不超过 1GB</span>
-          <input type="file" id="fileInput" multiple style="display:none">
-        </div>
-        <div class="xt-list" id="transferList">
-          <div class="xt-empty" id="fileEmpty">还没有传输任务</div>
-        </div>
-      </div>
     </div>
 
   </div>
-
-  <!-- 隐藏的音频元素 -->
-  <audio id="remoteAudio" autoplay playsinline></audio>
 </main>
 
 <div id="site-footer"></div>
@@ -386,13 +334,15 @@
     <h3 id="incomingTitle">来电</h3>
     <p id="incomingSub">对方请求与你通话</p>
     <div class="xt-controls">
-      <button class="xt-ctl call" id="answerBtn" type="button"><span class="ic">✓</span>接听</button>
+      <button class="xt-ctl mic" id="answerBtn" type="button" style="background:#1f8f55"><span class="ic">✓</span>接听</button>
       <button class="xt-ctl hang" id="rejectBtn" type="button"><span class="ic">✕</span>拒绝</button>
     </div>
   </div>
 </div>
 
-<!-- PeerJS -->
+<!-- 隐藏媒体元素 -->
+<audio id="remoteAudio" autoplay playsinline></audio>
+
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="assets/js/main.js"></script>
 
@@ -403,38 +353,47 @@
   /* ============================================================
      配置
      ============================================================ */
-  var CHUNK_SIZE = 16 * 1024;
-  var HIGH_WATER  = 4 * 1024 * 1024;
+  var ROOM_PREFIX  = 'pxgl-xingtu-';
+  var CHUNK_SIZE   = 16 * 1024;
+  var HIGH_WATER   = 4 * 1024 * 1024;
+  var MAX_MEMBERS  = 8;   // 房主中转建议不超过 8 人
 
   /* ============================================================
-     DOM 引用
+     DOM
      ============================================================ */
   var $ = function (id) { return document.getElementById(id); };
 
-  var myIdEl      = $('myId');
-  var copyBtn     = $('copyId');
-  var targetEl    = $('targetId');
-  var connectBtn  = $('connectBtn');
-  var disconnectBtn = $('disconnectBtn');
-  var connStatus  = $('connStatus');
-  var connText    = $('connText');
+  var joinPanel   = $('joinPanel');
+  var nickInput   = $('nickInput');
+  var roomInput   = $('roomInput');
+  var createBtn   = $('createBtn');
+  var joinBtn     = $('joinBtn');
+  var joinStatus  = $('joinStatus');
+  var joinText    = $('joinText');
 
-  /* 聊天 */
+  var roomPanel   = $('roomPanel');
+  var roomIdShow  = $('roomIdShow');
+  var memberCount = $('memberCount');
+  var memberList  = $('memberList');
+  var leaveBtn    = $('leaveBtn');
+
+  var mainPanel   = $('mainPanel');
+
   var chatBody    = $('chatBody');
   var chatForm    = $('chatForm');
   var chatInput   = $('chatInput');
   var chatSend    = $('chatSend');
 
-  /* 语音 */
+  var voiceStage  = $('voiceStage');
   var voiceAvatar = $('voiceAvatar');
   var voiceName   = $('voiceName');
   var voiceTimer  = $('voiceTimer');
   var voiceTip    = $('voiceTip');
+  var voiceCallList = $('voiceCallList');
   var voiceMicBtn = $('voiceMicBtn');
-  var voiceCallBtn= $('voiceCallBtn');
   var voiceHangBtn= $('voiceHangBtn');
 
-  /* 视频 */
+  var videoCallList = $('videoCallList');
   var remoteVideo = $('remoteVideo');
   var localVideo  = $('localVideo');
   var videoPeer   = $('videoPeer');
@@ -445,19 +404,15 @@
   var videoPhTip  = $('videoPhTip');
   var videoMicBtn = $('videoMicBtn');
   var videoCamBtn = $('videoCamBtn');
-  var videoCallBtn= $('videoCallBtn');
   var videoHangBtn= $('videoHangBtn');
 
-  /* 文件 */
   var dropZone    = $('dropZone');
   var fileInput   = $('fileInput');
   var transferList= $('transferList');
   var fileEmpty   = $('fileEmpty');
 
-  /* 隐藏音频 */
   var remoteAudio = $('remoteAudio');
 
-  /* 来电弹窗 */
   var incomingBox = $('incomingBox');
   var incomingTitle = $('incomingTitle');
   var incomingSub = $('incomingSub');
@@ -467,33 +422,47 @@
   /* ============================================================
      状态
      ============================================================ */
-  var peer = null;
-  var conn = null;           // 数据通道（文字 + 文件）
-  var call = null;           // 媒体通道（语音或视频）
-  var localStream = null;    // 本地媒体流（音+视频）
-  var incomingCall = null;   // 来电
-  var mediaMode = 'audio';   // 'audio' | 'video'
+  var state = {
+    peer: null,
+    isHost: false,
+    roomId: '',
+    nick: '',
+    myPeerId: '',
+    /* 房主维护：peerId -> { nick, conn } */
+    members: {},
+    /* 成员维护：与房主的连接 */
+    hostConn: null,
+    /* 所有成员共享的成员列表快照 [{ id, nick, isHost }] */
+    roster: [],
+    /* 通话 */
+    call: null,
+    incomingCall: null,
+    localStream: null,
+    mediaMode: 'audio',
+    /* 文件锁：一次只允许一个人发 */
+    fileBusy: false,
+    fileFrom: null
+  };
 
   var timerId = null;
   var startTime = 0;
   var isMicOff = false;
   var isCamOff = false;
-
-  /* 文件接收 */
   var incomingFiles = {};
   var currentIncomingId = null;
-  var isSendingFile = false;
 
   /* ============================================================
      工具
      ============================================================ */
-  function setConn(text, cls) {
-    connText.textContent = text;
-    connStatus.className = 'xt-status' + (cls ? ' ' + cls : '');
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
+    });
   }
-  function fmtTime(sec) {
-    var m = Math.floor(sec / 60), s = sec % 60;
-    return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function nowTime() {
+    var d = new Date();
+    return pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
   function fmtSize(bytes) {
     if (bytes < 1024) return bytes + ' B';
@@ -501,19 +470,32 @@
     if (bytes < 1024 * 1024 * 1024) return (bytes / 1024 / 1024).toFixed(2) + ' MB';
     return (bytes / 1024 / 1024 / 1024).toFixed(2) + ' GB';
   }
-  function escHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
-    });
+  function fmtTime(sec) {
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
   }
-  function nowTime() {
-    var d = new Date();
-    return pad(d.getHours()) + ':' + pad(d.getMinutes());
+  function setJoin(text, cls) {
+    joinText.textContent = text;
+    joinStatus.className = 'xt-status' + (cls ? ' ' + cls : '');
   }
-  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function hashColor(str) {
+    var h = 0;
+    for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xffff;
+    var colors = ['#c8102e','#1a2b4c','#1f8f55','#8a6d12','#7a3b8f','#c85a17','#2b6a8b','#8b2b4a'];
+    return colors[h % colors.length];
+  }
+  function initial(name) {
+    return (name || '?').slice(0, 1).toUpperCase();
+  }
+  function getMemberById(id) {
+    for (var i = 0; i < state.roster.length; i++) {
+      if (state.roster[i].id === id) return state.roster[i];
+    }
+    return { id: id, nick: id.slice(0, 8) };
+  }
 
   /* ============================================================
-     Tabs 切换
+     Tabs
      ============================================================ */
   document.querySelectorAll('.xt-tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
@@ -524,146 +506,389 @@
       document.querySelectorAll('.xt-panel').forEach(function (p) {
         p.classList.toggle('on', p.dataset.panel === name);
       });
-      /* 切到文字时自动聚焦 */
-      if (name === 'chat' && conn && conn.open) chatInput.focus();
+      if (name === 'chat') chatInput.focus();
+      var b = tab.querySelector('.badge');
+      if (b) b.classList.add('hide');
     });
   });
-  function switchTab(name) {
-    var tab = document.querySelector('.xt-tab[data-tab="' + name + '"]');
-    if (tab) tab.click();
-  }
 
   /* ============================================================
-     初始化 Peer
+     入口：创建房间 / 加入房间
      ============================================================ */
-  peer = new Peer();
-
-  peer.on('open', function (id) {
-    myIdEl.textContent = id;
-    initMedia();
+  createBtn.addEventListener('click', function () { enterRoom(true); });
+  joinBtn.addEventListener('click', function () { enterRoom(false); });
+  roomInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') enterRoom(false);
+  });
+  nickInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') enterRoom(false);
   });
 
-  peer.on('error', function (err) {
-    console.error('[PeerJS]', err);
-    setConn('信令出错：' + err.type, 'warn');
-  });
+  function enterRoom(isHost) {
+    var nick = nickInput.value.trim();
+    var room = roomInput.value.trim();
 
-  /* 对方主动接入（数据通道） */
-  peer.on('connection', function (incomingConn) {
-    if (conn) { incomingConn.close(); return; }
-    conn = incomingConn;
-    bindConnection();
-    setConn('已连接（对方主动接入）', 'ok');
-    enableConnectionControls(true);
-    addChatSystem('对方已接入');
-  });
-
-  /* 对方主动呼叫（语音/视频） */
-  peer.on('call', function (incoming) {
-    if (call && call.open) { incoming.close(); return; }
-    incomingCall = incoming;
-    var mode = (incoming.metadata && incoming.metadata.mode) || 'audio';
-    incomingTitle.textContent = mode === 'video' ? '视频来电' : '语音来电';
-    incomingSub.textContent = '对方请求与你进行' + (mode === 'video' ? '视频' : '语音') + '通话';
-    incomingBox.classList.remove('hide');
-  });
-
-  /* ============================================================
-     媒体初始化（音+视频）
-     ============================================================ */
-  function initMedia() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      setConn('浏览器不支持媒体设备', 'warn');
+    if (!nick) { setJoin('请输入昵称', 'warn'); return; }
+    if (!room) { setJoin('请输入房间号', 'warn'); return; }
+    if (!/^[A-Za-z0-9\u4e00-\u9fa5_-]{1,20}$/.test(room)) {
+      setJoin('房间号只能用中英文、数字、-、_', 'warn');
       return;
     }
-    navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24 } }
-    }).then(function (stream) {
-      localStream = stream;
-      localVideo.srcObject = stream;
-      localVideo.play().catch(function () {});
-      voiceCallBtn.disabled = false;
-      videoCallBtn.disabled = false;
-      setConn(conn && conn.open ? '已连接 · 设备已就绪' : '设备已就绪，等待连接', 'ok');
-    }).catch(function (err) {
-      console.error('[media]', err);
-      if (err.name === 'NotAllowedError') {
-        setConn('你拒绝了摄像头/麦克风权限', 'warn');
-      } else if (err.name === 'NotFoundError') {
-        setConn('未检测到摄像头或麦克风', 'warn');
+
+    state.nick = nick;
+    state.roomId = room;
+
+    createBtn.disabled = true;
+    joinBtn.disabled = true;
+    setJoin('正在' + (isHost ? '创建' : '加入') + '房间…');
+
+    /* 房主使用固定 ID；成员用随机 ID */
+    if (isHost) {
+      state.isHost = true;
+      var fixedId = ROOM_PREFIX + room;
+      state.peer = new Peer(fixedId, { debug: 0 });
+      bindPeer();
+    } else {
+      state.isHost = false;
+      state.peer = new Peer({ debug: 0 });
+      bindPeer();
+    }
+
+    /* 请求媒体权限（用于语音/视频） */
+    requestMedia();
+
+    /* 加载缓存昵称 */
+    try { localStorage.setItem('pxgl_xingtu_nick', nick); } catch (e) {}
+  }
+
+  /* 恢复昵称 */
+  try {
+    var saved = localStorage.getItem('pxgl_xingtu_nick');
+    if (saved) nickInput.value = saved;
+  } catch (e) {}
+
+  /* ============================================================
+     Peer 事件
+     ============================================================ */
+  function bindPeer() {
+    state.peer.on('open', function (id) {
+      state.myPeerId = id;
+      if (state.isHost) {
+        setJoin('房间已创建', 'ok');
+        enterRoomUI(id, state.roomId);
+        state.roster = [{ id: id, nick: state.nick, isHost: true }];
+        state.members[id] = { nick: state.nick, conn: null };
+        renderRoster();
       } else {
-        setConn('设备初始化失败：' + err.name, 'warn');
+        setJoin('已上线，正在连接房主…', 'ok');
+        connectToHost();
       }
     });
+
+    state.peer.on('error', function (err) {
+      console.error('[PeerJS]', err);
+      if (err.type === 'unavailable-id') {
+        setJoin('该房间号已被使用，请换一个', 'warn');
+        resetButtons();
+      } else if (err.type === 'peer-unavailable') {
+        setJoin('未找到该房间，请检查房间号', 'warn');
+        resetButtons();
+        if (!state.isHost) {
+          try { state.peer.destroy(); } catch (e) {}
+          state.peer = null;
+        }
+      } else {
+        setJoin('连接错误：' + err.type, 'warn');
+        resetButtons();
+      }
+    });
+
+    /* 房主：接受数据连接 */
+    state.peer.on('connection', function (conn) {
+      if (!state.isHost) return;
+      hostOnConnection(conn);
+    });
+
+    /* 任何人：接收呼叫 */
+    state.peer.on('call', function (call) {
+      if (state.call && state.call.open) { call.close(); return; }
+      state.incomingCall = call;
+      var mode = (call.metadata && call.metadata.mode) || 'audio';
+      incomingTitle.textContent = mode === 'video' ? '视频来电' : '语音来电';
+      incomingSub.textContent = '对方请求与你进行' + (mode === 'video' ? '视频' : '语音') + '通话';
+      incomingBox.classList.remove('hide');
+    });
+  }
+
+  function resetButtons() {
+    createBtn.disabled = false;
+    joinBtn.disabled = false;
   }
 
   /* ============================================================
-     连接管理
+     房主：处理新连接
      ============================================================ */
-  connectBtn.addEventListener('click', function () {
-    var target = targetEl.value.trim();
-    if (!target) { window.siteToast && window.siteToast('请输入对方房间号'); return; }
-    if (target === peer.id) { window.siteToast && window.siteToast('不能连接自己'); return; }
-    if (conn && conn.open) { window.siteToast && window.siteToast('已处于连接状态'); return; }
-
-    setConn('正在连接 ' + target.slice(0, 12) + ' …');
-    conn = peer.connect(target, { reliable: true });
-    bindConnection();
-  });
-
-  disconnectBtn.addEventListener('click', function () {
-    if (call && call.open) hangup();
-    if (conn) { conn.close(); conn = null; }
-    setConn('未连接');
-    enableConnectionControls(false);
-  });
-
-  function enableConnectionControls(on) {
-    disconnectBtn.disabled = !on;
-    chatInput.disabled = !on;
-    chatSend.disabled = !on;
-    if (on) chatInput.focus();
-  }
-
-  function bindConnection() {
+  function hostOnConnection(conn) {
     conn.on('open', function () {
-      setConn('已连接', 'ok');
-      enableConnectionControls(true);
-      addChatSystem('连接已建立');
+      /* 等对方发 hello */
     });
-    conn.on('data', onData);
+
+    conn.on('data', function (data) {
+      hostOnData(conn, data);
+    });
+
     conn.on('close', function () {
-      setConn('连接已断开');
-      enableConnectionControls(false);
-      addChatSystem('对方已断开连接');
-      conn = null;
+      var pid = findPidByConn(conn);
+      if (pid && state.members[pid]) {
+        var nick = state.members[pid].nick;
+        delete state.members[pid];
+        state.roster = state.roster.filter(function (m) { return m.id !== pid; });
+        renderRoster();
+        broadcastToAll({ type: 'system', text: nick + ' 离开了房间' });
+        /* 如果离开的人在传文件，释放锁 */
+        if (state.fileFrom === pid) {
+          state.fileBusy = false;
+          state.fileFrom = null;
+        }
+      }
     });
+
     conn.on('error', function (err) {
-      console.error('[Conn]', err);
-      setConn('连接异常：' + err.type, 'warn');
+      console.warn('[host conn]', err);
     });
   }
 
+  function findPidByConn(conn) {
+    for (var pid in state.members) {
+      if (state.members[pid].conn === conn) return pid;
+    }
+    return null;
+  }
+
+  function hostOnData(conn, data) {
+    /* 二进制文件块：转发给其他所有人 */
+    if (data instanceof ArrayBuffer || (data && data.byteLength)) {
+      broadcastBinary(conn, data);
+      return;
+    }
+    if (!data || typeof data !== 'object') return;
+
+    var pid = findPidByConn(conn);
+
+    switch (data.type) {
+      case 'hello':
+        /* 新成员 */
+        if (state.roster.length >= MAX_MEMBERS) {
+          conn.send({ type: 'kick', reason: '房间已满（上限 ' + MAX_MEMBERS + ' 人）' });
+          setTimeout(function () { conn.close(); }, 200);
+          return;
+        }
+        state.members[conn.peer] = { nick: data.nick, conn: conn };
+        state.roster.push({ id: conn.peer, nick: data.nick, isHost: false });
+        conn.send({ type: 'welcome', hostId: state.myPeerId, roomId: state.roomId });
+        broadcastRoster();
+        broadcastToAll({ type: 'system', text: data.nick + ' 加入了房间' }, conn);
+        /* 告诉加入者历史（可选，先跳过） */
+        break;
+
+      case 'chat':
+        broadcastToAll({
+          type: 'chat',
+          from: pid,
+          nick: state.members[pid] ? state.members[pid].nick : '匿名',
+          text: String(data.text || '').slice(0, 500),
+          at: Date.now()
+        });
+        break;
+
+      case 'file-request':
+        if (state.fileBusy) {
+          conn.send({ type: 'file-busy' });
+          return;
+        }
+        state.fileBusy = true;
+        state.fileFrom = pid;
+        conn.send({ type: 'file-grant' });
+        broadcastToAll({
+          type: 'system',
+          text: (state.members[pid] ? state.members[pid].nick : '匿名') + ' 开始发送文件'
+        });
+        break;
+
+      case 'file-meta':
+        broadcastToAll(data, conn);
+        break;
+
+      case 'file-end':
+        broadcastToAll(data, conn);
+        state.fileBusy = false;
+        state.fileFrom = null;
+        break;
+
+      case 'bye':
+        /* 主动离开 */
+        if (pid) conn.close();
+        break;
+    }
+  }
+
+  function broadcastToAll(msg, exceptConn) {
+    for (var pid in state.members) {
+      var m = state.members[pid];
+      if (m.conn && m.conn.open && m.conn !== exceptConn) {
+        try { m.conn.send(msg); } catch (e) {}
+      }
+    }
+    /* 房主自己也处理 */
+    handleLocal(msg);
+  }
+
+  function broadcastBinary(exceptConn, buf) {
+    for (var pid in state.members) {
+      var m = state.members[pid];
+      if (m.conn && m.conn.open && m.conn !== exceptConn) {
+        try { m.conn.send(buf); } catch (e) {}
+      }
+    }
+  }
+
+  function broadcastRoster() {
+    var list = state.roster.slice();
+    broadcastToAll({ type: 'roster', list: list });
+  }
+
   /* ============================================================
-     数据分发：文字 / 文件 / 控制
+     成员：连接房主
      ============================================================ */
-  function onData(data) {
+  function connectToHost() {
+    var hostId = ROOM_PREFIX + state.roomId;
+    state.hostConn = state.peer.connect(hostId, { reliable: true });
+
+    state.hostConn.on('open', function () {
+      state.hostConn.send({ type: 'hello', nick: state.nick });
+      enterRoomUI(state.myPeerId, state.roomId);
+    });
+
+    state.hostConn.on('data', function (data) {
+      memberOnData(data);
+    });
+
+    state.hostConn.on('close', function () {
+      addChatSystem('与房主的连接已断开');
+      setJoin('已断开连接', 'warn');
+    });
+
+    state.hostConn.on('error', function (err) {
+      console.warn('[hostConn]', err);
+    });
+  }
+
+  function memberOnData(data) {
     if (data instanceof ArrayBuffer || (data && data.byteLength)) {
       onFileChunk(data);
       return;
     }
-    if (data && typeof data === 'object') {
-      switch (data.type) {
-        case 'msg':       addChatOther(data.text); break;
-        case 'file-meta': onFileMeta(data);        break;
-        case 'file-end':  onFileEnd(data);         break;
-      }
+    if (!data || typeof data !== 'object') return;
+
+    switch (data.type) {
+      case 'welcome':
+        /* 房主确认 */
+        break;
+      case 'roster':
+        state.roster = data.list;
+        renderRoster();
+        renderCallList();
+        break;
+      case 'chat':
+        addChatOther(data.nick, data.text, data.at, data.from);
+        break;
+      case 'system':
+        addChatSystem(data.text);
+        break;
+      case 'kick':
+        window.siteToast && window.siteToast(data.reason || '已被移出房间');
+        setTimeout(function () { leaveRoom(); }, 1200);
+        break;
+      case 'file-grant':
+        doSendFile();
+        break;
+      case 'file-busy':
+        window.siteToast && window.siteToast('有人正在发送文件，请稍后');
+        pendingFile = null;
+        break;
+      case 'file-meta':
+        onFileMeta(data);
+        break;
+      case 'file-end':
+        onFileEnd(data);
+        break;
     }
   }
 
   /* ============================================================
-     文字聊天
+     进入房间 UI
+     ============================================================ */
+  function enterRoomUI(myId, roomId) {
+    joinPanel.style.display = 'none';
+    roomPanel.classList.add('on');
+    mainPanel.classList.remove('hide');
+    roomIdShow.textContent = roomId;
+    renderRoster();
+    renderCallList();
+  }
+
+  /* ============================================================
+     渲染成员列表
+     ============================================================ */
+  function renderRoster() {
+    memberCount.textContent = state.roster.length;
+
+    memberList.innerHTML = '';
+    state.roster.forEach(function (m) {
+      var isMe = m.id === state.myPeerId;
+      var el = document.createElement('span');
+      el.className = 'xt-mem' + (isMe ? ' me' : '') + (m.isHost ? ' host' : '');
+      var c = hashColor(m.nick);
+      el.innerHTML = '<span class="xt-mem-dot" style="background:' + c + '"></span>' +
+                     escHtml(m.nick) + (isMe ? '（我）' : '');
+      memberList.appendChild(el);
+    });
+  }
+
+  /* ============================================================
+     渲染呼叫成员列表（语音 / 视频）
+     ============================================================ */
+  function renderCallList() {
+    [voiceCallList, videoCallList].forEach(function (container, idx) {
+      if (!container) return;
+      container.innerHTML = '';
+      var others = state.roster.filter(function (m) { return m.id !== state.myPeerId; });
+      if (!others.length) {
+        var empty = document.createElement('div');
+        empty.className = 'xt-empty';
+        empty.textContent = '房间里还没有其他成员';
+        container.appendChild(empty);
+        return;
+      }
+      others.forEach(function (m) {
+        var item = document.createElement('div');
+        item.className = 'xt-call-item';
+        var c = hashColor(m.nick);
+        item.innerHTML =
+          '<div class="avatar" style="background:' + c + '">' + initial(m.nick) + '</div>' +
+          '<div class="name">' + escHtml(m.nick) + (m.isHost ? ' · 房主' : '') + '</div>' +
+          '<button type="button">呼叫</button>';
+        item.querySelector('button').addEventListener('click', function () {
+          if (idx === 0) startCall('audio', m.id);
+          else startCall('video', m.id);
+        });
+        container.appendChild(item);
+      });
+    });
+  }
+
+  /* ============================================================
+     聊天
      ============================================================ */
   function addChatSystem(text) {
     var el = document.createElement('div');
@@ -672,22 +897,52 @@
     chatBody.appendChild(el);
     chatBody.scrollTop = chatBody.scrollHeight;
   }
+
   function addChatSelf(text) {
     var el = document.createElement('div');
     el.className = 'xt-msg self';
-    el.innerHTML = '<div class="meta">我 · ' + nowTime() + '</div>' + escHtml(text);
+    el.innerHTML = '<div class="meta">' + nowTime() + ' · 我</div>' + escHtml(text);
     chatBody.appendChild(el);
     chatBody.scrollTop = chatBody.scrollHeight;
   }
-  function addChatOther(text) {
+
+  function addChatOther(nick, text, at, fromId) {
     var el = document.createElement('div');
     el.className = 'xt-msg other';
-    el.innerHTML = '<div class="meta">对方 · ' + nowTime() + '</div>' + escHtml(text);
+    var c = hashColor(nick);
+    var t = at ? (function () { var d = new Date(at); return pad(d.getHours()) + ':' + pad(d.getMinutes()); })() : nowTime();
+    el.innerHTML =
+      '<div class="meta">' +
+        '<span class="avatar" style="background:' + c + '">' + initial(nick) + '</span>' +
+        escHtml(nick) + ' · ' + t +
+      '</div>' +
+      escHtml(text);
     chatBody.appendChild(el);
     chatBody.scrollTop = chatBody.scrollHeight;
-    /* 未在当前 tab 时提示 */
-    if (!document.querySelector('.xt-tab[data-tab="chat"]').classList.contains('on')) {
-      flashBadge('chat');
+    /* 当前不在 chat tab 就提示 */
+    var tab = document.querySelector('.xt-tab[data-tab="chat"]');
+    if (tab && !tab.classList.contains('on')) {
+      var badge = tab.querySelector('.badge');
+      if (badge) badge.classList.remove('hide');
+    }
+  }
+
+  /* 房主本地处理消息（转发后自己也处理一次） */
+  function handleLocal(msg) {
+    if (!msg || typeof msg !== 'object') return;
+    if (msg.type === 'chat') {
+      /* 房主自己发的 */
+      if (msg.from === state.myPeerId) {
+        addChatSelf(msg.text);
+      } else {
+        addChatOther(msg.nick, msg.text, msg.at, msg.from);
+      }
+    } else if (msg.type === 'roster') {
+      state.roster = msg.list;
+      renderRoster();
+      renderCallList();
+    } else if (msg.type === 'system') {
+      addChatSystem(msg.text);
     }
   }
 
@@ -695,106 +950,109 @@
     e.preventDefault();
     var text = chatInput.value.trim();
     if (!text) return;
-    if (!conn || !conn.open) { window.siteToast && window.siteToast('尚未连接'); return; }
-    conn.send({ type: 'msg', text: text });
-    addChatSelf(text);
+    sendMessage(text);
     chatInput.value = '';
     chatInput.focus();
   });
 
-  /* 未读提示小圆点 */
-  var badges = { chat: null, voice: null, video: null };
-  function flashBadge(name) {
-    var b = document.querySelector('[data-badge="' + name + '"]');
-    if (!b) return;
-    b.classList.remove('hide');
-    var tab = document.querySelector('.xt-tab[data-tab="' + name + '"]');
-    if (tab) tab.addEventListener('click', function handler() {
-      b.classList.add('hide');
-      tab.removeEventListener('click', handler);
+  function sendMessage(text) {
+    if (state.isHost) {
+      /* 房主：广播 + 本地 */
+      broadcastToAll({
+        type: 'chat',
+        from: state.myPeerId,
+        nick: state.nick,
+        text: text,
+        at: Date.now()
+      });
+    } else {
+      /* 成员：发给房主 */
+      if (!state.hostConn || !state.hostConn.open) return;
+      state.hostConn.send({ type: 'chat', text: text });
+      addChatSelf(text);
+    }
+  }
+
+  /* ============================================================
+     媒体初始化
+     ============================================================ */
+  function requestMedia() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+      video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24 } }
+    }).then(function (stream) {
+      state.localStream = stream;
+      localVideo.srcObject = stream;
+      localVideo.play().catch(function () {});
+    }).catch(function (err) {
+      console.warn('[media]', err);
     });
   }
 
   /* ============================================================
      语音 / 视频呼叫
      ============================================================ */
-  voiceCallBtn.addEventListener('click', function () { startCall('audio'); });
-  videoCallBtn.addEventListener('click', function () { startCall('video'); });
-  voiceHangBtn.addEventListener('click', function () { hangup(); });
-  videoHangBtn.addEventListener('click', function () { hangup(); });
+  function startCall(mode, targetId) {
+    if (!state.localStream) { window.siteToast && window.siteToast('媒体设备未就绪'); return; }
+    if (state.call && state.call.open) { window.siteToast && window.siteToast('已在通话中'); return; }
 
-  function startCall(mode) {
-    if (!localStream) { window.siteToast && window.siteToast('媒体设备未就绪'); return; }
-    if (call && call.open) { window.siteToast && window.siteToast('已在通话中'); return; }
-    var target = targetEl.value.trim();
-    if (!target) { window.siteToast && window.siteToast('请先填入对方房间号'); return; }
-    if (target === peer.id) { window.siteToast && window.siteToast('不能呼叫自己'); return; }
+    state.mediaMode = mode;
+    state.localStream.getVideoTracks().forEach(function (t) { t.enabled = (mode === 'video'); });
 
-    mediaMode = mode;
-
-    /* 语音时把视频轨关掉 */
-    localStream.getVideoTracks().forEach(function (t) { t.enabled = (mode === 'video'); });
-
-    var options = { metadata: { mode: mode } };
-    var newCall = peer.call(target, localStream, options);
-    if (!newCall) {
-      window.siteToast && window.siteToast('呼叫失败');
-      return;
-    }
+    var c = state.peer.call(targetId, state.localStream, { metadata: { mode: mode } });
+    if (!c) { window.siteToast && window.siteToast('呼叫失败'); return; }
 
     if (mode === 'video') {
       videoPhName.textContent = '正在呼叫…';
       videoPhTip.textContent = '等待对方接听';
-      switchTab('video');
     } else {
       voiceName.textContent = '正在呼叫…';
       voiceTip.textContent = '等待对方接听';
-      switchTab('voice');
     }
-    bindCall(newCall, mode);
+    bindCall(c, mode);
   }
 
-  /* 接听来电 */
   answerBtn.addEventListener('click', function () {
-    if (!incomingCall) return;
+    if (!state.incomingCall) return;
     incomingBox.classList.add('hide');
-    var mode = (incomingCall.metadata && incomingCall.metadata.mode) || 'audio';
-    mediaMode = mode;
-    /* 语音时关视频轨 */
-    localStream.getVideoTracks().forEach(function (t) { t.enabled = (mode === 'video'); });
-    incomingCall.answer(localStream);
-    bindCall(incomingCall, mode);
-    incomingCall = null;
-    switchTab(mode === 'video' ? 'video' : 'voice');
+    var mode = (state.incomingCall.metadata && state.incomingCall.metadata.mode) || 'audio';
+    state.mediaMode = mode;
+    if (state.localStream) {
+      state.localStream.getVideoTracks().forEach(function (t) { t.enabled = (mode === 'video'); });
+    }
+    state.incomingCall.answer(state.localStream);
+    bindCall(state.incomingCall, mode);
+    state.incomingCall = null;
   });
 
   rejectBtn.addEventListener('click', function () {
-    if (!incomingCall) return;
+    if (!state.incomingCall) return;
     incomingBox.classList.add('hide');
-    incomingCall.close();
-    incomingCall = null;
+    state.incomingCall.close();
+    state.incomingCall = null;
   });
 
   function bindCall(c, mode) {
-    call = c;
-    var peerShort = (c.peer || '').slice(0, 12);
+    state.call = c;
+    var peerNick = (getMemberById(c.peer) || {}).nick || c.peer.slice(0, 8);
 
     c.on('stream', function (remoteStream) {
       if (mode === 'video') {
         remoteVideo.srcObject = remoteStream;
         remoteVideo.play().catch(function () {});
         videoPlaceholder.style.display = 'none';
-        videoPeer.textContent = '通话中 · ' + peerShort;
+        videoPeer.textContent = '通话中 · ' + peerNick;
         videoRec.classList.add('on');
       } else {
         remoteAudio.srcObject = remoteStream;
         remoteAudio.play().catch(function () {});
         voiceAvatar.classList.add('talking');
-        voiceName.textContent = '通话中 · ' + peerShort;
+        voiceName.textContent = '通话中 · ' + peerNick;
         voiceTip.textContent = '音频已接通';
       }
       startTimer(mode);
-      setMediaControlsEnabled(true, mode);
+      setMediaControls(true, mode);
     });
 
     c.on('close', function () { endCallLocal('对方已挂断'); });
@@ -804,7 +1062,7 @@
     });
   }
 
-  function setMediaControlsEnabled(on, mode) {
+  function setMediaControls(on, mode) {
     if (mode === 'voice') {
       voiceMicBtn.disabled = !on;
       voiceHangBtn.disabled = !on;
@@ -831,41 +1089,38 @@
 
   function endCallLocal(reason) {
     stopTimer();
-    if (call) { try { call.close(); } catch (e) {} call = null; }
+    if (state.call) { try { state.call.close(); } catch (e) {} state.call = null; }
     remoteVideo.srcObject = null;
     remoteAudio.srcObject = null;
 
     voiceAvatar.classList.remove('talking');
-    voiceName.textContent = '等待接通';
+    voiceName.textContent = '未在通话';
     voiceTimer.textContent = '--:--';
-    voiceTip.textContent = '点击下方按钮呼叫对方，或等待对方来电';
+    voiceTip.textContent = '从下方列表选择一位成员呼叫';
 
     videoPlaceholder.style.display = '';
-    videoPhName.textContent = '等待接通';
-    videoPhTip.textContent = '点击“呼叫”开始视频通话';
+    videoPhName.textContent = '未在通话';
+    videoPhTip.textContent = '从下方列表选择一位成员呼叫';
     videoRec.classList.remove('on');
-    videoPeer.textContent = '等待接通';
+    videoPeer.textContent = '未在通话';
     videoTimer.textContent = '--:--';
 
-    /* 恢复本地媒体轨 */
-    if (localStream) {
-      localStream.getAudioTracks().forEach(function (t) { t.enabled = !isMicOff; });
-      localStream.getVideoTracks().forEach(function (t) { t.enabled = !isCamOff; });
+    if (state.localStream) {
+      state.localStream.getAudioTracks().forEach(function (t) { t.enabled = !isMicOff; });
+      state.localStream.getVideoTracks().forEach(function (t) { t.enabled = !isCamOff; });
     }
-
-    setMediaControlsEnabled(false, 'voice');
-    setMediaControlsEnabled(false, 'video');
+    setMediaControls(false, 'voice');
+    setMediaControls(false, 'video');
   }
 
-  function hangup() {
-    endCallLocal('你已挂断');
-  }
+  voiceHangBtn.addEventListener('click', function () { endCallLocal('你已挂断'); });
+  videoHangBtn.addEventListener('click', function () { endCallLocal('你已挂断'); });
 
-  /* 麦克风开关 */
+  /* 麦克风 */
   function toggleMic() {
-    if (!localStream) return;
+    if (!state.localStream) return;
     isMicOff = !isMicOff;
-    localStream.getAudioTracks().forEach(function (t) { t.enabled = !isMicOff; });
+    state.localStream.getAudioTracks().forEach(function (t) { t.enabled = !isMicOff; });
     voiceMicBtn.classList.toggle('on', isMicOff);
     videoMicBtn.classList.toggle('on', isMicOff);
     voiceMicBtn.innerHTML = '<span class="ic">' + (isMicOff ? '🔇' : '🎤') + '</span>麦克风';
@@ -874,11 +1129,11 @@
   voiceMicBtn.addEventListener('click', toggleMic);
   videoMicBtn.addEventListener('click', toggleMic);
 
-  /* 摄像头开关 */
+  /* 摄像头 */
   function toggleCam() {
-    if (!localStream) return;
+    if (!state.localStream) return;
     isCamOff = !isCamOff;
-    localStream.getVideoTracks().forEach(function (t) { t.enabled = !isCamOff; });
+    state.localStream.getVideoTracks().forEach(function (t) { t.enabled = !isCamOff; });
     videoCamBtn.classList.toggle('on', isCamOff);
     videoCamBtn.innerHTML = '<span class="ic">' + (isCamOff ? '🚫' : '📹') + '</span>摄像头';
     localVideo.classList.toggle('off', isCamOff);
@@ -888,9 +1143,12 @@
   /* ============================================================
      文件传输
      ============================================================ */
+  var pendingFile = null;
+
   dropZone.addEventListener('click', function () { fileInput.click(); });
   fileInput.addEventListener('change', function () {
-    Array.prototype.slice.call(fileInput.files || []).forEach(sendFile);
+    var files = Array.prototype.slice.call(fileInput.files || []);
+    if (files.length) requestSendFile(files[0]);
     fileInput.value = '';
   });
   ['dragenter','dragover'].forEach(function (evt) {
@@ -900,23 +1158,31 @@
     dropZone.addEventListener(evt, function (e) { e.preventDefault(); e.stopPropagation(); dropZone.classList.remove('over'); });
   });
   dropZone.addEventListener('drop', function (e) {
-    Array.prototype.slice.call(e.dataTransfer.files || []).forEach(sendFile);
+    var files = Array.prototype.slice.call(e.dataTransfer.files || []);
+    if (files.length) requestSendFile(files[0]);
   });
 
-  function hideFileEmpty() {
-    if (fileEmpty && fileEmpty.parentNode) {
-      fileEmpty.parentNode.removeChild(fileEmpty);
-      fileEmpty = null;
+  function requestSendFile(file) {
+    if (!file) return;
+    if (state.isHost) {
+      if (state.fileBusy) { window.siteToast && window.siteToast('有人正在传文件'); return; }
+      state.fileBusy = true;
+      state.fileFrom = state.myPeerId;
+      doSendFile(file);
+    } else {
+      if (!state.hostConn || !state.hostConn.open) return;
+      pendingFile = file;
+      state.hostConn.send({ type: 'file-request' });
+      window.siteToast && window.siteToast('正在申请传输许可…');
     }
   }
 
-  function sendFile(file) {
-    if (!conn || !conn.open) { window.siteToast && window.siteToast('请先连接对方'); return; }
-    if (isSendingFile) { window.siteToast && window.siteToast('请等待当前文件发送完成'); return; }
+  function doSendFile(file) {
+    if (!file && pendingFile) file = pendingFile;
+    if (!file) return;
+    pendingFile = null;
 
-    isSendingFile = true;
     hideFileEmpty();
-
     var fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
     var itemEl = document.createElement('div');
@@ -933,13 +1199,25 @@
     var barEl = itemEl.querySelector('.xt-bar-fill');
     var metaEl = itemEl.querySelector('.xt-progress');
 
-    conn.send({
+    var meta = {
       type: 'file-meta',
       id: fileId,
       name: file.name,
       size: file.size,
-      mime: file.type || 'application/octet-stream'
-    });
+      mime: file.type || 'application/octet-stream',
+      from: state.myPeerId,
+      fromNick: state.nick
+    };
+
+    var sendRaw = function (data) {
+      if (state.isHost) {
+        broadcastToAll(data);
+      } else {
+        if (state.hostConn && state.hostConn.open) state.hostConn.send(data);
+      }
+    };
+
+    sendRaw(meta);
 
     var offset = 0;
     var reader = new FileReader();
@@ -947,10 +1225,10 @@
     function loadNext() {
       var next = file.slice(offset, offset + CHUNK_SIZE);
       if (next.size === 0) {
-        conn.send({ type: 'file-end', id: fileId });
+        sendRaw({ type: 'file-end', id: fileId });
         itemEl.classList.add('done');
         metaEl.textContent = '发送完成 · ' + fmtSize(file.size);
-        isSendingFile = false;
+        if (state.isHost) { state.fileBusy = false; state.fileFrom = null; }
         window.siteToast && window.siteToast('已发送：' + file.name);
         return;
       }
@@ -960,12 +1238,11 @@
     reader.onload = function (e) {
       var buf = e.target.result;
       try {
-        conn.send(buf);
+        sendRaw(buf);
       } catch (err) {
         console.error('[send]', err);
         metaEl.textContent = '发送出错：' + err.message;
         itemEl.classList.add('error');
-        isSendingFile = false;
         return;
       }
       offset += buf.byteLength;
@@ -973,7 +1250,8 @@
       barEl.style.width = pct.toFixed(1) + '%';
       metaEl.textContent = fmtSize(offset) + ' / ' + fmtSize(file.size) + ' · ' + pct.toFixed(1) + '%';
 
-      if (conn.dataChannel && conn.dataChannel.bufferedAmount > HIGH_WATER) {
+      var ch = state.isHost ? null : (state.hostConn && state.hostConn.dataChannel);
+      if (ch && ch.bufferedAmount > HIGH_WATER) {
         setTimeout(loadNext, 30);
       } else {
         loadNext();
@@ -983,13 +1261,23 @@
     loadNext();
   }
 
+  function hideFileEmpty() {
+    if (fileEmpty && fileEmpty.parentNode) {
+      fileEmpty.parentNode.removeChild(fileEmpty);
+      fileEmpty = null;
+    }
+  }
+
   function onFileMeta(meta) {
+    /* 跳过自己发的 */
+    if (meta.from === state.myPeerId) return;
     hideFileEmpty();
+
     var itemEl = document.createElement('div');
     itemEl.className = 'xt-item';
     itemEl.innerHTML =
       '<div class="xt-item-top">' +
-        '<span class="xt-name">📥 ' + escHtml(meta.name) + '</span>' +
+        '<span class="xt-name">📥 ' + escHtml(meta.name) + ' <span style="color:var(--muted);font-weight:400">· 来自 ' + escHtml(meta.fromNick || '') + '</span></span>' +
         '<span class="xt-size">' + fmtSize(meta.size) + '</span>' +
       '</div>' +
       '<div class="xt-bar"><div class="xt-bar-fill"></div></div>' +
@@ -1007,8 +1295,9 @@
     };
     currentIncomingId = meta.id;
 
-    /* 未在文件 tab 时提示 */
-    if (!document.querySelector('.xt-tab[data-tab="file"]').classList.contains('on')) {
+    /* 自动切到文件 tab 或提示 */
+    var tab = document.querySelector('.xt-tab[data-tab="file"]');
+    if (tab && !tab.classList.contains('on')) {
       window.siteToast && window.siteToast('正在接收文件：' + meta.name);
     }
   }
@@ -1055,28 +1344,32 @@
   }
 
   /* ============================================================
-     复制房间号
+     离开房间
      ============================================================ */
-  copyBtn.addEventListener('click', function () {
-    var id = myIdEl.textContent;
-    if (!id || id.indexOf('正在') !== -1) return;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(id)
-        .then(function () { window.siteToast && window.siteToast('房间号已复制'); })
-        .catch(function () { window.siteToast && window.siteToast('房间号：' + id); });
-    } else {
-      window.siteToast && window.siteToast('房间号：' + id);
-    }
-  });
+  leaveBtn.addEventListener('click', function () { leaveRoom(); });
 
-  /* ============================================================
-     页面关闭清理
-     ============================================================ */
+  function leaveRoom() {
+    /* 告诉房主 */
+    if (!state.isHost && state.hostConn && state.hostConn.open) {
+      try { state.hostConn.send({ type: 'bye' }); } catch (e) {}
+    }
+    /* 挂断 */
+    if (state.call) { try { state.call.close(); } catch (e) {} }
+    /* 关闭连接 */
+    if (state.hostConn) { try { state.hostConn.close(); } catch (e) {} }
+    for (var pid in state.members) {
+      if (state.members[pid].conn) { try { state.members[pid].conn.close(); } catch (e) {} }
+    }
+    if (state.peer) { try { state.peer.destroy(); } catch (e) {} }
+    if (state.localStream) state.localStream.getTracks().forEach(function (t) { t.stop(); });
+
+    location.reload();
+  }
+
   window.addEventListener('beforeunload', function () {
-    if (call) try { call.close(); } catch (e) {}
-    if (conn) try { conn.close(); } catch (e) {}
-    if (localStream) localStream.getTracks().forEach(function (t) { t.stop(); });
-    if (peer) try { peer.destroy(); } catch (e) {}
+    if (!state.isHost && state.hostConn && state.hostConn.open) {
+      try { state.hostConn.send({ type: 'bye' }); } catch (e) {}
+    }
   });
 
 })();
