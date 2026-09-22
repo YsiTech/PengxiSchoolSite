@@ -1,9 +1,6 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/auth.js"></script>
-<script src="assets/js/main.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>个人中心 · 蓬溪格勒人民高等中学</title>
@@ -26,22 +23,20 @@
 
   <div class="profile-grid">
 
-    <!-- ==================== 左：头像卡片 ==================== -->
+    <!-- 左：头像卡片 -->
     <aside class="profile-side">
       <div class="profile-card">
         <div class="profile-avatar-wrap">
-
           <div class="profile-avatar" id="avatarDisplay">
-            <!-- 头像或占位 -->
+            <span>?</span>
           </div>
-
-          <label class="profile-avatar-edit" for="avatarInput" title="更换头像">
+          <button class="profile-avatar-edit" id="avatarPickBtn" type="button" title="更换头像">
             <span class="ic">📷</span>
-          </label>
+          </button>
           <input id="avatarInput" type="file" accept="image/*" style="display:none">
         </div>
 
-        <h2 class="profile-name" id="profileName">—</h2>
+        <h2 class="profile-name" id="profileName">加载中…</h2>
         <p class="profile-email" id="profileEmail">—</p>
         <span class="profile-role" id="profileRole">—</span>
 
@@ -49,13 +44,14 @@
           支持 JPG / PNG，建议 200KB 以内
         </div>
 
-        <button class="btn ghost" type="button" id="avatarRemoveBtn" style="width:100%;color:#1a2b4c;border-color:#1a2b4c;margin-top:12px">
+        <button class="btn ghost" type="button" id="avatarRemoveBtn"
+                style="width:100%;color:#1a2b4c;border-color:#1a2b4c;margin-top:12px">
           移除头像
         </button>
       </div>
     </aside>
 
-    <!-- ==================== 右：信息表单 ==================== -->
+    <!-- 右：信息表单 -->
     <section class="profile-content">
 
       <!-- 基本信息 -->
@@ -68,7 +64,7 @@
           <div class="field full">
             <label for="nicknameInput">昵称</label>
             <input id="nicknameInput" type="text" maxlength="16" placeholder="用于页面显示，最多 16 字">
-            <span class="profile-hint">登录后顶部栏与评论等处都会显示此昵称</span>
+            <span class="profile-hint">登录后顶部栏都会显示此昵称</span>
           </div>
 
           <div class="field full">
@@ -101,7 +97,7 @@
         </div>
 
         <div class="profile-hint-warn">
-          修改密码后，其他设备的登录状态会保持不变。如需退出所有设备，请单独操作。
+          修改密码后，其他设备的登录状态会保持不变。
         </div>
 
         <div class="profile-actions">
@@ -109,18 +105,17 @@
         </div>
       </div>
 
-      <!-- 游客提示（仅游客可见） -->
+      <!-- 游客提示 -->
       <div class="card hide" id="guestNotice">
         <div class="card-head">
           <h3>游客账号</h3>
         </div>
         <p class="muted small" style="margin:0">
-          你当前是游客身份。游客账号仅在当前浏览器有效，无法跨设备登录，也不支持找回密码。
-          如需长期使用，请<a href="index.html">退出后注册正式账号</a>。
+          你当前是游客身份。游客账号无法跨设备登录。如需长期使用，请退出后注册正式账号。
         </p>
       </div>
 
-      <!-- 危险区 -->
+      <!-- 账号操作 -->
       <div class="card danger-card">
         <div class="card-head">
           <h3>账号操作</h3>
