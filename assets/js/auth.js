@@ -10,35 +10,88 @@
   'use strict';
 
   /* ============================================================
-     1. Supabase 配置 —— 换成你自己的
+     1. Supabase 配置 —— 已填好你的项目
      ============================================================ */
-  var SUPABASE_URL      = 'https://xxxxxxxx.supabase.co';
-  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+  var SUPABASE_URL      = 'https://abtmekwmphvmynsjfplc.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidG1la3dtcGh2bXluc2pmcGxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwOTM5NjMsImV4cCI6MjEwNTY2OTk2M30.Cq04l3c8hxsIheEf3e6bHKUhFhe-VybfaEbaXwlGQ3M';
 
   /* ============================================================
-     2. 依赖检查
+     2. 配置规范化
+     ============================================================ */
+  function normalizeUrl(u) {
+    u = String(u || '').trim();
+    if (!u) return '';
+    if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+    u = u.replace(/\/+$/, '');
+    return u;
+  }
+  function normalizeKey(k) {
+    return String(k || '').trim().replace(/\s+/g, '');
+  }
+
+  var NORM_URL = normalizeUrl(SUPABASE_URL);
+  var NORM_KEY = normalizeKey(SUPABASE_ANON_KEY);
+
+  /* ============================================================
+     3. 启动自检
+     ============================================================ */
+  (function selfCheck() {
+    var styleTitle = 'background:#c8102e;color:#f0d98a;padding:3px 8px;border-radius:3px;font-weight:700';
+    console.log('%c [Auth] 配置自检 ', styleTitle);
+    console.log('[Auth] URL:', NORM_URL);
+    console.log('[Auth] KEY:', NORM_KEY ? (NORM_KEY.slice(0, 30) + '...' + NORM_KEY.slice(-10)) : '(空)');
+    console.log('[Auth] KEY 长度:', NORM_KEY.length);
+
+    var problems = [];
+    if (!NORM_URL) {
+      problems.push('SUPABASE_URL 为空');
+    } else if (NORM_URL.indexOf('xxxxxxxx') !== -1) {
+      problems.push('SUPABASE_URL 还是模板占位符');
+    }
+    if (!NORM_KEY) {
+      problems.push('SUPABASE_ANON_KEY 为空');
+    } else if (NORM_KEY.indexOf('sb_publishable_') !== 0 && NORM_KEY.length < 100) {
+      problems.push('SUPABASE_ANON_KEY 长度异常（' + NORM_KEY.length + '）');
+    }
+
+    if (problems.length) {
+      console.error('[Auth] 配置有问题:');
+      problems.forEach(function (p) { console.error('  · ' + p); });
+    } else {
+      console.log('%c [Auth] 配置看起来正常 ', 'color:#1f8f55;font-weight:700');
+    }
+  })();
+
+  /* ============================================================
+     4. 依赖检查
      ============================================================ */
   if (!window.supabase || !window.supabase.createClient) {
-    console.error('[Auth] Supabase SDK 未加载');
+    console.error('[Auth] Supabase SDK 未加载，请检查 <script> 引入顺序');
     window.Auth = {
       isLoggedIn: function(){ return false; },
       getCurrentUser: function(){ return null; },
       ready: Promise.resolve(null),
       requireAuth: function(){ return Promise.resolve(true); },
-      mountNavStatus: function(){}
+      mountNavStatus: function(){},
+      login: function(){ return Promise.resolve({ ok:false, msg:'SDK 未加载' }); },
+      register: function(){ return Promise.resolve({ ok:false, msg:'SDK 未加载' }); },
+      loginAsGuest: function(){ return Promise.resolve({ ok:false, msg:'SDK 未加载' }); },
+      logout: function(){ location.href = 'index.html'; },
+      sendResetEmail: function(){ return Promise.resolve({ ok:false, msg:'SDK 未加载' }); },
+      updatePassword: function(){ return Promise.resolve({ ok:false, msg:'SDK 未加载' }); }
     };
     return;
   }
 
-  var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  var client = window.supabase.createClient(NORM_URL, NORM_KEY);
 
   /* ============================================================
-     3. 配置
+     5. 常量
      ============================================================ */
   var PROTECTED = ['videohub.html', 'campusnet.html', 'xingtu.html'];
 
   /* ============================================================
-     4. 会话状态
+     6. 会话状态
      ============================================================ */
   var currentUser = null;
   var readyPromise = null;
@@ -48,6 +101,7 @@
 
     readyPromise = client.auth.getSession().then(function (res) {
       currentUser = (res && res.data && res.data.session && res.data.session.user) || null;
+      console.log('[Auth] 会话就绪:', currentUser ? currentUser.id : '(未登录)');
       return currentUser;
     }).catch(function (err) {
       console.error('[Auth] getSession 失败:', err);
@@ -64,7 +118,7 @@
   }
 
   /* ============================================================
-     5. 工具
+     7. 工具
      ============================================================ */
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -90,7 +144,65 @@
     return String(s || '').trim().toLowerCase();
   }
 
-  /* 从用户对象提取展示信息 */
+  /* ============================================================
+     8. 错误翻译
+     ============================================================ */
+  function translateError(err, context) {
+    var msg  = String((err && (err.message || err.error_description || err.error)) || '').trim();
+    var lower = msg.toLowerCase();
+
+    if (/failed to fetch|networkerror|network error|load failed/i.test(lower)) {
+      return { ok:false, msg:'无法连接到服务器，请检查网络', code:'NETWORK' };
+    }
+    if (/err_name_not_resolved|dns/i.test(lower)) {
+      return { ok:false, msg:'无法解析服务器地址', code:'DNS' };
+    }
+    if (/cors/i.test(lower)) {
+      return { ok:false, msg:'跨域请求被拒，URL 可能填错', code:'CORS' };
+    }
+    if (/timeout|timed out|etimedout/i.test(lower)) {
+      return { ok:false, msg:'请求超时，请稍后再试', code:'TIMEOUT' };
+    }
+
+    if (/invalid login credentials/i.test(msg))     return { ok:false, msg:'邮箱或密码错误', code:'AUTH' };
+    if (/email not confirmed/i.test(msg))           return { ok:false, msg:'邮箱尚未验证，请联系管理员', code:'EMAIL_CONFIRM' };
+    if (/user already registered|already registered|user already exists/i.test(msg))
+      return { ok:false, msg:'该邮箱已被注册', code:'EXISTS' };
+    if (/signups not allowed|signup.*disabled/i.test(msg))
+      return { ok:false, msg:'后台已关闭新用户注册，请联系管理员', code:'SIGNUP_DISABLED' };
+    if (/anonymous.*disabled|anonymous.*not.*enabled/i.test(msg))
+      return { ok:false, msg:'后台未开启游客登录，请联系管理员', code:'ANON_DISABLED' };
+    if (/invalid api key|no api key/i.test(msg))
+      return { ok:false, msg:'API 密钥错误', code:'API_KEY' };
+    if (/jwt|token/i.test(msg) && /expired/i.test(msg))
+      return { ok:false, msg:'登录已过期，请重新登录', code:'EXPIRED' };
+    if (/password.*least|password.*short|weak password/i.test(msg))
+      return { ok:false, msg:'密码强度不足，至少 6 位', code:'WEAK_PWD' };
+    if (/invalid.*email|email.*invalid/i.test(msg))
+      return { ok:false, msg:'邮箱格式无效', code:'EMAIL_FORMAT' };
+    if (/rate limit|too many requests|too many/i.test(msg))
+      return { ok:false, msg:'请求过于频繁，请稍后再试', code:'RATE_LIMIT' };
+
+    return { ok:false, msg: msg || '操作失败，请稍后重试', code:'UNKNOWN' };
+  }
+
+  function handleResult(res, context) {
+    if (res && res.error) {
+      var t = translateError(res.error, context);
+      console.warn('[Auth] ' + context + ' 失败:', t.code, '-', t.msg, '原始:', res.error.message);
+      return t;
+    }
+    return { ok: true, data: res ? res.data : null };
+  }
+  function handleCatch(err, context) {
+    var t = translateError(err, context);
+    console.error('[Auth] ' + context + ' 异常:', t.code, '-', t.msg, err);
+    return t;
+  }
+
+  /* ============================================================
+     9. 构造展示用 user
+     ============================================================ */
   function buildUser(user) {
     if (!user) return null;
     var meta = user.user_metadata || {};
@@ -113,15 +225,13 @@
     };
   }
 
-  /* 重置密码页面地址 */
   function resetPasswordUrl() {
     var base = location.origin + location.pathname.replace(/[^/]*$/, '');
-    /* 如果当前在 ru/ 下，重置页在 ru/ 下；否则在根 */
     return base + 'reset-password.html';
   }
 
   /* ============================================================
-     6. Auth 模块
+     10. Auth 模块
      ============================================================ */
   var Auth = {
 
@@ -134,36 +244,24 @@
     /* ---------------- 登录 ---------------- */
     login: function (email, password) {
       email = normalizeEmail(email);
-      if (!isValidEmail(email)) return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址' });
-      if (!password)            return Promise.resolve({ ok: false, msg: '请输入密码' });
+      if (!isValidEmail(email)) return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址', code: 'INPUT' });
+      if (!password)            return Promise.resolve({ ok: false, msg: '请输入密码', code: 'INPUT' });
 
-      return client.auth.signInWithPassword({
-        email: email,
-        password: password
-      }).then(function (res) {
-        if (res.error) {
-          var e = String(res.error.message || '');
-          var msg = '登录失败，请稍后重试';
-          if (/invalid login credentials/i.test(e))     msg = '邮箱或密码错误';
-          else if (/email not confirmed/i.test(e))      msg = '邮箱尚未验证，请联系管理员';
-          else if (/rate limit/i.test(e))               msg = '请求过于频繁，请稍后再试';
-          else if (/failed to fetch|network/i.test(e))  msg = '网络连接失败';
-          else msg = e;
-          return { ok: false, msg: msg };
-        }
-        currentUser = res.data.user;
-        return { ok: true, user: buildUser(currentUser) };
-      }).catch(function (err) {
-        console.error('[Auth] login', err);
-        return { ok: false, msg: '网络错误，请稍后重试' };
-      });
+      return client.auth.signInWithPassword({ email: email, password: password })
+        .then(function (res) {
+          var r = handleResult(res, '登录');
+          if (!r.ok) return r;
+          currentUser = r.data.user;
+          return { ok: true, user: buildUser(currentUser) };
+        })
+        .catch(function (err) { return handleCatch(err, '登录'); });
     },
 
     /* ---------------- 注册 ---------------- */
     register: function (email, password, nickname) {
       email = normalizeEmail(email);
-      if (!isValidEmail(email))               return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址' });
-      if (!password || password.length < 6)   return Promise.resolve({ ok: false, msg: '密码至少 6 位' });
+      if (!isValidEmail(email))               return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址', code: 'INPUT' });
+      if (!password || password.length < 6)   return Promise.resolve({ ok: false, msg: '密码至少 6 位', code: 'INPUT' });
 
       nickname = String(nickname || '').trim().slice(0, 16);
 
@@ -176,28 +274,23 @@
             is_guest: false
           }
         }
-      }).then(function (res) {
-        if (res.error) {
-          var e = String(res.error.message || '注册失败');
-          if (/already registered|user already/i.test(e)) e = '该邮箱已被注册';
-          else if (/password/i.test(e) && /least/i.test(e)) e = '密码强度不足';
-          else if (/invalid/i.test(e) && /email/i.test(e)) e = '邮箱格式无效';
-          else if (/rate limit/i.test(e)) e = '请求过于频繁，请稍后再试';
-          return { ok: false, msg: e };
-        }
-        if (!res.data.session) {
-          return {
-            ok: false,
-            needConfirm: true,
-            msg: '注册成功。若开启了邮箱验证，请到邮箱完成验证后登录'
-          };
-        }
-        currentUser = res.data.user;
-        return { ok: true, user: buildUser(currentUser) };
-      }).catch(function (err) {
-        console.error('[Auth] register', err);
-        return { ok: false, msg: '网络错误，请稍后重试' };
-      });
+      })
+        .then(function (res) {
+          var r = handleResult(res, '注册');
+          if (!r.ok) return r;
+
+          if (!r.data.session) {
+            return {
+              ok: false,
+              needConfirm: true,
+              code: 'NEED_CONFIRM',
+              msg: '注册成功，但需要在邮箱里点击验证链接后才能登录'
+            };
+          }
+          currentUser = r.data.user;
+          return { ok: true, user: buildUser(currentUser) };
+        })
+        .catch(function (err) { return handleCatch(err, '注册'); });
     },
 
     /* ---------------- 游客登录 ---------------- */
@@ -207,84 +300,53 @@
 
       return client.auth.signInAnonymously({
         options: {
-          data: {
-            nickname: nickname,
-            is_guest: true
-          }
+          data: { nickname: nickname, is_guest: true }
         }
-      }).then(function (res) {
-        if (res.error) {
-          var e = String(res.error.message || '');
-          var msg = '游客登录失败';
-          if (/anonymous.*disabled/i.test(e)) {
-            msg = '游客登录未启用，请在 Supabase 后台开启 Anonymous Sign-Ins';
-          } else if (/rate limit/i.test(e)) {
-            msg = '请求过于频繁，请稍后再试';
-          } else {
-            msg = e;
-          }
-          return { ok: false, msg: msg };
-        }
-        currentUser = res.data.user;
-        return { ok: true, user: buildUser(currentUser) };
-      }).catch(function (err) {
-        console.error('[Auth] guest', err);
-        return { ok: false, msg: '网络错误，请稍后重试' };
-      });
+      })
+        .then(function (res) {
+          var r = handleResult(res, '游客登录');
+          if (!r.ok) return r;
+          currentUser = r.data.user;
+          return { ok: true, user: buildUser(currentUser) };
+        })
+        .catch(function (err) { return handleCatch(err, '游客登录'); });
     },
 
-    /* ============================================================
-       找回密码：发送重置邮件
-       ============================================================ */
+    /* ---------------- 找回密码 ---------------- */
     sendResetEmail: function (email) {
       email = normalizeEmail(email);
       if (!isValidEmail(email)) {
-        return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址' });
+        return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址', code: 'INPUT' });
       }
 
       return client.auth.resetPasswordForEmail(email, {
         redirectTo: resetPasswordUrl()
-      }).then(function (res) {
-        if (res.error) {
-          var e = String(res.error.message || '发送失败');
-          if (/rate limit/i.test(e)) e = '请求过于频繁，请稍后再试';
-          else if (/failed to fetch|network/i.test(e)) e = '网络连接失败';
-          return { ok: false, msg: e };
-        }
-        /* 出于安全考虑，Supabase 不告诉邮箱是否存在，统一返回成功 */
-        return { ok: true };
-      }).catch(function (err) {
-        console.error('[Auth] sendResetEmail', err);
-        return { ok: false, msg: '网络错误，请稍后重试' };
-      });
+      })
+        .then(function (res) {
+          var r = handleResult(res, '发送重置邮件');
+          if (!r.ok) return r;
+          return { ok: true };
+        })
+        .catch(function (err) { return handleCatch(err, '发送重置邮件'); });
     },
 
-    /* ============================================================
-       更新密码：重置页使用
-       ============================================================ */
+    /* ---------------- 更新密码 ---------------- */
     updatePassword: function (newPassword) {
       if (!newPassword || newPassword.length < 6) {
-        return Promise.resolve({ ok: false, msg: '密码至少 6 位' });
+        return Promise.resolve({ ok: false, msg: '密码至少 6 位', code: 'INPUT' });
       }
 
       return client.auth.updateUser({ password: newPassword })
         .then(function (res) {
-          if (res.error) {
-            var e = String(res.error.message || '更新失败');
-            if (/rate limit/i.test(e)) e = '请求过于频繁，请稍后再试';
-            return { ok: false, msg: e };
-          }
-          currentUser = res.data.user;
+          var r = handleResult(res, '更新密码');
+          if (!r.ok) return r;
+          currentUser = r.data.user;
           return { ok: true };
-        }).catch(function (err) {
-          console.error('[Auth] updatePassword', err);
-          return { ok: false, msg: '网络错误，请稍后重试' };
-        });
+        })
+        .catch(function (err) { return handleCatch(err, '更新密码'); });
     },
 
-    /* ============================================================
-       登出
-       ============================================================ */
+    /* ---------------- 登出 ---------------- */
     logout: function () {
       return client.auth.signOut().then(function () {
         currentUser = null;
@@ -295,9 +357,7 @@
       });
     },
 
-    /* ============================================================
-       页面保护
-       ============================================================ */
+    /* ---------------- 页面保护 ---------------- */
     requireAuth: function () {
       var file = getProtectedFile();
       if (!file) return Promise.resolve(true);
@@ -314,9 +374,7 @@
       });
     },
 
-    /* ============================================================
-       页头状态
-       ============================================================ */
+    /* ---------------- 页头状态 ---------------- */
     mountNavStatus: function (lang) {
       var el = document.querySelector('.auth-nav');
       if (!el) return;
@@ -355,7 +413,7 @@
   };
 
   /* ============================================================
-     7. 立即执行页面保护
+     11. 立即执行页面保护
      ============================================================ */
   Auth.requireAuth();
 
