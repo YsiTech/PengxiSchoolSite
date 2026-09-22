@@ -549,6 +549,9 @@
     var list = $('#videoList');
     if (!player || !list) return;
 
+    var metaEls = $$('.video-meta span');
+    var descEl = $('.video-desc');
+
     /* 播放列表切换 */
     $$('.video-item', list).forEach(function (item) {
       item.addEventListener('click', function () {
@@ -563,10 +566,26 @@
         $$('.video-item', list).forEach(function (x) { x.classList.remove('active'); });
         item.classList.add('active');
 
+        /* 换视频 */
         player.src = src;
         player.load();
         try { player.play(); } catch (e) {}
+
+        /* 主标题 */
         if (titleEl && title) titleEl.textContent = title;
+
+        /* 元信息：日期 / 分类 / 时长 / 播放量 */
+        if (metaEls.length >= 4) {
+          metaEls[0].textContent = item.dataset.date || '';
+          metaEls[1].textContent = item.dataset.cat || '';
+          metaEls[2].textContent = item.dataset.duration || '';
+          metaEls[3].textContent = item.dataset.views || '';
+        }
+
+        /* 简介 */
+        if (descEl) descEl.textContent = item.dataset.desc || '';
+
+        /* 文档标题 */
         document.title = title + ' · ' + T.schoolName;
       });
     });
