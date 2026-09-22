@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>校园网订购 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="campusnet">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="index.html">首页</a><i>›</i><span>校园网订购</span></div>
+    <h1>校园网订购</h1>
+    <p>亚斯共和国教育部校园网统一服务平台 · 蓬溪格勒人民高等中学节点</p>
+  </div>
+</section>
+
+<main class="section">
+
+  <div class="alert info">
+    <strong>订购须知：</strong>校园网服务由亚斯共和国教育部统一提供，蓬溪格勒人民高等中学负责本地节点运维。套餐费用以亚斯卢布结算，订购成功后即时生效。
+  </div>
+
+  <form id="campusNetForm" autocomplete="off">
+
+    <!-- ====== 第一步：选择套餐 ====== -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-head">
+        <h3>第一步 · 选择套餐</h3>
+        <span class="muted small">货币单位：亚斯卢布（₽）</span>
+      </div>
+
+      <div class="net-plans">
+
+        <label class="net-plan">
+          <input type="radio" name="plan" value="basic" data-name="基础套餐" data-price="1200" checked>
+          <div class="net-plan-inner">
+            <div class="net-plan-name">基础套餐</div>
+            <div class="net-plan-speed">20 Mbps</div>
+            <ul class="net-plan-features">
+              <li>校园无线网（Wi-Fi）</li>
+              <li>宿舍有线网端口</li>
+              <li>每月 60 GB 流量</li>
+              <li>教学区与图书馆全覆盖</li>
+            </ul>
+            <div class="net-plan-price">
+              <span class="net-price-num">1,200</span>
+              <span class="net-price-unit">₽ / 学期</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="net-plan">
+          <input type="radio" name="plan" value="standard" data-name="标准套餐" data-price="1800">
+          <div class="net-plan-inner recommended">
+            <div class="net-plan-tag">推荐</div>
+            <div class="net-plan-name">标准套餐</div>
+            <div class="net-plan-speed">50 Mbps</div>
+            <ul class="net-plan-features">
+              <li>校园无线网（Wi-Fi）</li>
+              <li>宿舍有线网端口</li>
+              <li>每月 200 GB 流量</li>
+              <li>教学区与图书馆全覆盖</li>
+              <li>可访问亚斯教育资源网</li>
+            </ul>
+            <div class="net-plan-price">
+              <span class="net-price-num">1,800</span>
+              <span class="net-price-unit">₽ / 学期</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="net-plan">
+          <input type="radio" name="plan" value="premium" data-name="尊享套餐" data-price="2800">
+          <div class="net-plan-inner">
+            <div class="net-plan-name">尊享套餐</div>
+            <div class="net-plan-speed">100 Mbps</div>
+            <ul class="net-plan-features">
+              <li>校园无线网（Wi-Fi）</li>
+              <li>宿舍有线网端口</li>
+              <li>不限流量</li>
+              <li>教学区与图书馆全覆盖</li>
+              <li>可访问亚斯教育资源网</li>
+              <li>可访问苏联学术数据库</li>
+              <li>优先带宽保障</li>
+            </ul>
+            <div class="net-plan-price">
+              <span class="net-price-num">2,800</span>
+              <span class="net-price-unit">₽ / 学期</span>
+            </div>
+          </div>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- ====== 第二步：填写信息 ====== -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-head"><h3>第二步 · 填写用户信息</h3></div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="cnName">姓名 <span class="req">*</span></label>
+          <input id="cnName" name="name" type="text" placeholder="请输入真实姓名" required>
+        </div>
+        <div class="field">
+          <label for="cnId">学号 <span class="req">*</span></label>
+          <input id="cnId" name="studentId" type="text" placeholder="如：2022010201" required pattern="\d{10}">
+        </div>
+        <div class="field">
+          <label for="cnBuilding">宿舍楼 <span class="req">*</span></label>
+          <select id="cnBuilding" name="building" required>
+            <option value="">请选择</option>
+            <option>复兴楼（1 号）</option>
+            <option>红星楼（2 号）</option>
+            <option>磁浮楼（3 号）</option>
+            <option>真理楼（4 号）</option>
+            <option>劳动楼（5 号）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cnRoom">房间号 <span class="req">*</span></label>
+          <input id="cnRoom" name="room" type="text" placeholder="如：507" required pattern="\d{3,4}">
+        </div>
+        <div class="field">
+          <label for="cnPhone">联系电话 <span class="req">*</span></label>
+          <input id="cnPhone" name="phone" type="tel" placeholder="如：086-13518363312" required>
+        </div>
+        <div class="field">
+          <label for="cnEmail">校园邮箱 <span class="req">*</span></label>
+          <input id="cnEmail" name="email" type="email" placeholder="如：2022010201@pxgl.edu.asr" required>
+        </div>
+        <div class="field full">
+          <label for="cnNote">备注（选填）</label>
+          <textarea id="cnNote" name="note" placeholder="如有特殊需求，请在此说明……" style="min-height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====== 第三步：选择支付 ====== -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-head"><h3>第三步 · 选择支付方式</h3></div>
+
+      <div class="pay-methods">
+
+        <label class="pay-method">
+          <input type="radio" name="pay" value="campus-card" data-name="校园卡余额" checked>
+          <div class="pay-method-inner">
+            <div class="pay-icon">卡</div>
+            <div class="pay-body">
+              <b>校园卡余额</b>
+              <span>从学生校园卡账户直接扣款</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="pay-method">
+          <input type="radio" name="pay" value="yas-ruble" data-name="亚斯卢布账户">
+          <div class="pay-method-inner">
+            <div class="pay-icon">₽</div>
+            <div class="pay-body">
+              <b>亚斯卢布账户</b>
+              <span>通过亚斯共和国国家支付系统转账</span>
+            </div>
+          </div>
+        </label>
+
+        <label class="pay-method">
+          <input type="radio" name="pay" value="bank" data-name="银行转账">
+          <div class="pay-method-inner">
+            <div class="pay-icon">行</div>
+            <div class="pay-body">
+              <b>银行转账</b>
+              <span>支持亚斯储蓄银行、红星银行</span>
+            </div>
+          </div>
+        </label>
+
+      </div>
+    </div>
+
+    <!-- ====== 订单确认 ====== -->
+    <div class="card">
+      <div class="card-head"><h3>订单确认</h3></div>
+
+      <div class="order-summary">
+        <div class="order-row">
+          <span>套餐</span>
+          <b id="sumPlan">基础套餐</b>
+        </div>
+        <div class="order-row">
+          <span>速率</span>
+          <b id="sumSpeed">20 Mbps</b>
+        </div>
+        <div class="order-row">
+          <span>支付方式</span>
+          <b id="sumPay">校园卡余额</b>
+        </div>
+        <div class="order-row total">
+          <span>应付金额</span>
+          <b id="sumTotal">1,200 ₽</b>
+        </div>
+      </div>
+
+      <div class="agree-row">
+        <label>
+          <input type="checkbox" id="cnAgree" required>
+          我已阅读并同意 <a href="#" onclick="return false;">《亚斯共和国校园网服务协议》</a>
+        </label>
+      </div>
+
+      <div class="btns" style="margin-top:20px">
+        <button class="btn red" type="submit" style="min-width:200px">提交订购</button>
+        <button class="btn ghost" type="reset" style="color:#1a2b4c;border-color:#1a2b4c">重置</button>
+      </div>
+    </div>
+
+  </form>
+
+</main>
+
+<div id="site-footer"></div>
+<script src="assets/js/main.js"></script>
+
+<script>
+(function () {
+  'use strict';
+
+  var form = document.getElementById('campusNetForm');
+  if (!form) return;
+
+  var sumPlan  = document.getElementById('sumPlan');
+  var sumSpeed = document.getElementById('sumSpeed');
+  var sumPay   = document.getElementById('sumPay');
+  var sumTotal = document.getElementById('sumTotal');
+
+  var SPEED_MAP = { basic: '20 Mbps', standard: '50 Mbps', premium: '100 Mbps' };
+
+  function fmtPrice(n) {
+    return Number(n).toLocaleString('en-US') + ' ₽';
+  }
+
+  function updateSummary() {
+    var plan = form.querySelector('input[name="plan"]:checked');
+    var pay  = form.querySelector('input[name="pay"]:checked');
+    if (plan) {
+      sumPlan.textContent  = plan.dataset.name;
+      sumSpeed.textContent = SPEED_MAP[plan.value] || '';
+      sumTotal.textContent = fmtPrice(plan.dataset.price);
+    }
+    if (pay) sumPay.textContent = pay.dataset.name;
+  }
+
+  form.addEventListener('change', updateSummary);
+  updateSummary();
+
+  /* 提交 */
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var name = document.getElementById('cnName').value.trim();
+    var sid  = document.getElementById('cnId').value.trim();
+    var room = document.getElementById('cnRoom').value.trim();
+
+    if (!name || !sid || !room) {
+      window.siteToast && window.siteToast('请填写完整的用户信息');
+      return;
+    }
+    if (!/^\d{10}$/.test(sid)) {
+      window.siteToast && window.siteToast('学号应为 10 位数字');
+      return;
+    }
+    if (!document.getElementById('cnAgree').checked) {
+      window.siteToast && window.siteToast('请先阅读并同意服务协议');
+      return;
+    }
+
+    var plan = form.querySelector('input[name="plan"]:checked');
+    var pay  = form.querySelector('input[name="pay"]:checked');
+
+    var btn = form.querySelector('button[type="submit"]');
+    var oldText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '正在提交…';
+
+    /* 模拟提交 */
+    setTimeout(function () {
+      var msg = '订购成功 · ' + plan.dataset.name + ' · ' + fmtPrice(plan.dataset.price) + ' · ' + pay.dataset.name;
+      window.siteToast && window.siteToast(msg, 3200);
+
+      btn.textContent = '订购成功';
+
+      setTimeout(function () {
+        location.href = 'https://www.superbba3.cc/#/stage/dashboard';
+      }, 1400);
+    }, 900);
+  });
+
+  form.addEventListener('reset', function () {
+    setTimeout(updateSummary, 0);
+  });
+})();
+</script>
+
+</body>
+</html>
