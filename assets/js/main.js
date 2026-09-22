@@ -40,6 +40,7 @@
         { id:'moral',      text:'德育之窗', href:'moral.html' },
         { id:'admissions', text:'招生招聘', href:'admissions.html' },
         { id:'history',    text:'校史馆',   href:'history.html' },
+         { id:'profile',    text:'个人中心', href:'profile.html' },
         { id:'contact',    text:'联系我们', href:'contact.html' }
       ],
 

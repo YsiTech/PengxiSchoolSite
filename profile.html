@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/main.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>个人中心 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/profile.css">
+</head>
+<body data-page="profile">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><span>个人中心</span></div>
+    <h1>个人中心</h1>
+    <p>管理你的头像、昵称和密码</p>
+  </div>
+</section>
+
+<main class="section profile-main">
+
+  <div class="profile-grid">
+
+    <!-- ==================== 左：头像卡片 ==================== -->
+    <aside class="profile-side">
+      <div class="profile-card">
+        <div class="profile-avatar-wrap">
+
+          <div class="profile-avatar" id="avatarDisplay">
+            <!-- 头像或占位 -->
+          </div>
+
+          <label class="profile-avatar-edit" for="avatarInput" title="更换头像">
+            <span class="ic">📷</span>
+          </label>
+          <input id="avatarInput" type="file" accept="image/*" style="display:none">
+        </div>
+
+        <h2 class="profile-name" id="profileName">—</h2>
+        <p class="profile-email" id="profileEmail">—</p>
+        <span class="profile-role" id="profileRole">—</span>
+
+        <div class="profile-avatar-tip">
+          支持 JPG / PNG，建议 200KB 以内
+        </div>
+
+        <button class="btn ghost" type="button" id="avatarRemoveBtn" style="width:100%;color:#1a2b4c;border-color:#1a2b4c;margin-top:12px">
+          移除头像
+        </button>
+      </div>
+    </aside>
+
+    <!-- ==================== 右：信息表单 ==================== -->
+    <section class="profile-content">
+
+      <!-- 基本信息 -->
+      <div class="card">
+        <div class="card-head">
+          <h3>基本信息</h3>
+        </div>
+
+        <div class="form-grid">
+          <div class="field full">
+            <label for="nicknameInput">昵称</label>
+            <input id="nicknameInput" type="text" maxlength="16" placeholder="用于页面显示，最多 16 字">
+            <span class="profile-hint">登录后顶部栏与评论等处都会显示此昵称</span>
+          </div>
+
+          <div class="field full">
+            <label>邮箱</label>
+            <input id="emailDisplay" type="text" disabled>
+            <span class="profile-hint">邮箱用于登录和找回密码，暂不支持修改</span>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn red" type="button" id="saveProfileBtn">保存修改</button>
+        </div>
+      </div>
+
+      <!-- 修改密码 -->
+      <div class="card">
+        <div class="card-head">
+          <h3>修改密码</h3>
+        </div>
+
+        <div class="form-grid">
+          <div class="field full">
+            <label for="newPassword">新密码</label>
+            <input id="newPassword" type="password" placeholder="至少 6 位" autocomplete="new-password">
+          </div>
+          <div class="field full">
+            <label for="newPassword2">确认新密码</label>
+            <input id="newPassword2" type="password" placeholder="再次输入新密码" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="profile-hint-warn">
+          修改密码后，其他设备的登录状态会保持不变。如需退出所有设备，请单独操作。
+        </div>
+
+        <div class="profile-actions">
+          <button class="btn red" type="button" id="changePasswordBtn">修改密码</button>
+        </div>
+      </div>
+
+      <!-- 游客提示（仅游客可见） -->
+      <div class="card hide" id="guestNotice">
+        <div class="card-head">
+          <h3>游客账号</h3>
+        </div>
+        <p class="muted small" style="margin:0">
+          你当前是游客身份。游客账号仅在当前浏览器有效，无法跨设备登录，也不支持找回密码。
+          如需长期使用，请<a href="index.html">退出后注册正式账号</a>。
+        </p>
+      </div>
+
+      <!-- 危险区 -->
+      <div class="card danger-card">
+        <div class="card-head">
+          <h3>账号操作</h3>
+        </div>
+        <p class="muted small" style="margin:0 0 14px">
+          退出登录后需要重新输入邮箱和密码才能进入。
+        </p>
+        <button class="btn ghost" type="button" id="logoutBtn"
+                style="color:#c8102e;border-color:#c8102e">
+          退出登录
+        </button>
+      </div>
+
+    </section>
+
+  </div>
+
+</main>
+
+<div id="site-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/profile.js"></script>
+
+</body>
+</html>

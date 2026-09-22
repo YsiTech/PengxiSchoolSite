@@ -2073,3 +2073,115 @@ body.warn-page{
   .auth-nav .auth-logout{padding:2px 10px;font-size:12px}
   .auth-nav .auth-tag{font-size:9px;padding:0 5px}
 }
+/* ===================================================================
+   页头 · 登录状态（含头像）
+   =================================================================== */
+
+.auth-nav{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  margin-left:4px;
+}
+
+.auth-nav .auth-login,
+.auth-nav .auth-logout{
+  display:inline-block;
+  color:#fff;
+  opacity:.9;
+  padding:3px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.35);
+  letter-spacing:.4px;
+  transition:background .2s,border-color .2s,color .2s,opacity .2s;
+  white-space:nowrap;
+}
+.auth-nav .auth-login:hover,
+.auth-nav .auth-logout:hover{
+  background:rgba(255,255,255,.14);
+  border-color:#f0d98a;
+  color:#f0d98a;
+  opacity:1;
+}
+
+/* 用户区域（带头像的链接） */
+.auth-nav .auth-user{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:#f0d98a;
+  font-weight:600;
+  letter-spacing:.3px;
+  padding:3px 12px 3px 3px;
+  border-radius:999px;
+  border:1px solid transparent;
+  transition:background .2s,border-color .2s;
+  max-width:200px;
+  overflow:hidden;
+}
+.auth-nav .auth-user:hover{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(240,217,138,.4);
+  color:#f0d98a;
+}
+
+.auth-nav .auth-avatar{
+  width:26px;
+  height:26px;
+  border-radius:50%;
+  object-fit:cover;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  font-size:12px;
+  font-weight:700;
+  color:#fff;
+  background:#c8102e;
+  box-shadow:0 0 0 2px rgba(255,255,255,.25);
+}
+.auth-nav .auth-avatar.fallback{
+  line-height:1;
+}
+
+.auth-nav .auth-name{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.auth-nav .auth-tag{
+  display:inline-block;
+  font-size:10px;
+  padding:1px 6px;
+  border-radius:3px;
+  background:rgba(212,175,55,.22);
+  color:#f0d98a;
+  border:1px solid rgba(212,175,55,.45);
+  letter-spacing:.5px;
+  font-weight:500;
+  flex:0 0 auto;
+}
+
+/* 移动端 */
+@media (max-width:520px){
+  .auth-nav .auth-user{
+    max-width:130px;
+    padding:2px 10px 2px 2px;
+  }
+  .auth-nav .auth-avatar{
+    width:22px;
+    height:22px;
+    font-size:11px;
+  }
+  .auth-nav .auth-name{
+    font-size:12px;
+    max-width:70px;
+  }
+  .auth-nav .auth-login,
+  .auth-nav .auth-logout{
+    padding:2px 10px;
+    font-size:12px;
+  }
+  .auth-nav .auth-tag{font-size:9px;padding:0 5px}
+}
