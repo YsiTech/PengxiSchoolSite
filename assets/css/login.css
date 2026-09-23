@@ -1,10 +1,10 @@
 /* ===================================================================
-   蓬溪格勒人民高等中学 · 登录 / 找回密码
-   响应式 · 移动端友好
+   蓬溪格勒人民高等中学 · 登录页 / 找回密码 / 重置密码
+   login.css — 完整版（含校徽 logo 替换）
    =================================================================== */
 
 /* ============================================================
-   整页
+   1. 登录页整体背景
    ============================================================ */
 .auth-page{
   min-height:100vh;
@@ -20,7 +20,8 @@
 }
 .auth-page::before{
   content:"";
-  position:absolute;inset:0;
+  position:absolute;
+  inset:0;
   background-image:
     radial-gradient(1.4px 1.4px at 12% 22%,rgba(255,255,255,.55),transparent),
     radial-gradient(1.2px 1.2px at 42% 68%,rgba(255,255,255,.45),transparent),
@@ -32,7 +33,7 @@
 }
 
 /* ============================================================
-   顶部返回条
+   2. 顶部返回条
    ============================================================ */
 .auth-topbar{
   position:relative;
@@ -65,7 +66,7 @@
 }
 
 /* ============================================================
-   主体
+   3. 主体
    ============================================================ */
 .auth-main{
   position:relative;
@@ -79,7 +80,7 @@
 }
 
 /* ============================================================
-   卡片
+   4. 卡片
    ============================================================ */
 .auth-card{
   width:100%;
@@ -98,20 +99,34 @@
 }
 
 /* ============================================================
-   品牌
+   5. 品牌区（含校徽 logo）
    ============================================================ */
-.auth-brand{text-align:center;margin-bottom:26px}
+.auth-brand{
+  text-align:center;
+  margin-bottom:26px;
+}
+
+/* 校徽：使用 photo/logo.png */
 .auth-logo{
-  width:72px;height:72px;
+  width:80px;
+  height:80px;
   margin:0 auto 14px;
   border-radius:50%;
-  background:radial-gradient(circle at 32% 28%,#e02040,#c8102e 55%,#9d0c24);
-  display:grid;place-items:center;
+  background:#fff;
+  display:grid;
+  place-items:center;
   position:relative;
-  box-shadow:
-    0 0 0 4px #fff,
-    0 0 0 6px #d4af37,
-    0 10px 26px rgba(200,16,46,.35);
+  overflow:hidden;
+   box-shadow:0 0 0 3px #d4af37,0 10px 26px rgba(200,16,46,.35);
+  padding:3px;
+  box-sizing:content-box;
+}
+.auth-logo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  border-radius:50%;
 }
 .auth-logo .star{
   color:#f0d98a;
@@ -120,11 +135,6 @@
   animation:starSpin 30s linear infinite;
 }
 @keyframes starSpin{to{transform:rotate(360deg)}}
-.auth-logo::after{
-  content:"";
-  position:absolute;inset:-12px;
-  border-radius:50%;
-  border:1.5px dashed rgba(212,175,55,.5);
 }
 
 .auth-brand h1{
@@ -149,7 +159,7 @@
 }
 
 /* ============================================================
-   Tab
+   6. Tab 切换
    ============================================================ */
 .auth-tabs{
   display:flex;
@@ -181,7 +191,7 @@
 }
 
 /* ============================================================
-   表单
+   7. 表单
    ============================================================ */
 .auth-form{display:none}
 .auth-form.on{display:block;animation:formIn .28s ease}
@@ -264,7 +274,7 @@
 .auth-eye.on{opacity:.9}
 
 /* ============================================================
-   记住我 / 忘记密码 行
+   8. 记住我 / 忘记密码 行
    ============================================================ */
 .auth-row-inline{
   display:flex;
@@ -299,7 +309,7 @@
 .auth-forgot:hover{color:#9d0c24;text-decoration:underline;text-underline-offset:3px}
 
 /* ============================================================
-   提示
+   9. 提示
    ============================================================ */
 .auth-hint{
   font-size:12.5px;
@@ -313,7 +323,7 @@
 .auth-hint.ok{color:#1f8f55}
 
 /* ============================================================
-   提交按钮
+   10. 提交按钮
    ============================================================ */
 .auth-submit{
   width:100%;
@@ -347,8 +357,10 @@
 .auth-submit.loading::after{
   content:"";
   position:absolute;
-  right:16px;top:50%;
-  width:14px;height:14px;
+  right:16px;
+  top:50%;
+  width:14px;
+  height:14px;
   margin-top:-7px;
   border:2px solid rgba(255,255,255,.35);
   border-top-color:#fff;
@@ -370,7 +382,7 @@
 .auth-terms a:hover{text-decoration:underline;text-underline-offset:2px}
 
 /* ============================================================
-   分隔
+   11. 分隔
    ============================================================ */
 .auth-divider{
   display:flex;
@@ -390,7 +402,7 @@
 }
 
 /* ============================================================
-   游客登录
+   12. 游客登录
    ============================================================ */
 .auth-guest{
   width:100%;
@@ -425,14 +437,14 @@
 }
 .auth-guest.loading::after{
   content:"";
-  width:14px;height:14px;
+  width:14px;
+  height:14px;
   margin-left:6px;
   border:2px solid rgba(26,43,76,.25);
   border-top-color:#1a2b4c;
   border-radius:50%;
   animation:spin .8s linear infinite;
 }
-
 .auth-guest-tip{
   margin:10px 0 0;
   font-size:11.5px;
@@ -443,7 +455,7 @@
 }
 
 /* ============================================================
-   页脚
+   13. 页脚
    ============================================================ */
 .auth-foot{
   margin-top:22px;
@@ -462,7 +474,7 @@
 }
 
 /* ============================================================
-   版权
+   14. 版权
    ============================================================ */
 .auth-copyright{
   margin:24px 0 0;
@@ -474,7 +486,7 @@
 }
 
 /* ============================================================
-   找回密码页 · 专属
+   15. 找回密码 / 重置密码 专属
    ============================================================ */
 .auth-intro{
   text-align:center;
@@ -507,6 +519,16 @@
 .auth-tips p{margin:0 0 8px;color:#1a2b4c;font-weight:600;letter-spacing:.4px}
 .auth-tips ul{margin:0;padding-left:18px}
 .auth-tips li{margin-bottom:4px}
+.auth-tips a{color:#c8102e}
+.auth-tips a:hover{text-decoration:underline;text-underline-offset:2px}
+.auth-tips code{
+  background:#fff8e8;
+  padding:1px 6px;
+  border-radius:3px;
+  color:#9d0c24;
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:11.5px;
+}
 
 /* 成功状态 */
 .auth-success{
@@ -514,14 +536,16 @@
   padding:16px 8px 8px;
 }
 .auth-success-icon{
-  width:64px;height:64px;
+  width:64px;
+  height:64px;
   margin:0 auto 16px;
   border-radius:50%;
   background:radial-gradient(circle at 32% 28%,#2bb673,#1f8f55);
   color:#fff;
   font-size:34px;
   font-weight:700;
-  display:grid;place-items:center;
+  display:grid;
+  place-items:center;
   box-shadow:0 0 0 6px rgba(31,143,85,.15);
   animation:successPop .4s cubic-bezier(.2,.9,.3,1.2);
 }
@@ -591,11 +615,8 @@
 }
 .auth-btn-secondary:active{transform:scale(.98)}
 
-/* 隐藏工具类 */
-.hide{display:none !important}
-
 /* ============================================================
-   移动端
+   16. 响应式
    ============================================================ */
 @media (max-width:520px){
   .auth-topbar{padding:14px 16px}
@@ -629,6 +650,7 @@
   .auth-success h2{font-size:16.5px}
 }
 
+/* 横屏小设备 */
 @media (max-height:600px) and (orientation:landscape){
   .auth-brand{margin-bottom:14px}
   .auth-logo{width:52px;height:52px;margin-bottom:10px}
@@ -639,11 +661,13 @@
   .auth-field{margin-bottom:12px}
 }
 
+/* 高对比度模式 */
 @media (prefers-contrast:high){
   .auth-input-wrap{border-width:2px}
   .auth-tab.on{outline:2px solid #1a2b4c}
 }
 
+/* 减少动效 */
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{
     animation-duration:.001ms !important;

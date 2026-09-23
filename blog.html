@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <link rel="icon" type="image/png" href="photo/logo.png">
+<link rel="apple-touch-icon" href="photo/logo.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>校园随笔 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/blog.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+</head>
+<body data-page="blog">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><span>校园随笔</span></div>
+    <div class="blog-hero-row">
+      <div>
+        <h1>校园随笔</h1>
+        <p>红墙之内，红星之下 —— 记录蓬溪格勒人民高等中学的日常与远方</p>
+      </div>
+      <button class="blog-publish-btn" id="publishBtn" type="button">
+        <span class="ic">✎</span>
+        <span>发布文章</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<main class="section blog-main">
+
+  <!-- 精选区 -->
+  <div id="blogFeatured"></div>
+
+  <!-- 分类筛选 -->
+  <div class="blog-filter" id="blogFilter">
+    <button class="blog-filter-btn on" data-cat="all" type="button">全部</button>
+    <button class="blog-filter-btn" data-cat="essay" type="button">随笔</button>
+    <button class="blog-filter-btn" data-cat="study" type="button">研学</button>
+    <button class="blog-filter-btn" data-cat="people" type="button">人物</button>
+    <button class="blog-filter-btn" data-cat="tech" type="button">科技</button>
+    <button class="blog-filter-btn" data-cat="exchange" type="button">交流</button>
+  </div>
+
+  <!-- 文章网格 -->
+  <div class="blog-grid" id="blogGrid">
+    <div class="blog-loading">正在加载文章…</div>
+  </div>
+
+  <div class="blog-empty hide" id="blogEmpty">
+    该分类下暂时还没有文章。
+  </div>
+
+</main>
+
+<div id="site-footer"></div>
+
+<!-- ============ 发布 / 编辑弹窗 ============ -->
+<div class="blog-publish-modal hide" id="publishModal">
+  <div class="blog-publish-box">
+
+    <div class="blog-publish-head">
+      <h3 id="publishModalTitle">发布新文章</h3>
+      <button class="blog-publish-close" id="publishClose" type="button">✕</button>
+    </div>
+
+    <form class="blog-publish-form" id="publishForm">
+
+      <div class="blog-publish-field">
+        <label for="pTitle">标题 <span class="req">*</span></label>
+        <input id="pTitle" type="text" maxlength="60" placeholder="给文章起个标题" required>
+      </div>
+
+      <div class="blog-publish-row">
+        <div class="blog-publish-field">
+          <label for="pCategory">分类 <span class="req">*</span></label>
+          <select id="pCategory" required>
+            <option value="essay">随笔</option>
+            <option value="study">研学</option>
+            <option value="people">人物</option>
+            <option value="tech">科技</option>
+            <option value="exchange">交流</option>
+          </select>
+        </div>
+
+        <div class="blog-publish-field">
+          <label for="pTheme">封面色（无图时生效）</label>
+          <select id="pTheme">
+            <option value="red">红金 · 亚斯</option>
+            <option value="navy">深蓝 · 星空</option>
+            <option value="gold">麦穗 · 丰收</option>
+            <option value="green">松林 · 友谊</option>
+            <option value="purple">紫霞 · 想象</option>
+            <option value="orange">落日 · 远方</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="blog-publish-field">
+        <label>封面图（选填，推荐 16:9 横图）</label>
+        <div class="blog-image-upload" id="imageUpload">
+          <span class="icon">🖼</span>
+          <b>点击上传封面图</b>
+          <span>或将图片拖拽到此处 · 支持 JPG / PNG · 8MB 以内</span>
+        </div>
+        <input id="imageInput" type="file" accept="image/*" style="display:none">
+      </div>
+
+      <div class="blog-publish-field">
+        <label for="pExcerpt">摘要</label>
+        <input id="pExcerpt" type="text" maxlength="120" placeholder="一句话概括（留空自动截取正文前 60 字）">
+      </div>
+
+      <div class="blog-publish-field">
+        <label for="pContent">正文 <span class="req">*</span></label>
+        <textarea id="pContent" rows="10"
+          placeholder="支持空行分段。以「> 」开头是引用，以「## 」开头是二级标题。"></textarea>
+      </div>
+
+      <div class="blog-publish-hint" id="publishHint"></div>
+
+      <div class="blog-publish-actions">
+        <button class="blog-publish-cancel" id="publishCancel" type="button">取消</button>
+        <button class="blog-publish-submit" type="submit">发布</button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/blog.js"></script>
+
+<script>
+/* 从详情页跳转过来带 ?edit=id 时，自动打开编辑弹窗 */
+(function () {
+  if (!/blog\.html/.test(location.pathname)) return;
+  var p = new URLSearchParams(location.search);
+  var editId = p.get('edit');
+  if (!editId) return;
+  var timer = setInterval(function () {
+    var btn = document.querySelector('[data-edit="' + editId + '"]');
+    if (btn) {
+      clearInterval(timer);
+      btn.click();
+      history.replaceState(null, '', 'blog.html');
+    }
+  }, 200);
+  setTimeout(function () { clearInterval(timer); }, 8000);
+})();
+</script>
+
+</body>
+</html>

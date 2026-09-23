@@ -6,9 +6,15 @@
 (function (window) {
   'use strict';
 
+  /* ============================================================
+     1. Supabase 配置
+     ============================================================ */
   var SUPABASE_URL      = 'https://api.ponxigrad.tech';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidG1la3dtcGh2bXluc2pmcGxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwOTM5NjMsImV4cCI6MjEwNTY2OTk2M30.Cq04l3c8hxsIheEf3e6bHKUhFhe-VybfaEbaXwlGQ3M';
 
+  /* ============================================================
+     2. 配置规范化
+     ============================================================ */
   function normalizeUrl(u) {
     u = String(u || '').trim();
     if (!u) return '';
@@ -21,6 +27,9 @@
   var NORM_URL = normalizeUrl(SUPABASE_URL);
   var NORM_KEY = normalizeKey(SUPABASE_ANON_KEY);
 
+  /* ============================================================
+     3. 工具
+     ============================================================ */
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
@@ -37,7 +46,13 @@
     return { initial: c, color: colors[h % colors.length] };
   }
 
-  var LOGIN_REQUIRED = ['videohub.html', 'campusnet.html', 'xingtu.html', 'profile.html'];
+  /* ============================================================
+     4. 页面权限
+     ============================================================ */
+  var LOGIN_REQUIRED = [
+    'videohub.html', 'campusnet.html', 'xingtu.html', 'profile.html',
+    'blog.html', 'blog-post.html', 'blog-post-2.html', 'blog-post-3.html'
+  ];
   var GUEST_BLOCKED  = ['videohub.html', 'campusnet.html', 'xingtu.html'];
 
   function getCurrentFileName() {
@@ -47,28 +62,9 @@
   function isProtectedForLogin(f) { return LOGIN_REQUIRED.indexOf(f) !== -1; }
   function isBlockedForGuest(f)   { return GUEST_BLOCKED.indexOf(f) !== -1; }
 
-  (function selfCheck() {
-    var styleTitle = 'background:#c8102e;color:#f0d98a;padding:3px 8px;border-radius:3px;font-weight:700';
-    console.log('%c [Auth] 配置自检 ', styleTitle);
-    console.log('[Auth] URL:', NORM_URL);
-    console.log('[Auth] KEY:', NORM_KEY ? (NORM_KEY.slice(0, 30) + '...' + NORM_KEY.slice(-10)) : '(空)');
-    console.log('[Auth] KEY 长度:', NORM_KEY.length);
-
-    var problems = [];
-    if (!NORM_URL) problems.push('SUPABASE_URL 为空');
-    else if (NORM_URL.indexOf('xxxxxxxx') !== -1) problems.push('SUPABASE_URL 还是模板占位符');
-    if (!NORM_KEY) problems.push('SUPABASE_ANON_KEY 为空');
-    else if (NORM_KEY.indexOf('sb_publishable_') !== 0 && NORM_KEY.length < 100)
-      problems.push('SUPABASE_ANON_KEY 长度异常（' + NORM_KEY.length + '）');
-
-    if (problems.length) {
-      console.error('[Auth] 配置有问题:');
-      problems.forEach(function (p) { console.error('  · ' + p); });
-    } else {
-      console.log('%c [Auth] 配置看起来正常 ', 'color:#1f8f55;font-weight:700');
-    }
-  })();
-
+  /* ============================================================
+     5. 依赖检查
+     ============================================================ */
   if (!window.supabase || !window.supabase.createClient) {
     console.error('[Auth] Supabase SDK 未加载');
     window.Auth = {
@@ -93,6 +89,9 @@
 
   var client = window.supabase.createClient(NORM_URL, NORM_KEY);
 
+  /* ============================================================
+     6. 会话状态
+     ============================================================ */
   var currentUser = null;
   var readyPromise = null;
 
@@ -114,9 +113,13 @@
     return readyPromise;
   }
 
+  /* ============================================================
+     7. 错误翻译
+     ============================================================ */
   function translateError(err, context) {
     var msg  = String((err && (err.message || err.error_description || err.error)) || '').trim();
     var lower = msg.toLowerCase();
+
     if (/failed to fetch|networkerror|network error|load failed/i.test(lower))
       return { ok:false, msg:'无法连接到服务器，请检查网络', code:'NETWORK' };
     if (/err_name_not_resolved|dns/i.test(lower))
@@ -125,6 +128,7 @@
       return { ok:false, msg:'跨域请求被拒', code:'CORS' };
     if (/timeout|timed out|etimedout/i.test(lower))
       return { ok:false, msg:'请求超时，请稍后再试', code:'TIMEOUT' };
+
     if (/invalid login credentials/i.test(msg))     return { ok:false, msg:'邮箱或密码错误', code:'AUTH' };
     if (/email not confirmed/i.test(msg))           return { ok:false, msg:'邮箱尚未验证', code:'EMAIL_CONFIRM' };
     if (/user already registered|already registered|user already exists/i.test(msg))
@@ -141,6 +145,7 @@
       return { ok:false, msg:'请求过于频繁，请稍后再试', code:'RATE_LIMIT' };
     if (/same.*password|new password should be different/i.test(msg))
       return { ok:false, msg:'新密码不能与旧密码相同', code:'SAME_PWD' };
+
     return { ok:false, msg: msg || '操作失败，请稍后重试', code:'UNKNOWN' };
   }
 
@@ -158,6 +163,9 @@
     return t;
   }
 
+  /* ============================================================
+     8. 游客判断
+     ============================================================ */
   function checkIsGuest(user) {
     if (!user) return false;
     var meta = user.user_metadata || {};
@@ -167,16 +175,21 @@
            meta.is_guest === 1;
   }
 
+  /* ============================================================
+     9. 构造展示用 user
+     ============================================================ */
   function buildUser(user) {
     if (!user) return null;
     var meta = user.user_metadata || {};
     var isGuest = checkIsGuest(user);
+
     var nickname = (meta.nickname && String(meta.nickname).trim()) || '';
     if (!nickname) {
       if (isGuest) nickname = '游客' + String(user.id || '').slice(0, 4);
       else if (user.email) nickname = user.email.split('@')[0];
       else nickname = '用户';
     }
+
     return {
       id: user.id,
       email: user.email || '',
@@ -194,7 +207,7 @@
   }
 
   /* ============================================================
-     Auth 模块
+     10. Auth 模块
      ============================================================ */
   var Auth = {
 
@@ -205,10 +218,12 @@
     getCurrentUser: function () { return buildUser(currentUser); },
     isGuest: function () { return checkIsGuest(currentUser); },
 
+    /* ---------------- 登录 ---------------- */
     login: function (email, password) {
       email = normalizeEmail(email);
       if (!isValidEmail(email)) return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址', code: 'INPUT' });
       if (!password)            return Promise.resolve({ ok: false, msg: '请输入密码', code: 'INPUT' });
+
       return client.auth.signInWithPassword({ email: email, password: password })
         .then(function (res) {
           var r = handleResult(res, '登录');
@@ -219,15 +234,23 @@
         .catch(function (err) { return handleCatch(err, '登录'); });
     },
 
+    /* ---------------- 注册 ---------------- */
     register: function (email, password, nickname) {
       email = normalizeEmail(email);
       if (!isValidEmail(email))               return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址', code: 'INPUT' });
       if (!password || password.length < 6)   return Promise.resolve({ ok: false, msg: '密码至少 6 位', code: 'INPUT' });
+
       nickname = String(nickname || '').trim().slice(0, 16);
+
       return client.auth.signUp({
         email: email,
         password: password,
-        options: { data: { nickname: nickname || email.split('@')[0], is_guest: false } }
+        options: {
+          data: {
+            nickname: nickname || email.split('@')[0],
+            is_guest: false
+          }
+        }
       })
         .then(function (res) {
           var r = handleResult(res, '注册');
@@ -242,9 +265,11 @@
         .catch(function (err) { return handleCatch(err, '注册'); });
     },
 
+    /* ---------------- 游客登录 ---------------- */
     loginAsGuest: function () {
       var rand = Math.floor(1000 + Math.random() * 9000);
       var nickname = '游客' + rand;
+
       return client.auth.signInAnonymously()
         .then(function (res) {
           if (res.error) return handleResult(res, '游客登录');
@@ -252,18 +277,17 @@
             data: { nickname: nickname, is_guest: true }
           }).then(function (upRes) {
             if (upRes.error) {
-              console.warn('[Auth] 游客 metadata 更新失败:', upRes.error);
               currentUser = res.data.user;
               return { ok: true, user: buildUser(currentUser) };
             }
             currentUser = upRes.data.user;
-            console.log('[Auth] 游客登录成功，metadata:', currentUser.user_metadata);
             return { ok: true, user: buildUser(currentUser) };
           });
         })
         .catch(function (err) { return handleCatch(err, '游客登录'); });
     },
 
+    /* ---------------- 找回密码 ---------------- */
     sendResetEmail: function (email) {
       email = normalizeEmail(email);
       if (!isValidEmail(email)) return Promise.resolve({ ok: false, msg: '请输入正确的邮箱地址', code: 'INPUT' });
@@ -276,6 +300,7 @@
         .catch(function (err) { return handleCatch(err, '发送重置邮件'); });
     },
 
+    /* ---------------- 更新密码（重置页用） ---------------- */
     updatePassword: function (newPassword) {
       if (!newPassword || newPassword.length < 6) {
         return Promise.resolve({ ok: false, msg: '密码至少 6 位', code: 'INPUT' });
@@ -290,14 +315,17 @@
         .catch(function (err) { return handleCatch(err, '更新密码'); });
     },
 
+    /* ---------------- 更新个人资料 ---------------- */
     updateProfile: function (profile) {
       if (!currentUser) return Promise.resolve({ ok: false, msg: '未登录', code: 'NO_SESSION' });
+
       var meta = currentUser.user_metadata || {};
       var newMeta = {
         nickname: meta.nickname,
         is_guest: meta.is_guest || false,
         avatar: meta.avatar || ''
       };
+
       if (typeof profile.nickname === 'string') {
         var nn = profile.nickname.trim().slice(0, 16);
         if (!nn) return Promise.resolve({ ok: false, msg: '昵称不能为空', code: 'INPUT' });
@@ -309,6 +337,7 @@
         }
         newMeta.avatar = profile.avatar;
       }
+
       return client.auth.updateUser({ data: newMeta })
         .then(function (res) {
           var r = handleResult(res, '更新资料');
@@ -319,6 +348,7 @@
         .catch(function (err) { return handleCatch(err, '更新资料'); });
     },
 
+    /* ---------------- 修改密码 ---------------- */
     changePassword: function (newPassword, confirmPassword) {
       if (!currentUser) return Promise.resolve({ ok: false, msg: '未登录', code: 'NO_SESSION' });
       if (!newPassword || newPassword.length < 6) {
@@ -337,6 +367,7 @@
         .catch(function (err) { return handleCatch(err, '修改密码'); });
     },
 
+    /* ---------------- 登出 ---------------- */
     logout: function () {
       return client.auth.signOut().then(function () {
         currentUser = null;
@@ -347,9 +378,11 @@
       });
     },
 
+    /* ---------------- 页面保护 ---------------- */
     requireAuth: function () {
       var file = getCurrentFileName();
       if (!isProtectedForLogin(file)) return Promise.resolve(true);
+
       return ensureReady().then(function () {
         if (!currentUser) {
           var redirect = isRu() ? ('ru/' + file) : file;
@@ -359,6 +392,7 @@
           location.replace(loginUrl);
           return false;
         }
+
         if (checkIsGuest(currentUser) && isBlockedForGuest(file)) {
           console.warn('[Auth] 游客访问受限页面:', file);
           try { sessionStorage.setItem('pxgl_guest_blocked', file); } catch (e) {}
@@ -366,22 +400,28 @@
           location.replace(profileUrl);
           return false;
         }
+
         return true;
       });
     },
 
+    /* ---------------- 页头状态 ---------------- */
     mountNavStatus: function (lang) {
       var el = document.querySelector('.auth-nav');
       if (!el) return;
+
       ensureReady().then(function () {
         if (!currentUser) {
           el.innerHTML =
             '<a href="' + (isRu() ? '../index.html' : 'index.html') + '" class="auth-login">' +
-              (lang === 'ru' ? 'Войти' : '登录') + '</a>';
+              (lang === 'ru' ? 'Войти' : '登录') +
+            '</a>';
           return;
         }
+
         var u = buildUser(currentUser);
         var tag = u.isGuest ? '<span class="auth-tag">游客</span>' : '';
+
         var avatarHTML;
         if (u.avatar) {
           avatarHTML = '<img class="auth-avatar" src="' + escapeHtml(u.avatar) + '" alt="">';
@@ -390,7 +430,9 @@
           avatarHTML = '<span class="auth-avatar fallback" style="background:' + fb.color + '">' +
                        escapeHtml(fb.initial) + '</span>';
         }
+
         var profileHref = isRu() ? '../profile.html' : 'profile.html';
+
         el.innerHTML =
           '<a class="auth-user" href="' + profileHref + '" title="进入个人中心">' +
             avatarHTML +
@@ -398,7 +440,9 @@
             tag +
           '</a>' +
           '<a href="#" class="auth-logout">' +
-            (lang === 'ru' ? 'Выйти' : '登出') + '</a>';
+            (lang === 'ru' ? 'Выйти' : '登出') +
+          '</a>';
+
         var lo = el.querySelector('.auth-logout');
         if (lo) {
           lo.addEventListener('click', function (e) {
@@ -407,28 +451,11 @@
           });
         }
       });
-    },
-
-    _debug: function () {
-      return {
-        url: NORM_URL,
-        keyLen: NORM_KEY.length,
-        isLoggedIn: !!currentUser,
-        isGuest: checkIsGuest(currentUser)
-      };
     }
   };
 
-  /* ============================================================
-     关键修复：Auth.ready 必须是 Promise，而不是函数
-     ============================================================ */
   Auth.ready = ensureReady();
-
-  /* ============================================================
-     立即执行页面保护
-     ============================================================ */
   Auth.requireAuth();
-
   window.Auth = Auth;
 
   console.log('%c [Auth] 已接入 Cloudflare Worker 代理 ', 'background:#f38020;color:#fff;padding:2px 8px;border-radius:3px;font-weight:700');
