@@ -1,69 +1,592 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <link rel="icon" type="image/png" href="photo/logo.png">
-<link rel="apple-touch-icon" href="photo/logo.png">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/auth.js"></script>
-<script src="assets/js/main.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>招生招聘 · 蓬溪格勒人民高等中学</title>
+<title>2026 年招生简章 · 蓬溪格勒人民高等中学</title>
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/admissions.css">
 </head>
 <body data-page="admissions">
 
 <div id="site-header"></div>
 
-<section class="page-hero">
-  <div class="page-hero-inner">
-    <div class="crumb"><a href="index.html">首页</a><i>›</i><span>招生招聘</span></div>
-    <h1>招生招聘</h1>
-    <p>招生简章 · 报名入口 · 教师招聘</p>
+<!-- ============================================================
+     封面
+     ============================================================ -->
+<section class="ad-cover">
+  <div class="ad-cover-inner">
+
+    <div class="ad-cover-top">
+      <span class="ad-cover-org">亚斯共和国教育部 · 蓬溪格勒市教育局</span>
+    </div>
+
+    <div class="ad-cover-logo">
+      <img src="photo/logo.png" alt="蓬溪格勒人民高等中学">
+    </div>
+
+    <h1 class="ad-cover-title">
+      蓬溪格勒人民高等中学
+    </h1>
+    <p class="ad-cover-ru">
+      Понксиградская народная средняя школа высшей ступени
+    </p>
+
+    <div class="ad-cover-line"></div>
+
+    <h2 class="ad-cover-year">
+      2026 年招生简章
+    </h2>
+    <p class="ad-cover-sub">
+      Программа приёма на 2026 год
+    </p>
+
+    <div class="ad-cover-tags">
+      <span>首都重点中学</span>
+      <span>亚斯-苏联交流示范校</span>
+      <span>建校 1911 年</span>
+    </div>
+
+    <div class="ad-cover-foot">
+      <span>文件编号：ASR-EDU-2026-ADM-001</span>
+      <span>密级：公开</span>
+    </div>
+
   </div>
 </section>
 
-<main class="section">
+<!-- ============================================================
+     主体：左侧目录 + 右侧内容
+     ============================================================ -->
+<main class="ad-main">
 
-  <div class="alert gold">
-    <strong>提示：</strong>本页面为小说《我们与末日擦肩而过》平行世界设定展示，非真实招生信息。
-  </div>
+  <!-- 侧边目录 -->
+  <aside class="ad-sidebar" id="adSidebar">
+    <div class="ad-sidebar-head">
+      <span class="ad-sidebar-title">目 录</span>
+      <span class="ad-sidebar-ru">Оглавление</span>
+    </div>
+    <nav class="ad-toc">
+      <a href="#ch1" class="ad-toc-link on"><span class="num">一</span>学校概况</a>
+      <a href="#ch2" class="ad-toc-link"><span class="num">二</span>招生计划</a>
+      <a href="#ch3" class="ad-toc-link"><span class="num">三</span>报名条件</a>
+      <a href="#ch4" class="ad-toc-link"><span class="num">四</span>报名流程</a>
+      <a href="#ch5" class="ad-toc-link"><span class="num">五</span>考试与录取</a>
+      <a href="#ch6" class="ad-toc-link"><span class="num">六</span>收费标准</a>
+      <a href="#ch7" class="ad-toc-link"><span class="num">七</span>奖助学金</a>
+      <a href="#ch8" class="ad-toc-link"><span class="num">八</span>常见问题</a>
+      <a href="#ch9" class="ad-toc-link"><span class="num">九</span>联系方式</a>
+    </nav>
+    <div class="ad-sidebar-foot">
+      <button class="ad-print-btn" type="button" onclick="window.print()">
+        <span class="ic">🖨</span>
+        <span>打印简章</span>
+      </button>
+      <a class="ad-apply-btn" href="#ch4">
+        <span class="ic">✎</span>
+        <span>在线报名</span>
+      </a>
+    </div>
+  </aside>
 
-  <div class="card">
-    <div class="card-head"><h3>招生简章</h3></div>
-    <div class="prose">
-      <p><strong>招生对象：</strong>亚斯共和国及友好国家初中毕业生。</p>
-      <p><strong>招生规模：</strong>每年级 12 个班，其中特色班 2 个（俄语方向、磁浮技术方向）。</p>
-      <p><strong>报名时间：</strong>每年 6 月 1 日至 6 月 30 日。</p>
-      <p><strong>录取方式：</strong>统一入学考试 + 面试。特色班需加试俄语口语或技术实操。</p>
-      <p><strong>学费标准：</strong>执行亚斯共和国教育部统一标准，对先锋队优秀队员设有助学金。</p>
-    </div>
-    <div class="btns" style="margin-top:20px">
-      <a class="btn red" href="#" data-enroll>在线报名</a>
-      <a class="btn ghost" href="#" style="color:#1a2b4c;border-color:#1a2b4c">下载招生简章（PDF）</a>
-    </div>
-    <p class="form-note">报名系统开放时间以亚斯共和国教育部公告为准。</p>
-  </div>
+  <!-- 内容区 -->
+  <article class="ad-content">
 
-  <div class="card" style="margin-top:24px">
-    <div class="card-head"><h3>教师招聘</h3></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>岗位</th><th>学科</th><th>人数</th><th>要求</th></tr></thead>
-        <tbody>
-          <tr><td>专任教师</td><td>基础俄语</td><td>2</td><td>俄语专业硕士及以上，母语级口语</td></tr>
-          <tr><td>专任教师</td><td>亚斯史纲要</td><td>1</td><td>历史学或政治学相关专业</td></tr>
-          <tr><td>专任教师</td><td>磁悬浮原理</td><td>1</td><td>工程类背景，有实训经验优先</td></tr>
-          <tr><td>实验员</td><td>红星电子技术</td><td>1</td><td>熟悉 RedStarOS 与终端硬件</td></tr>
-        </tbody>
-      </table>
+    <!-- 引言 -->
+    <div class="ad-lead">
+      <p>
+        蓬溪格勒人民高等中学是亚斯共和国首都重点中学，亚斯-苏联青少年交流示范校。
+        学校以<strong>基础俄语、亚斯史纲要、国际社会学</strong>为特色，兼设磁悬浮技术、
+        红星电子技术等特色课程，培养学生具备全球视野与扎实基础。
+      </p>
+      <p>
+        根据亚斯共和国教育部 2026 年招生工作统一部署，现将我校 2026 年秋季
+        招生事宜公布如下。
+      </p>
     </div>
-    <p class="form-note">简历投递：hr@pxgl.edu.asr（示例邮箱）</p>
-  </div>
+
+    <!-- ============ 第一章 ============ -->
+    <section class="ad-chapter" id="ch1">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第一章</span>
+        <span class="ad-chapter-num-ru">Глава I</span>
+      </div>
+      <h2 class="ad-chapter-title">学校概况</h2>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">一、学校简介</h3>
+        <p>
+          蓬溪格勒人民高等中学位于亚斯共和国首都蓬溪格勒市红星区复兴大道 12 号，
+          是亚斯共和国教育部直属的首都重点中学之一，也是亚斯-苏联青少年交流示范校。
+          学校前身为 1911 年成立的"蓬溪格勒第一实业学堂"，1953 年更名为现名。
+        </p>
+        <p>
+          学校现有教学班 36 个，在校学生约 1800 人，教职工 220 余人。
+          校园占地面积 6.8 万平方米，建有标准化教学楼、实验楼、图书馆、
+          体育馆、天文台与磁浮模型实训室。
+        </p>
+      </div>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">二、办学特色</h3>
+        <ul class="ad-list">
+          <li><b>双语教学</b>：亚斯语与俄语并重，高一即开设基础俄语课程</li>
+          <li><b>国际交流</b>：与苏联莫斯科总统学院附属中学建立姊妹学校关系，每年组织研学互访</li>
+          <li><b>科技教育</b>：与蓬溪格勒磁悬浮集团共建磁浮模型实训室，与亚斯红日网络科技中心合作开展"天问"终端校园适配</li>
+          <li><b>人文传统</b>：设有惊鸿文学社、星图社、俄语戏剧社等学生社团</li>
+        </ul>
+      </div>
+
+      <div class="ad-stats">
+        <div class="ad-stat">
+          <b>1911</b>
+          <span>建校年份</span>
+        </div>
+        <div class="ad-stat">
+          <b>36</b>
+          <span>教学班</span>
+        </div>
+        <div class="ad-stat">
+          <b>1800+</b>
+          <span>在校学生</span>
+        </div>
+        <div class="ad-stat">
+          <b>220+</b>
+          <span>教职工</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 第二章 ============ -->
+    <section class="ad-chapter" id="ch2">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第二章</span>
+        <span class="ad-chapter-num-ru">Глава II</span>
+      </div>
+      <h2 class="ad-chapter-title">招生计划</h2>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">一、招生规模</h3>
+        <p>
+          2026 年秋季，我校面向亚斯共和国及友好国家，计划招收高一年级新生
+          <b>12 个班，共 540 人</b>，其中普通班 10 个、特色班 2 个。
+        </p>
+      </div>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">二、招生类别</h3>
+        <div class="ad-table-wrap">
+          <table class="ad-table">
+            <thead>
+              <tr>
+                <th>类别</th>
+                <th>班级数</th>
+                <th>招生人数</th>
+                <th>培养方向</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>普通班</b></td>
+                <td>10</td>
+                <td>450</td>
+                <td>国家统一课程 + 俄语基础</td>
+              </tr>
+              <tr>
+                <td><b>俄语特色班</b></td>
+                <td>1</td>
+                <td>45</td>
+                <td>俄语强化 + 国际交流方向</td>
+              </tr>
+              <tr>
+                <td><b>磁浮技术特色班</b></td>
+                <td>1</td>
+                <td>45</td>
+                <td>工程基础 + 磁悬浮技术方向</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">三、国际生名额</h3>
+        <p>
+          友好国家（含苏联、美利坚社会主义联邦共和国、南斯拉夫等）国际生
+          可申请入学，名额单列，招收 <b>30 人</b>，需通过材料审核与面试。
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ 第三章 ============ -->
+    <section class="ad-chapter" id="ch3">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第三章</span>
+        <span class="ad-chapter-num-ru">Глава III</span>
+      </div>
+      <h2 class="ad-chapter-title">报名条件</h2>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">一、基本条件</h3>
+        <ul class="ad-list">
+          <li>拥护亚斯共和国宪法，品行端正，无违纪记录</li>
+          <li>亚斯共和国及友好国家初中应届毕业生</li>
+          <li>身体健康，能适应寄宿制学习生活</li>
+          <li>年龄一般在 15 周岁以下（2011 年 9 月 1 日后出生）</li>
+        </ul>
+      </div>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">二、特色班附加条件</h3>
+        <div class="ad-note">
+          <p><b>俄语特色班：</b>需具备基础俄语读写能力，或通过俄语口语加试。</p>
+          <p><b>磁浮技术特色班：</b>需对物理、数学有较强兴趣，或通过技术实操加试。</p>
+        </div>
+      </div>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">三、优先录取</h3>
+        <p>
+          亚斯先锋队优秀队员、亚斯共和国青少年科技竞赛获奖者、
+          省级以上英俄语演讲比赛获奖者，同等条件下优先录取。
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ 第四章 ============ -->
+    <section class="ad-chapter" id="ch4">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第四章</span>
+        <span class="ad-chapter-num-ru">Глава IV</span>
+      </div>
+      <h2 class="ad-chapter-title">报名流程</h2>
+
+      <ol class="ad-steps">
+        <li>
+          <div class="ad-step-num">01</div>
+          <div class="ad-step-body">
+            <b>网上报名</b>
+            <span>6 月 1 日 — 6 月 30 日</span>
+            <p>登录亚斯共和国教育部统一招生平台，或到我校招生办公室现场报名。</p>
+          </div>
+        </li>
+        <li>
+          <div class="ad-step-num">02</div>
+          <div class="ad-step-body">
+            <b>材料审核</b>
+            <span>7 月 1 日 — 7 月 5 日</span>
+            <p>学校审核报名材料，公布通过初审名单。</p>
+          </div>
+        </li>
+        <li>
+          <div class="ad-step-num">03</div>
+          <div class="ad-step-body">
+            <b>统一入学考试</b>
+            <span>7 月 10 日 — 7 月 11 日</span>
+            <p>语文、数学、外语（亚斯语 / 俄语 / 英语三选一）三科统考。</p>
+          </div>
+        </li>
+        <li>
+          <div class="ad-step-num">04</div>
+          <div class="ad-step-body">
+            <b>面试</b>
+            <span>7 月 15 日 — 7 月 18 日</span>
+            <p>通过统考的考生参加面试，特色班考生加试专业科目。</p>
+          </div>
+        </li>
+        <li>
+          <div class="ad-step-num">05</div>
+          <div class="ad-step-body">
+            <b>录取公布</b>
+            <span>7 月 25 日</span>
+            <p>公布录取名单，发放录取通知书。</p>
+          </div>
+        </li>
+        <li>
+          <div class="ad-step-num">06</div>
+          <div class="ad-step-body">
+            <b>报到注册</b>
+            <span>8 月 25 日 — 8 月 28 日</span>
+            <p>新生凭录取通知书到校报到注册，办理住宿手续。</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- ============ 第五章 ============ -->
+    <section class="ad-chapter" id="ch5">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第五章</span>
+        <span class="ad-chapter-num-ru">Глава V</span>
+      </div>
+      <h2 class="ad-chapter-title">考试与录取</h2>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">一、考试科目</h3>
+        <div class="ad-table-wrap">
+          <table class="ad-table">
+            <thead>
+              <tr><th>科目</th><th>分值</th><th>考试时长</th><th>备注</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>语文</td><td>120</td><td>120 分钟</td><td>闭卷</td></tr>
+              <tr><td>数学</td><td>120</td><td>120 分钟</td><td>闭卷</td></tr>
+              <tr><td>外语（亚斯语 / 俄语 / 英语）</td><td>120</td><td>100 分钟</td><td>三选一</td></tr>
+              <tr><td>特色班加试</td><td>100</td><td>90 分钟</td><td>俄语口语 / 技术实操</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="ad-block">
+        <h3 class="ad-block-title">二、录取原则</h3>
+        <ul class="ad-list">
+          <li>按统考总分从高到低排序录取</li>
+          <li>特色班按统考 × 60% + 加试 × 40% 综合排名录取</li>
+          <li>国际生按材料审核 + 面试成绩录取</li>
+          <li>录取名单经亚斯共和国教育部备案后生效</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ 第六章 ============ -->
+    <section class="ad-chapter" id="ch6">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第六章</span>
+        <span class="ad-chapter-num-ru">Глава VI</span>
+      </div>
+      <h2 class="ad-chapter-title">收费标准</h2>
+
+      <div class="ad-block">
+        <p class="ad-muted">以下标准执行亚斯共和国教育部统一规定，以亚斯卢布（₽）结算。</p>
+
+        <div class="ad-table-wrap">
+          <table class="ad-table">
+            <thead>
+              <tr><th>项目</th><th>金额（₽ / 学年）</th><th>说明</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>学费</td><td>免费</td><td>亚斯共和国义务教育阶段免收</td></tr>
+              <tr><td>住宿费</td><td>1,200</td><td>含宿舍基本水电</td></tr>
+              <tr><td>餐费</td><td>按实际消费</td><td>校园一卡通结算</td></tr>
+              <tr><td>校服费</td><td>600</td><td>含春秋两季各一套</td></tr>
+              <tr><td>教材费</td><td>按实际发放</td><td>多退少补</td></tr>
+              <tr><td>研学费</td><td>另行通知</td><td>自愿参加</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="ad-note">
+        <p><b>说明：</b>亚斯共和国实行免费义务教育，学费全免。家庭经济困难学生可申请助学金（见第七章）。</p>
+      </div>
+    </section>
+
+    <!-- ============ 第七章 ============ -->
+    <section class="ad-chapter" id="ch7">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第七章</span>
+        <span class="ad-chapter-num-ru">Глава VII</span>
+      </div>
+      <h2 class="ad-chapter-title">奖助学金</h2>
+
+      <div class="ad-block">
+        <div class="ad-table-wrap">
+          <table class="ad-table">
+            <thead>
+              <tr><th>名称</th><th>金额</th><th>条件</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>红星奖学金</b></td>
+                <td>2,000 ₽ / 学期</td>
+                <td>综合成绩年级前 5%，且无违纪</td>
+              </tr>
+              <tr>
+                <td><b>先锋队助学金</b></td>
+                <td>1,500 ₽ / 学期</td>
+                <td>亚斯先锋队优秀队员，家庭困难者优先</td>
+              </tr>
+              <tr>
+                <td><b>国际交流奖学金</b></td>
+                <td>3,000 ₽ / 学期</td>
+                <td>俄语水平突出，参与对外交流活动</td>
+              </tr>
+              <tr>
+                <td><b>科技创新奖</b></td>
+                <td>1,000 ₽ / 次</td>
+                <td>省级以上科技竞赛获奖</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="ad-note">
+        <p>家庭经济特别困难的学生，可向学校申请<b>住宿费减免</b>，由校务办公室核实审批。</p>
+      </div>
+    </section>
+
+    <!-- ============ 第八章 ============ -->
+    <section class="ad-chapter" id="ch8">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第八章</span>
+        <span class="ad-chapter-num-ru">Глава VIII</span>
+      </div>
+      <h2 class="ad-chapter-title">常见问题</h2>
+
+      <div class="ad-faq">
+        <details>
+          <summary>Q1：学校是否必须住校？</summary>
+          <p>A：原则上高一新生统一住校，家在首都红星区、复兴区且距离学校 3 公里以内的学生，可申请走读。</p>
+        </details>
+
+        <details>
+          <summary>Q2：俄语零基础可以报考俄语特色班吗？</summary>
+          <p>A：可以。俄语特色班为强化教学，零基础学生入学后从字母表学起，但需要通过俄语学习潜力评估。</p>
+        </details>
+
+        <details>
+          <summary>Q3：国际生如何报名？</summary>
+          <p>A：通过所在国教育部推荐，或直接联系我校国际交流办公室。需提交初中成绩单、语言能力证明及推荐信。</p>
+        </details>
+
+        <details>
+          <summary>Q4：莫斯科研学是否强制参加？</summary>
+          <p>A：研学为学校特色项目，自愿参加。费用由学生家庭承担，家庭困难学生可申请专项补助。</p>
+        </details>
+
+        <details>
+          <summary>Q5：学校是否有食堂和宿舍？</summary>
+          <p>A：有。学校设有民族食堂（含中餐、俄餐窗口）和学生公寓，男女分区，每间 4-6 人，配有独立卫浴。</p>
+        </details>
+
+        <details>
+          <summary>Q6：转学生如何申请？</summary>
+          <p>A：亚斯共和国境内学生可在每学期开学前 15 天向教务处提交转学申请，经考核后确定是否接收。</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ 第九章 ============ -->
+    <section class="ad-chapter" id="ch9">
+      <div class="ad-chapter-head">
+        <span class="ad-chapter-num">第九章</span>
+        <span class="ad-chapter-num-ru">Глава IX</span>
+      </div>
+      <h2 class="ad-chapter-title">联系方式</h2>
+
+      <div class="ad-contact-grid">
+        <div class="ad-contact-item">
+          <span class="ad-contact-label">招生办公室</span>
+          <span class="ad-contact-value">086-010-0000 0001（示例）</span>
+        </div>
+        <div class="ad-contact-item">
+          <span class="ad-contact-label">招生咨询</span>
+          <span class="ad-contact-value">086-010-0000 0002（示例）</span>
+        </div>
+        <div class="ad-contact-item">
+          <span class="ad-contact-label">电子邮箱</span>
+          <span class="ad-contact-value">admission@pxgl.edu.asr（示例）</span>
+        </div>
+        <div class="ad-contact-item">
+          <span class="ad-contact-label">学校地址</span>
+          <span class="ad-contact-value">亚斯共和国蓬溪格勒市红星区复兴大道 12 号</span>
+        </div>
+        <div class="ad-contact-item">
+          <span class="ad-contact-label">交通方式</span>
+          <span class="ad-contact-value">蓬溪格勒磁悬浮环线 · 大学城站 B 出口步行 300 米</span>
+        </div>
+        <div class="ad-contact-item">
+          <span class="ad-contact-label">办公时间</span>
+          <span class="ad-contact-value">周一至周五 8:30 — 17:30</span>
+        </div>
+      </div>
+
+      <div class="ad-cta">
+        <a class="ad-cta-btn" href="contact.html">
+          <span class="ic">✉</span>
+          <span>前往联系我们</span>
+        </a>
+        <a class="ad-cta-btn ghost" href="history.html">
+          <span class="ic">◎</span>
+          <span>查看校史馆</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 落款 -->
+    <div class="ad-sign">
+      <div class="ad-sign-left">
+        <p class="ad-sign-org">蓬溪格勒人民高等中学</p>
+        <p class="ad-sign-office">招生办公室</p>
+      </div>
+      <div class="ad-sign-right">
+        <div class="ad-stamp">
+          <img src="photo/seal_custom.png" alt="蓬溪格勒人民高等中学公章">
+        </div>
+        <p class="ad-sign-date">2026 年 5 月 1 日</p>
+      </div>
+    </div>
+
+    <div class="ad-copyright">
+      <p>本简章由亚斯共和国教育部统一部署，蓬溪格勒人民高等中学招生办公室负责解释。</p>
+      <p>文件编号：ASR-EDU-2026-ADM-001 · 亚斯共和国版本图书馆（2026）第 03699 号</p>
+    </div>
+
+  </article>
 
 </main>
 
 <div id="site-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
 <script src="assets/js/main.js"></script>
+
+<script>
+/* 侧边目录：滚动高亮 */
+(function () {
+  'use strict';
+
+  var links = document.querySelectorAll('.ad-toc-link');
+  var chapters = [];
+  links.forEach(function (link) {
+    var id = link.getAttribute('href');
+    if (!id || id.charAt(0) !== '#') return;
+    var el = document.querySelector(id);
+    if (el) chapters.push({ link: link, el: el });
+  });
+
+  function onScroll() {
+    var scrollY = window.scrollY + 120;
+    var active = chapters.length ? chapters[0] : null;
+    chapters.forEach(function (c) {
+      if (c.el.offsetTop <= scrollY) active = c;
+    });
+    links.forEach(function (l) { l.classList.remove('on'); });
+    if (active) active.link.classList.add('on');
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* 平滑滚动 */
+  links.forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      var id = link.getAttribute('href');
+      if (!id || id.charAt(0) !== '#') return;
+      var el = document.querySelector(id);
+      if (!el) return;
+      e.preventDefault();
+      var top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+      history.replaceState(null, '', id);
+    });
+  });
+
+})();
+</script>
+
 </body>
 </html>
