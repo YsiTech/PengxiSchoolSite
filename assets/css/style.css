@@ -1460,3 +1460,26 @@ body.warn-page{
   .leader-role{font-size:12px}
   .leader-body p{font-size:12.5px}
 }
+/* 导航栏好友红点 */
+.main-nav a{
+  position:relative;
+}
+.nav-badge{
+  position:absolute;
+  top:8px;
+  right:6px;
+  min-width:16px;
+  height:16px;
+  padding:0 4px;
+  line-height:16px;
+  border-radius:8px;
+  background:#ff4757;
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+  text-align:center;
+  box-shadow:0 0 0 2px var(--blue);
+  letter-spacing:0;
+  pointer-events:none;
+}
+.nav-badge.hide{display:none}

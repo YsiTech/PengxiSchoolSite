@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>聊天 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/friends.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+</head>
+<body data-page="friends">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="friends.html">我的好友</a><i>›</i><span>聊天</span></div>
+    <h1 id="chatTitle">与 xxx 聊天</h1>
+    <p id="chatSub">消息会保存在云端，对方上线后可以收到</p>
+  </div>
+</section>
+
+<main class="section chat-main">
+
+  <div class="chat-box">
+
+    <!-- 顶部：对方信息 -->
+    <div class="chat-head" id="chatHead">
+      <a class="chat-back" href="friends.html">← 返回</a>
+      <div class="chat-peer" id="chatPeer">
+        <div class="chat-peer-avatar">
+          <span>?</span>
+        </div>
+        <div class="chat-peer-info">
+          <b>加载中…</b>
+          <span>—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 消息列表 -->
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-loading">正在加载聊天记录…</div>
+    </div>
+
+    <!-- 输入框 -->
+    <form class="chat-input-row" id="chatForm">
+      <textarea id="chatInput" rows="1" placeholder="输入消息，Enter 发送，Shift+Enter 换行" maxlength="1000"></textarea>
+      <button type="submit" id="chatSendBtn">发送</button>
+    </form>
+
+  </div>
+
+</main>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/chat.js"></script>
+
+</body>
+</html>

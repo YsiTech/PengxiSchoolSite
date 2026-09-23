@@ -32,6 +32,7 @@
         { id:'admissions', text:'招生招聘', href:'admissions.html' },
         { id:'history',    text:'校史馆',   href:'history.html' },
         { id:'contact',    text:'联系我们', href:'contact.html' },
+        { id:'friends', text:'我的好友', href:'friends.html' },
         { id:'history',    text:'个人中心',   href:'profile.html' }
       ],
       footerAbout: '在红星下求知，在友谊中成长。我们以基础俄语、亚斯史纲要、国际社会学为特色，培养有全球视野的社会主义建设者。',
@@ -283,9 +284,12 @@
     if (!host) return;
     var page = document.body.dataset.page || 'index';
 
-    var navHtml = T.nav.map(function (item) {
+       var navHtml = T.nav.map(function (item) {
       var cls = (item.id === page) ? ' class="active"' : '';
-      return '<a' + cls + ' href="' + item.href + '">' + item.text + '</a>';
+      var badge = (item.id === 'friends')
+        ? '<span class="nav-badge hide" id="navFriendBadge">0</span>'
+        : '';
+      return '<a' + cls + ' href="' + item.href + '">' + item.text + badge + '</a>';
     }).join('');
 
     var pageFile = (location.pathname.split('/').pop() || 'mainsite.html').split('?')[0];
@@ -839,6 +843,41 @@
     safeCall('initPageExtras', initPageExtras);
     safeCall('initConsole', initConsole);
     safeCall('initShortcuts', initShortcuts);
+      /* ============================================================
+     好友红点提示
+     ============================================================ */
+  function initFriendBadge() {
+    if (!window.Auth || !Auth.client) return;
+
+    function refresh() {
+      if (!Auth.isLoggedIn()) return;
+      var u = Auth.getCurrentUser();
+      if (!u) return;
+
+      Auth.client.from('friendships')
+        .select('id', { count: 'exact', head: true })
+        .eq('addressee_id', u.id)
+        .eq('status', 'pending')
+        .then(function (res) {
+          var n = res.count || 0;
+          var el = document.getElementById('navFriendBadge');
+          if (el) {
+            if (n > 0) {
+              el.textContent = n > 99 ? '99+' : n;
+              el.classList.remove('hide');
+            } else {
+              el.classList.add('hide');
+            }
+          }
+        });
+    }
+
+    /* 页面加载后 1 秒首次查询 */
+    setTimeout(refresh, 1000);
+    /* 每 30 秒刷一次 */
+    setInterval(function () { if (!document.hidden) refresh(); }, 30000);
+  } 
+    safeCall('initFriendBadge', initFriendBadge);
     safeCall('mountAuthNav', function () {
       if (window.Auth && Auth.mountNavStatus) {
         Auth.mountNavStatus(IS_RU ? 'ru' : 'zh');
