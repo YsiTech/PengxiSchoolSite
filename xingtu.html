@@ -1,17 +1,11 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/auth.js"></script>
-<script src="assets/js/main.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>星图 · 蓬溪格勒人民高等中学</title>
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-/* ============================================================
-   星图 · 多人版样式
-   ============================================================ */
 .xt-wrap{max-width:980px;margin:0 auto;padding:34px 20px 60px}
 .xt-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
 
@@ -44,7 +38,13 @@
 .xt-status.warn{color:#ff9aa8}
 .xt-status.warn .dot{background:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.2)}
 
-/* 房间状态 */
+/* 附近的人（默认显示） */
+.xt-nearby{padding:20px 22px;background:#f7f4ec;border-top:1px solid var(--line-soft)}
+.xt-nearby h3{margin:0 0 6px;color:var(--blue);font-size:15px;letter-spacing:1px}
+.xt-nearby .sub{font-size:12.5px;color:var(--muted);margin-bottom:14px}
+.xt-nearby-list{display:flex;flex-wrap:wrap;gap:10px}
+.xt-nearby-empty{font-size:13px;color:var(--muted);padding:8px 0}
+
 .xt-room{padding:16px 22px;background:#f2f5fa;border-bottom:1px solid var(--line-soft);display:none}
 .xt-room.on{display:block}
 .xt-room-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
@@ -63,9 +63,7 @@
 .xt-mem-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
 .xt-mem.me{background:var(--red-soft);border-color:#f6cdd5;color:var(--red-dark);font-weight:600}
 .xt-mem.host{background:var(--gold-bg);border-color:#ead9a8;color:#8a6d12}
-.xt-mem.host::after{content:"房主";font-size:10px;padding:1px 5px;background:var(--gold);color:#241b08;border-radius:3px;letter-spacing:.5px;margin-left:2px}
 
-/* Tabs */
 .xt-tabs{display:flex;background:#f2f5fa;border-bottom:1px solid var(--line-soft);overflow-x:auto}
 .xt-tab{
   flex:1;padding:15px 16px;border:0;background:transparent;cursor:pointer;
@@ -78,12 +76,10 @@
 .xt-tab .badge{display:inline-block;background:var(--red);color:#fff;border-radius:99px;font-size:10.5px;padding:1px 7px;margin-left:5px;vertical-align:1px;font-weight:700}
 .xt-tab .badge.hide{display:none}
 
-/* Panels */
 .xt-panel{display:none}
 .xt-panel.on{display:block}
 .xt-panel-inner{padding:18px 20px}
 
-/* 聊天 */
 .xt-chat-body{height:400px;overflow-y:auto;padding:16px 20px;background:#f7f4ec;display:flex;flex-direction:column;gap:10px}
 .xt-msg{max-width:78%;padding:9px 14px;border-radius:14px;font-size:14.5px;line-height:1.6;word-wrap:break-word}
 .xt-msg.self{align-self:flex-end;background:var(--red);color:#fff;border-bottom-right-radius:3px}
@@ -101,7 +97,6 @@
 .xt-send button:hover{background:var(--red-dark)}
 .xt-send button:disabled{opacity:.45;cursor:not-allowed}
 
-/* 呼叫成员列表 */
 .xt-call-list{padding:18px 20px}
 .xt-call-hint{font-size:13px;color:var(--muted);margin-bottom:14px}
 .xt-call-item{
@@ -112,12 +107,9 @@
 .xt-call-item:hover{border-color:var(--gold);box-shadow:var(--shadow-sm)}
 .xt-call-item .avatar{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:16px}
 .xt-call-item .name{flex:1;font-size:14.5px;color:var(--ink);font-weight:600}
-.xt-call-item .tag{font-size:11px;color:var(--muted);padding:2px 8px;border-radius:99px;background:#f2f5fa;border:1px solid var(--line-soft)}
 .xt-call-item button{background:var(--red);color:#fff;border:0;padding:8px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;transition:background .2s}
 .xt-call-item button:hover{background:var(--red-dark)}
-.xt-call-item.me{opacity:.55;pointer-events:none}
 
-/* 语音/视频舞台 */
 .xt-media-stage{padding:38px 20px 32px;text-align:center;background:linear-gradient(150deg,#1a2b4c,#12203a);color:#fff;position:relative}
 .xt-avatar{width:130px;height:130px;margin:0 auto 18px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#e02040,var(--red) 55%,var(--red-dark));display:grid;place-items:center;font-size:52px;color:var(--gold-soft);box-shadow:0 0 0 6px rgba(212,175,55,.25);position:relative}
 .xt-avatar::after{content:"";position:absolute;inset:-14px;border-radius:50%;border:1.5px dashed rgba(212,175,55,.55);animation:xtSpin 26s linear infinite}
@@ -137,7 +129,6 @@
 .xt-ctl.hang{background:var(--red)}
 .xt-ctl.hang:hover{background:var(--red-dark)}
 
-/* 视频 */
 .xt-video-stage{position:relative;background:#0d1522;aspect-ratio:16/9;overflow:hidden}
 .xt-remote{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0d1522}
 .xt-local{position:absolute;right:16px;bottom:16px;width:24%;max-width:190px;aspect-ratio:16/9;object-fit:cover;border-radius:12px;border:2px solid rgba(255,255,255,.6);box-shadow:0 8px 24px rgba(0,0,0,.5);background:#000;z-index:3;transition:opacity .2s}
@@ -154,7 +145,6 @@
 .xt-rec::before{content:"";width:8px;height:8px;border-radius:50%;background:#fff;animation:xtBlink 1.4s ease-in-out infinite}
 @keyframes xtBlink{0%,100%{opacity:1}50%{opacity:.25}}
 
-/* 文件 */
 .xt-drop{border:2px dashed var(--line);border-radius:var(--radius);padding:34px 20px;text-align:center;cursor:pointer;background:#fbf9f4;transition:border-color .2s,background .2s}
 .xt-drop:hover,.xt-drop.over{border-color:var(--red);background:var(--red-soft)}
 .xt-drop b{display:block;font-size:15px;color:var(--blue);margin-bottom:6px}
@@ -177,7 +167,6 @@
 .xt-item.error .xt-bar-fill{background:var(--red)}
 .xt-empty{text-align:center;padding:20px 10px;color:var(--muted);font-size:13px}
 
-/* 来电弹窗 */
 .xt-incoming{position:fixed;inset:0;background:rgba(26,43,76,.85);display:grid;place-items:center;z-index:1000;padding:20px}
 .xt-incoming.hide{display:none}
 .xt-incoming-box{background:#fff;border-radius:var(--radius);padding:30px;text-align:center;max-width:360px;width:100%;box-shadow:var(--shadow-lg);animation:xtIn .28s ease}
@@ -205,7 +194,7 @@
 
 <section class="page-hero">
   <div class="page-hero-inner">
-    <div class="crumb"><a href="index.html">首页</a><i>›</i><span>星图</span></div>
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><span>星图</span></div>
     <h1>星图</h1>
     <p>多人文字 · 文件 · 一对一语音视频 · 无需注册，数据不经过任何服务器</p>
   </div>
@@ -214,7 +203,7 @@
 <main class="xt-wrap">
   <div class="xt-card">
 
-    <!-- ============ 加入面板 ============ -->
+    <!-- 加入面板 -->
     <div class="xt-join" id="joinPanel">
       <h3>进入房间</h3>
       <div class="xt-join-row">
@@ -228,7 +217,15 @@
       <div class="xt-status" id="joinStatus"><span class="dot"></span><span id="joinText">输入昵称与房间号开始</span></div>
     </div>
 
-    <!-- ============ 房间状态 ============ -->
+    <!-- 附近的人（默认显示） -->
+    <div class="xt-nearby" id="nearbyPanel">
+      <h3>附近的人</h3>
+      <div class="sub">打开这个页面的所有人都会自动出现在这里，点一下即可直接连接</div>
+      <div class="xt-nearby-list" id="nearbyList"></div>
+      <div class="xt-nearby-empty" id="nearbyEmpty">暂时没有其他人在线。把链接发给同学，让他们打开这个页面就会自动出现在这里。</div>
+    </div>
+
+    <!-- 房间状态 -->
     <div class="xt-room" id="roomPanel">
       <div class="xt-room-top">
         <div>
@@ -240,10 +237,9 @@
       <div class="xt-members" id="memberList"></div>
     </div>
 
-    <!-- ============ 主面板 ============ -->
+    <!-- 主面板 -->
     <div id="mainPanel" class="hide">
 
-      <!-- Tabs -->
       <div class="xt-tabs" role="tablist">
         <button class="xt-tab on" data-tab="chat"  type="button">文字</button>
         <button class="xt-tab"    data-tab="voice" type="button">语音 <span class="badge hide" data-badge="voice">●</span></button>
@@ -343,30 +339,29 @@
   </div>
 </div>
 
-<!-- 隐藏媒体元素 -->
 <audio id="remoteAudio" autoplay playsinline></audio>
 
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
 <script src="assets/js/main.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
 <script>
 (function () {
   'use strict';
 
-  /* ============================================================
-     配置
-     ============================================================ */
-  var ROOM_PREFIX  = 'pxgl-xingtu-';
-  var CHUNK_SIZE   = 16 * 1024;
-  var HIGH_WATER   = 4 * 1024 * 1024;
-  var MAX_MEMBERS  = 8;   // 房主中转建议不超过 8 人
+  var SUPABASE_URL      = 'https://api.ponxigrad.tech';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidG1la3dtcGh2bXluc2pmcGxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwOTM5NjMsImV4cCI6MjEwNTY2OTk2M30.Cq04l3c8hxsIheEf3e6bHKUhFhe-VybfaEbaXwlGQ3M';
 
-  /* ============================================================
-     DOM
-     ============================================================ */
+  var ROOM_PREFIX  = 'pxgl-xingtu-';
+  var CHUNK_SIZE   = 8 * 1024;
+  var HIGH_WATER   = 4 * 1024 * 1024;
+  var MAX_MEMBERS  = 8;
+  var POLL_INTERVAL = 10000;
+  var ALIVE_WINDOW  = 35000;
+
   var $ = function (id) { return document.getElementById(id); };
 
-  var joinPanel   = $('joinPanel');
   var nickInput   = $('nickInput');
   var roomInput   = $('roomInput');
   var createBtn   = $('createBtn');
@@ -374,12 +369,15 @@
   var joinStatus  = $('joinStatus');
   var joinText    = $('joinText');
 
+  var nearbyPanel = $('nearbyPanel');
+  var nearbyList  = $('nearbyList');
+  var nearbyEmpty = $('nearbyEmpty');
+
   var roomPanel   = $('roomPanel');
   var roomIdShow  = $('roomIdShow');
   var memberCount = $('memberCount');
   var memberList  = $('memberList');
   var leaveBtn    = $('leaveBtn');
-
   var mainPanel   = $('mainPanel');
 
   var chatBody    = $('chatBody');
@@ -387,7 +385,6 @@
   var chatInput   = $('chatInput');
   var chatSend    = $('chatSend');
 
-  var voiceStage  = $('voiceStage');
   var voiceAvatar = $('voiceAvatar');
   var voiceName   = $('voiceName');
   var voiceTimer  = $('voiceTimer');
@@ -422,27 +419,19 @@
   var answerBtn   = $('answerBtn');
   var rejectBtn   = $('rejectBtn');
 
-  /* ============================================================
-     状态
-     ============================================================ */
   var state = {
     peer: null,
     isHost: false,
     roomId: '',
     nick: '',
     myPeerId: '',
-    /* 房主维护：peerId -> { nick, conn } */
     members: {},
-    /* 成员维护：与房主的连接 */
     hostConn: null,
-    /* 所有成员共享的成员列表快照 [{ id, nick, isHost }] */
     roster: [],
-    /* 通话 */
     call: null,
     incomingCall: null,
     localStream: null,
     mediaMode: 'audio',
-    /* 文件锁：一次只允许一个人发 */
     fileBusy: false,
     fileFrom: null
   };
@@ -453,10 +442,9 @@
   var isCamOff = false;
   var incomingFiles = {};
   var currentIncomingId = null;
+  var pendingFile = null;
+  var supabaseClient = null;
 
-  /* ============================================================
-     工具
-     ============================================================ */
   function escHtml(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
@@ -497,9 +485,7 @@
     return { id: id, nick: id.slice(0, 8) };
   }
 
-  /* ============================================================
-     Tabs
-     ============================================================ */
+  /* Tabs */
   document.querySelectorAll('.xt-tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
       var name = tab.dataset.tab;
@@ -515,8 +501,172 @@
     });
   });
 
+  /* 自动填昵称 */
+  try {
+    var savedNick = localStorage.getItem('pxgl_xingtu_nick');
+    if (savedNick) nickInput.value = savedNick;
+    if (window.Auth && Auth.getCurrentUser) {
+      var u = Auth.getCurrentUser();
+      if (u && u.nickname && !nickInput.value) nickInput.value = u.nickname;
+    }
+  } catch (e) {}
+
   /* ============================================================
-     入口：创建房间 / 加入房间
+     启动 Peer + 在线发现
+     ============================================================ */
+  state.peer = new Peer({ debug: 0 });
+
+  state.peer.on('open', function (id) {
+    state.myPeerId = id;
+    console.log('[星图] Peer 已就绪:', id);
+
+    var nick = nickInput.value.trim() || '同学' + String(id).slice(0, 4);
+    state.nick = nick;
+
+    startPresence(id, nick);
+    initMedia();
+  });
+
+  state.peer.on('error', function (err) {
+    console.error('[星图 Peer 错误]', err);
+  });
+
+  /* 被别人连接 */
+  state.peer.on('connection', function (conn) {
+    console.log('[星图] 收到连接:', conn.peer);
+    if (state.hostConn && state.hostConn.open) {
+      conn.close();
+      return;
+    }
+    state.hostConn = conn;
+    bindConnection();
+    setJoin('已连接 ' + conn.peer.slice(0, 8), 'ok');
+    roomPanel.classList.add('on');
+    roomIdShow.textContent = 'P2P';
+    mainPanel.classList.remove('hide');
+    addChatSystem('对方已接入');
+    state.roster = [
+      { id: state.myPeerId, nick: state.nick, isHost: true },
+      { id: conn.peer, nick: '对方', isHost: false }
+    ];
+    state.members[state.myPeerId] = { nick: state.nick, conn: null };
+    state.members[conn.peer] = { nick: '对方', conn: conn };
+    renderRoster();
+    renderCallList();
+    enableConnectionControls(true);
+  });
+
+  state.peer.on('call', function (call) {
+    if (state.call && state.call.open) { call.close(); return; }
+    state.incomingCall = call;
+    var mode = (call.metadata && call.metadata.mode) || 'audio';
+    incomingTitle.textContent = mode === 'video' ? '视频来电' : '语音来电';
+    incomingSub.textContent = '对方请求与你进行' + (mode === 'video' ? '视频' : '语音') + '通话';
+    incomingBox.classList.remove('hide');
+  });
+
+  /* ============================================================
+     在线发现（数据库轮询）
+     ============================================================ */
+  function startPresence(peerId, nickname) {
+    if (!window.supabase || !window.supabase.createClient) {
+      console.warn('[Signal] Supabase SDK 未加载');
+      return;
+    }
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function tick() {
+      var upsert = supabaseClient
+        .from('online_users')
+        .upsert({
+          peer_id:   peerId,
+          nickname:  nickname,
+          last_seen: new Date().toISOString()
+        }, { onConflict: 'peer_id' });
+
+      var cutoff = new Date(Date.now() - ALIVE_WINDOW).toISOString();
+      var query = supabaseClient
+        .from('online_users')
+        .select('peer_id, nickname, last_seen')
+        .gt('last_seen', cutoff)
+        .neq('peer_id', peerId);
+
+      Promise.all([upsert, query]).then(function (results) {
+        var res = results[1];
+        if (res.error) {
+          console.error('[Signal] 查询失败:', res.error);
+          return;
+        }
+        var members = (res.data || []).map(function (m) {
+          return {
+            peerId:   m.peer_id,
+            nickname: m.nickname,
+            joinedAt: new Date(m.last_seen).getTime()
+          };
+        });
+        members.sort(function (a, b) { return a.joinedAt - b.joinedAt; });
+        console.log('[Signal] 在线成员数:', members.length);
+        renderNearby(members);
+      }).catch(function (err) {
+        console.error('[Signal] 轮询异常:', err);
+      });
+    }
+
+    tick();
+    setInterval(tick, POLL_INTERVAL);
+  }
+
+  function renderNearby(members) {
+    if (!nearbyList) return;
+    nearbyList.innerHTML = '';
+
+    if (!members.length) {
+      if (nearbyEmpty) nearbyEmpty.style.display = '';
+      return;
+    }
+    if (nearbyEmpty) nearbyEmpty.style.display = 'none';
+
+    members.forEach(function (m) {
+      var card = document.createElement('button');
+      card.type = 'button';
+      card.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:99px;border:1px solid #e4dccb;background:#fff;cursor:pointer;font-family:inherit;font-size:13.5px;color:#1a2b4c';
+      var c = hashColor(m.nickname || '?');
+      card.innerHTML =
+        '<span style="width:24px;height:24px;border-radius:50%;background:' + c + ';color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700">' +
+          initial(m.nickname) +
+        '</span>' +
+        '<span>' + escHtml(m.nickname || '匿名') + '</span>' +
+        '<span style="color:#c8102e;font-weight:700;margin-left:4px">连接</span>';
+      card.addEventListener('click', function () {
+        console.log('[星图] 点击连接:', m.peerId);
+        if (!state.nick) {
+          state.nick = nickInput.value.trim() || '同学' + state.myPeerId.slice(0, 4);
+        }
+        state.isHost = true;
+        state.roomId = 'P2P';
+        state.roster = [{ id: state.myPeerId, nick: state.nick, isHost: true }];
+        state.members[state.myPeerId] = { nick: state.nick, conn: null };
+        roomPanel.classList.add('on');
+        roomIdShow.textContent = '正在连接…';
+        mainPanel.classList.remove('hide');
+        renderRoster();
+        renderCallList();
+
+        var conn = state.peer.connect(m.peerId, { reliable: true });
+        state.hostConn = conn;
+        bindConnection();
+        conn.on('open', function () {
+          conn.send({ type: 'hello', nick: state.nick });
+          roomIdShow.textContent = 'P2P · ' + m.nickname;
+          setJoin('已连接到 ' + m.nickname, 'ok');
+        });
+      });
+      nearbyList.appendChild(card);
+    });
+  }
+
+  /* ============================================================
+     创建 / 加入房间（保留原有逻辑）
      ============================================================ */
   createBtn.addEventListener('click', function () { enterRoom(true); });
   joinBtn.addEventListener('click', function () { enterRoom(false); });
@@ -540,312 +690,46 @@
 
     state.nick = nick;
     state.roomId = room;
+    try { localStorage.setItem('pxgl_xingtu_nick', nick); } catch (e) {}
 
     createBtn.disabled = true;
     joinBtn.disabled = true;
     setJoin('正在' + (isHost ? '创建' : '加入') + '房间…');
 
-    /* 房主使用固定 ID；成员用随机 ID */
+    var hostId = ROOM_PREFIX + room;
     if (isHost) {
       state.isHost = true;
-      var fixedId = ROOM_PREFIX + room;
-      state.peer = new Peer(fixedId, { debug: 0 });
-      bindPeer();
+      state.roster = [{ id: state.myPeerId, nick: nick, isHost: true }];
+      state.members[state.myPeerId] = { nick: nick, conn: null };
+      enterRoomUI(state.myPeerId, state.roomId);
     } else {
       state.isHost = false;
-      state.peer = new Peer({ debug: 0 });
-      bindPeer();
-    }
-
-    /* 请求媒体权限（用于语音/视频） */
-    requestMedia();
-
-    /* 加载缓存昵称 */
-    try { localStorage.setItem('pxgl_xingtu_nick', nick); } catch (e) {}
-  }
-
-  /* 恢复昵称 */
-  try {
-    var saved = localStorage.getItem('pxgl_xingtu_nick');
-    if (saved) nickInput.value = saved;
-  } catch (e) {}
-
-  /* ============================================================
-     Peer 事件
-     ============================================================ */
-  function bindPeer() {
-    state.peer.on('open', function (id) {
-      state.myPeerId = id;
-      if (state.isHost) {
-        setJoin('房间已创建', 'ok');
-        enterRoomUI(id, state.roomId);
-        state.roster = [{ id: id, nick: state.nick, isHost: true }];
-        state.members[id] = { nick: state.nick, conn: null };
-        renderRoster();
-      } else {
-        setJoin('已上线，正在连接房主…', 'ok');
-        connectToHost();
-      }
-    });
-
-    state.peer.on('error', function (err) {
-      console.error('[PeerJS]', err);
-      if (err.type === 'unavailable-id') {
-        setJoin('该房间号已被使用，请换一个', 'warn');
-        resetButtons();
-      } else if (err.type === 'peer-unavailable') {
-        setJoin('未找到该房间，请检查房间号', 'warn');
-        resetButtons();
-        if (!state.isHost) {
-          try { state.peer.destroy(); } catch (e) {}
-          state.peer = null;
-        }
-      } else {
-        setJoin('连接错误：' + err.type, 'warn');
-        resetButtons();
-      }
-    });
-
-    /* 房主：接受数据连接 */
-    state.peer.on('connection', function (conn) {
-      if (!state.isHost) return;
-      hostOnConnection(conn);
-    });
-
-    /* 任何人：接收呼叫 */
-    state.peer.on('call', function (call) {
-      if (state.call && state.call.open) { call.close(); return; }
-      state.incomingCall = call;
-      var mode = (call.metadata && call.metadata.mode) || 'audio';
-      incomingTitle.textContent = mode === 'video' ? '视频来电' : '语音来电';
-      incomingSub.textContent = '对方请求与你进行' + (mode === 'video' ? '视频' : '语音') + '通话';
-      incomingBox.classList.remove('hide');
-    });
-  }
-
-  function resetButtons() {
-    createBtn.disabled = false;
-    joinBtn.disabled = false;
-  }
-
-  /* ============================================================
-     房主：处理新连接
-     ============================================================ */
-  function hostOnConnection(conn) {
-    conn.on('open', function () {
-      /* 等对方发 hello */
-    });
-
-    conn.on('data', function (data) {
-      hostOnData(conn, data);
-    });
-
-    conn.on('close', function () {
-      var pid = findPidByConn(conn);
-      if (pid && state.members[pid]) {
-        var nick = state.members[pid].nick;
-        delete state.members[pid];
-        state.roster = state.roster.filter(function (m) { return m.id !== pid; });
-        renderRoster();
-        broadcastToAll({ type: 'system', text: nick + ' 离开了房间' });
-        /* 如果离开的人在传文件，释放锁 */
-        if (state.fileFrom === pid) {
-          state.fileBusy = false;
-          state.fileFrom = null;
-        }
-      }
-    });
-
-    conn.on('error', function (err) {
-      console.warn('[host conn]', err);
-    });
-  }
-
-  function findPidByConn(conn) {
-    for (var pid in state.members) {
-      if (state.members[pid].conn === conn) return pid;
-    }
-    return null;
-  }
-
-  function hostOnData(conn, data) {
-    /* 二进制文件块：转发给其他所有人 */
-    if (data instanceof ArrayBuffer || (data && data.byteLength)) {
-      broadcastBinary(conn, data);
-      return;
-    }
-    if (!data || typeof data !== 'object') return;
-
-    var pid = findPidByConn(conn);
-
-    switch (data.type) {
-      case 'hello':
-        /* 新成员 */
-        if (state.roster.length >= MAX_MEMBERS) {
-          conn.send({ type: 'kick', reason: '房间已满（上限 ' + MAX_MEMBERS + ' 人）' });
-          setTimeout(function () { conn.close(); }, 200);
-          return;
-        }
-        state.members[conn.peer] = { nick: data.nick, conn: conn };
-        state.roster.push({ id: conn.peer, nick: data.nick, isHost: false });
-        conn.send({ type: 'welcome', hostId: state.myPeerId, roomId: state.roomId });
-        broadcastRoster();
-        broadcastToAll({ type: 'system', text: data.nick + ' 加入了房间' }, conn);
-        /* 告诉加入者历史（可选，先跳过） */
-        break;
-
-      case 'chat':
-        broadcastToAll({
-          type: 'chat',
-          from: pid,
-          nick: state.members[pid] ? state.members[pid].nick : '匿名',
-          text: String(data.text || '').slice(0, 500),
-          at: Date.now()
-        });
-        break;
-
-      case 'file-request':
-        if (state.fileBusy) {
-          conn.send({ type: 'file-busy' });
-          return;
-        }
-        state.fileBusy = true;
-        state.fileFrom = pid;
-        conn.send({ type: 'file-grant' });
-        broadcastToAll({
-          type: 'system',
-          text: (state.members[pid] ? state.members[pid].nick : '匿名') + ' 开始发送文件'
-        });
-        break;
-
-      case 'file-meta':
-        broadcastToAll(data, conn);
-        break;
-
-      case 'file-end':
-        broadcastToAll(data, conn);
-        state.fileBusy = false;
-        state.fileFrom = null;
-        break;
-
-      case 'bye':
-        /* 主动离开 */
-        if (pid) conn.close();
-        break;
+      state.hostConn = state.peer.connect(hostId, { reliable: true });
+      bindConnection();
+      state.hostConn.on('open', function () {
+        state.hostConn.send({ type: 'hello', nick: nick });
+        enterRoomUI(state.myPeerId, state.roomId);
+      });
     }
   }
 
-  function broadcastToAll(msg, exceptConn) {
-    for (var pid in state.members) {
-      var m = state.members[pid];
-      if (m.conn && m.conn.open && m.conn !== exceptConn) {
-        try { m.conn.send(msg); } catch (e) {}
-      }
-    }
-    /* 房主自己也处理 */
-    handleLocal(msg);
-  }
-
-  function broadcastBinary(exceptConn, buf) {
-    for (var pid in state.members) {
-      var m = state.members[pid];
-      if (m.conn && m.conn.open && m.conn !== exceptConn) {
-        try { m.conn.send(buf); } catch (e) {}
-      }
-    }
-  }
-
-  function broadcastRoster() {
-    var list = state.roster.slice();
-    broadcastToAll({ type: 'roster', list: list });
-  }
-
-  /* ============================================================
-     成员：连接房主
-     ============================================================ */
-  function connectToHost() {
-    var hostId = ROOM_PREFIX + state.roomId;
-    state.hostConn = state.peer.connect(hostId, { reliable: true });
-
-    state.hostConn.on('open', function () {
-      state.hostConn.send({ type: 'hello', nick: state.nick });
-      enterRoomUI(state.myPeerId, state.roomId);
-    });
-
-    state.hostConn.on('data', function (data) {
-      memberOnData(data);
-    });
-
-    state.hostConn.on('close', function () {
-      addChatSystem('与房主的连接已断开');
-      setJoin('已断开连接', 'warn');
-    });
-
-    state.hostConn.on('error', function (err) {
-      console.warn('[hostConn]', err);
-    });
-  }
-
-  function memberOnData(data) {
-    if (data instanceof ArrayBuffer || (data && data.byteLength)) {
-      onFileChunk(data);
-      return;
-    }
-    if (!data || typeof data !== 'object') return;
-
-    switch (data.type) {
-      case 'welcome':
-        /* 房主确认 */
-        break;
-      case 'roster':
-        state.roster = data.list;
-        renderRoster();
-        renderCallList();
-        break;
-      case 'chat':
-        addChatOther(data.nick, data.text, data.at, data.from);
-        break;
-      case 'system':
-        addChatSystem(data.text);
-        break;
-      case 'kick':
-        window.siteToast && window.siteToast(data.reason || '已被移出房间');
-        setTimeout(function () { leaveRoom(); }, 1200);
-        break;
-      case 'file-grant':
-        doSendFile();
-        break;
-      case 'file-busy':
-        window.siteToast && window.siteToast('有人正在发送文件，请稍后');
-        pendingFile = null;
-        break;
-      case 'file-meta':
-        onFileMeta(data);
-        break;
-      case 'file-end':
-        onFileEnd(data);
-        break;
-    }
-  }
-
-  /* ============================================================
-     进入房间 UI
-     ============================================================ */
   function enterRoomUI(myId, roomId) {
-    joinPanel.style.display = 'none';
     roomPanel.classList.add('on');
     mainPanel.classList.remove('hide');
     roomIdShow.textContent = roomId;
     renderRoster();
     renderCallList();
+    enableConnectionControls(true);
   }
 
-  /* ============================================================
-     渲染成员列表
-     ============================================================ */
-  function renderRoster() {
-    memberCount.textContent = state.roster.length;
+  function enableConnectionControls(on) {
+    chatInput.disabled = !on;
+    chatSend.disabled = !on;
+  }
 
+  function renderRoster() {
+    if (!memberCount || !memberList) return;
+    memberCount.textContent = state.roster.length;
     memberList.innerHTML = '';
     state.roster.forEach(function (m) {
       var isMe = m.id === state.myPeerId;
@@ -858,9 +742,6 @@
     });
   }
 
-  /* ============================================================
-     渲染呼叫成员列表（语音 / 视频）
-     ============================================================ */
   function renderCallList() {
     [voiceCallList, videoCallList].forEach(function (container, idx) {
       if (!container) return;
@@ -882,12 +763,159 @@
           '<div class="name">' + escHtml(m.nick) + (m.isHost ? ' · 房主' : '') + '</div>' +
           '<button type="button">呼叫</button>';
         item.querySelector('button').addEventListener('click', function () {
-          if (idx === 0) startCall('audio', m.id);
-          else startCall('video', m.id);
+          startCall(idx === 0 ? 'audio' : 'video', m.id);
         });
         container.appendChild(item);
       });
     });
+  }
+
+  /* ============================================================
+     数据通道
+     ============================================================ */
+  function bindConnection() {
+    var conn = state.hostConn;
+    if (!conn) return;
+
+    conn.on('data', function (data) {
+      if (data instanceof ArrayBuffer || (data && data.byteLength)) {
+        if (state.isHost) broadcastBinary(conn, data);
+        else onFileChunk(data);
+        return;
+      }
+      if (!data || typeof data !== 'object') return;
+      if (state.isHost) hostOnData(conn, data);
+      else memberOnData(data);
+    });
+
+    conn.on('close', function () {
+      if (state.isHost) {
+        var pid = findPidByConn(conn);
+        if (pid && state.members[pid]) {
+          var nick = state.members[pid].nick;
+          delete state.members[pid];
+          state.roster = state.roster.filter(function (m) { return m.id !== pid; });
+          renderRoster();
+          broadcastToAll({ type: 'system', text: nick + ' 离开了房间' });
+          if (state.fileFrom === pid) { state.fileBusy = false; state.fileFrom = null; }
+        }
+      } else {
+        setJoin('与对方的连接已断开', 'warn');
+      }
+    });
+  }
+
+  function findPidByConn(conn) {
+    for (var pid in state.members) {
+      if (state.members[pid].conn === conn) return pid;
+    }
+    return null;
+  }
+
+  function hostOnData(conn, data) {
+    var pid = findPidByConn(conn);
+    switch (data.type) {
+      case 'hello':
+        if (state.roster.length >= MAX_MEMBERS) {
+          conn.send({ type: 'kick', reason: '房间已满（上限 ' + MAX_MEMBERS + ' 人）' });
+          setTimeout(function () { conn.close(); }, 200);
+          return;
+        }
+        state.members[conn.peer] = { nick: data.nick, conn: conn };
+        state.roster.push({ id: conn.peer, nick: data.nick, isHost: false });
+        conn.send({ type: 'welcome', hostId: state.myPeerId, roomId: state.roomId });
+        broadcastRoster();
+        broadcastToAll({ type: 'system', text: data.nick + ' 加入了房间' }, conn);
+        break;
+      case 'chat':
+        broadcastToAll({
+          type: 'chat',
+          from: pid,
+          nick: state.members[pid] ? state.members[pid].nick : '匿名',
+          text: String(data.text || '').slice(0, 500),
+          at: Date.now()
+        });
+        break;
+      case 'file-request':
+        if (state.fileBusy) { conn.send({ type: 'file-busy' }); return; }
+        state.fileBusy = true;
+        state.fileFrom = pid;
+        conn.send({ type: 'file-grant' });
+        break;
+      case 'file-meta':
+        broadcastToAll(data, conn);
+        break;
+      case 'file-end':
+        broadcastToAll(data, conn);
+        state.fileBusy = false;
+        state.fileFrom = null;
+        break;
+      case 'bye':
+        if (pid) conn.close();
+        break;
+    }
+  }
+
+  function memberOnData(data) {
+    switch (data.type) {
+      case 'welcome': break;
+      case 'roster':
+        state.roster = data.list;
+        renderRoster();
+        renderCallList();
+        break;
+      case 'chat':
+        addChatOther(data.nick, data.text, data.at, data.from);
+        break;
+      case 'system':
+        addChatSystem(data.text);
+        break;
+      case 'file-grant': doSendFile(); break;
+      case 'file-busy':
+        window.siteToast && window.siteToast('有人正在发送文件，请稍后');
+        pendingFile = null;
+        break;
+      case 'file-meta': onFileMeta(data); break;
+      case 'file-end': onFileEnd(data); break;
+    }
+  }
+
+  function broadcastToAll(msg, exceptConn) {
+    for (var pid in state.members) {
+      var m = state.members[pid];
+      if (m.conn && m.conn.open && m.conn !== exceptConn) {
+        try { m.conn.send(msg); } catch (e) {}
+      }
+    }
+    handleLocal(msg);
+  }
+
+  function broadcastBinary(exceptConn, buf) {
+    for (var pid in state.members) {
+      var m = state.members[pid];
+      if (m.conn && m.conn.open && m.conn !== exceptConn) {
+        try { m.conn.send(buf); } catch (e) {}
+      }
+    }
+  }
+
+  function broadcastRoster() {
+    var list = state.roster.slice();
+    broadcastToAll({ type: 'roster', list: list });
+  }
+
+  function handleLocal(msg) {
+    if (!msg || typeof msg !== 'object') return;
+    if (msg.type === 'chat') {
+      if (msg.from === state.myPeerId) addChatSelf(msg.text);
+      else addChatOther(msg.nick, msg.text, msg.at, msg.from);
+    } else if (msg.type === 'roster') {
+      state.roster = msg.list;
+      renderRoster();
+      renderCallList();
+    } else if (msg.type === 'system') {
+      addChatSystem(msg.text);
+    }
   }
 
   /* ============================================================
@@ -900,7 +928,6 @@
     chatBody.appendChild(el);
     chatBody.scrollTop = chatBody.scrollHeight;
   }
-
   function addChatSelf(text) {
     var el = document.createElement('div');
     el.className = 'xt-msg self';
@@ -908,7 +935,6 @@
     chatBody.appendChild(el);
     chatBody.scrollTop = chatBody.scrollHeight;
   }
-
   function addChatOther(nick, text, at, fromId) {
     var el = document.createElement('div');
     el.className = 'xt-msg other';
@@ -918,68 +944,36 @@
       '<div class="meta">' +
         '<span class="avatar" style="background:' + c + '">' + initial(nick) + '</span>' +
         escHtml(nick) + ' · ' + t +
-      '</div>' +
-      escHtml(text);
+      '</div>' + escHtml(text);
     chatBody.appendChild(el);
     chatBody.scrollTop = chatBody.scrollHeight;
-    /* 当前不在 chat tab 就提示 */
-    var tab = document.querySelector('.xt-tab[data-tab="chat"]');
-    if (tab && !tab.classList.contains('on')) {
-      var badge = tab.querySelector('.badge');
-      if (badge) badge.classList.remove('hide');
-    }
-  }
-
-  /* 房主本地处理消息（转发后自己也处理一次） */
-  function handleLocal(msg) {
-    if (!msg || typeof msg !== 'object') return;
-    if (msg.type === 'chat') {
-      /* 房主自己发的 */
-      if (msg.from === state.myPeerId) {
-        addChatSelf(msg.text);
-      } else {
-        addChatOther(msg.nick, msg.text, msg.at, msg.from);
-      }
-    } else if (msg.type === 'roster') {
-      state.roster = msg.list;
-      renderRoster();
-      renderCallList();
-    } else if (msg.type === 'system') {
-      addChatSystem(msg.text);
-    }
   }
 
   chatForm.addEventListener('submit', function (e) {
     e.preventDefault();
     var text = chatInput.value.trim();
     if (!text) return;
-    sendMessage(text);
-    chatInput.value = '';
-    chatInput.focus();
-  });
-
-  function sendMessage(text) {
     if (state.isHost) {
-      /* 房主：广播 + 本地 */
       broadcastToAll({
         type: 'chat',
         from: state.myPeerId,
-        nick: state.nick,
+        nick: state.nick || '房主',
         text: text,
         at: Date.now()
       });
     } else {
-      /* 成员：发给房主 */
       if (!state.hostConn || !state.hostConn.open) return;
       state.hostConn.send({ type: 'chat', text: text });
       addChatSelf(text);
     }
-  }
+    chatInput.value = '';
+    chatInput.focus();
+  });
 
   /* ============================================================
-     媒体初始化
+     媒体
      ============================================================ */
-  function requestMedia() {
+  function initMedia() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
     navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
@@ -994,11 +988,12 @@
   }
 
   /* ============================================================
-     语音 / 视频呼叫
+     呼叫
      ============================================================ */
   function startCall(mode, targetId) {
     if (!state.localStream) { window.siteToast && window.siteToast('媒体设备未就绪'); return; }
     if (state.call && state.call.open) { window.siteToast && window.siteToast('已在通话中'); return; }
+    if (!targetId) { window.siteToast && window.siteToast('请选择要呼叫的成员'); return; }
 
     state.mediaMode = mode;
     state.localStream.getVideoTracks().forEach(function (t) { t.enabled = (mode === 'video'); });
@@ -1086,28 +1081,23 @@
       el.textContent = fmtTime(sec);
     }, 1000);
   }
-  function stopTimer() {
-    if (timerId) { clearInterval(timerId); timerId = null; }
-  }
+  function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
 
   function endCallLocal(reason) {
     stopTimer();
     if (state.call) { try { state.call.close(); } catch (e) {} state.call = null; }
     remoteVideo.srcObject = null;
     remoteAudio.srcObject = null;
-
     voiceAvatar.classList.remove('talking');
     voiceName.textContent = '未在通话';
     voiceTimer.textContent = '--:--';
     voiceTip.textContent = '从下方列表选择一位成员呼叫';
-
     videoPlaceholder.style.display = '';
     videoPhName.textContent = '未在通话';
     videoPhTip.textContent = '从下方列表选择一位成员呼叫';
     videoRec.classList.remove('on');
     videoPeer.textContent = '未在通话';
     videoTimer.textContent = '--:--';
-
     if (state.localStream) {
       state.localStream.getAudioTracks().forEach(function (t) { t.enabled = !isMicOff; });
       state.localStream.getVideoTracks().forEach(function (t) { t.enabled = !isCamOff; });
@@ -1119,7 +1109,6 @@
   voiceHangBtn.addEventListener('click', function () { endCallLocal('你已挂断'); });
   videoHangBtn.addEventListener('click', function () { endCallLocal('你已挂断'); });
 
-  /* 麦克风 */
   function toggleMic() {
     if (!state.localStream) return;
     isMicOff = !isMicOff;
@@ -1132,7 +1121,6 @@
   voiceMicBtn.addEventListener('click', toggleMic);
   videoMicBtn.addEventListener('click', toggleMic);
 
-  /* 摄像头 */
   function toggleCam() {
     if (!state.localStream) return;
     isCamOff = !isCamOff;
@@ -1146,8 +1134,6 @@
   /* ============================================================
      文件传输
      ============================================================ */
-  var pendingFile = null;
-
   dropZone.addEventListener('click', function () { fileInput.click(); });
   fileInput.addEventListener('change', function () {
     var files = Array.prototype.slice.call(fileInput.files || []);
@@ -1173,7 +1159,10 @@
       state.fileFrom = state.myPeerId;
       doSendFile(file);
     } else {
-      if (!state.hostConn || !state.hostConn.open) return;
+      if (!state.hostConn || !state.hostConn.open) {
+        window.siteToast && window.siteToast('请先加入房间');
+        return;
+      }
       pendingFile = file;
       state.hostConn.send({ type: 'file-request' });
       window.siteToast && window.siteToast('正在申请传输许可…');
@@ -1184,10 +1173,9 @@
     if (!file && pendingFile) file = pendingFile;
     if (!file) return;
     pendingFile = null;
-
     hideFileEmpty();
-    var fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
+    var fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
     var itemEl = document.createElement('div');
     itemEl.className = 'xt-item';
     itemEl.innerHTML =
@@ -1209,15 +1197,12 @@
       size: file.size,
       mime: file.type || 'application/octet-stream',
       from: state.myPeerId,
-      fromNick: state.nick
+      fromNick: state.nick || '匿名'
     };
 
     var sendRaw = function (data) {
-      if (state.isHost) {
-        broadcastToAll(data);
-      } else {
-        if (state.hostConn && state.hostConn.open) state.hostConn.send(data);
-      }
+      if (state.isHost) broadcastToAll(data);
+      else if (state.hostConn && state.hostConn.open) state.hostConn.send(data);
     };
 
     sendRaw(meta);
@@ -1240,9 +1225,8 @@
 
     reader.onload = function (e) {
       var buf = e.target.result;
-      try {
-        sendRaw(buf);
-      } catch (err) {
+      try { sendRaw(buf); }
+      catch (err) {
         console.error('[send]', err);
         metaEl.textContent = '发送出错：' + err.message;
         itemEl.classList.add('error');
@@ -1254,11 +1238,8 @@
       metaEl.textContent = fmtSize(offset) + ' / ' + fmtSize(file.size) + ' · ' + pct.toFixed(1) + '%';
 
       var ch = state.isHost ? null : (state.hostConn && state.hostConn.dataChannel);
-      if (ch && ch.bufferedAmount > HIGH_WATER) {
-        setTimeout(loadNext, 30);
-      } else {
-        loadNext();
-      }
+      if (ch && ch.bufferedAmount > HIGH_WATER) setTimeout(loadNext, 30);
+      else loadNext();
     };
 
     loadNext();
@@ -1272,15 +1253,13 @@
   }
 
   function onFileMeta(meta) {
-    /* 跳过自己发的 */
     if (meta.from === state.myPeerId) return;
     hideFileEmpty();
-
     var itemEl = document.createElement('div');
     itemEl.className = 'xt-item';
     itemEl.innerHTML =
       '<div class="xt-item-top">' +
-        '<span class="xt-name">📥 ' + escHtml(meta.name) + ' <span style="color:var(--muted);font-weight:400">· 来自 ' + escHtml(meta.fromNick || '') + '</span></span>' +
+        '<span class="xt-name">📥 ' + escHtml(meta.name) + '</span>' +
         '<span class="xt-size">' + fmtSize(meta.size) + '</span>' +
       '</div>' +
       '<div class="xt-bar"><div class="xt-bar-fill"></div></div>' +
@@ -1289,20 +1268,12 @@
     transferList.appendChild(itemEl);
 
     incomingFiles[meta.id] = {
-      meta: meta,
-      chunks: [],
-      received: 0,
+      meta: meta, chunks: [], received: 0,
       itemEl: itemEl,
       barEl: itemEl.querySelector('.xt-bar-fill'),
       metaEl: itemEl.querySelector('.xt-progress')
     };
     currentIncomingId = meta.id;
-
-    /* 自动切到文件 tab 或提示 */
-    var tab = document.querySelector('.xt-tab[data-tab="file"]');
-    if (tab && !tab.classList.contains('on')) {
-      window.siteToast && window.siteToast('正在接收文件：' + meta.name);
-    }
   }
 
   function onFileChunk(buf) {
@@ -1320,59 +1291,42 @@
     if (!cur) return;
     var blob = new Blob(cur.chunks, { type: cur.meta.mime || 'application/octet-stream' });
     var url = URL.createObjectURL(blob);
-
     cur.barEl.style.width = '100%';
     cur.metaEl.textContent = '接收完成 · ' + fmtSize(cur.meta.size);
     cur.itemEl.classList.add('done');
-
     var actions = cur.itemEl.querySelector('.xt-item-actions');
     var a = document.createElement('a');
-    a.href = url;
-    a.download = cur.meta.name;
-    a.textContent = '下载';
+    a.href = url; a.download = cur.meta.name; a.textContent = '下载';
     actions.appendChild(a);
-
     var del = document.createElement('button');
-    del.type = 'button';
-    del.textContent = '清除';
+    del.type = 'button'; del.textContent = '清除';
     del.addEventListener('click', function () {
       URL.revokeObjectURL(url);
       cur.itemEl.parentNode.removeChild(cur.itemEl);
       delete incomingFiles[msg.id];
     });
     actions.appendChild(del);
-
     currentIncomingId = null;
     window.siteToast && window.siteToast('收到文件：' + cur.meta.name);
   }
 
   /* ============================================================
-     离开房间
+     离开
      ============================================================ */
-  leaveBtn.addEventListener('click', function () { leaveRoom(); });
-
-  function leaveRoom() {
-    /* 告诉房主 */
-    if (!state.isHost && state.hostConn && state.hostConn.open) {
-      try { state.hostConn.send({ type: 'bye' }); } catch (e) {}
-    }
-    /* 挂断 */
-    if (state.call) { try { state.call.close(); } catch (e) {} }
-    /* 关闭连接 */
-    if (state.hostConn) { try { state.hostConn.close(); } catch (e) {} }
-    for (var pid in state.members) {
-      if (state.members[pid].conn) { try { state.members[pid].conn.close(); } catch (e) {} }
-    }
-    if (state.peer) { try { state.peer.destroy(); } catch (e) {} }
-    if (state.localStream) state.localStream.getTracks().forEach(function (t) { t.stop(); });
-
+  leaveBtn.addEventListener('click', function () {
     location.reload();
-  }
+  });
 
   window.addEventListener('beforeunload', function () {
-    if (!state.isHost && state.hostConn && state.hostConn.open) {
-      try { state.hostConn.send({ type: 'bye' }); } catch (e) {}
+    if (supabaseClient && state.myPeerId) {
+      try {
+        supabaseClient.from('online_users').delete().eq('peer_id', state.myPeerId);
+      } catch (e) {}
     }
+    if (state.call) try { state.call.close(); } catch (e) {}
+    if (state.hostConn) try { state.hostConn.close(); } catch (e) {}
+    if (state.localStream) state.localStream.getTracks().forEach(function (t) { t.stop(); });
+    if (state.peer) try { state.peer.destroy(); } catch (e) {}
   });
 
 })();
