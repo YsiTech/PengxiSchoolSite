@@ -255,9 +255,10 @@
         .then(function (res) {
           var r = handleResult(res, '注册');
           if (!r.ok) return r;
+          /* 未返回 session = 需要邮箱确认 */
           if (!r.data.session) {
             return { ok: false, needConfirm: true, code: 'NEED_CONFIRM',
-                     msg: '注册成功，但需要在邮箱里点击验证链接后才能登录' };
+                     msg: '注册成功，请到邮箱查收验证码' };
           }
           currentUser = r.data.user;
           return { ok: true, user: buildUser(currentUser) };

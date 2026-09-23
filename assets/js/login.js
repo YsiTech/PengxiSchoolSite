@@ -196,7 +196,19 @@
         setLoading(btn, false);
 
         if (!res.ok) {
-          setHint('registerHint', res.msg, res.needConfirm ? 'ok' : 'warn');
+          /* 需要邮箱确认：保存邮箱和密码，跳验证页 */
+          if (res.needConfirm) {
+            try {
+              sessionStorage.setItem('pxgl_pending_email', String(email).trim().toLowerCase());
+              sessionStorage.setItem('pxgl_pending_password', password);
+            } catch (e) {}
+            setHint('registerHint', '注册成功，正在跳转邮箱验证…', 'ok');
+            setTimeout(function () {
+              location.href = 'verify-email.html';
+            }, 800);
+            return;
+          }
+          setHint('registerHint', res.msg, 'warn');
           return;
         }
         setHint('registerHint', '注册成功，正在跳转…', 'ok');

@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>正在验证 · 蓬溪格勒人民高等中学</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  min-height:100dvh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+  color:#fff;
+  text-align:center;
+  background:
+    radial-gradient(1200px 500px at 85% -10%,rgba(212,175,55,.2),transparent 60%),
+    linear-gradient(140deg,#1a2b4c 0%,#243b63 45%,#8a0c22 100%);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",Arial,sans-serif;
+}
+.box{max-width:440px;width:100%;position:relative;z-index:2}
+.logo{
+  width:80px;height:80px;margin:0 auto 24px;
+  border-radius:50%;background:#fff;padding:3px;
+  box-sizing:content-box;
+  box-shadow:0 0 0 3px #d4af37,0 10px 30px rgba(0,0,0,.3);
+  overflow:hidden;
+}
+.logo img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.spinner{
+  width:56px;height:56px;border-radius:50%;
+  border:4px solid rgba(255,255,255,.25);
+  border-top-color:#f0d98a;
+  animation:spin 1s linear infinite;
+  margin:0 auto 22px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+h1{
+  font-size:22px;letter-spacing:3px;margin:0 0 12px;
+  font-weight:800;color:#fff;
+}
+p{
+  font-size:14px;color:#efe2c6;line-height:1.9;margin:0;
+}
+.err{color:#ff9aa8;font-size:14px;line-height:1.9;margin-top:12px}
+.btn{
+  display:inline-block;
+  margin-top:24px;
+  padding:12px 30px;
+  border-radius:8px;
+  background:#d4af37;
+  color:#241b08;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-decoration:none;
+  transition:transform .15s,box-shadow .2s,background .2s;
+  box-shadow:0 8px 20px rgba(212,175,55,.35);
+}
+.btn:hover{background:#e5c455;transform:translateY(-2px)}
+.hide{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <div class="logo">
+    <img src="photo/logo.png" alt="蓬溪格勒人民高等中学">
+  </div>
+
+  <div class="spinner" id="spinner"></div>
+
+  <h1 id="title">正在验证…</h1>
+  <p id="msg">请稍候，正在完成邮箱验证</p>
+
+  <a class="btn hide" id="backBtn" href="index.html">返回登录</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ============================================================
+     配置
+     ============================================================ */
+  var SUPABASE_URL      = 'https://api.ponxigrad.tech';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidG1la3dtcGh2bXluc2pmcGxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwOTM5NjMsImV4cCI6MjEwNTY2OTk2M30.Cq04l3c8hxsIheEf3e6bHKUhFhe-VybfaEbaXwlGQ3M';
+
+  var DEFAULT_NEXT = 'mainsite.html';
+
+  var spinner = document.getElementById('spinner');
+  var titleEl = document.getElementById('title');
+  var msgEl   = document.getElementById('msg');
+  var backBtn = document.getElementById('backBtn');
+
+  function showError(title, html) {
+    spinner.style.display = 'none';
+    titleEl.textContent = title;
+    msgEl.innerHTML = html;
+    msgEl.className = 'err';
+    backBtn.classList.remove('hide');
+  }
+
+  function goNext(next) {
+    titleEl.textContent = '验证成功';
+    msgEl.textContent = '正在跳转…';
+    msgEl.className = '';
+    spinner.style.display = 'none';
+    setTimeout(function () {
+      location.replace(next || DEFAULT_NEXT);
+    }, 700);
+  }
+
+  /* ============================================================
+     解析参数
+     ============================================================ */
+  var params = new URLSearchParams(location.search);
+
+  /* Supabase 可能传的几种参数名：token_hash / token / error / error_description */
+  var tokenHash = params.get('token_hash') || params.get('token');
+  var type      = params.get('type') || 'email';
+  var next      = params.get('next') || DEFAULT_NEXT;
+  var errCode   = params.get('error');
+  var errDesc   = params.get('error_description');
+
+  /* 如果 Supabase 直接返回错误（链接过期等） */
+  if (errCode) {
+    showError('验证失败',
+      (errDesc || '验证链接已失效或已被使用') +
+      '<br><br>请返回登录页重新获取邮件，或联系管理员。');
+    return;
+  }
+
+  if (!tokenHash) {
+    showError('链接无效',
+      '该链接缺少必要的验证参数。<br>' +
+      '请返回邮箱重新点击邮件里的按钮，或联系管理员。');
+    return;
+  }
+
+  if (!window.supabase || !window.supabase.createClient) {
+    showError('系统未就绪',
+      '无法加载验证模块。请检查网络后刷新页面。');
+    return;
+  }
+
+  var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  /* ============================================================
+     调用 verifyOtp 完成验证
+     ============================================================ */
+  client.auth.verifyOtp({
+    token_hash: tokenHash,
+    type: type
+  }).then(function (res) {
+    if (res.error) {
+      console.error('[auth-callback] verifyOtp 失败:', res.error);
+      var e = String(res.error.message || '');
+      if (/expired/i.test(e)) {
+        showError('验证链接已过期',
+          '请返回登录页重新获取邮件。');
+      } else if (/invalid|not found/i.test(e)) {
+        showError('验证链接无效',
+          '该链接可能已被使用过。<br>请返回登录页重新操作。');
+      } else {
+        showError('验证失败', e || '请稍后重试。');
+      }
+      return;
+    }
+
+    console.log('[auth-callback] 验证成功:', res.data);
+    goNext(next);
+  }).catch(function (err) {
+    console.error('[auth-callback] 异常:', err);
+    showError('网络错误',
+      '无法连接到服务器，请稍后重试。');
+  });
+
+})();
+</script>
+
+</body>
+</html>
