@@ -1,0 +1,282 @@
+/* ===================================================================
+   好友系统 · 样式
+   =================================================================== */
+
+.friends-main{max-width:920px}
+
+/* Tab */
+.friends-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:24px;
+  border-bottom:1px solid var(--line);
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.friends-tabs::-webkit-scrollbar{display:none}
+.friends-tab{
+  position:relative;
+  padding:12px 20px;
+  border:0;
+  background:transparent;
+  font-family:inherit;
+  font-size:14.5px;
+  font-weight:600;
+  color:var(--muted);
+  cursor:pointer;
+  white-space:nowrap;
+  letter-spacing:.5px;
+  transition:color .2s;
+  flex:0 0 auto;
+}
+.friends-tab:hover{color:var(--red)}
+.friends-tab.on{
+  color:var(--blue);
+}
+.friends-tab.on::after{
+  content:"";
+  position:absolute;
+  left:20px;right:20px;bottom:-1px;
+  height:3px;
+  background:var(--red);
+  border-radius:3px 3px 0 0;
+}
+.friends-tab .badge{
+  display:inline-block;
+  min-width:20px;
+  padding:0 6px;
+  height:20px;
+  line-height:20px;
+  text-align:center;
+  border-radius:10px;
+  background:var(--red);
+  color:#fff;
+  font-size:11.5px;
+  font-weight:700;
+  margin-left:6px;
+  vertical-align:1px;
+}
+.friends-tab .badge.hide{display:none}
+
+/* Panel */
+.friends-panel{display:none}
+.friends-panel.on{display:block;animation:fpIn .25s ease}
+@keyframes fpIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+.friends-subtitle{
+  font-size:15px;
+  color:var(--blue);
+  letter-spacing:1.5px;
+  margin:0 0 12px;
+  padding-left:10px;
+  border-left:4px solid var(--gold);
+}
+
+/* 加载 & 空状态 */
+.friends-loading{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--muted);
+  font-size:14px;
+}
+.friends-empty{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--muted);
+}
+.friends-empty .fe-icon{
+  font-size:44px;
+  line-height:1;
+  margin-bottom:14px;
+  opacity:.55;
+}
+.friends-empty .fe-title{
+  font-size:15px;
+  color:var(--blue);
+  font-weight:600;
+  margin-bottom:6px;
+}
+.friends-empty .fe-sub{
+  font-size:13px;
+  color:var(--muted);
+}
+
+/* 好友卡片网格 */
+.friends-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:14px;
+}
+
+.friend-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:14px 16px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  transition:transform .2s,box-shadow .22s,border-color .2s;
+}
+.friend-card:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--shadow);
+  border-color:var(--gold);
+}
+
+.friend-avatar{
+  flex:0 0 52px;
+  width:52px;height:52px;
+  border-radius:50%;
+  overflow:hidden;
+  background:#f2f5fa;
+  display:grid;place-items:center;
+  box-shadow:0 0 0 2px #fff,0 0 0 3px var(--gold);
+  flex-shrink:0;
+}
+.friend-avatar img{
+  width:100%;height:100%;
+  object-fit:cover;
+  display:block;
+}
+.f-avatar-letter{
+  width:100%;height:100%;
+  display:grid;place-items:center;
+  color:#fff;
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:0;
+}
+
+.friend-info{
+  flex:1 1 auto;
+  min-width:0;
+}
+.friend-name{
+  font-size:14.5px;
+  font-weight:700;
+  color:var(--blue);
+  margin-bottom:4px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.friend-meta{
+  font-size:12px;
+  color:var(--muted);
+  letter-spacing:.3px;
+}
+
+.friend-actions{
+  flex:0 0 auto;
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.f-btn{
+  padding:6px 14px;
+  border:1.5px solid var(--line);
+  border-radius:8px;
+  background:#fff;
+  color:var(--ink-soft);
+  font-family:inherit;
+  font-size:12.5px;
+  font-weight:600;
+  letter-spacing:.4px;
+  cursor:pointer;
+  transition:all .18s;
+  white-space:nowrap;
+}
+.f-btn:hover{
+  border-color:var(--red);
+  color:var(--red);
+}
+.f-btn-primary{
+  background:var(--red);
+  border-color:var(--red);
+  color:#fff;
+}
+.f-btn-primary:hover{
+  background:var(--red-dark);
+  border-color:var(--red-dark);
+  color:#fff;
+}
+.f-btn-danger{
+  color:#c8102e;
+  border-color:#f6cdd5;
+}
+.f-btn-danger:hover{
+  background:#fdecef;
+}
+
+.f-badge{
+  display:inline-block;
+  padding:5px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.5px;
+  background:#f2f5fa;
+  color:var(--muted);
+  border:1px solid var(--line);
+}
+.f-badge-ok{
+  background:#e9f6ee;
+  color:#1f6b40;
+  border-color:#b9e0c9;
+}
+
+/* 搜索 */
+.friends-search{
+  display:flex;
+  gap:10px;
+  margin-bottom:14px;
+}
+.friends-search input{
+  flex:1;
+  padding:11px 16px;
+  border:1.5px solid var(--line);
+  border-radius:var(--radius-pill);
+  outline:0;
+  font-size:14.5px;
+  background:#fff;
+  font-family:inherit;
+  transition:border-color .2s,box-shadow .2s;
+}
+.friends-search input:focus{
+  border-color:var(--red);
+  box-shadow:0 0 0 4px rgba(200,16,46,.1);
+}
+.friends-search button{
+  border:0;
+  background:var(--red);
+  color:#fff;
+  padding:0 26px;
+  border-radius:var(--radius-pill);
+  font-weight:600;
+  font-size:14px;
+  letter-spacing:1.2px;
+  cursor:pointer;
+  font-family:inherit;
+  transition:background .2s;
+}
+.friends-search button:hover{background:var(--red-dark)}
+
+.friends-hint{
+  font-size:12.5px;
+  color:var(--muted);
+  margin-bottom:16px;
+  letter-spacing:.3px;
+}
+
+/* 响应式 */
+@media (max-width:640px){
+  .friends-grid{grid-template-columns:1fr}
+  .friends-tab{padding:11px 14px;font-size:14px}
+  .friends-tab.on::after{left:14px;right:14px}
+  .friend-avatar{flex:0 0 46px;width:46px;height:46px}
+  .friend-name{font-size:14px}
+}

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的好友 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/friends.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+</head>
+<body data-page="friends">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="profile.html">个人中心</a><i>›</i><span>我的好友</span></div>
+    <h1>我的好友</h1>
+    <p>查找同学、发送请求、管理好友列表</p>
+  </div>
+</section>
+
+<main class="section friends-main">
+
+  <!-- Tabs -->
+  <div class="friends-tabs" id="friendsTabs">
+    <button class="friends-tab on" data-tab="friends" type="button">
+      好友 <span class="badge hide" id="badgeFriends">0</span>
+    </button>
+    <button class="friends-tab" data-tab="requests" type="button">
+      好友请求 <span class="badge hide" id="badgeRequests">0</span>
+    </button>
+    <button class="friends-tab" data-tab="search" type="button">
+      搜索用户
+    </button>
+  </div>
+
+  <!-- Tab: 好友列表 -->
+  <div class="friends-panel on" data-panel="friends">
+    <div class="friends-loading" id="friendsLoading">正在加载…</div>
+    <div class="friends-grid" id="friendsGrid"></div>
+    <div class="friends-empty hide" id="friendsEmpty">
+      <div class="fe-icon">👥</div>
+      <div class="fe-title">还没有好友</div>
+      <div class="fe-sub">去「搜索用户」找到你的同学吧</div>
+    </div>
+  </div>
+
+  <!-- Tab: 好友请求 -->
+  <div class="friends-panel" data-panel="requests">
+    <div class="friends-loading" id="requestsLoading">正在加载…</div>
+
+    <h3 class="friends-subtitle">收到的请求</h3>
+    <div class="friends-grid" id="incomingGrid"></div>
+    <div class="friends-empty hide" id="incomingEmpty">
+      <div class="fe-icon">📬</div>
+      <div class="fe-title">没有待处理的请求</div>
+    </div>
+
+    <h3 class="friends-subtitle" style="margin-top:26px">我发出的请求</h3>
+    <div class="friends-grid" id="outgoingGrid"></div>
+    <div class="friends-empty hide" id="outgoingEmpty">
+      <div class="fe-icon">📤</div>
+      <div class="fe-title">还没有发出过请求</div>
+    </div>
+  </div>
+
+  <!-- Tab: 搜索 -->
+  <div class="friends-panel" data-panel="search">
+    <form class="friends-search" id="searchForm" autocomplete="off">
+      <input id="searchInput" type="text" placeholder="输入昵称或邮箱前缀搜索…" maxlength="40">
+      <button type="submit">搜索</button>
+    </form>
+    <div class="friends-hint" id="searchHint">
+      输入至少 2 个字符开始搜索
+    </div>
+    <div class="friends-grid" id="searchGrid"></div>
+  </div>
+
+</main>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/friends.js"></script>
+
+</body>
+</html>

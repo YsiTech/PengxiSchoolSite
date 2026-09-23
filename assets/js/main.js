@@ -31,7 +31,8 @@
         { id:'moral',      text:'德育之窗', href:'moral.html' },
         { id:'admissions', text:'招生招聘', href:'admissions.html' },
         { id:'history',    text:'校史馆',   href:'history.html' },
-        { id:'contact',    text:'联系我们', href:'contact.html' }
+        { id:'contact',    text:'联系我们', href:'contact.html' },
+        { id:'history',    text:'个人中心',   href:'profile.html' }
       ],
       footerAbout: '在红星下求知，在友谊中成长。我们以基础俄语、亚斯史纲要、国际社会学为特色，培养有全球视野的社会主义建设者。',
       footerAddr: '地址：亚斯共和国蓬溪格勒市红星区复兴大道 12 号',

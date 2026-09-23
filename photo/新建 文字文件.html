@@ -1,0 +1,113 @@
+<style type="text/css">
+@keyframes pxglShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pxglGlow{0%,100%{box-shadow:0 0 24px rgba(212,175,55,.4),0 0 48px rgba(200,16,46,.15)}50%{box-shadow:0 0 36px rgba(212,175,55,.7),0 0 72px rgba(200,16,46,.3)}}
+</style>
+
+<div style="margin:0;padding:32px 16px;background:#f7f4ec;font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',Arial,sans-serif;">
+
+<div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(26,43,76,.18);">
+
+<div style="height:6px;background-color:#c8102e;background-image:linear-gradient(90deg,transparent 0%,#d4af37 20%,#ffffff 50%,#d4af37 80%,transparent 100%);background-size:200% 100%;animation:pxglShimmer 3s linear infinite;"></div>
+
+<div style="background-color:#c8102e;padding:10px 24px;text-align:center;">
+  <span style="display:inline-block;font-size:11px;color:#f0d98a;letter-spacing:5px;font-weight:700;">亚 斯 共 和 国 · 教 育 部 统 一 认 证</span>
+</div>
+
+<div style="background-color:#1a2b4c;background-image:linear-gradient(135deg,#1a2b4c 0%,#12203a 100%);padding:36px 40px 30px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td width="92" valign="middle" align="center" style="width:92px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="display:inline-block;border-collapse:separate;border-spacing:0;border-radius:50%;background:#ffffff;border:3px solid #d4af37;animation:pxglGlow 4s ease-in-out infinite;">
+        <tr><td style="padding:3px;line-height:0;font-size:0;"><img src="https://ponxigrad.tech/photo/logo.png" width="72" height="72" alt="校徽" style="display:block;width:72px;height:72px;border-radius:50%;background:#ffffff;"></td></tr>
+      </table>
+    </td>
+    <td valign="middle" style="padding-left:20px;">
+      <div style="font-size:23px;font-weight:800;color:#ffffff;letter-spacing:3px;line-height:1.3;">蓬溪格勒人民高等中学</div>
+      <div style="font-size:11px;color:#9fb0cc;letter-spacing:.5px;margin-top:8px;line-height:1.5;">Понксиградская народная средняя школа высшей ступени</div>
+      <div style="height:2px;width:64px;background:#d4af37;margin-top:14px;"></div>
+    </td>
+  </tr></table>
+</div>
+
+<div style="padding:20px 40px 0;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+    <td style="font-size:11px;color:#a89e8e;letter-spacing:1.5px;font-family:'Courier New',monospace;">文件编号：ASR-EDU-INVITE-{{ .Token }}</td>
+    <td align="right" style="font-size:11px;color:#a89e8e;letter-spacing:1px;">密级：内部</td>
+  </tr></table>
+  <div style="height:1px;background:#efe9dc;margin-top:10px;"></div>
+</div>
+
+<div style="padding:36px 40px 0;text-align:center;">
+  <div style="font-size:12px;color:#8a6d12;letter-spacing:6px;margin-bottom:14px;font-weight:600;">INVITATION</div>
+  <div style="font-size:27px;color:#1a2b4c;letter-spacing:8px;font-weight:800;line-height:1.3;">入 学 邀 请 通 知</div>
+  <div style="display:inline-block;width:88px;height:3px;background:#c8102e;margin-top:20px;"></div>
+</div>
+
+<div style="padding:32px 40px 0;">
+  <p style="margin:0 0 14px;font-size:14.5px;color:#1f2328;line-height:1.9;">尊敬的用户：</p>
+  <p style="margin:0;font-size:14px;line-height:2.05;color:#4a453d;text-indent:2em;">
+    学校邀请您加入「蓬溪格勒人民高等中学 · 校园服务平台」。请点击下方按钮接受邀请并设置登录密码，即可开始使用。
+  </p>
+</div>
+
+<div style="padding:28px 40px 0;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbf9f4;border:1px solid #e4dccb;border-left:4px solid #c8102e;border-radius:6px;">
+    <tr><td style="padding:22px 26px;">
+      <div style="font-size:12px;color:#8a6d12;letter-spacing:6px;font-weight:700;margin-bottom:16px;text-align:center;">邀 请 信 息</div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size:13px;line-height:2.05;color:#4a453d;">
+        <tr><td style="width:80px;color:#6b6256;">邀请邮箱</td><td><b style="color:#1a2b4c;">{{ .Email }}</b></td></tr>
+        <tr><td style="color:#6b6256;">邀请码</td><td><b style="color:#c8102e;font-family:'Courier New',monospace;font-size:14px;">{{ .Token }}</b></td></tr>
+      </table>
+    </td></tr>
+  </table>
+</div>
+
+<div style="padding:30px 40px 0;text-align:center;">
+  <a href="https://ponxigrad.tech/auth-callback.html?token_hash={{ .TokenHash }}&type=invite&next=https://ponxigrad.tech/set-password.html"
+     style="display:inline-block;padding:16px 52px;background-color:#c8102e;background-image:linear-gradient(135deg,#c8102e 0%,#9d0c24 50%,#c8102e 100%);background-size:200% 100%;animation:pxglShimmer 3.5s linear infinite;color:#ffffff;font-size:15px;font-weight:bold;letter-spacing:3px;text-decoration:none;border-radius:8px;box-shadow:0 10px 24px rgba(200,16,46,.35);">
+    接受邀请 · 设置密码
+  </a>
+</div>
+
+<div style="padding:24px 40px 0;">
+  <p style="margin:0 0 8px;font-size:12.5px;line-height:1.75;color:#6b6256;">如果按钮无法点击，请复制以下链接到浏览器打开：</p>
+  <p style="margin:0;padding:11px 14px;background:#fbf9f4;border:1px dashed #d4af37;border-radius:6px;font-size:11.5px;color:#8a6d12;word-break:break-all;line-height:1.7;">https://ponxigrad.tech/auth-callback.html?token_hash={{ .TokenHash }}&type=invite&next=https://ponxigrad.tech/set-password.html</p>
+</div>
+
+<div style="padding:26px 40px 0;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fbf9f4;border-left:3px solid #d4af37;border-radius:0 6px 6px 0;">
+    <tr><td style="padding:16px 20px;">
+      <div style="font-size:13px;color:#1a2b4c;font-weight:800;letter-spacing:1.5px;margin-bottom:8px;">温 馨 提 示</div>
+      <div style="font-size:12.5px;color:#8a6d12;line-height:1.95;">
+        · 邀请链接 <b>24 小时</b>内有效<br>
+        · 若非本人操作，请忽略本邮件<br>
+        · 请勿将邀请码转发给他人
+      </div>
+    </td></tr>
+  </table>
+</div>
+
+<div style="padding:30px 40px 0;text-align:center;">
+  <div style="font-size:12.5px;color:#a89e8e;margin-bottom:14px;">已经设置过密码？</div>
+  <a href="https://ponxigrad.tech/index.html"
+     style="display:inline-block;padding:11px 32px;background:#ffffff;color:#1a2b4c;font-size:13.5px;font-weight:700;letter-spacing:2px;text-decoration:none;border:2px solid #d4af37;border-radius:999px;">
+    前 往 登 录
+  </a>
+</div>
+
+<div style="padding:36px 40px 8px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="right" style="font-size:13.5px;color:#1a2b4c;line-height:2;">
+    <div style="font-weight:700;letter-spacing:1.5px;">蓬溪格勒人民高等中学</div>
+    <div style="font-size:11.5px;color:#8a6d12;letter-spacing:.5px;">网络信息中心 · 校园服务平台</div>
+  </td></tr></table>
+</div>
+
+<div style="background-color:#1a2b4c;background-image:linear-gradient(180deg,#1a2b4c 0%,#101d33 100%);padding:30px 40px 28px;text-align:center;margin-top:20px;">
+  <img src="https://ponxigrad.tech/photo/logo.png" width="44" height="44" alt="校徽" style="display:block;width:44px;height:44px;border-radius:50%;margin:0 auto 16px;background:#ffffff;padding:3px;box-sizing:content-box;border:2px solid #d4af37;">
+  <div style="font-size:11.5px;color:#dfe7f5;letter-spacing:3px;font-weight:600;margin-bottom:12px;">蓬溪格勒人民高等中学 · 校园服务平台</div>
+  <div style="height:1px;background:rgba(212,175,55,.35);margin:12px auto;width:60px;"></div>
+  <div style="font-size:11px;color:#9fb0cc;line-height:1.9;">地址：亚斯共和国蓬溪格勒市红星区复兴大道 12 号<br>发件邮箱：ponxi-school@mail.ponxigrad.tech<br>本邮件由系统自动发送，请勿直接回复</div>
+  <div style="font-size:10.5px;color:#8fa3c2;line-height:1.8;margin-top:14px;letter-spacing:.3px;">© 蓬溪格勒人民高等中学 · 技术支持：亚斯红日网络科技中心<br>亚斯共和国版本图书馆（2025）第 03698 号</div>
+</div>
+
+</div>
+</div>

@@ -1,13 +1,13 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <link rel="icon" type="image/png" href="photo/logo.png">
-<link rel="apple-touch-icon" href="photo/logo.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>个人中心 · 蓬溪格勒人民高等中学</title>
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/profile.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
 </head>
 <body data-page="profile">
 
@@ -23,12 +23,19 @@
 
 <main class="section profile-main">
 
-  <!-- 游客受限提示（默认隐藏，脚本检测到游客会显示） -->
-  <div class="profile-guest-banner hide" id="guestBanner">
+  <!-- 游客受限提示（仅游客显示） -->
+  <div class="pgb-banner hide" id="guestNotice">
     <div class="pgb-icon">!</div>
     <div class="pgb-body">
-      <b>游客账号 · 功能受限</b>
-      <p>你当前是游客身份，无法访问 <b>视觉蓬中</b>、<b>校园网订购</b> 和 <b>星图</b>，也无法跨设备登录。请退出并使用邮箱注册正式账号。</p>
+      <div class="pgb-title">游客账号 · 功能受限</div>
+      <p class="pgb-text">
+        你当前是游客身份，无法访问
+        <span class="pgb-hl">视觉蓬中</span>、
+        <span class="pgb-hl">校园网订购</span>
+        和
+        <span class="pgb-hl">星图</span>
+        ，也无法跨设备登录。请退出并使用邮箱注册正式账号。
+      </p>
     </div>
     <button class="pgb-btn" id="upgradeBtn" type="button">退出并注册</button>
   </div>
@@ -68,9 +75,7 @@
 
       <!-- 基本信息 -->
       <div class="card">
-        <div class="card-head">
-          <h3>基本信息</h3>
-        </div>
+        <div class="card-head"><h3>基本信息</h3></div>
 
         <div class="form-grid">
           <div class="field full">
@@ -90,12 +95,18 @@
           <button class="btn red" type="button" id="saveProfileBtn">保存修改</button>
         </div>
       </div>
-
+<div class="card">
+  <div class="card-head">
+    <h3>我的好友</h3>
+  </div>
+  <p class="muted small" style="margin:0 0 14px">
+    查看好友列表、处理好友请求，或搜索其他同学。
+  </p>
+  <a class="btn red" href="friends.html" style="display:inline-block">进入好友管理</a>
+</div> 
       <!-- 修改密码 -->
       <div class="card">
-        <div class="card-head">
-          <h3>修改密码</h3>
-        </div>
+        <div class="card-head"><h3>修改密码</h3></div>
 
         <div class="form-grid">
           <div class="field full">
@@ -119,9 +130,7 @@
 
       <!-- 账号操作 -->
       <div class="card danger-card">
-        <div class="card-head">
-          <h3>账号操作</h3>
-        </div>
+        <div class="card-head"><h3>账号操作</h3></div>
         <p class="muted small" style="margin:0 0 14px">
           退出登录后需要重新输入邮箱和密码才能进入。
         </p>
@@ -139,8 +148,6 @@
 
 <div id="site-footer"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/auth.js"></script>
 <script src="assets/js/main.js"></script>
 <script src="assets/js/profile.js"></script>
 

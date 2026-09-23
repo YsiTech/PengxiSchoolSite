@@ -1,7 +1,10 @@
 /* ===================================================================
-   蓬溪格勒人民高等中学 · 个人中心
+   蓬溪格勒人民高等中学 · 个人中心样式
    =================================================================== */
 
+/* ============================================================
+   主体布局
+   ============================================================ */
 .profile-main{
   max-width:1040px;
 }
@@ -14,7 +17,7 @@
 }
 
 /* ============================================================
-   左侧：头像卡片
+   左侧头像卡片
    ============================================================ */
 .profile-side{
   position:sticky;
@@ -80,7 +83,8 @@
   cursor:pointer;
   box-shadow:0 4px 12px rgba(200,16,46,.4);
   border:2px solid #fff;
-  transition:background .2s, transform .15s;
+  transition:background .2s,transform .15s;
+  font-family:inherit;
 }
 .profile-avatar-edit:hover{background:#9d0c24}
 .profile-avatar-edit:active{transform:scale(.94)}
@@ -119,7 +123,7 @@
 }
 
 /* ============================================================
-   右侧：信息
+   右侧内容
    ============================================================ */
 .profile-content{
   display:flex;
@@ -157,12 +161,10 @@
   gap:12px;
   flex-wrap:wrap;
 }
-
 .profile-actions .btn{
   min-width:120px;
 }
 
-/* 危险区卡片 */
 .danger-card{
   border-color:#f6cdd5;
 }
@@ -173,6 +175,97 @@
   color:#c8102e;
   border-left-color:#c8102e;
 }
+
+/* ============================================================
+   游客受限提示条
+   ============================================================ */
+.pgb-banner{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:18px 22px;
+  background:linear-gradient(135deg,#fff5f6 0%,#fdecef 100%);
+  border:1px solid #f6cdd5;
+  border-left:4px solid #c8102e;
+  border-radius:12px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+  animation:pgbIn .4s ease;
+}
+@keyframes pgbIn{
+  from{opacity:0;transform:translateY(-8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.pgb-icon{
+  flex:0 0 auto;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,#e02040,#c8102e 60%,#9d0c24);
+  color:#fff;
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  font-weight:900;
+  box-shadow:0 4px 14px rgba(200,16,46,.35);
+  align-self:flex-start;
+  margin-top:2px;
+}
+
+.pgb-body{
+  flex:1 1 260px;
+  min-width:0;
+}
+
+.pgb-title{
+  display:block;
+  font-size:15px;
+  font-weight:800;
+  color:#9d0c24;
+  letter-spacing:.6px;
+  margin-bottom:8px;
+  line-height:1.5;
+}
+
+.pgb-text{
+  margin:0;
+  font-size:13.5px;
+  line-height:1.9;
+  color:#8a3038;
+}
+
+.pgb-hl{
+  display:inline;
+  color:#c8102e;
+  font-weight:700;
+  padding:0 2px;
+  background:rgba(200,16,46,.08);
+  border-radius:3px;
+  white-space:nowrap;
+}
+
+.pgb-btn{
+  flex:0 0 auto;
+  padding:10px 24px;
+  background:linear-gradient(135deg,#c8102e,#9d0c24);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  font-size:13.5px;
+  font-weight:600;
+  letter-spacing:.8px;
+  cursor:pointer;
+  font-family:inherit;
+  transition:transform .15s,box-shadow .2s;
+  box-shadow:0 4px 14px rgba(200,16,46,.28);
+  align-self:center;
+}
+.pgb-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 22px rgba(200,16,46,.4);
+}
+.pgb-btn:active{transform:translateY(0) scale(.98)}
 
 /* ============================================================
    响应式
@@ -186,7 +279,7 @@
   }
 }
 
-@media (max-width:520px){
+@media (max-width:760px){
   .profile-avatar-wrap,
   .profile-avatar{
     width:100px;
@@ -196,4 +289,33 @@
   .profile-avatar-edit{width:34px;height:34px;font-size:14px}
   .profile-card{padding:22px 16px 18px}
   .profile-actions .btn{flex:1 1 auto}
+}
+
+@media (max-width:560px){
+  .pgb-banner{
+    padding:14px 16px;
+    gap:12px;
+  }
+  .pgb-icon{
+    width:34px;
+    height:34px;
+    font-size:18px;
+  }
+  .pgb-body{
+    flex:1 1 100%;
+  }
+  .pgb-title{
+    font-size:14.5px;
+    margin-bottom:6px;
+  }
+  .pgb-text{
+    font-size:13px;
+    line-height:1.85;
+  }
+  .pgb-btn{
+    flex:1 1 100%;
+    text-align:center;
+    padding:11px 16px;
+    align-self:stretch;
+  }
 }
