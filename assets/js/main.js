@@ -23,7 +23,6 @@
         { id:'about',      text:'学校概况', href:'about.html' },
         { id:'news',       text:'新闻中心', href:'news.html' },
         { id:'teaching',   text:'教学教研', href:'teaching.html' },
-        { id:'blog',       text:'校园随笔', href:'blog.html' },
         { id:'students',   text:'学生天地', href:'students.html' },
         { id:'videohub',   text:'视觉蓬中', href:'videohub.html' },
         { id:'campusnet',  text:'校园网',   href:'campusnet.html' },
