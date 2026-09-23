@@ -1,11 +1,12 @@
 /* ===================================================================
    蓬溪格勒人民高等中学 · 登录认证模块
+   基于 Supabase Auth（Cloudflare Worker 代理）
    =================================================================== */
 
 (function (window) {
   'use strict';
 
-  var SUPABASE_URL      = 'https://abtmekwmphvmynsjfplc.supabase.co';
+  var SUPABASE_URL      = 'https://api.ponxigrad.tech';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFidG1la3dtcGh2bXluc2pmcGxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwOTM5NjMsImV4cCI6MjEwNTY2OTk2M30.Cq04l3c8hxsIheEf3e6bHKUhFhe-VybfaEbaXwlGQ3M';
 
   function normalizeUrl(u) {
@@ -45,6 +46,28 @@
   }
   function isProtectedForLogin(f) { return LOGIN_REQUIRED.indexOf(f) !== -1; }
   function isBlockedForGuest(f)   { return GUEST_BLOCKED.indexOf(f) !== -1; }
+
+  (function selfCheck() {
+    var styleTitle = 'background:#c8102e;color:#f0d98a;padding:3px 8px;border-radius:3px;font-weight:700';
+    console.log('%c [Auth] 配置自检 ', styleTitle);
+    console.log('[Auth] URL:', NORM_URL);
+    console.log('[Auth] KEY:', NORM_KEY ? (NORM_KEY.slice(0, 30) + '...' + NORM_KEY.slice(-10)) : '(空)');
+    console.log('[Auth] KEY 长度:', NORM_KEY.length);
+
+    var problems = [];
+    if (!NORM_URL) problems.push('SUPABASE_URL 为空');
+    else if (NORM_URL.indexOf('xxxxxxxx') !== -1) problems.push('SUPABASE_URL 还是模板占位符');
+    if (!NORM_KEY) problems.push('SUPABASE_ANON_KEY 为空');
+    else if (NORM_KEY.indexOf('sb_publishable_') !== 0 && NORM_KEY.length < 100)
+      problems.push('SUPABASE_ANON_KEY 长度异常（' + NORM_KEY.length + '）');
+
+    if (problems.length) {
+      console.error('[Auth] 配置有问题:');
+      problems.forEach(function (p) { console.error('  · ' + p); });
+    } else {
+      console.log('%c [Auth] 配置看起来正常 ', 'color:#1f8f55;font-weight:700');
+    }
+  })();
 
   if (!window.supabase || !window.supabase.createClient) {
     console.error('[Auth] Supabase SDK 未加载');
@@ -120,6 +143,7 @@
       return { ok:false, msg:'新密码不能与旧密码相同', code:'SAME_PWD' };
     return { ok:false, msg: msg || '操作失败，请稍后重试', code:'UNKNOWN' };
   }
+
   function handleResult(res, context) {
     if (res && res.error) {
       var t = translateError(res.error, context);
@@ -134,9 +158,6 @@
     return t;
   }
 
-  /* ============================================================
-     判断是否为游客（增强版）
-     ============================================================ */
   function checkIsGuest(user) {
     if (!user) return false;
     var meta = user.user_metadata || {};
@@ -172,10 +193,12 @@
     return base + 'reset-password.html';
   }
 
+  /* ============================================================
+     Auth 模块
+     ============================================================ */
   var Auth = {
 
     client: client,
-    ready: ensureReady,
     avatarFallback: avatarFallback,
 
     isLoggedIn: function () { return !!currentUser; },
@@ -219,30 +242,22 @@
         .catch(function (err) { return handleCatch(err, '注册'); });
     },
 
-    /* ============================================================
-       游客登录 —— 分两步确保 metadata 写入
-       ============================================================ */
     loginAsGuest: function () {
       var rand = Math.floor(1000 + Math.random() * 9000);
       var nickname = '游客' + rand;
-
       return client.auth.signInAnonymously()
         .then(function (res) {
           if (res.error) return handleResult(res, '游客登录');
-
-          /* 匿名登录成功，立即更新 metadata 标记为游客 */
           return client.auth.updateUser({
             data: { nickname: nickname, is_guest: true }
           }).then(function (upRes) {
             if (upRes.error) {
               console.warn('[Auth] 游客 metadata 更新失败:', upRes.error);
-              /* 即使 metadata 更新失败，也算登录成功 */
               currentUser = res.data.user;
               return { ok: true, user: buildUser(currentUser) };
             }
             currentUser = upRes.data.user;
-            console.log('[Auth] 游客登录成功，metadata:', 
-              currentUser.user_metadata);
+            console.log('[Auth] 游客登录成功，metadata:', currentUser.user_metadata);
             return { ok: true, user: buildUser(currentUser) };
           });
         })
@@ -262,7 +277,9 @@
     },
 
     updatePassword: function (newPassword) {
-      if (!newPassword || newPassword.length < 6) return Promise.resolve({ ok: false, msg: '密码至少 6 位', code: 'INPUT' });
+      if (!newPassword || newPassword.length < 6) {
+        return Promise.resolve({ ok: false, msg: '密码至少 6 位', code: 'INPUT' });
+      }
       return client.auth.updateUser({ password: newPassword })
         .then(function (res) {
           var r = handleResult(res, '更新密码');
@@ -304,8 +321,12 @@
 
     changePassword: function (newPassword, confirmPassword) {
       if (!currentUser) return Promise.resolve({ ok: false, msg: '未登录', code: 'NO_SESSION' });
-      if (!newPassword || newPassword.length < 6) return Promise.resolve({ ok: false, msg: '新密码至少 6 位', code: 'INPUT' });
-      if (newPassword !== confirmPassword) return Promise.resolve({ ok: false, msg: '两次输入的密码不一致', code: 'INPUT' });
+      if (!newPassword || newPassword.length < 6) {
+        return Promise.resolve({ ok: false, msg: '新密码至少 6 位', code: 'INPUT' });
+      }
+      if (newPassword !== confirmPassword) {
+        return Promise.resolve({ ok: false, msg: '两次输入的密码不一致', code: 'INPUT' });
+      }
       return client.auth.updateUser({ password: newPassword })
         .then(function (res) {
           var r = handleResult(res, '修改密码');
@@ -329,7 +350,6 @@
     requireAuth: function () {
       var file = getCurrentFileName();
       if (!isProtectedForLogin(file)) return Promise.resolve(true);
-
       return ensureReady().then(function () {
         if (!currentUser) {
           var redirect = isRu() ? ('ru/' + file) : file;
@@ -339,16 +359,13 @@
           location.replace(loginUrl);
           return false;
         }
-
         if (checkIsGuest(currentUser) && isBlockedForGuest(file)) {
           console.warn('[Auth] 游客访问受限页面:', file);
-          /* 写入 sessionStorage 标记，供 profile.html 读取 */
           try { sessionStorage.setItem('pxgl_guest_blocked', file); } catch (e) {}
           var profileUrl = (isRu() ? '../' : '') + 'profile.html';
           location.replace(profileUrl);
           return false;
         }
-
         return true;
       });
     },
@@ -356,7 +373,6 @@
     mountNavStatus: function (lang) {
       var el = document.querySelector('.auth-nav');
       if (!el) return;
-
       ensureReady().then(function () {
         if (!currentUser) {
           el.innerHTML =
@@ -364,10 +380,8 @@
               (lang === 'ru' ? 'Войти' : '登录') + '</a>';
           return;
         }
-
         var u = buildUser(currentUser);
         var tag = u.isGuest ? '<span class="auth-tag">游客</span>' : '';
-
         var avatarHTML;
         if (u.avatar) {
           avatarHTML = '<img class="auth-avatar" src="' + escapeHtml(u.avatar) + '" alt="">';
@@ -376,9 +390,7 @@
           avatarHTML = '<span class="auth-avatar fallback" style="background:' + fb.color + '">' +
                        escapeHtml(fb.initial) + '</span>';
         }
-
         var profileHref = isRu() ? '../profile.html' : 'profile.html';
-
         el.innerHTML =
           '<a class="auth-user" href="' + profileHref + '" title="进入个人中心">' +
             avatarHTML +
@@ -387,7 +399,6 @@
           '</a>' +
           '<a href="#" class="auth-logout">' +
             (lang === 'ru' ? 'Выйти' : '登出') + '</a>';
-
         var lo = el.querySelector('.auth-logout');
         if (lo) {
           lo.addEventListener('click', function (e) {
@@ -396,9 +407,29 @@
           });
         }
       });
+    },
+
+    _debug: function () {
+      return {
+        url: NORM_URL,
+        keyLen: NORM_KEY.length,
+        isLoggedIn: !!currentUser,
+        isGuest: checkIsGuest(currentUser)
+      };
     }
   };
 
+  /* ============================================================
+     关键修复：Auth.ready 必须是 Promise，而不是函数
+     ============================================================ */
+  Auth.ready = ensureReady();
+
+  /* ============================================================
+     立即执行页面保护
+     ============================================================ */
   Auth.requireAuth();
+
   window.Auth = Auth;
+
+  console.log('%c [Auth] 已接入 Cloudflare Worker 代理 ', 'background:#f38020;color:#fff;padding:2px 8px;border-radius:3px;font-weight:700');
 })(window);
