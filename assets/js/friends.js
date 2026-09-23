@@ -1,8 +1,9 @@
 /* ===================================================================
-   好友系统 · 增强版
-   · 支持昵称 / 邮箱搜索
+   好友系统 · 完整版
+   · 昵称 + 邮箱搜索
    · 轮询刷新（15s）
    · 未读消息红点
+   · 声音提示
    =================================================================== */
 
 (function () {
@@ -38,7 +39,22 @@
   var friends = [];
   var incoming = [];
   var outgoing = [];
-  var unreadMap = {};   // otherId -> 未读条数
+  var unreadMap = {};
+  var lastTotalUnread = 0;
+  var audioReady = false;
+  var beepAudio = null;
+
+  /* 初始化提示音 */
+  function initAudio() {
+    try {
+      beepAudio = new Audio('beep.mp3');
+      beepAudio.volume = 0.6;
+      audioReady = true;
+    } catch (e) {
+      console.warn('[friends] 无法初始化提示音');
+    }
+  }
+  initAudio();
 
   /* ============================================================
      启动
@@ -51,7 +67,6 @@
     me = Auth.getCurrentUser();
     loadAll();
 
-    /* 轮询 */
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(function () {
       if (!document.hidden) loadFriendships();
@@ -62,12 +77,7 @@
     if (pollTimer) clearInterval(pollTimer);
   });
 
-  /* ============================================================
-     加载
-     ============================================================ */
-  function loadAll() {
-    loadFriendships();
-  }
+  function loadAll() { loadFriendships(); }
 
   function loadFriendships() {
     if (!me) return;
@@ -125,7 +135,6 @@
       }
     });
 
-    /* 加载未读消息数 */
     loadUnreadCounts(function () {
       renderFriends();
       renderIncoming();
@@ -135,7 +144,11 @@
   }
 
   function loadUnreadCounts(cb) {
-    if (!friends.length) { unreadMap = {}; cb && cb(); return; }
+    if (!friends.length) {
+      unreadMap = {};
+      cb && cb();
+      return;
+    }
     var ids = friends.map(function (it) { return it.profile.id; });
 
     client.from('messages')
@@ -144,10 +157,23 @@
       .eq('is_read', false)
       .in('sender_id', ids)
       .then(function (res) {
-        unreadMap = {};
+        var newMap = {};
         (res.data || []).forEach(function (m) {
-          unreadMap[m.sender_id] = (unreadMap[m.sender_id] || 0) + 1;
+          newMap[m.sender_id] = (newMap[m.sender_id] || 0) + 1;
         });
+        unreadMap = newMap;
+
+        /* 声音提示：总未读数增加时响一次 */
+        var total = 0;
+        Object.keys(unreadMap).forEach(function (k) { total += unreadMap[k]; });
+        if (total > lastTotalUnread && lastTotalUnread >= 0 && audioReady) {
+          try {
+            beepAudio.currentTime = 0;
+            beepAudio.play().catch(function () { /* 用户未交互，忽略 */ });
+          } catch (e) {}
+        }
+        lastTotalUnread = total;
+
         cb && cb();
       })
       .catch(function () { cb && cb(); });
@@ -166,9 +192,6 @@
     }
   }
 
-  /* ============================================================
-     Tabs
-     ============================================================ */
   document.querySelectorAll('.friends-tab').forEach(function (tab) {
     tab.addEventListener('click', function () {
       var name = tab.dataset.tab;
@@ -200,13 +223,11 @@
       var unread = unreadMap[it.profile.id] || 0;
       var badge = unread > 0 ? '<span class="f-unread">' + unread + '</span>' : '';
       return '' +
-        '<div class="friend-card" data-friend="' + esc(it.profile.id) + '">' +
+        '<div class="friend-card">' +
           '<div class="friend-avatar">' + avatarHTML(it.profile) + badge + '</div>' +
           '<div class="friend-info">' +
             '<div class="friend-name">' + esc(it.profile.nickname || '匿名') + '</div>' +
-            '<div class="friend-meta">' +
-              (it.profile.is_guest ? '游客' : '正式用户') +
-            '</div>' +
+            '<div class="friend-meta">' + (it.profile.is_guest ? '游客' : '正式用户') + '</div>' +
           '</div>' +
           '<div class="friend-actions">' +
             '<button class="f-btn f-btn-primary" data-chat="' + esc(it.profile.id) + '" type="button">聊天</button>' +
@@ -216,24 +237,17 @@
     }).join('');
 
     grid.querySelectorAll('[data-chat]').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
+      btn.addEventListener('click', function () {
         location.href = 'chat.html?with=' + btn.dataset.chat;
       });
     });
     grid.querySelectorAll('[data-remove]').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        if (confirm('确定删除这位好友吗？')) {
-          removeFriendship(parseInt(btn.dataset.remove, 10));
-        }
+      btn.addEventListener('click', function () {
+        if (confirm('确定删除这位好友吗？')) removeFriendship(parseInt(btn.dataset.remove, 10));
       });
     });
   }
 
-  /* ============================================================
-     渲染：收到的请求
-     ============================================================ */
   function renderIncoming() {
     var grid = $('incomingGrid');
     var empty = $('incomingEmpty');
@@ -269,9 +283,6 @@
     });
   }
 
-  /* ============================================================
-     渲染：我发出的请求
-     ============================================================ */
   function renderOutgoing() {
     var grid = $('outgoingGrid');
     var empty = $('outgoingEmpty');
@@ -303,20 +314,13 @@
     });
   }
 
-  /* ============================================================
-     操作
-     ============================================================ */
   function acceptRequest(id) {
-    client.from('friendships').update({
-      status: 'accepted',
-      updated_at: new Date().toISOString()
-    }).eq('id', id).then(function (res) {
-      if (res.error) { window.siteToast && window.siteToast('失败'); return; }
-      window.siteToast && window.siteToast('已接受');
-      loadFriendships();
-    });
+    client.from('friendships').update({ status: 'accepted', updated_at: new Date().toISOString() })
+      .eq('id', id).then(function () {
+        window.siteToast && window.siteToast('已接受');
+        loadFriendships();
+      });
   }
-
   function rejectRequest(id) {
     if (!confirm('拒绝这个请求？')) return;
     client.from('friendships').delete().eq('id', id).then(function () {
@@ -324,7 +328,6 @@
       loadFriendships();
     });
   }
-
   function removeFriendship(id) {
     client.from('friendships').delete().eq('id', id).then(function () {
       window.siteToast && window.siteToast('已删除');
@@ -356,7 +359,6 @@
   }
 
   function doSearch(kw) {
-    /* 同时按 nickname 和 email 匹配 */
     var pattern = '%' + kw + '%';
     client.from('profiles')
       .select('id, nickname, avatar, is_guest, email')
@@ -396,7 +398,6 @@
         actionHTML = '<button class="f-btn f-btn-primary" data-send="' + p.id + '" type="button">加好友</button>';
       }
 
-      /* 显示邮箱（掩码处理） */
       var emailDisplay = '';
       if (p.email) {
         var parts = p.email.split('@');
@@ -424,15 +425,10 @@
       btn.addEventListener('click', function () { sendRequest(btn.dataset.send); });
     });
     searchGrid.querySelectorAll('[data-chat]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        location.href = 'chat.html?with=' + btn.dataset.chat;
-      });
+      btn.addEventListener('click', function () { location.href = 'chat.html?with=' + btn.dataset.chat; });
     });
   }
 
-  /* ============================================================
-     发送请求
-     ============================================================ */
   function sendRequest(targetId) {
     if (targetId === me.id) { window.siteToast && window.siteToast('不能加自己'); return; }
 

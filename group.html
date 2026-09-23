@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>群聊 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/friends.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+</head>
+<body data-page="friends">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="friends.html">我的好友</a><i>›</i><span>群聊</span></div>
+    <h1>群聊</h1>
+    <p>创建或加入班级群、宿舍群、兴趣小组</p>
+  </div>
+</section>
+
+<main class="section group-main">
+
+  <!-- 建群按钮 -->
+  <div class="group-toolbar">
+    <button class="group-create-btn" id="createGroupBtn" type="button">
+      <span>+</span> 创建新群
+    </button>
+  </div>
+
+  <!-- 群列表 -->
+  <h3 class="friends-subtitle">我加入的群</h3>
+  <div class="friends-grid" id="myGroupsGrid">
+    <div class="friends-loading">正在加载…</div>
+  </div>
+  <div class="friends-empty hide" id="myGroupsEmpty">
+    <div class="fe-icon">👥</div>
+    <div class="fe-title">还没有加入任何群</div>
+    <div class="fe-sub">点击上方"创建新群"开始</div>
+  </div>
+
+  <!-- 所有公开群 -->
+  <h3 class="friends-subtitle" style="margin-top:30px">全部公开群</h3>
+  <div class="friends-grid" id="allGroupsGrid"></div>
+
+</main>
+
+<div id="site-footer"></div>
+
+<!-- 建群弹窗 -->
+<div class="blog-publish-modal hide" id="createGroupModal">
+  <div class="blog-publish-box" style="max-width:480px">
+    <div class="blog-publish-head">
+      <h3>创建新群</h3>
+      <button class="blog-publish-close" id="groupClose" type="button">✕</button>
+    </div>
+    <form class="blog-publish-form" id="createGroupForm">
+      <div class="blog-publish-field">
+        <label for="gName">群名称 <span class="req">*</span></label>
+        <input id="gName" type="text" maxlength="30" placeholder="例如：惊鸿十二班" required>
+      </div>
+      <div class="blog-publish-hint" id="groupHint"></div>
+      <div class="blog-publish-actions">
+        <button class="blog-publish-cancel" id="groupCancel" type="button">取消</button>
+        <button class="blog-publish-submit" type="submit">创建</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/group.js"></script>
+
+</body>
+</html>

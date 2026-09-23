@@ -15,7 +15,7 @@
 
 <section class="page-hero">
   <div class="page-hero-inner">
-    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="profile.html">个人中心</a><i>›</i><span>我的好友</span></div>
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><span>我的好友</span></div>
     <h1>我的好友</h1>
     <p>查找同学、发送请求、管理好友列表</p>
   </div>
@@ -23,7 +23,6 @@
 
 <main class="section friends-main">
 
-  <!-- Tabs -->
   <div class="friends-tabs" id="friendsTabs">
     <button class="friends-tab on" data-tab="friends" type="button">
       好友 <span class="badge hide" id="badgeFriends">0</span>
@@ -34,9 +33,11 @@
     <button class="friends-tab" data-tab="search" type="button">
       搜索用户
     </button>
+    <a class="friends-tab" href="group-chat.html">
+      群聊
+    </a>
   </div>
 
-  <!-- Tab: 好友列表 -->
   <div class="friends-panel on" data-panel="friends">
     <div class="friends-loading" id="friendsLoading">正在加载…</div>
     <div class="friends-grid" id="friendsGrid"></div>
@@ -47,7 +48,6 @@
     </div>
   </div>
 
-  <!-- Tab: 好友请求 -->
   <div class="friends-panel" data-panel="requests">
     <div class="friends-loading" id="requestsLoading">正在加载…</div>
 
@@ -66,7 +66,6 @@
     </div>
   </div>
 
-  <!-- Tab: 搜索 -->
   <div class="friends-panel" data-panel="search">
     <form class="friends-search" id="searchForm" autocomplete="off">
       <input id="searchInput" type="text" placeholder="输入昵称或邮箱前缀搜索…" maxlength="40">

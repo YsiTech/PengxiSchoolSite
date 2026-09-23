@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>群聊 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/friends.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+</head>
+<body data-page="friends">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="friends.html">我的好友</a><i>›</i><span>群聊</span></div>
+    <h1>群聊</h1>
+    <p>和多位好友一起聊天</p>
+  </div>
+</section>
+
+<main class="section gc-main">
+
+  <div class="gc-layout">
+
+    <!-- 左侧：群列表 -->
+    <aside class="gc-side">
+      <div class="gc-side-head">
+        <span>我的群</span>
+        <button class="gc-create-btn" id="gcCreateBtn" type="button">+ 创建</button>
+      </div>
+      <div class="gc-room-list" id="roomList">
+        <div class="gc-empty">加载中…</div>
+      </div>
+    </aside>
+
+    <!-- 右侧：群消息 -->
+    <section class="gc-chat">
+      <div class="gc-chat-head">
+        <b id="gcHeader">未选择群</b>
+        <span class="gc-member-count" id="gcMemberCount">0</span> 人
+      </div>
+      <div class="gc-messages chat-messages" id="gcMessages">
+        <div class="gc-empty">从左侧选择一个群</div>
+      </div>
+      <form class="chat-input-row" id="gcForm">
+        <button class="chat-icon-btn" id="gcImageBtn" type="button">🖼</button>
+        <input type="file" id="gcImageInput" accept="image/*" style="display:none">
+        <textarea id="gcInput" rows="1" placeholder="输入消息…" maxlength="1000"></textarea>
+        <button type="submit" id="gcSendBtn">发送</button>
+      </form>
+    </section>
+
+  </div>
+
+</main>
+
+<!-- 创建群弹窗 -->
+<div class="gc-modal hide" id="gcCreateModal">
+  <div class="gc-modal-box">
+    <div class="gc-modal-head">
+      <b>创建新群</b>
+      <button class="gc-modal-close" id="gcCreateClose" type="button">✕</button>
+    </div>
+    <form id="gcCreateForm">
+      <div class="gc-field">
+        <label for="gcGroupName">群名称</label>
+        <input id="gcGroupName" type="text" maxlength="30" placeholder="给群取个名字" required>
+      </div>
+      <div class="gc-field">
+        <label>邀请好友（可多选）</label>
+        <div class="gc-friend-picker" id="gcFriendPicker"></div>
+      </div>
+      <div class="gc-modal-actions">
+        <button class="f-btn" type="button" id="gcCreateCancel">取消</button>
+        <button class="f-btn f-btn-primary" type="submit">创建</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/group-chat.js"></script>
+
+</body>
+</html>
