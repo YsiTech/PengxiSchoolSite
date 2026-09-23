@@ -148,9 +148,13 @@
         <button class="btn-secondary" id="ordersExport" type="button">导出 CSV</button>
       </div>
     </div>
-    <div class="table-wrap">
+        <div class="table-wrap">
       <table class="data-table" id="ordersTable">
-        <thead><tr><th>时间</th><th>奖品</th><th>收货人</th><th>电话</th><th>地址</th><th>备注</th><th>状态</th></tr></thead>
+        <thead>
+          <tr>
+            <th>时间</th><th>奖品</th><th>收货人</th><th>电话/地址</th><th>状态</th><th>物流信息</th><th>操作</th>
+          </tr>
+        </thead>
         <tbody><tr><td colspan="7" class="td-empty">加载中…</td></tr></tbody>
       </table>
     </div>
@@ -369,6 +373,49 @@
 </div>
 
 <!-- ==================== 公告/新闻编辑弹窗 ==================== -->
+<!-- ==================== 物流信息弹窗 ==================== -->
+<div class="admin-modal hide" id="shippingModal">
+  <div class="admin-modal-box">
+    <div class="amb-head">
+      <h3>填写物流信息</h3>
+      <button class="amb-close" id="shippingClose" type="button">✕</button>
+    </div>
+    <div class="amb-body">
+      <input type="hidden" id="shippingOrderId" value="">
+      <p class="amb-tip" id="shippingOrderTip">正在发货：—</p>
+      
+      <div class="amb-field">
+        <label>快递公司 <span style="color:var(--red)">*</span></label>
+        <select id="shippingCompany" style="width:100%; padding:10px 14px; border:1.5px solid var(--line); border-radius:8px; font-size:13.5px;">
+          <option value="">请选择...</option>
+          <option value="顺丰">顺丰</option>
+          <option value="中通">中通</option>
+          <option value="圆通">圆通</option>
+          <option value="韵达">韵达</option>
+          <option value="申通">申通</option>
+          <option value="极兔">极兔</option>
+          <option value="邮政EMS">邮政EMS</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="amb-field">
+        <label>快递单号 <span style="color:var(--red)">*</span></label>
+        <input type="text" id="shippingNumber" placeholder="例如：SF1234567890">
+      </div>
+
+      <div class="amb-field">
+        <label>快递查询链接（可选）</label>
+        <input type="text" id="shippingUrl" placeholder="https://...">
+        <span class="amb-hint">如果留空，系统会自动根据单号生成第三方查询链接（此逻辑由前台决定）</span>
+      </div>
+    </div>
+    <div class="amb-actions">
+      <button class="btn-secondary" id="shippingCancel" type="button">取消</button>
+      <button class="btn-primary" id="shippingSave" type="button">确认发货</button>
+    </div>
+  </div>
+</div>
 <div class="admin-modal hide" id="contentModal">
   <div class="admin-modal-box wide">
     <div class="amb-head">

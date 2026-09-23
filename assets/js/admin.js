@@ -527,28 +527,59 @@
       });
   }
 
-  function renderOrders() {
+    function renderOrders() {
     var tbody = $('#ordersTable tbody');
     if (!tbody) return;
     if (!ordersCache.length) { tbody.innerHTML = '<tr><td colspan="7" class="td-empty">还没有礼品订单</td></tr>'; return; }
+    
     var html = '';
     ordersCache.forEach(function (o) {
       var st = o.status || 'pending';
       var stText = st === 'pending' ? '待发货' : st === 'shipped' ? '已发货' : st === 'done' ? '已完成' : st;
       var stCls = st === 'shipped' ? 'shipped' : st === 'done' ? 'done' : 'pending';
-      html += '<tr><td class="td-mono">' + fmtTime(o.created_at) + '</td>' +
+      
+      // 组装物流信息展示
+      var logisticsHtml = '—';
+      if (st === 'shipped' || st === 'done') {
+        if (o.shipping_company || o.tracking_number) {
+          var trackingLink = o.tracking_url ? 
+            '<a href="' + escapeHtml(o.tracking_url) + '" target="_blank" style="color:var(--blue);text-decoration:underline;">' + escapeHtml(o.tracking_number) + '</a>' : 
+            escapeHtml(o.tracking_number);
+          logisticsHtml = '<div style="font-size:12.5px;">' + escapeHtml(o.shipping_company || '') + ' ' + trackingLink + '</div>' +
+                          (o.shipped_at ? '<div style="font-size:11px;color:var(--muted)">' + fmtTime(o.shipped_at) + '</div>' : '');
+        }
+      }
+
+      html += '<tr>' +
+        '<td class="td-mono">' + fmtTime(o.created_at) + '</td>' +
         '<td>' + escapeHtml(o.prize_name) + '</td>' +
         '<td>' + escapeHtml(o.receiver_name) + '</td>' +
-        '<td class="td-mono">' + escapeHtml(o.receiver_phone) + '</td>' +
-        '<td style="max-width:280px;word-break:break-all">' + escapeHtml(o.receiver_address) + '</td>' +
-        '<td style="max-width:160px;word-break:break-all;color:#6b6256">' + escapeHtml(o.remark || '—') + '</td>' +
-        '<td><span class="tag ' + stCls + '">' + stText + '</span>' +
-        '<div class="btn-row" style="margin-top:6px">' +
-        (st !== 'shipped' && st !== 'done' ? '<button class="btn-mini primary" data-order-act="shipped" data-id="' + o.id + '">标记已发货</button>' : '') +
-        (st !== 'done' ? '<button class="btn-mini" data-order-act="done" data-id="' + o.id + '">标记完成</button>' : '') +
-        '</div></td></tr>';
+        '<td class="td-mono">' + escapeHtml(o.receiver_phone) + '<br><span style="font-size:11px;color:#6b6256;word-break:break-all">' + escapeHtml(o.receiver_address) + '</span></td>' +
+        '<td><span class="tag ' + stCls + '">' + stText + '</span></td>' +
+        '<td>' + logisticsHtml + '</td>' +
+        '<td>' +
+          '<div class="btn-row" style="flex-direction:column;gap:6px;">' +
+            (st !== 'shipped' && st !== 'done' ? 
+              '<button class="btn-mini primary" data-order-ship="' + o.id + '">填写物流发货</button>' : 
+              '<button class="btn-mini" data-order-ship="' + o.id + '">修改物流</button>') +
+            (st !== 'done' ? 
+              '<button class="btn-mini" data-order-act="done" data-id="' + o.id + '">标记为已完成</button>' : '') +
+          '</div>' +
+        '</td>' +
+      '</tr>';
     });
     tbody.innerHTML = html;
+
+    // 绑定“填写物流”按钮事件
+    $$('[data-order-ship]', tbody).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = parseInt(btn.dataset.orderShip, 10);
+        var order = ordersCache.find(function (o) { return o.id === id; });
+        if (order) openShippingModal(order);
+      });
+    });
+
+    // 绑定“标记完成”按钮事件
     $$('[data-order-act]', tbody).forEach(function (btn) {
       btn.addEventListener('click', function () {
         var id = parseInt(btn.dataset.id, 10);
@@ -1139,6 +1170,73 @@
 
       // 开始处理
       processNext();
+    });
+  });
+    /* ============================================================
+     12. 物流信息弹窗
+     ============================================================ */
+  var shippingModal = $('#shippingModal');
+  var shippingOrderId = $('#shippingOrderId');
+  var shippingOrderTip = $('#shippingOrderTip');
+  var shippingCompany = $('#shippingCompany');
+  var shippingNumber = $('#shippingNumber');
+  var shippingUrl = $('#shippingUrl');
+
+  function openShippingModal(order) {
+    shippingOrderId.value = order.id;
+    shippingOrderTip.textContent = '正在发货：' + order.receiver_name + ' - ' + order.prize_name;
+    
+    // 填入已有的物流信息（如果修改的话）
+    shippingCompany.value = order.shipping_company || '';
+    shippingNumber.value = order.tracking_number || '';
+    shippingUrl.value = order.tracking_url || '';
+    
+    shippingModal.classList.remove('hide');
+  }
+
+  function closeShippingModal() {
+    shippingModal.classList.add('hide');
+    shippingOrderId.value = '';
+  }
+
+  $('#shippingClose').addEventListener('click', closeShippingModal);
+  $('#shippingCancel').addEventListener('click', closeShippingModal);
+
+  $('#shippingSave').addEventListener('click', function () {
+    if (!client) { toast('请先连接数据库'); return; }
+    
+    var orderId = parseInt(shippingOrderId.value, 10);
+    var company = shippingCompany.value.trim();
+    var number = shippingNumber.value.trim();
+    var url = shippingUrl.value.trim();
+
+    if (!company) { toast('请选择或填写快递公司'); return; }
+    if (!number) { toast('请填写快递单号'); return; }
+
+    var btn = this;
+    btn.disabled = true; btn.textContent = '保存中…';
+
+    // 发货时间：如果原本没有，则自动填 now()，如果有则保留
+    var shippedAt = new Date().toISOString();
+
+    client.from('gift_orders').update({
+      status: 'shipped',
+      shipping_company: company,
+      tracking_number: number,
+      tracking_url: url || null,
+      shipped_at: shippedAt
+    }).eq('id', orderId).then(function (res) {
+      btn.disabled = false; btn.textContent = '确认发货';
+      
+      if (res.error) {
+        toast('保存失败：' + res.error.message);
+        return;
+      }
+      
+      toast('已发货并保存物流信息');
+      logAdminAction('填写物流信息', null, '订单ID: ' + orderId + ' 快递: ' + company + ' ' + number);
+      closeShippingModal();
+      loadOrders(); // 刷新列表
     });
   });
   console.log('%c [Admin] 管理后台完整版已加载 ', 'background:#1a2b4c;color:#f0d98a;padding:3px 10px;border-radius:3px;font-weight:700');
