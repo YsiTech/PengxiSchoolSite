@@ -2,6 +2,19 @@
    蓬溪格勒人民高等中学 · 个人中心
    =================================================================== */
 
+/* 余额数字字体：Sora */
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/sora@5.1.0/400.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/sora@5.1.0/600.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/sora@5.1.0/700.css');
+@import url('https://cdn.jsdelivr.net/npm/@fontsource/sora@5.1.0/800.css');
+
+:root{
+  --balance-font: 'Sora', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ============================================================
+   布局
+   ============================================================ */
 .profile-main{
   max-width:1040px;
   padding-bottom:80px;
@@ -9,7 +22,7 @@
 
 .profile-grid{
   display:grid;
-  grid-template-columns:280px minmax(0,1fr);
+  grid-template-columns:300px minmax(0,1fr);
   gap:24px;
   align-items:start;
 }
@@ -38,8 +51,7 @@
   flex:0 0 auto;
   width:36px;height:36px;
   border-radius:50%;
-  background:#c8102e;
-  color:#fff;
+  background:#c8102e;color:#fff;
   display:grid;place-items:center;
   font-size:20px;font-weight:900;
   box-shadow:0 4px 12px rgba(200,16,46,.3);
@@ -65,12 +77,17 @@
 .profile-guest-banner .pgb-btn:hover{background:#9d0c24}
 
 /* ============================================================
-   左侧头像卡片
+   左侧栏
    ============================================================ */
 .profile-side{
   position:sticky;
   top:70px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
 }
+
+/* ---------- 头像卡片 ---------- */
 .profile-card{
   background:#fff;
   border:1px solid var(--line);
@@ -130,6 +147,122 @@
   margin-top:14px;font-size:11.5px;color:var(--muted);line-height:1.6;
 }
 
+/* ---------- 余额悬浮卡片 ---------- */
+.balance-card{
+  position:relative;
+  background:
+    linear-gradient(160deg,#ffffff 0%,#fdfbf5 60%,#faf4e2 100%);
+  border:1px solid #e8dfc8;
+  border-radius:16px;
+  padding:18px 22px 16px;
+  box-shadow:
+    0 18px 38px rgba(31,35,40,.08),
+    0 4px 10px rgba(212,175,55,.06),
+    inset 0 1px 0 rgba(255,255,255,.9);
+  overflow:hidden;
+  transition:transform .25s, box-shadow .3s;
+  animation:balanceIn .5s ease;
+}
+@keyframes balanceIn{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.balance-card::before{
+  content:"";
+  position:absolute;
+  right:-40px;top:-50px;
+  width:150px;height:150px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(212,175,55,.16),transparent 65%);
+  pointer-events:none;
+}
+.balance-card::after{
+  content:"₽";
+  position:absolute;
+  right:-18px;bottom:-46px;
+  font-family:var(--balance-font);
+  font-size:150px;
+  font-weight:800;
+  color:rgba(212,175,55,.07);
+  line-height:1;
+  pointer-events:none;
+  letter-spacing:0;
+}
+.balance-card:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    0 22px 46px rgba(31,35,40,.1),
+    0 6px 14px rgba(212,175,55,.1),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.bc-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+  position:relative;
+  z-index:1;
+}
+.bc-label{
+  font-size:12.5px;
+  color:var(--muted);
+  letter-spacing:1.2px;
+  font-weight:500;
+}
+.bc-flag{
+  display:inline-block;
+  font-family:var(--balance-font);
+  font-size:10.5px;
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:4px;
+  color:#8a6d12;
+  background:linear-gradient(135deg,#fff8e8,#f0e0a8);
+  border:1px solid #e0cd8a;
+  letter-spacing:1.5px;
+}
+
+.bc-main{
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  position:relative;
+  z-index:1;
+  margin-bottom:14px;
+}
+.bc-symbol{
+  font-family:var(--balance-font);
+  font-size:26px;
+  font-weight:700;
+  color:#d4af37;
+  line-height:1;
+  letter-spacing:0;
+}
+.bc-value{
+  font-family:var(--balance-font);
+  font-size:48px;
+  font-weight:800;
+  color:#0f1e38;
+  letter-spacing:-1.5px;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:'tnum' 1, 'zero' 1;
+}
+
+.bc-foot{
+  position:relative;
+  z-index:1;
+  padding-top:12px;
+  border-top:1px dashed #e8dfc8;
+}
+.bc-hint{
+  font-size:11.5px;
+  color:#a89e8e;
+  letter-spacing:.6px;
+}
+
 /* ============================================================
    右侧内容
    ============================================================ */
@@ -157,129 +290,131 @@
 .danger-card .card-head h3{color:#c8102e;border-left-color:#c8102e}
 
 /* ============================================================
-   亚斯卢布卡片
+   签到卡片
    ============================================================ */
-#walletCard{
-  background:linear-gradient(150deg,#1a2b4c 0%,#243b63 55%,#8a0c22 100%);
-  border:0;color:#fff;padding:0;overflow:hidden;
-  position:relative;
-  box-shadow:0 16px 44px rgba(26,43,76,.35);
+.checkin-card{
+  background:#fff;
+  border:1px solid var(--line);
 }
-#walletCard::before{
-  content:"";
-  position:absolute;right:-40px;top:-60px;
-  width:240px;height:240px;border-radius:50%;
-  background:radial-gradient(circle,rgba(212,175,55,.22),transparent 65%);
-  pointer-events:none;
+.checkin-card .card-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:14px;
+  margin-bottom:16px;
+  border-bottom:1px solid var(--line-soft);
 }
-#walletCard::after{
-  content:"";
-  position:absolute;left:-30px;bottom:-70px;
-  width:180px;height:180px;border-radius:50%;
-  background:radial-gradient(circle,rgba(200,16,46,.28),transparent 70%);
-  pointer-events:none;
+.checkin-card .card-head h3{
+  margin:0;
+  padding-left:12px;
+  border-left:4px solid var(--gold);
+  color:var(--blue);
+  font-size:18px;
+  letter-spacing:1px;
 }
-#walletCard .card-head{
-  border-bottom:1px solid rgba(255,255,255,.12);
-  padding:18px 22px 14px;margin:0;
-  position:relative;z-index:1;
-  display:flex;align-items:center;justify-content:space-between;gap:12px;
+
+.checkin-body{padding:0 2px}
+
+.checkin-tip{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.75;
+  margin-bottom:16px;
 }
-#walletCard .card-head h3{
-  color:#f0d98a;border-left-color:var(--gold);
-  font-size:16px;letter-spacing:2px;margin:0;
-}
-.wallet-balance{
-  font-family:'Manrope','Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
-  font-size:26px;font-weight:800;color:#fff;
-  letter-spacing:1px;font-variant-numeric:tabular-nums;
-  text-shadow:0 2px 12px rgba(0,0,0,.3);
-  position:relative;z-index:1;
-}
-.wallet-balance::before{
-  content:"₽ ";color:#f0d98a;font-size:22px;margin-right:2px;
-}
-.wallet-body{padding:22px 22px 20px;position:relative;z-index:1}
-.wallet-action{
-  display:flex;align-items:center;gap:16px;
-  flex-wrap:wrap;margin-bottom:20px;
-}
-.wallet-action .btn{
-  min-width:150px;padding:14px 26px;font-size:15.5px;
-  letter-spacing:3px;border-radius:999px;
-  background:linear-gradient(135deg,#f0d98a,#d4af37);
-  border:0;color:#241b08;font-weight:800;
-  box-shadow:0 10px 28px rgba(212,175,55,.4);
+
+.checkin-card .btn.red{
+  min-width:180px;
+  padding:14px 30px;
+  font-size:15.5px;
+  letter-spacing:3px;
+  border-radius:999px;
+  box-shadow:0 10px 26px rgba(200,16,46,.28);
   transition:transform .15s, box-shadow .2s, background .2s;
-  cursor:pointer;
 }
-.wallet-action .btn:hover{
-  background:linear-gradient(135deg,#f5e2a0,#e0bb47);
+.checkin-card .btn.red:hover{
   transform:translateY(-2px);
-  box-shadow:0 14px 34px rgba(212,175,55,.5);
+  box-shadow:0 14px 32px rgba(200,16,46,.38);
 }
-.wallet-action .btn:disabled{cursor:default;transform:none}
-.wallet-action .btn.on{
+.checkin-card .btn.red.on{
   background:linear-gradient(135deg,#5cd190,#1f8f55);
-  color:#fff;box-shadow:0 10px 28px rgba(31,143,85,.4);
+  border-color:transparent;
+  box-shadow:0 10px 26px rgba(31,143,85,.3);
 }
-.wallet-action .btn.on:hover{
+.checkin-card .btn.red.on:hover{
   background:linear-gradient(135deg,#5cd190,#1f8f55);
-  transform:none;box-shadow:0 10px 28px rgba(31,143,85,.4);
+  transform:none;
+  box-shadow:0 10px 26px rgba(31,143,85,.3);
 }
+
 .wallet-streak{
-  font-size:13.5px;color:#9fb0cc;letter-spacing:.5px;
-  padding:4px 12px;border-radius:999px;
-  background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.15);
+  font-size:13.5px;
+  color:var(--blue);
+  letter-spacing:.5px;
+  padding:4px 12px;
+  border-radius:999px;
+  background:#f2f5fa;
+  border:1px solid #dfe6f0;
 }
 .wallet-streak:empty{display:none}
+
 .wallet-history{
-  border-top:1px dashed rgba(255,255,255,.15);
+  margin-top:22px;
   padding-top:18px;
+  border-top:1px dashed var(--line-soft);
 }
 .wallet-history-empty{
   text-align:center;padding:16px 10px;
-  font-size:12.5px;color:#9fb0cc;
+  font-size:12.5px;color:var(--muted);
 }
+
 .wallet-week-grid{
-  display:grid;grid-template-columns:repeat(7,1fr);gap:8px;
+  display:grid;
+  grid-template-columns:repeat(7, 1fr);
+  gap:8px;
 }
 .wallet-day{
   position:relative;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:10px;padding:10px 4px 8px;
+  background:linear-gradient(160deg,#fbf9f3,#f6f1e5);
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px 4px 8px;
   text-align:center;
-  transition:background .2s, border-color .2s;
+  transition:background .2s, border-color .2s, transform .2s;
   min-height:64px;
   display:flex;flex-direction:column;
   justify-content:space-between;align-items:center;
 }
-.wallet-day .wd-weekday{font-size:10.5px;color:#9fb0cc;letter-spacing:.5px}
+.wallet-day .wd-weekday{font-size:10.5px;color:var(--muted);letter-spacing:.5px}
 .wallet-day .wd-daynum{
-  font-size:15px;font-weight:800;color:#dfe7f5;
+  font-size:15px;font-weight:800;color:var(--blue);
   line-height:1.2;margin:2px 0;font-variant-numeric:tabular-nums;
 }
 .wallet-day .wd-badge{
-  font-size:10.5px;font-weight:700;color:#f0d98a;
-  letter-spacing:.2px;min-height:14px;font-variant-numeric:tabular-nums;
+  font-size:10.5px;font-weight:700;
+  color:#b8ad98;letter-spacing:.2px;
+  min-height:14px;font-variant-numeric:tabular-nums;
 }
 .wallet-day.checked{
-  background:linear-gradient(150deg,rgba(212,175,55,.22),rgba(200,16,46,.18));
-  border-color:rgba(212,175,55,.55);
-  box-shadow:0 4px 14px rgba(212,175,55,.2);
+  background:linear-gradient(160deg,#fff8e8,#f5e0a0);
+  border-color:#d4af37;
+  box-shadow:0 4px 14px rgba(212,175,55,.25);
+  transform:translateY(-1px);
 }
-.wallet-day.checked .wd-daynum{color:#fff}
-.wallet-day.checked .wd-weekday{color:#f0d98a}
-.wallet-day.checked .wd-badge{color:#5cd190}
+.wallet-day.checked .wd-daynum{color:#8a6d12}
+.wallet-day.checked .wd-weekday{color:#8a6d12;font-weight:600}
+.wallet-day.checked .wd-badge{color:#1f6f40}
 .wallet-day.today{
-  border-color:#f0d98a;
-  box-shadow:0 0 0 2px rgba(240,217,138,.35);
+  border-color:#c8102e;
+  box-shadow:0 0 0 2px rgba(200,16,46,.15);
+}
+.wallet-day.today.checked{
+  border-color:#8a6d12;
+  box-shadow:0 0 0 2px rgba(212,175,55,.35), 0 4px 14px rgba(212,175,55,.25);
 }
 
 /* ============================================================
-   我的礼品订单（独立面板）
+   礼品订单面板
    ============================================================ */
 .orders-card{
   border:1px solid var(--line);
@@ -325,17 +460,10 @@
   line-height:1.6;
 }
 
-.orders-list{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
-
+.orders-list{display:flex;flex-direction:column;gap:14px}
 .orders-empty{
-  text-align:center;
-  padding:32px 12px;
-  color:var(--muted);
-  font-size:13px;
+  text-align:center;padding:32px 12px;
+  color:var(--muted);font-size:13px;
   background:#fbf9f4;
   border:1px dashed var(--line);
   border-radius:10px;
@@ -352,8 +480,6 @@
   border-color:var(--gold);
   box-shadow:0 6px 18px rgba(31,35,40,.06);
 }
-
-/* 头部：奖品名 + 状态 */
 .order-top{
   display:flex;
   align-items:center;
@@ -365,61 +491,36 @@
   flex-wrap:wrap;
 }
 .order-prize{
-  font-size:15px;
-  font-weight:700;
-  color:var(--blue);
-  letter-spacing:.3px;
+  font-size:15px;font-weight:700;
+  color:var(--blue);letter-spacing:.3px;
   word-break:break-word;
-  flex:1 1 auto;
-  min-width:0;
+  flex:1 1 auto;min-width:0;
 }
 .order-status{
   flex:0 0 auto;
-  font-size:12px;
-  font-weight:700;
-  padding:3px 12px;
-  border-radius:999px;
+  font-size:12px;font-weight:700;
+  padding:3px 12px;border-radius:999px;
   letter-spacing:.5px;
 }
-.order-status.pending{
-  background:#fff8e8;color:#8a6d12;border:1px solid #ead9a8;
-}
-.order-status.shipped{
-  background:#eef3fb;color:#3d5a8a;border:1px solid #cdd9ef;
-}
-.order-status.delivered{
-  background:#e9f6ee;color:#1f6f40;border:1px solid #b9e0c9;
-}
-.order-status.cancelled{
-  background:#fdecef;color:#9d0c24;border:1px solid #f6cdd5;
-}
-.order-status.unknown{
-  background:#f2f5fa;color:var(--muted);border:1px solid var(--line);
-}
+.order-status.pending{background:#fff8e8;color:#8a6d12;border:1px solid #ead9a8}
+.order-status.shipped{background:#eef3fb;color:#3d5a8a;border:1px solid #cdd9ef}
+.order-status.delivered{background:#e9f6ee;color:#1f6f40;border:1px solid #b9e0c9}
+.order-status.cancelled{background:#fdecef;color:#9d0c24;border:1px solid #f6cdd5}
+.order-status.unknown{background:#f2f5fa;color:var(--muted);border:1px solid var(--line)}
 
-/* 收货信息行 */
 .order-info{
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
-  font-size:13.5px;
-  line-height:1.65;
-  margin-bottom:6px;
+  display:flex;align-items:flex-start;gap:10px;
+  font-size:13.5px;line-height:1.65;margin-bottom:6px;
 }
 .order-info .oi-label{
-  flex:0 0 auto;
-  color:var(--muted);
-  min-width:52px;
-  font-size:12.5px;
-  padding-top:1px;
+  flex:0 0 auto;color:var(--muted);
+  min-width:52px;font-size:12.5px;padding-top:1px;
 }
 .order-info .oi-value{
-  flex:1 1 auto;
-  color:var(--ink-soft);
+  flex:1 1 auto;color:var(--ink-soft);
   word-break:break-word;
 }
 
-/* 物流信息区 */
 .order-logistics{
   margin-top:12px;
   padding:12px 14px;
@@ -427,44 +528,32 @@
   border:1px solid var(--line-soft);
   border-left:3px solid var(--gold);
   border-radius:0 8px 8px 0;
-  font-size:13px;
-  line-height:1.7;
+  font-size:13px;line-height:1.7;
 }
 .order-logistics.pending-tip{
   background:#fff8e8;
   border-left-color:var(--gold);
-  color:#8a6d12;
-  font-size:12.5px;
+  color:#8a6d12;font-size:12.5px;
 }
 .order-tracking{
-  display:flex;
-  align-items:flex-start;
-  gap:10px;
+  display:flex;align-items:flex-start;gap:10px;
   margin-bottom:6px;
 }
 .order-tracking .ot-label{
-  flex:0 0 auto;
-  font-size:12px;
-  color:var(--muted);
-  min-width:36px;
-  padding-top:2px;
+  flex:0 0 auto;font-size:12px;color:var(--muted);
+  min-width:36px;padding-top:2px;
 }
 .order-tracking .ot-value{
   flex:1 1 auto;
   font-family:ui-monospace,Menlo,Consolas,monospace;
-  font-size:13px;
-  color:var(--blue);
-  font-weight:600;
-  letter-spacing:.2px;
+  font-size:13px;color:var(--blue);
+  font-weight:600;letter-spacing:.2px;
   word-break:break-all;
 }
 .ot-link{
-  display:inline-block;
-  margin-top:4px;
-  font-size:12.5px;
-  color:var(--red);
-  letter-spacing:.3px;
-  transition:color .2s;
+  display:inline-block;margin-top:4px;
+  font-size:12.5px;color:var(--red);
+  letter-spacing:.3px;transition:color .2s;
 }
 .ot-link:hover{
   color:var(--red-dark);
@@ -472,19 +561,15 @@
   text-underline-offset:3px;
 }
 .order-time{
-  font-size:11.5px;
-  color:var(--muted);
-  letter-spacing:.2px;
-  margin-top:2px;
+  font-size:11.5px;color:var(--muted);
+  letter-spacing:.2px;margin-top:2px;
 }
 .order-foot{
-  margin-top:10px;
-  padding-top:10px;
+  margin-top:10px;padding-top:10px;
   border-top:1px dashed var(--line-soft);
 }
 .order-created{
-  font-size:11.5px;
-  color:var(--muted);
+  font-size:11.5px;color:var(--muted);
   letter-spacing:.2px;
 }
 
@@ -492,17 +577,12 @@
    抽奖入口
    ============================================================ */
 .lottery-entry{
-  display:flex;
-  align-items:center;
-  gap:16px;
+  display:flex;align-items:center;gap:16px;
   padding:18px 20px;
   background:linear-gradient(135deg,#1a2b4c,#12203a);
-  border:0;
-  color:#fff;
-  text-decoration:none;
+  border:0;color:#fff;text-decoration:none;
   transition:transform .2s, box-shadow .2s;
-  position:relative;
-  overflow:hidden;
+  position:relative;overflow:hidden;
 }
 .lottery-entry::after{
   content:"";
@@ -542,25 +622,39 @@
    ============================================================ */
 @media (max-width:900px){
   .profile-grid{grid-template-columns:1fr}
-  .profile-side{position:static}
+  .profile-side{
+    position:static;
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .profile-card{flex:1 1 260px}
+  .balance-card{flex:1 1 220px;align-self:flex-start}
 }
 
 @media (max-width:600px){
   .profile-main{padding:20px 14px 60px}
+
+  .profile-side{flex-direction:column;gap:14px}
+  .profile-card{flex:1 1 auto}
+  .balance-card{flex:1 1 auto}
+
   .profile-card{padding:22px 16px 18px}
   .profile-avatar-wrap,
   .profile-avatar{width:100px;height:100px}
   .profile-avatar.fallback{font-size:36px}
   .profile-avatar-edit{width:34px;height:34px;font-size:14px}
-  .profile-actions .btn{flex:1 1 auto}
 
-  #walletCard .card-head{padding:16px 18px 12px}
-  .wallet-balance{font-size:22px}
-  .wallet-body{padding:18px 18px 16px}
-  .wallet-action{gap:12px}
-  .wallet-action .btn{
-    flex:1 1 100%;min-width:0;
-    padding:13px 20px;font-size:14.5px;letter-spacing:2px;
+  .balance-card{padding:16px 18px 14px}
+  .bc-value{font-size:40px}
+  .bc-symbol{font-size:22px}
+
+  .checkin-card .btn.red{
+    width:100%;
+    min-width:0;
+    padding:13px 20px;
+    font-size:14.5px;
+    letter-spacing:2px;
   }
   .wallet-streak{font-size:12.5px}
 
@@ -588,10 +682,13 @@
   .lottery-entry .le-icon{font-size:28px}
   .lottery-entry .le-body b{font-size:15px}
   .lottery-entry .le-body span{font-size:12px}
+
+  .profile-actions .btn{flex:1 1 auto}
 }
 
 @media (max-width:380px){
   .wallet-week-grid{gap:4px}
   .wallet-day{min-height:50px;padding:6px 2px}
   .wallet-day .wd-badge{font-size:9px}
+  .bc-value{font-size:34px}
 }

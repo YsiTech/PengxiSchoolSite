@@ -33,8 +33,10 @@
 
   <div class="profile-grid">
 
-    <!-- ==================== 左侧：头像卡片 ==================== -->
+    <!-- ==================== 左侧栏 ==================== -->
     <aside class="profile-side">
+
+      <!-- 头像卡片 -->
       <div class="profile-card">
         <div class="profile-avatar-wrap">
           <div class="profile-avatar" id="avatarDisplay"><span>?</span></div>
@@ -55,23 +57,42 @@
           移除头像
         </button>
       </div>
-    </aside>
 
-    <!-- ==================== 右侧：内容 ==================== -->
-    <section class="profile-content">
-
-      <!-- ========== 1. 我的亚斯卢布（签到） ========== -->
-      <div class="card" id="walletCard">
-        <div class="card-head">
-          <h3>我的亚斯卢布</h3>
-          <span class="wallet-balance" id="walletBalance">—</span>
+      <!-- 余额悬浮卡片（独立） -->
+      <div class="balance-card" id="balanceCard">
+        <div class="bc-top">
+          <span class="bc-label">亚斯卢布余额</span>
+          <span class="bc-flag">АСР</span>
         </div>
 
-        <div class="wallet-body">
-          <div class="wallet-action">
-            <button class="btn red" type="button" id="checkinBtn">今日签到</button>
-            <span class="wallet-streak" id="walletStreak"></span>
+        <div class="bc-main">
+          <span class="bc-symbol">₽</span>
+          <span class="bc-value" id="walletBalance">—</span>
+        </div>
+
+        <div class="bc-foot">
+          <span class="bc-hint">通过签到与抽奖获取</span>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ==================== 右侧内容 ==================== -->
+    <section class="profile-content">
+
+      <!-- 每日签到 -->
+      <div class="card checkin-card" id="walletCard">
+        <div class="card-head">
+          <h3>每日签到</h3>
+          <span class="wallet-streak" id="walletStreak"></span>
+        </div>
+
+        <div class="checkin-body">
+          <div class="checkin-tip">
+            每天签到可领取亚斯卢布 · 连续签到奖励递增 · 最高 +50 / 天
           </div>
+
+          <button class="btn red" type="button" id="checkinBtn">今日签到</button>
 
           <div class="wallet-history" id="walletHistory">
             <div class="wallet-history-empty">暂无签到记录</div>
@@ -79,7 +100,7 @@
         </div>
       </div>
 
-      <!-- ========== 2. 我的礼品订单（独立面板） ========== -->
+      <!-- 我的礼品订单（独立面板） -->
       <div class="card orders-card" id="ordersCard">
         <div class="card-head orders-head">
           <h3>
@@ -98,7 +119,7 @@
         </div>
       </div>
 
-      <!-- ========== 3. 星图抽奖入口 ========== -->
+      <!-- 抽奖入口 -->
       <a class="card lottery-entry" href="lottery.html">
         <div class="le-icon">🎰</div>
         <div class="le-body">
@@ -108,7 +129,7 @@
         <div class="le-arrow">→</div>
       </a>
 
-      <!-- ========== 4. 基本信息 ========== -->
+      <!-- 基本信息 -->
       <div class="card">
         <div class="card-head"><h3>基本信息</h3></div>
 
@@ -131,7 +152,7 @@
         </div>
       </div>
 
-      <!-- ========== 5. 修改密码 ========== -->
+      <!-- 修改密码 -->
       <div class="card">
         <div class="card-head"><h3>修改密码</h3></div>
 
@@ -155,7 +176,7 @@
         </div>
       </div>
 
-      <!-- ========== 6. 账号操作 ========== -->
+      <!-- 账号操作 -->
       <div class="card danger-card">
         <div class="card-head"><h3>账号操作</h3></div>
         <p class="muted small" style="margin:0 0 14px">

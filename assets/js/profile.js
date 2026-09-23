@@ -1,6 +1,6 @@
 /* ===================================================================
    蓬溪格勒人民高等中学 · 个人中心逻辑
-   包含：头像 / 昵称 / 密码 / 签到 / 订单
+   包含：头像 / 昵称 / 密码 / 签到 / 订单（分页）
    =================================================================== */
 
 (function () {
@@ -8,45 +8,33 @@
 
   var $ = function (id) { return document.getElementById(id); };
 
-  /* ============================================================
-     DOM 引用
-     ============================================================ */
   var els = {
-    /* 头像 */
     avatarDisplay:    $('avatarDisplay'),
     avatarInput:      $('avatarInput'),
     avatarPickBtn:    $('avatarPickBtn'),
     avatarRemoveBtn:  $('avatarRemoveBtn'),
-    /* 用户信息 */
     profileName:      $('profileName'),
     profileEmail:     $('profileEmail'),
     profileRole:      $('profileRole'),
     nicknameInput:    $('nicknameInput'),
     emailDisplay:     $('emailDisplay'),
     saveProfileBtn:   $('saveProfileBtn'),
-    /* 密码 */
     newPassword:      $('newPassword'),
     newPassword2:     $('newPassword2'),
     changePasswordBtn:$('changePasswordBtn'),
-    /* 退出 / 游客 */
     logoutBtn:        $('logoutBtn'),
     guestBanner:      $('guestBanner'),
     upgradeBtn:       $('upgradeBtn'),
-    /* 钱包签到 */
     walletCard:       $('walletCard'),
     walletBalance:    $('walletBalance'),
     walletStreak:     $('walletStreak'),
     checkinBtn:       $('checkinBtn'),
     walletHistory:    $('walletHistory'),
-    /* 订单 */
     ordersCard:       $('ordersCard'),
     ordersCount:      $('ordersCount'),
     ordersList:       $('ordersList')
   };
 
-  /* ============================================================
-     Toast 兜底
-     ============================================================ */
   function toast(msg, duration) {
     if (window.siteToast) { window.siteToast(msg, duration); return; }
     console.log('[profile toast]', msg);
@@ -56,7 +44,7 @@
   var currentUserCache = null;
 
   /* ============================================================
-     头像渲染
+     头像
      ============================================================ */
   function renderAvatar(dataUrl, nickname) {
     if (!els.avatarDisplay) return;
@@ -74,9 +62,6 @@
     els.avatarDisplay.style.background = fb.color;
   }
 
-  /* ============================================================
-     图片压缩
-     ============================================================ */
   function compressImage(file, maxSize, quality) {
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
@@ -102,9 +87,6 @@
     });
   }
 
-  /* ============================================================
-     事件：更换头像
-     ============================================================ */
   if (els.avatarPickBtn) {
     els.avatarPickBtn.addEventListener('click', function () {
       if (els.avatarInput) els.avatarInput.click();
@@ -131,9 +113,6 @@
     });
   }
 
-  /* ============================================================
-     事件：移除头像
-     ============================================================ */
   if (els.avatarRemoveBtn) {
     els.avatarRemoveBtn.addEventListener('click', function () {
       pendingAvatar = '';
@@ -143,7 +122,7 @@
   }
 
   /* ============================================================
-     事件：保存资料
+     保存资料
      ============================================================ */
   if (els.saveProfileBtn) {
     els.saveProfileBtn.addEventListener('click', function () {
@@ -184,7 +163,7 @@
   }
 
   /* ============================================================
-     事件：修改密码
+     修改密码
      ============================================================ */
   if (els.changePasswordBtn) {
     els.changePasswordBtn.addEventListener('click', function () {
@@ -220,7 +199,7 @@
   }
 
   /* ============================================================
-     事件：退出登录
+     退出 / 游客升级
      ============================================================ */
   if (els.logoutBtn) {
     els.logoutBtn.addEventListener('click', function () {
@@ -229,9 +208,6 @@
     });
   }
 
-  /* ============================================================
-     事件：游客升级
-     ============================================================ */
   if (els.upgradeBtn) {
     els.upgradeBtn.addEventListener('click', function () {
       if (!window.Auth) { location.href = 'index.html'; return; }
@@ -240,7 +216,7 @@
   }
 
   /* ============================================================
-     签到模块
+     签到
      ============================================================ */
   function formatDate(d) {
     var y = d.getFullYear();
@@ -253,9 +229,7 @@
     if (!els.walletHistory) return;
 
     var map = {};
-    (history || []).forEach(function (h) {
-      map[h.checkin_date] = h;
-    });
+    (history || []).forEach(function (h) { map[h.checkin_date] = h; });
 
     var today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -269,13 +243,11 @@
       var key = formatDate(d);
       var info = map[key];
       days.push({
-        date: d,
-        key: key,
+        date: d, key: key,
         weekday: weekdayLabels[d.getDay()],
         dayNum: d.getDate(),
         checked: !!info,
         reward: info ? info.reward : 0,
-        streak: info ? info.streak : 0,
         isToday: i === 0
       });
     }
@@ -285,9 +257,7 @@
       var cls = 'wallet-day';
       if (d.checked) cls += ' checked';
       if (d.isToday) cls += ' today';
-
       var badge = d.checked ? ('+' + d.reward) : '';
-
       html += '<div class="' + cls + '">' +
                 '<div class="wd-weekday">' + d.weekday + '</div>' +
                 '<div class="wd-daynum">' + d.dayNum + '</div>' +
@@ -295,16 +265,13 @@
               '</div>';
     });
     html += '</div>';
-
     els.walletHistory.innerHTML = html;
   }
 
   function refreshWalletBalance() {
     if (!window.Wallet) return Promise.resolve();
     return Wallet.getBalance().then(function (b) {
-      if (els.walletBalance) {
-        els.walletBalance.textContent = (b === null ? '—' : b);
-      }
+      if (els.walletBalance) els.walletBalance.textContent = (b === null ? '—' : b);
       return b;
     });
   }
@@ -313,7 +280,6 @@
     if (!window.Wallet) return Promise.resolve();
     return Wallet.getCheckinHistory(7).then(function (list) {
       renderWeekCalendar(list);
-
       if (els.walletStreak && list && list.length) {
         var latest = list[0];
         var today = formatDate(new Date());
@@ -330,7 +296,6 @@
 
   function checkTodayStatus() {
     if (!window.Wallet || !els.checkinBtn) return;
-
     Wallet.getCheckinHistory(1).then(function (list) {
       var today = formatDate(new Date());
       var latest = list && list[0];
@@ -378,7 +343,6 @@
 
         refreshWalletBalance();
         refreshWalletHistory();
-
         if (window.Wallet && Wallet.mountNavBalance) {
           setTimeout(Wallet.mountNavBalance, 100);
         }
@@ -387,8 +351,12 @@
   }
 
   /* ============================================================
-     订单模块
+     订单（分页展示）
      ============================================================ */
+  var ALL_ORDERS = [];       /* 全部订单缓存 */
+  var ORDERS_EXPANDED = false; /* 是否已展开 */
+  var PREVIEW_COUNT = 3;     /* 默认显示最近几条 */
+
   function orderStatusInfo(status) {
     switch (status) {
       case 'pending':   return { text: '待处理', cls: 'pending' };
@@ -413,10 +381,65 @@
     });
   }
 
-  function renderOrders(list) {
+  function renderOrderItem(o) {
+    var st = orderStatusInfo(o.status);
+    var created = fmtTime(o.created_at);
+
+    var logisticsHtml = '';
+    if (o.status === 'shipped' || o.status === 'delivered') {
+      var trackLine = '';
+      if (o.shipping_company || o.tracking_number) {
+        trackLine = '<div class="order-tracking">' +
+                      '<span class="ot-label">物流</span>' +
+                      '<span class="ot-value">' +
+                        (o.shipping_company ? escapeHtml(o.shipping_company) + ' · ' : '') +
+                        (o.tracking_number ? escapeHtml(o.tracking_number) : '') +
+                      '</span>' +
+                    '</div>';
+        if (o.tracking_url) {
+          trackLine += '<a class="ot-link" href="' + escapeHtml(o.tracking_url) +
+                       '" target="_blank" rel="noopener">查看物流轨迹 →</a>';
+        }
+      }
+      if (o.shipped_at) {
+        trackLine += '<div class="order-time">发货时间：' + fmtTime(o.shipped_at) + '</div>';
+      }
+      if (o.delivered_at) {
+        trackLine += '<div class="order-time">送达时间：' + fmtTime(o.delivered_at) + '</div>';
+      }
+      logisticsHtml = '<div class="order-logistics">' + trackLine + '</div>';
+    } else if (o.status === 'pending') {
+      logisticsHtml = '<div class="order-logistics pending-tip">' +
+                        '我们会尽快处理并寄出，请耐心等待' +
+                      '</div>';
+    }
+
+    return '<div class="order-item">' +
+             '<div class="order-top">' +
+               '<span class="order-prize">🎁 ' + escapeHtml(o.prize_name) + '</span>' +
+               '<span class="order-status ' + st.cls + '">' + st.text + '</span>' +
+             '</div>' +
+             '<div class="order-info">' +
+               '<span class="oi-label">收货人</span>' +
+               '<span class="oi-value">' + escapeHtml(o.receiver_name) + ' · ' + escapeHtml(o.receiver_phone) + '</span>' +
+             '</div>' +
+             '<div class="order-info">' +
+               '<span class="oi-label">地址</span>' +
+               '<span class="oi-value">' + escapeHtml(o.receiver_address) + '</span>' +
+             '</div>' +
+             logisticsHtml +
+             '<div class="order-foot">' +
+               '<span class="order-created">提交于 ' + created + '</span>' +
+             '</div>' +
+           '</div>';
+  }
+
+  function renderOrders() {
     if (!els.ordersList) return;
 
-    if (!list || !list.length) {
+    var list = ALL_ORDERS;
+
+    if (!list.length) {
       els.ordersList.innerHTML = '<div class="orders-empty">暂无礼品订单</div>';
       if (els.ordersCount) els.ordersCount.textContent = '—';
       return;
@@ -424,61 +447,42 @@
 
     if (els.ordersCount) els.ordersCount.textContent = '共 ' + list.length + ' 单';
 
+    /* 决定显示哪些 */
+    var visible = ORDERS_EXPANDED ? list : list.slice(0, PREVIEW_COUNT);
+
     var html = '';
-    list.forEach(function (o) {
-      var st = orderStatusInfo(o.status);
-      var created = fmtTime(o.created_at);
-
-      var logisticsHtml = '';
-      if (o.status === 'shipped' || o.status === 'delivered') {
-        var trackLine = '';
-        if (o.shipping_company || o.tracking_number) {
-          trackLine = '<div class="order-tracking">' +
-                        '<span class="ot-label">物流</span>' +
-                        '<span class="ot-value">' +
-                          (o.shipping_company ? escapeHtml(o.shipping_company) + ' · ' : '') +
-                          (o.tracking_number ? escapeHtml(o.tracking_number) : '') +
-                        '</span>' +
-                      '</div>';
-          if (o.tracking_url) {
-            trackLine += '<a class="ot-link" href="' + escapeHtml(o.tracking_url) +
-                         '" target="_blank" rel="noopener">查看物流轨迹 →</a>';
-          }
-        }
-        if (o.shipped_at) {
-          trackLine += '<div class="order-time">发货时间：' + fmtTime(o.shipped_at) + '</div>';
-        }
-        if (o.delivered_at) {
-          trackLine += '<div class="order-time">送达时间：' + fmtTime(o.delivered_at) + '</div>';
-        }
-        logisticsHtml = '<div class="order-logistics">' + trackLine + '</div>';
-      } else if (o.status === 'pending') {
-        logisticsHtml = '<div class="order-logistics pending-tip">' +
-                          '我们会尽快处理并寄出，请耐心等待' +
-                        '</div>';
-      }
-
-      html += '<div class="order-item">' +
-                '<div class="order-top">' +
-                  '<span class="order-prize">🎁 ' + escapeHtml(o.prize_name) + '</span>' +
-                  '<span class="order-status ' + st.cls + '">' + st.text + '</span>' +
-                '</div>' +
-                '<div class="order-info">' +
-                  '<span class="oi-label">收货人</span>' +
-                  '<span class="oi-value">' + escapeHtml(o.receiver_name) + ' · ' + escapeHtml(o.receiver_phone) + '</span>' +
-                '</div>' +
-                '<div class="order-info">' +
-                  '<span class="oi-label">地址</span>' +
-                  '<span class="oi-value">' + escapeHtml(o.receiver_address) + '</span>' +
-                '</div>' +
-                logisticsHtml +
-                '<div class="order-foot">' +
-                  '<span class="order-created">提交于 ' + created + '</span>' +
-                '</div>' +
-              '</div>';
+    visible.forEach(function (o) {
+      html += renderOrderItem(o);
     });
 
+    /* 底部按钮 */
+    if (list.length > PREVIEW_COUNT) {
+      if (!ORDERS_EXPANDED) {
+        var moreCount = list.length - PREVIEW_COUNT;
+        html += '<button class="orders-toggle" id="ordersToggle" type="button">' +
+                  '查看全部订单（还有 ' + moreCount + ' 单） ↓' +
+                '</button>';
+      } else {
+        html += '<button class="orders-toggle" id="ordersToggle" type="button">' +
+                  '收起订单 ↑' +
+                '</button>';
+      }
+    }
+
     els.ordersList.innerHTML = html;
+
+    /* 绑定展开/收起按钮 */
+    var toggleBtn = document.getElementById('ordersToggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function () {
+        ORDERS_EXPANDED = !ORDERS_EXPANDED;
+        renderOrders();
+        /* 收起时滚回订单卡片顶部 */
+        if (!ORDERS_EXPANDED && els.ordersCard) {
+          els.ordersCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
   }
 
   function loadOrders() {
@@ -487,7 +491,6 @@
     var user = Auth.getCurrentUser();
     if (!user) return;
 
-    /* 游客隐藏订单卡片 */
     if (user.isGuest) {
       if (els.ordersCard) els.ordersCard.classList.add('hide');
       return;
@@ -506,7 +509,9 @@
           if (els.ordersList) els.ordersList.innerHTML = '<div class="orders-empty">读取订单失败</div>';
           return;
         }
-        renderOrders(res.data || []);
+        ALL_ORDERS = res.data || [];
+        ORDERS_EXPANDED = false;
+        renderOrders();
       });
   }
 
@@ -536,7 +541,6 @@
 
     renderAvatar(user.avatar, user.nickname);
 
-    /* 游客：显示提示，隐藏钱包和订单 */
     if (user.isGuest) {
       if (els.guestBanner) els.guestBanner.classList.remove('hide');
       if (els.walletCard)  els.walletCard.classList.add('hide');
@@ -545,7 +549,6 @@
       return;
     }
 
-    /* 正式用户：加载所有数据 */
     refreshWalletBalance();
     refreshWalletHistory();
     checkTodayStatus();
