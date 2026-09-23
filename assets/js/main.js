@@ -282,9 +282,11 @@
       return '<a' + cls + ' href="' + item.href + '">' + item.text + '</a>';
     }).join('');
 
-    var pageFile = (location.pathname.split('/').pop() || 'mainsite.html').split('?')[0];
+     var pageFile = (location.pathname.split('/').pop() || 'mainsite.html').split('?')[0];
+    /* 亚斯语链接：正常（从 ru/ 回主站，或留在主站） */
     var asHref = IS_RU ? '../' + pageFile : pageFile;
-    var ruHref = IS_RU ? pageFile : 'ru/' + pageFile;
+    /* 俄语链接：改成跳转到维护页 */
+    var ruHref = IS_RU ? '../maintenance.html' : 'maintenance.html';
     var asCls = IS_RU ? '' : ' class="on"';
     var ruCls = IS_RU ? ' class="on"' : '';
     var logoPath = IS_RU ? '../photo/logo.png' : 'photo/logo.png';
