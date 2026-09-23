@@ -1,9 +1,5 @@
 /* ===================================================================
-   蓬溪格勒人民高等中学 · 官方网站
-   main.js — 完整版
-   包含：双语 · 导航（含好友红点）· 页脚 · 搜索 · 视频中心
-         校园网 · 校徽彩蛋 · 回到顶部 · 滚动显现 · 数字滚动
-         好友红点轮询 · 登录状态挂载
+   蓬溪格勒人民高等中学 · main.js
    =================================================================== */
 
 (function () {
@@ -12,9 +8,6 @@
   var IS_RU = /\/ru\//.test(location.pathname) ||
               (document.body && document.body.dataset.lang === 'ru');
 
-  /* ============================================================
-     1. 词条
-     ============================================================ */
   var I18N = {
     zh: {
       topLeft: '亚斯共和国教育部主管 · 蓬溪格勒市教育局主办',
@@ -24,7 +17,6 @@
       schoolSub: '亚斯-苏联青少年交流示范校 · 建校 1911 年',
       searchPlaceholder: '星图搜索：通知 / 新闻 / 教研',
       searchBtn: '搜索',
-
       nav: [
         { id:'index',      text:'首页',     href:'mainsite.html' },
         { id:'about',      text:'学校概况', href:'about.html' },
@@ -38,17 +30,14 @@
         { id:'moral',      text:'德育之窗', href:'moral.html' },
         { id:'admissions', text:'招生招聘', href:'admissions.html' },
         { id:'history',    text:'校史馆',   href:'history.html' },
-        { id:'friends',    text:'我的好友', href:'friends.html' },
-        { id:'friends',    text:'个人中心', href:'profile.html' },
+        { id:'history',    text:'个人中心',   href:'profile.html' },
         { id:'contact',    text:'联系我们', href:'contact.html' }
       ],
-
       footerAbout: '在红星下求知，在友谊中成长。我们以基础俄语、亚斯史纲要、国际社会学为特色，培养有全球视野的社会主义建设者。',
       footerAddr: '地址：亚斯共和国蓬溪格勒市红星区复兴大道 12 号',
       footerQuick: '快速导航',
       footerService: '服务入口',
       footerLinks: '友情链接',
-
       footerQuickItems: [
         { text:'学校概况', href:'about.html' },
         { text:'新闻中心', href:'news.html' },
@@ -60,7 +49,7 @@
         { text:'视觉蓬中', href:'videohub.html' },
         { text:'校园网订购', href:'campusnet.html' },
         { text:'星图', href:'xingtu.html' },
-        { text:'我的好友', href:'friends.html' },
+        { text:'校史馆', href:'history.html' },
         { text:'联系我们', href:'contact.html' }
       ],
       footerLinksItems: [
@@ -70,11 +59,9 @@
         { text:'蓬溪格勒磁悬浮集团', href:'#' },
         { text:'亚斯红日网络科技中心', href:'#' }
       ],
-
       copyright: '© {year} 蓬溪格勒人民高等中学',
       footerNote: '蓬溪格勒人民高等中学 · 技术支持：亚斯红日网络科技中心 · 备案号：亚斯共和国版本图书馆（2025）第 03698 号',
       disclaimer: '红日网络 · 星图搜索已连接',
-
       toastEmpty: '请输入关键词',
       toastSearch: '星图搜索：“{kw}” · 已转至搜索页',
       toastRestricted: '该学生信息受保护 · 权限不足',
@@ -84,7 +71,6 @@
       toastForm: '已收到{name} · 校务办公室将在 3 个工作日内回复',
       toastEnroll: '招生系统将在下一学年开放 · 请关注通知公告',
       backTop: '回到顶部',
-
       sdHistory: '最近搜索',
       sdClear: '清空',
       sdHot: '热门',
@@ -92,20 +78,17 @@
       sdViewAll: '查看全部 {n} 条结果 →',
       sdPage: '页面',
       sdNews: '新闻',
-
       spResultsFor: '关键词：<strong>{kw}</strong>',
       spCount: '共找到 <b>{n}</b> 条相关记录',
-      spEmpty: '没有找到与 <strong>{kw}</strong> 相关的内容',
+      spEmpty: '没有找到与 <strong>{kw}</strong> 相关的记录',
       spHint: '试试「莫斯科研学」「磁悬浮」「核物理」「惊鸿」',
       spSub: '全站检索 · 新闻 · 通知 · 教研 · 校史',
-
       vhPending: '该视频尚未上线，敬请期待',
       vhLike: '点赞', vhLiked: '已点赞',
       vhFav: '收藏', vhFaved: '已收藏',
       vhShare: '分享', vhShareCopied: '链接已复制到剪贴板',
-      vhErr: '视频加载失败，请确认 video/1.mp4 已就位'
+      vhErr: '视频加载失败'
     },
-
     ru: {
       topLeft: 'Министерство образования АСР · Управление образования Понксиграда',
       langAs: '亚斯语',
@@ -114,7 +97,6 @@
       schoolSub: 'Образцовая школа обмена АСР–СССР · Основана в 1911 г.',
       searchPlaceholder: 'Поиск: объявления / новости / учёба',
       searchBtn: 'Поиск',
-
       nav: [
         { id:'index',      text:'Главная',    href:'mainsite.html' },
         { id:'about',      text:'О школе',    href:'about.html' },
@@ -128,16 +110,13 @@
         { id:'moral',      text:'Воспитание', href:'moral.html' },
         { id:'admissions', text:'Приём',      href:'admissions.html' },
         { id:'history',    text:'История',    href:'history.html' },
-        { id:'friends',    text:'Друзья',     href:'friends.html' },
         { id:'contact',    text:'Контакты',   href:'contact.html' }
       ],
-
       footerAbout: 'Учиться под красной звездой, расти в дружбе.',
-      footerAddr: 'Адрес: АСР, г. Понксиград, Краснозвёздный район, проспект Возрождения, 12',
+      footerAddr: 'Адрес: АСР, г. Понксиград',
       footerQuick: 'Быстрые ссылки',
       footerService: 'Сервисы',
       footerLinks: 'Полезные ссылки',
-
       footerQuickItems: [
         { text:'О школе', href:'about.html' },
         { text:'Новости', href:'news.html' },
@@ -149,99 +128,86 @@
         { text:'Видеоцентр', href:'videohub.html' },
         { text:'Заказ сети', href:'campusnet.html' },
         { text:'Созвездие', href:'xingtu.html' },
-        { text:'Друзья', href:'friends.html' },
+        { text:'История', href:'history.html' },
         { text:'Контакты', href:'contact.html' }
       ],
       footerLinksItems: [
         { text:'Министерство образования АСР', href:'#' },
         { text:'Министерство образования СССР', href:'#' },
-        { text:'МГУ им. М. В. Ломоносова', href:'#' },
-        { text:'Понксиградская маглев-корпорация', href:'#' },
-        { text:'Краснозвёздный сетевой центр', href:'#' }
+        { text:'МГУ', href:'#' },
+        { text:'Маглев-корпорация', href:'#' },
+        { text:'Краснозвёздный центр', href:'#' }
       ],
-
-      copyright: '© {year} Понксиградская народная средняя школа высшей ступени',
-      footerNote: 'Понксиградская народная средняя школа высшей ступени · Техническая поддержка: Краснозвёздный сетевой центр',
-      disclaimer: 'Красная сеть · Поиск «Звёздная карта» подключён',
-
+      copyright: '© {year} Понксиградская школа',
+      footerNote: 'Понксиградская школа · Техническая поддержка: Краснозвёздный центр',
+      disclaimer: 'Красная сеть · Поиск подключён',
       toastEmpty: 'Введите ключевое слово',
-      toastSearch: 'Поиск «{kw}» · переходим',
-      toastRestricted: 'Информация защищена · недостаточно прав',
-      confirmRestricted: 'ВНИМАНИЕ: обнаружено закрытое ключевое слово.\n\nПосторонним вход воспрещён.\nПродолжить?',
-      toastBadge3: 'Красная звезда мигает · продолжайте',
-      confirmBadge5: 'Эмблема нажата 5 раз.\n\nПерейти к архиву «Подготовка к Москве»?',
-      toastForm: 'Получено{name} · канцелярия ответит в течение 3 рабочих дней',
-      toastEnroll: 'Приёмная система откроется в следующем учебном году',
+      toastSearch: 'Поиск «{kw}»',
+      toastRestricted: 'Информация защищена',
+      confirmRestricted: 'Обнаружено закрытое слово.\nПродолжить?',
+      toastBadge3: 'Звезда мигает',
+      confirmBadge5: 'Эмблема нажата 5 раз.\nПерейти в архив?',
+      toastForm: 'Получено{name}',
+      toastEnroll: 'Система откроется позже',
       backTop: 'Наверх',
-
-      sdHistory: 'История поиска',
+      sdHistory: 'История',
       sdClear: 'Очистить',
       sdHot: 'Популярное',
       sdEmpty: 'Ничего не найдено',
-      sdViewAll: 'Показать все результаты: {n} →',
+      sdViewAll: 'Все результаты: {n} →',
       sdPage: 'Страница',
       sdNews: 'Новость',
-
-      spResultsFor: 'Ключевое слово: <strong>{kw}</strong>',
+      spResultsFor: 'Слово: <strong>{kw}</strong>',
       spCount: 'Найдено: <b>{n}</b>',
-      spEmpty: 'Ничего не найдено по запросу <strong>{kw}</strong>',
-      spHint: 'Попробуйте: «Москва», «маглев», «ядерная физика»',
-      spSub: 'По всему сайту · новости · учёба · история',
-
-      vhPending: 'Видео пока не опубликовано',
+      spEmpty: 'Нет результатов: <strong>{kw}</strong>',
+      spHint: 'Попробуйте: «Москва», «маглев»',
+      spSub: 'По всему сайту',
+      vhPending: 'Видео пока нет',
       vhLike: 'Нравится', vhLiked: 'Понравилось',
       vhFav: 'В избранное', vhFaved: 'В избранном',
       vhShare: 'Поделиться', vhShareCopied: 'Ссылка скопирована',
-      vhErr: 'Не удалось загрузить видео'
+      vhErr: 'Ошибка видео'
     }
   };
 
   var T = I18N[IS_RU ? 'ru' : 'zh'];
 
-  /* ============================================================
-     2. 搜索索引
-     ============================================================ */
   var SEARCH_INDEX = [
-    { href:'mainsite.html',   type:'page', zh:['首页','蓬溪格勒人民高等中学官方网站 · 在红星下求知'],       ru:['Главная','Официальный сайт школы'],       k:'首页 主页 网站 学校 главная' },
-    { href:'about.html',      type:'page', zh:['学校概况','学校简介 · 校长致辞 · 校史沿革 · 领导班子'],     ru:['О школе','Описание · директор · история'], k:'学校 概况 简介 校长 领导 школа about' },
-    { href:'news.html',       type:'page', zh:['新闻中心','校园新闻 · 通知公告 · 媒体聚焦 · 莫斯科研学'],  ru:['Новости','Школьные новости · объявления'], k:'新闻 通知 公告 消息 новости news' },
-    { href:'teaching.html',   type:'page', zh:['教学教研','课程体系 · 俄语特色 · 教研组 · 竞赛成果'],      ru:['Учёба','Учебный план · русский · кафедры'], k:'教学 教研 课程 老师 teaching учёба' },
-    { href:'blog.html',       type:'page', zh:['校园随笔','学生博客 · 随笔 · 研学 · 人物 · 科技 · 交流'],  ru:['Блог','Студенческий блог'],                 k:'博客 随笔 校园 blog блог' },
-    { href:'students.html',   type:'page', zh:['学生天地','学生会 · 社团活动 · 优秀作品 · 惊鸿十二班'],    ru:['Учащимся','Совет · клубы · работы · класс 12–2'], k:'学生 社团 活动 惊鸿 students' },
-    { href:'videohub.html',   type:'page', zh:['视觉蓬中','校园影像 · 研学纪实 · 社团风采 · 活动回顾'],    ru:['Видео Понксина','Кампус · Москва · клубы · события'], k:'视频 影像 宣传片 视频中心 видео' },
-    { href:'campusnet.html',  type:'page', zh:['校园网订购','套餐选择 · 亚斯卢布结算 · 校园卡/卢布账户/银行转账'], ru:['Заказ сети','Тарифы · оплата в яс-рублях'], k:'校园网 订购 套餐 宽带 wifi 网络 亚斯卢布 campus net' },
-    { href:'xingtu.html',     type:'page', zh:['星图','多人文字 · 文件 · 一对一语音视频 · 点对点通信'],      ru:['Созвездие','Чат · файлы · аудио · видео'], k:'星图 聊天 语音 视频 文件 对讲 созвездие' },
-    { href:'friends.html',    type:'page', zh:['我的好友','好友列表 · 请求 · 搜索 · 私聊 · 群聊'],          ru:['Друзья','Список · запросы · чат'],           k:'好友 朋友 聊天 加好友 друзья друзья' },
-    { href:'moral.html',      type:'page', zh:['德育之窗','亚斯先锋队 · 志愿服务 · 劳动教育'],            ru:['Воспитание','Пионеры · волонтёрство · труд'], k:'德育 先锋队 志愿 劳动 воспитание' },
-    { href:'admissions.html', type:'page', zh:['招生招聘','招生简章 · 报名入口 · 教师招聘'],              ru:['Приём','Правила приёма · вакансии'],  k:'招生 报名 招聘 admissions приём' },
-    { href:'history.html',    type:'page', zh:['校史馆','建校 1911 年 · 与共和国同行 · 校史沿革'],         ru:['История','Основана в 1911 г. · хронология'], k:'校史 历史 1911 history история' },
-    { href:'moscow.html',     type:'page', zh:['莫斯科研学','社会主义城市的现代化变迁 · 红场 · 克里姆林宫'],ru:['Москва','Модернизация социалистического города'], k:'莫斯科 研学 苏联 交流 москва' },
-    { href:'contact.html',    type:'page', zh:['联系我们','校务办公室 · 招生咨询 · 天问终端服务'],        ru:['Контакты','Канцелярия · приёмная · Терминал'], k:'联系 电话 地址 contact контакты' }
+    { href:'mainsite.html',   type:'page', zh:['首页','蓬溪格勒人民高等中学官方网站'], ru:['Главная','Официальный сайт'], k:'首页 主页 главная' },
+    { href:'about.html',      type:'page', zh:['学校概况','学校简介 · 校长致辞 · 领导班子'], ru:['О школе','Описание'], k:'学校 概况 about' },
+    { href:'news.html',       type:'page', zh:['新闻中心','校园新闻 · 通知公告'], ru:['Новости','Объявления'], k:'新闻 通知 news' },
+    { href:'teaching.html',   type:'page', zh:['教学教研','课程体系 · 俄语特色'], ru:['Учёба','План'], k:'教学 教研 учёба' },
+    { href:'blog.html',       type:'page', zh:['校园随笔','学生博客'], ru:['Блог','Студенческий блог'], k:'博客 随笔 блог' },
+    { href:'students.html',   type:'page', zh:['学生天地','社团活动'], ru:['Учащимся','Клубы'], k:'学生 社团' },
+    { href:'videohub.html',   type:'page', zh:['视觉蓬中','校园影像'], ru:['Видео','Кампус'], k:'视频 影像 видео' },
+    { href:'campusnet.html',  type:'page', zh:['校园网订购','套餐选择'], ru:['Заказ сети','Тарифы'], k:'校园网 套餐' },
+    { href:'xingtu.html',     type:'page', zh:['星图','多人文字 · 语音视频'], ru:['Созвездие','Чат'], k:'星图 聊天' },
+    { href:'friends.html',    type:'page', zh:['我的好友','好友请求 · 聊天'], ru:['Друзья','Запросы'], k:'好友 聊天 друзья' },
+    { href:'group-chat.html', type:'page', zh:['群聊','多人群组聊天'], ru:['Групповой чат','Группы'], k:'群聊 群组' },
+    { href:'profile.html',    type:'page', zh:['个人中心','头像 · 昵称 · 密码'], ru:['Профиль','Настройки'], k:'个人 资料 профиль' },
+    { href:'moral.html',      type:'page', zh:['德育之窗','亚斯先锋队'], ru:['Воспитание','Пионеры'], k:'德育' },
+    { href:'admissions.html', type:'page', zh:['招生招聘','招生简章'], ru:['Приём','Вакансии'], k:'招生' },
+    { href:'history.html',    type:'page', zh:['校史馆','建校 1911 年'], ru:['История','1911'], k:'校史' },
+    { href:'moscow.html',     type:'page', zh:['莫斯科研学','社会主义城市'], ru:['Москва','Город'], k:'莫斯科' },
+    { href:'contact.html',    type:'page', zh:['联系我们','校务办公室'], ru:['Контакты','Канцелярия'], k:'联系 контакты' }
   ];
 
   var RESTRICTED = [
     { keywords: ['507', '五〇七', '五零七'], type: 'page', url: IS_RU ? '../warn.html' : 'warn.html' },
-    { keywords: ['王宇杭', '穿越', '平行世界', '亚斯共和国', '蓬溪格勒'], type: 'toast' }
+    { keywords: ['王宇杭', '穿越', '平行世界', '亚斯共和国'], type: 'toast' }
   ];
 
-  /* ============================================================
-     3. 通用工具
-     ============================================================ */
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
   function fmt(str, vars) {
-    return String(str).replace(/\{(\w+)\}/g, function (m, k) {
-      return (k in vars) ? vars[k] : m;
-    });
+    return String(str).replace(/\{(\w+)\}/g, function (m, k) { return (k in vars) ? vars[k] : m; });
   }
   function esc(str) {
     return String(str).replace(/[&<>"']/g, function (c) {
       return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
     });
   }
-  function escRe(str) {
-    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
+  function escRe(str) { return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function highlight(text, kw) {
     if (!kw) return esc(text);
     var re = new RegExp('(' + escRe(kw) + ')', 'gi');
@@ -270,9 +236,6 @@
     return limit ? hits.slice(0, limit) : hits;
   }
 
-  /* ============================================================
-     4. Toast
-     ============================================================ */
   var toastTimer = null;
   function toast(msg, duration) {
     var el = $('.toast');
@@ -291,15 +254,10 @@
   }
   window.siteToast = toast;
 
-  /* ============================================================
-     5. 搜索历史
-     ============================================================ */
   var HISTORY_KEY = 'pxgl_search_history_' + (IS_RU ? 'ru' : 'zh');
   function getHistory() {
-    try {
-      var raw = localStorage.getItem(HISTORY_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch (e) { return []; }
+    try { var raw = localStorage.getItem(HISTORY_KEY); return raw ? JSON.parse(raw) : []; }
+    catch (e) { return []; }
   }
   function pushHistory(kw) {
     kw = String(kw || '').trim();
@@ -309,35 +267,26 @@
     list = list.slice(0, 6);
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); } catch (e) {}
   }
-  function clearHistory() {
-    try { localStorage.removeItem(HISTORY_KEY); } catch (e) {}
-  }
+  function clearHistory() { try { localStorage.removeItem(HISTORY_KEY); } catch (e) {} }
 
   /* ============================================================
-     6. 站头渲染
+     站头
      ============================================================ */
   function renderHeader() {
     var host = $('#site-header');
     if (!host) return;
     var page = document.body.dataset.page || 'index';
 
-    /* 导航项（含"我的好友"红点） */
-       var navHtml = T.nav.map(function (item) {
+    var navHtml = T.nav.map(function (item) {
       var cls = (item.id === page) ? ' class="active"' : '';
-      var badge = (item.id === 'friends')
-        ? '<span class="nav-badge hide" id="navFriendBadge">0</span>'
-        : '';
-      return '<a' + cls + ' href="' + item.href + '">' + item.text + badge + '</a>';
+      return '<a' + cls + ' href="' + item.href + '">' + item.text + '</a>';
     }).join('');
 
-    /* 语言切换 */
     var pageFile = (location.pathname.split('/').pop() || 'mainsite.html').split('?')[0];
     var asHref = IS_RU ? '../' + pageFile : pageFile;
-    var ruHref = IS_RU ? '../maintenance.html' : 'maintenance.html';
+    var ruHref = IS_RU ? pageFile : 'ru/' + pageFile;
     var asCls = IS_RU ? '' : ' class="on"';
     var ruCls = IS_RU ? ' class="on"' : '';
-
-    /* 校徽 */
     var logoPath = IS_RU ? '../photo/logo.png' : 'photo/logo.png';
 
     host.innerHTML =
@@ -373,7 +322,7 @@
   }
 
   /* ============================================================
-     7. 页脚渲染
+     页脚
      ============================================================ */
   function renderFooter() {
     var host = $('#site-footer');
@@ -381,9 +330,7 @@
     var year = new Date().getFullYear();
 
     function list(items) {
-      return items.map(function (it) {
-        return '<li><a href="' + it.href + '">' + it.text + '</a></li>';
-      }).join('');
+      return items.map(function (it) { return '<li><a href="' + it.href + '">' + it.text + '</a></li>'; }).join('');
     }
 
     host.innerHTML =
@@ -392,7 +339,7 @@
           '<div>' +
             '<div class="footer-brand">' +
               '<div class="fb-star">' +
-                '<img src="' + (IS_RU ? '../photo/logo.png' : 'photo/logo.png') + '" alt="' + T.schoolName + '">' +
+                '<img src="' + (IS_RU ? '../photo/logo.png' : 'photo/logo.png') + '" alt="">' +
               '</div>' +
               '<div><b>' + T.schoolName + '</b>' +
               '<span>Ponxigrad People\'s Senior High School</span></div>' +
@@ -414,7 +361,7 @@
   }
 
   /* ============================================================
-     8. 搜索表单
+     搜索
      ============================================================ */
   function setupSearchForm(form, input) {
     if (!form || !input) return;
@@ -424,21 +371,17 @@
     var dd = document.createElement('div');
     dd.className = 'search-dropdown';
     form.appendChild(dd);
-
     var activeIdx = -1;
 
     function close() { dd.classList.remove('show'); activeIdx = -1; }
     function open() { dd.classList.add('show'); }
     function updateActive() {
-      $$('.sd-item', dd).forEach(function (el, i) {
-        el.classList.toggle('active', i === activeIdx);
-      });
+      $$('.sd-item', dd).forEach(function (el, i) { el.classList.toggle('active', i === activeIdx); });
     }
 
     function doSubmit(kw) {
       kw = String(kw || input.value || '').trim();
       if (!kw) { toast(T.toastEmpty); input.focus(); return; }
-
       var hit = null;
       for (var i = 0; i < RESTRICTED.length; i++) {
         if (matchKeyword(kw, RESTRICTED[i].keywords)) { hit = RESTRICTED[i]; break; }
@@ -448,12 +391,10 @@
         return;
       }
       if (hit && hit.type === 'toast') { toast(T.toastRestricted); return; }
-
       pushHistory(kw);
       var target = 'search.html?q=' + encodeURIComponent(kw);
-      if (document.body.dataset.page === 'search') {
-        location.href = target;
-      } else {
+      if (document.body.dataset.page === 'search') location.href = target;
+      else {
         toast(fmt(T.toastSearch, { kw: kw }));
         setTimeout(function () { location.href = target; }, 500);
       }
@@ -491,59 +432,37 @@
     function refresh() {
       var kw = (input.value || '').trim();
       var html = '';
-
       if (!kw) {
         var hist = getHistory();
         if (hist.length) {
           html += '<div class="sd-section"><div class="sd-title">' + esc(T.sdHistory) +
                   '<a class="sd-clear">' + esc(T.sdClear) + '</a></div>';
           hist.forEach(function (h) {
-            html += '<div class="sd-item" data-kw="' + esc(h) + '" data-is-kw="1">' +
-                      '<span class="sdi-title">' + esc(h) + '</span></div>';
+            html += '<div class="sd-item" data-kw="' + esc(h) + '" data-is-kw="1"><span class="sdi-title">' + esc(h) + '</span></div>';
           });
           html += '</div>';
         }
-        var hot = IS_RU
-          ? ['Москва', 'маглев', 'ядерная физика', 'Тяньвэнь', 'класс 12–2']
-          : ['莫斯科研学', '磁悬浮', '核物理', '天问终端', '惊鸿文学社'];
+        var hot = IS_RU ? ['Москва','маглев','Тяньвэнь'] : ['莫斯科研学','磁悬浮','核物理','天问终端'];
         html += '<div class="sd-section"><div class="sd-title">' + esc(T.sdHot) + '</div>';
         hot.forEach(function (h) {
-          html += '<div class="sd-item" data-kw="' + esc(h) + '" data-is-kw="1">' +
-                    '<span class="sdi-title">' + esc(h) + '</span></div>';
+          html += '<div class="sd-item" data-kw="' + esc(h) + '" data-is-kw="1"><span class="sdi-title">' + esc(h) + '</span></div>';
         });
         html += '</div>';
       } else {
         var hits = searchIndex(kw, 6);
-        if (!hits.length) {
-          html = '<div class="sd-section"><div class="sd-empty">' + esc(T.sdEmpty) + '</div></div>';
-        } else {
+        if (!hits.length) html = '<div class="sd-section"><div class="sd-empty">' + esc(T.sdEmpty) + '</div></div>';
+        else {
           var items = hits.map(function (h) {
-            return {
-              href: h.href,
-              type: h.type === 'news' ? T.sdNews : T.sdPage,
-              html: highlight(h.title, kw),
-              desc: h.desc, kw: kw
-            };
+            return { href: h.href, type: h.type === 'news' ? T.sdNews : T.sdPage, html: highlight(h.title, kw), desc: h.desc, kw: kw };
           });
           html += renderList(items);
-          html += '<div class="sd-section sd-footer">' +
-                    '<div class="sd-item sd-see-all" data-kw="' + esc(kw) + '" data-is-kw="1">' +
-                      '<span class="sdi-title">' + fmt(T.sdViewAll, { n: hits.length }) + '</span>' +
-                    '</div></div>';
+          html += '<div class="sd-section sd-footer"><div class="sd-item sd-see-all" data-kw="' + esc(kw) + '" data-is-kw="1"><span class="sdi-title">' + fmt(T.sdViewAll, { n: hits.length }) + '</span></div></div>';
         }
       }
-
       dd.innerHTML = html;
       activeIdx = -1;
-
       var clr = $('.sd-clear', dd);
-      if (clr) {
-        clr.addEventListener('mousedown', function (e) {
-          e.preventDefault();
-          clearHistory();
-          refresh();
-        });
-      }
+      if (clr) clr.addEventListener('mousedown', function (e) { e.preventDefault(); clearHistory(); refresh(); });
       bindItemClicks();
       if (html.trim()) open(); else close();
     }
@@ -554,28 +473,12 @@
     input.addEventListener('keydown', function (e) {
       var items = $$('.sd-item', dd);
       if (!items.length) return;
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        activeIdx = (activeIdx + 1) % items.length;
-        updateActive();
-        items[activeIdx].scrollIntoView({ block: 'nearest' });
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        activeIdx = (activeIdx - 1 + items.length) % items.length;
-        updateActive();
-        items[activeIdx].scrollIntoView({ block: 'nearest' });
-      } else if (e.key === 'Enter' && activeIdx >= 0) {
-        e.preventDefault();
-        items[activeIdx].dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
-      } else if (e.key === 'Escape') {
-        close();
-      }
+      if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = (activeIdx + 1) % items.length; updateActive(); items[activeIdx].scrollIntoView({ block: 'nearest' }); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = (activeIdx - 1 + items.length) % items.length; updateActive(); items[activeIdx].scrollIntoView({ block: 'nearest' }); }
+      else if (e.key === 'Enter' && activeIdx >= 0) { e.preventDefault(); items[activeIdx].dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); }
+      else if (e.key === 'Escape') close();
     });
-
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      doSubmit(input.value);
-    });
+    form.addEventListener('submit', function (e) { e.preventDefault(); doSubmit(input.value); });
   }
 
   function initSearch() {
@@ -587,9 +490,6 @@
     if (pageForm && pageInput) setupSearchForm(pageForm, pageInput);
   }
 
-  /* ============================================================
-     9. 搜索页结果
-     ============================================================ */
   function initSearchPage() {
     if (document.body.dataset.page !== 'search') return;
     var q = '';
@@ -600,42 +500,26 @@
     if (head) head.innerHTML = q ? fmt(T.spResultsFor, { kw: esc(q) }) : esc(T.spSub);
     var results = $('#searchResults');
     if (!results) return;
-    if (!q) {
-      results.innerHTML = '<div class="search-empty"><p>' + esc(T.spHint) + '</p></div>';
-      return;
-    }
+    if (!q) { results.innerHTML = '<div class="search-empty"><p>' + esc(T.spHint) + '</p></div>'; return; }
     var hits = searchIndex(q);
     if (!hits.length) {
-      results.innerHTML =
-        '<div class="search-empty">' +
-          '<p>' + fmt(T.spEmpty, { kw: esc(q) }) + '</p>' +
-          '<p class="small muted">' + esc(T.spHint) + '</p>' +
-        '</div>';
+      results.innerHTML = '<div class="search-empty"><p>' + fmt(T.spEmpty, { kw: esc(q) }) + '</p><p class="small muted">' + esc(T.spHint) + '</p></div>';
       return;
     }
     var html = '<div class="search-count">' + fmt(T.spCount, { n: hits.length }) + '</div>';
     ['page', 'news'].forEach(function (group) {
       var groupHits = hits.filter(function (h) { return h.type === group; });
       if (!groupHits.length) return;
-      var groupTitle = group === 'page'
-        ? (IS_RU ? 'Страницы' : '页面')
-        : (IS_RU ? 'Новости' : '新闻');
+      var groupTitle = group === 'page' ? (IS_RU ? 'Страницы' : '页面') : (IS_RU ? 'Новости' : '新闻');
       html += '<h3 class="search-group">' + esc(groupTitle) + '</h3>';
       groupHits.forEach(function (h) {
         var typeLabel = group === 'news' ? T.sdNews : T.sdPage;
-        html += '<a class="search-result" href="' + h.href + '">' +
-                  '<span class="sr-type">' + esc(typeLabel) + '</span>' +
-                  '<h4>' + highlight(h.title, q) + '</h4>' +
-                  '<p>' + esc(h.desc) + '</p>' +
-                '</a>';
+        html += '<a class="search-result" href="' + h.href + '"><span class="sr-type">' + esc(typeLabel) + '</span><h4>' + highlight(h.title, q) + '</h4><p>' + esc(h.desc) + '</p></a>';
       });
     });
     results.innerHTML = html;
   }
 
-  /* ============================================================
-     10. 视频中心
-     ============================================================ */
   function initVideoHub() {
     if (document.body.dataset.page !== 'videohub') return;
     var player = $('#mainPlayer');
@@ -644,7 +528,6 @@
     if (!player || !list) return;
     var metaEls = $$('.video-meta span');
     var descEl = $('.video-desc');
-
     $$('.video-item', list).forEach(function (item) {
       item.addEventListener('click', function () {
         if (item.dataset.pending === '1') { toast(T.vhPending); return; }
@@ -667,47 +550,24 @@
         if (title) document.title = title + ' · ' + T.schoolName;
       });
     });
-
     player.addEventListener('error', function () { toast(T.vhErr, 4000); });
-
-    var likeBtn = $('#videoLike');
-    var favBtn = $('#videoFav');
-    var shareBtn = $('#videoShare');
-    if (likeBtn) likeBtn.addEventListener('click', function () {
-      var on = likeBtn.classList.toggle('on');
-      likeBtn.textContent = on ? T.vhLiked : T.vhLike;
-    });
-    if (favBtn) favBtn.addEventListener('click', function () {
-      var on = favBtn.classList.toggle('on');
-      favBtn.textContent = on ? T.vhFaved : T.vhFav;
-    });
+    var likeBtn = $('#videoLike'), favBtn = $('#videoFav'), shareBtn = $('#videoShare');
+    if (likeBtn) likeBtn.addEventListener('click', function () { var on = likeBtn.classList.toggle('on'); likeBtn.textContent = on ? T.vhLiked : T.vhLike; });
+    if (favBtn) favBtn.addEventListener('click', function () { var on = favBtn.classList.toggle('on'); favBtn.textContent = on ? T.vhFaved : T.vhFav; });
     if (shareBtn) shareBtn.addEventListener('click', function () {
-      var url = location.href;
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(url)
-          .then(function () { toast(T.vhShareCopied); })
-          .catch(function () { toast(T.vhShareCopied); });
-      } else {
-        toast(T.vhShareCopied);
-      }
+        navigator.clipboard.writeText(location.href).then(function () { toast(T.vhShareCopied); }).catch(function () { toast(T.vhShareCopied); });
+      } else toast(T.vhShareCopied);
     });
   }
 
-  /* ============================================================
-     11. 校园网订购
-     ============================================================ */
   function initCampusNet() {
     if (document.body.dataset.page !== 'campusnet') return;
     var form = $('#campusNetForm');
     if (!form) return;
-    var sumPlan = $('#sumPlan');
-    var sumSpeed = $('#sumSpeed');
-    var sumPay = $('#sumPay');
-    var sumTotal = $('#sumTotal');
+    var sumPlan = $('#sumPlan'), sumSpeed = $('#sumSpeed'), sumPay = $('#sumPay'), sumTotal = $('#sumTotal');
     var SPEED_MAP = { basic: '20 Mbps', standard: '50 Mbps', premium: '100 Mbps' };
-
     function fmtPrice(n) { return Number(n).toLocaleString('en-US') + ' ₽'; }
-
     function updateSummary() {
       var plan = form.querySelector('input[name="plan"]:checked');
       var pay = form.querySelector('input[name="pay"]:checked');
@@ -718,10 +578,8 @@
       }
       if (pay && sumPay) sumPay.textContent = pay.dataset.name || '';
     }
-
     form.addEventListener('change', updateSummary);
     updateSummary();
-
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var nameEl = document.getElementById('cnName');
@@ -739,23 +597,15 @@
       var btn = form.querySelector('button[type="submit"]');
       if (btn) { btn.disabled = true; btn.textContent = '正在提交…'; }
       setTimeout(function () {
-        var msg = '订购成功 · ' + (plan ? plan.dataset.name : '') + ' · ' +
-                  fmtPrice(plan ? plan.dataset.price : 0) + ' · ' +
-                  (pay ? pay.dataset.name : '');
+        var msg = '订购成功 · ' + (plan ? plan.dataset.name : '') + ' · ' + fmtPrice(plan ? plan.dataset.price : 0) + ' · ' + (pay ? pay.dataset.name : '');
         toast(msg, 3200);
         if (btn) btn.textContent = '订购成功';
-        setTimeout(function () {
-          location.href = 'https://www.superbba3.cc/#/stage/dashboard';
-        }, 1400);
+        setTimeout(function () { location.href = 'https://wcwc.us/'; }, 1400);
       }, 900);
     });
-
     form.addEventListener('reset', function () { setTimeout(updateSummary, 0); });
   }
 
-  /* ============================================================
-     12. 校徽彩蛋
-     ============================================================ */
   function initBadge() {
     var badge = $('#schoolBadge');
     if (!badge) return;
@@ -769,16 +619,11 @@
         e.preventDefault();
         count = 0;
         clearTimeout(timer);
-        if (window.confirm(T.confirmBadge5)) {
-          location.href = (IS_RU ? '../moscow.html' : 'moscow.html') + '#prep';
-        }
+        if (window.confirm(T.confirmBadge5)) location.href = (IS_RU ? '../moscow.html' : 'moscow.html') + '#prep';
       }
     });
   }
 
-  /* ============================================================
-     13. 回到顶部
-     ============================================================ */
   function initBackToTop() {
     var btn = document.createElement('button');
     btn.className = 'to-top';
@@ -792,9 +637,6 @@
     btn.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: 'smooth' }); });
   }
 
-  /* ============================================================
-     14. 滚动显现
-     ============================================================ */
   function initReveal() {
     if (!('IntersectionObserver' in window)) return;
     var targets = $$('.card, .stat, .person, .figure, .tile');
@@ -815,9 +657,6 @@
     targets.forEach(function (el) { io.observe(el); });
   }
 
-  /* ============================================================
-     15. 数字滚动
-     ============================================================ */
   function initCounters() {
     var stats = $$('.stat b[data-count]');
     if (!stats.length || !('IntersectionObserver' in window)) return;
@@ -843,17 +682,12 @@
     stats.forEach(function (el) { io.observe(el); });
   }
 
-  /* ============================================================
-     16. 页面特定逻辑
-     ============================================================ */
   function initPageExtras() {
     var page = document.body.dataset.page;
-
     if (page === 'moscow' && location.hash === '#prep') {
       var prep = $('#prep');
       if (prep) setTimeout(function () { prep.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 220);
     }
-
     var form = $('#contactForm');
     if (form) {
       form.addEventListener('submit', function (e) {
@@ -864,62 +698,11 @@
         form.reset();
       });
     }
-
     $$('[data-enroll]').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        e.preventDefault();
-        toast(T.toastEnroll);
-      });
+      btn.addEventListener('click', function (e) { e.preventDefault(); toast(T.toastEnroll); });
     });
   }
 
-  /* ============================================================
-     17. 好友红点轮询
-     ============================================================ */
-  function initFriendBadge() {
-    if (!window.Auth || !Auth.client) return;
-
-    function refresh() {
-      if (!Auth.isLoggedIn()) return;
-      var u = Auth.getCurrentUser();
-      if (!u) return;
-
-      Promise.all([
-        Auth.client.from('friendships')
-          .select('id', { count: 'exact', head: true })
-          .eq('addressee_id', u.id)
-          .eq('status', 'pending'),
-        Auth.client.from('messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('receiver_id', u.id)
-          .eq('is_read', false)
-      ]).then(function (rs) {
-        var n = (rs[0].count || 0) + (rs[1].count || 0);
-        var el = document.getElementById('navFriendBadge');
-        if (el) {
-          if (n > 0) {
-            el.textContent = n > 99 ? '99+' : n;
-            el.classList.remove('hide');
-          } else {
-            el.classList.add('hide');
-          }
-        }
-      }).catch(function (err) {
-        console.warn('[PXGL] friend badge:', err);
-      });
-    }
-
-    /* 首次延迟 1.2 秒（等 auth.js 就绪） */
-    setTimeout(refresh, 1200);
-    /* 每 30 秒轮询一次（页面可见时） */
-    setInterval(function () {
-      if (!document.hidden) refresh();
-    }, 30000);
-  }
-
-  /* ============================================================
-     18. 控制台彩蛋
-     ============================================================ */
   function initConsole() {
     var style = 'background:#c8102e;color:#f0d98a;padding:3px 8px;border-radius:3px;font-weight:700';
     console.log('%c ' + T.schoolName + ' ', style);
@@ -928,9 +711,6 @@
     console.log('%c 校徽连续点击 5 次，可进入档案室。 ', 'color:#8fa3c2');
   }
 
-  /* ============================================================
-     19. 键盘快捷键
-     ============================================================ */
   function initShortcuts() {
     document.addEventListener('keydown', function (e) {
       var tag = (document.activeElement && document.activeElement.tagName) || '';
@@ -939,25 +719,18 @@
         var input = $('#searchPageInput') || $('#searchInput');
         if (input) input.focus();
       }
-      if (e.key === 'Escape') {
-        var el = $('.toast');
-        if (el) el.classList.remove('show');
-      }
+      if (e.key === 'Escape') { var el = $('.toast'); if (el) el.classList.remove('show'); }
     });
   }
 
   /* ============================================================
-     20. 启动
-     ============================================================ */
-  /* ============================================================
-     导航栏好友红点
+     好友红点（挂在右上角头像上）
      ============================================================ */
   function initFriendBadge() {
     if (!window.Auth || !Auth.client) return;
-
     var lastCount = -1;
-    var beepAudio = new Audio('beep.mp3');
-    beepAudio.volume = 0.6;
+    var beepAudio = null;
+    try { beepAudio = new Audio('beep.mp3'); beepAudio.volume = 0.6; } catch (e) {}
 
     function refresh() {
       if (!Auth.isLoggedIn()) return;
@@ -970,20 +743,13 @@
         .eq('status', 'pending')
         .then(function (res) {
           var n = res.count || 0;
-          var el = document.getElementById('navFriendBadge');
+          var el = document.getElementById('authFriendBadge');
           if (el) {
-            if (n > 0) {
-              el.textContent = n > 99 ? '99+' : n;
-              el.classList.remove('hide');
-            } else {
-              el.classList.add('hide');
-            }
+            if (n > 0) { el.textContent = n > 99 ? '99+' : n; el.classList.remove('hide'); }
+            else el.classList.add('hide');
           }
-          if (lastCount >= 0 && n > lastCount) {
-            try {
-              beepAudio.currentTime = 0;
-              beepAudio.play().catch(function () {});
-            } catch (e) {}
+          if (lastCount >= 0 && n > lastCount && beepAudio) {
+            try { beepAudio.currentTime = 0; beepAudio.play().catch(function () {}); } catch (e) {}
           }
           lastCount = n;
         });
@@ -992,6 +758,7 @@
     setTimeout(refresh, 800);
     setInterval(function () { if (!document.hidden) refresh(); }, 30000);
   }
+
   function safeCall(name, fn) {
     try { fn(); }
     catch (err) { console.error('[PXGL] ' + name + ' 出错:', err); }
@@ -1011,22 +778,12 @@
     safeCall('initPageExtras', initPageExtras);
     safeCall('initConsole', initConsole);
     safeCall('initShortcuts', initShortcuts);
-
-    /* 挂载登录状态 */
     safeCall('initFriendBadge', initFriendBadge);
     safeCall('mountAuthNav', function () {
-      if (window.Auth && Auth.mountNavStatus) {
-        Auth.mountNavStatus(IS_RU ? 'ru' : 'zh');
-      }
+      if (window.Auth && Auth.mountNavStatus) Auth.mountNavStatus(IS_RU ? 'ru' : 'zh');
     });
-
-    /* 好友红点轮询 */
-    safeCall('initFriendBadge', initFriendBadge);
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();

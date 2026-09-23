@@ -1,14 +1,17 @@
 /* ===================================================================
-   群聊
-   · 列出我加入的群
-   · 创建群 / 邀请好友
-   · 群消息（文本 + 图片 + 撤回）
+   群聊 · 完整版
+   · 创建群 / 邀请好友 / 退出群聊
+   · 文本 + 图片 + 撤回
+   · 5 秒轮询
    =================================================================== */
 
 (function () {
   'use strict';
 
-  if (!window.Auth || !Auth.client) return;
+  if (!window.Auth || !Auth.client) {
+    console.error('[gc] Auth 未就绪');
+    return;
+  }
 
   var client = Auth.client;
   var $ = function (id) { return document.getElementById(id); };
@@ -25,6 +28,15 @@
     var now = new Date();
     var hm = ('0'+d.getHours()).slice(-2) + ':' + ('0'+d.getMinutes()).slice(-2);
     return d.toDateString() === now.toDateString() ? hm : (d.getMonth()+1)+'月'+d.getDate()+'日 '+hm;
+  }
+  function avatarHTML(p, size) {
+    size = size || 26;
+    if (p && p.avatar) {
+      return '<span class="ava"><img src="' + esc(p.avatar) + '" alt=""></span>';
+    }
+    var nick = (p && p.nickname) || '?';
+    var c = '#' + ['c8102e','1a2b4c','1f8f55','8a6d12','7a3b8f','c85a17','2b6a8b','8b2b4a'][nick.charCodeAt(0) % 8];
+    return '<span class="ava" style="background:' + c + '">' + esc(nick.slice(0,1).toUpperCase()) + '</span>';
   }
 
   function compressImage(file, maxSize, quality) {
@@ -85,7 +97,10 @@
     pollTimer = setInterval(function () {
       if (!document.hidden) {
         loadRooms();
-        if (currentRoom) loadRoomMessages(false);
+        if (currentRoom) {
+          loadRoomMembers();
+          loadRoomMessages(false);
+        }
       }
     }, POLL_INTERVAL);
   });
@@ -95,19 +110,20 @@
   });
 
   /* ============================================================
-     加载我加入的群
+     加载我的群
      ============================================================ */
   function loadRooms() {
     client.from('room_members')
       .select('room_id')
       .eq('user_id', me.id)
       .then(function (res) {
-        if (res.error) return;
+        if (res.error) { console.error('[gc] 加载群失败:', res.error); return; }
         var ids = (res.data || []).map(function (r) { return r.room_id; });
         if (!ids.length) { myRooms = []; renderRooms(); return; }
 
         client.from('rooms').select('*').in('id', ids)
           .then(function (rres) {
+            if (rres.error) { console.error('[gc]', rres.error); return; }
             myRooms = rres.data || [];
             renderRooms();
           });
@@ -120,6 +136,9 @@
 
     if (!myRooms.length) {
       box.innerHTML = '<div class="gc-empty">还没有加入任何群</div>';
+      if (!currentRoom) {
+        $('gcHeadActions').style.display = 'none';
+      }
       return;
     }
 
@@ -146,6 +165,7 @@
     lastMsgId = 0;
     renderRooms();
     $('gcHeader').textContent = room.name;
+    $('gcHeadActions').style.display = '';
     loadRoomMembers();
     loadRoomMessages(true);
   }
@@ -173,7 +193,7 @@
       .order('created_at', { ascending: true })
       .limit(300)
       .then(function (res) {
-        if (res.error) return;
+        if (res.error) { console.error('[gc]', res.error); return; }
         roomMessages = res.data || [];
         renderMessages(first);
       });
@@ -256,7 +276,7 @@
   }
 
   /* ============================================================
-     加载好友（用于邀请）
+     好友列表
      ============================================================ */
   function loadFriends() {
     client.from('friendships')
@@ -286,7 +306,9 @@
       renderFriendPicker();
     });
     var closeBtn = $('gcCreateClose');
+    var cancelBtn = $('gcCreateCancel');
     if (closeBtn) closeBtn.addEventListener('click', function () { createModal.classList.add('hide'); });
+    if (cancelBtn) cancelBtn.addEventListener('click', function () { createModal.classList.add('hide'); });
     if (createModal) createModal.addEventListener('click', function (e) {
       if (e.target === createModal) createModal.classList.add('hide');
     });
@@ -296,7 +318,7 @@
     var box = $('gcFriendPicker');
     if (!box) return;
     if (!allFriends.length) {
-      box.innerHTML = '<div class="gc-empty">你还没有好友</div>';
+      box.innerHTML = '<div class="gc-empty">你还没有好友，先去添加好友吧</div>';
       return;
     }
     box.innerHTML = allFriends.map(function (f) {
@@ -311,7 +333,9 @@
   if (createForm) {
     createForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      var name = ($('gcGroupName').value || '').trim();
+
+      var nameInput = $('gcGroupName');
+      var name = (nameInput.value || '').trim();
       if (!name) { window.siteToast && window.siteToast('请输入群名称'); return; }
 
       var picked = [];
@@ -319,23 +343,205 @@
         picked.push(c.value);
       });
 
-      client.from('rooms').insert({ name: name, creator_id: me.id }).select().single()
+      var submitBtn = createForm.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '创建中…';
+
+      client.from('rooms').insert({ name: name, creator_id: me.id })
         .then(function (res) {
-          if (res.error) { window.siteToast && window.siteToast('创建失败'); return; }
-          var roomId = res.data.id;
+          if (res.error) {
+            console.error('[gc] 插入 rooms 失败:', res.error);
+            window.siteToast && window.siteToast('创建失败：' + (res.error.message || '未知错误'));
+            submitBtn.disabled = false;
+            submitBtn.textContent = '创建';
+            return;
+          }
 
-          /* 把自己和好友加入 */
-          var members = [me.id].concat(picked);
-          var inserts = members.map(function (uid) {
-            return { room_id: roomId, user_id: uid };
-          });
+          return client.from('rooms')
+            .select('*')
+            .eq('creator_id', me.id)
+            .order('id', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+            .then(function (rres) {
+              if (rres.error || !rres.data) {
+                console.error('[gc] 查询 rooms 失败:', rres.error);
+                window.siteToast && window.siteToast('创建成功但读取失败，请刷新');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '创建';
+                return;
+              }
 
-          return client.from('room_members').insert(inserts).then(function () {
-            window.siteToast && window.siteToast('群创建成功');
-            createModal.classList.add('hide');
-            createForm.reset();
-            loadRooms();
-          });
+              var roomId = rres.data.id;
+              var members = [me.id].concat(picked);
+              var inserts = members.map(function (uid) {
+                return { room_id: roomId, user_id: uid };
+              });
+
+              return client.from('room_members').insert(inserts)
+                .then(function (mres) {
+                  if (mres.error) {
+                    console.error('[gc]', mres.error);
+                    window.siteToast && window.siteToast('成员添加失败');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '创建';
+                    return;
+                  }
+                  window.siteToast && window.siteToast('群创建成功');
+                  createModal.classList.add('hide');
+                  createForm.reset();
+                  submitBtn.disabled = false;
+                  submitBtn.textContent = '创建';
+                  loadRooms();
+                });
+            });
+        })
+        .catch(function (err) {
+          console.error('[gc] 创建异常:', err);
+          window.siteToast && window.siteToast('创建失败');
+          submitBtn.disabled = false;
+          submitBtn.textContent = '创建';
+        });
+    });
+  }
+
+  /* ============================================================
+     邀请好友进群
+     ============================================================ */
+  var inviteBtn = $('gcInviteBtn');
+  var inviteModal = $('gcInviteModal');
+
+  if (inviteBtn) {
+    inviteBtn.addEventListener('click', function () {
+      if (!currentRoom) { window.siteToast && window.siteToast('请先选择群'); return; }
+      openInviteModal();
+    });
+  }
+
+  if (inviteModal) {
+    var closeInv = $('gcInviteClose');
+    var cancelInv = $('gcInviteCancel');
+    if (closeInv) closeInv.addEventListener('click', function () { inviteModal.classList.add('hide'); });
+    if (cancelInv) cancelInv.addEventListener('click', function () { inviteModal.classList.add('hide'); });
+    inviteModal.addEventListener('click', function (e) {
+      if (e.target === inviteModal) inviteModal.classList.add('hide');
+    });
+  }
+
+  function openInviteModal() {
+    var box = $('gcInviteList');
+    if (!box) return;
+
+    if (!allFriends.length) {
+      box.innerHTML = '<div class="gc-invite-empty">你还没有好友，先去添加好友吧</div>';
+      inviteModal.classList.remove('hide');
+      return;
+    }
+
+    /* 当前群成员 id 集合 */
+    var inRoomIds = {};
+    roomMembers.forEach(function (m) { inRoomIds[m.id] = true; });
+
+    box.innerHTML = allFriends.map(function (f) {
+      var already = inRoomIds[f.id];
+      return '<label class="gc-invite-item' + (already ? ' already' : '') + '">' +
+               '<input type="checkbox" value="' + f.id + '"' + (already ? ' disabled checked' : '') + '>' +
+               avatarHTML(f) +
+               '<span class="txt">' + esc(f.nickname || '匿名') + (already ? '（已在群）' : '') + '</span>' +
+             '</label>';
+    }).join('');
+
+    inviteModal.classList.remove('hide');
+  }
+
+  var inviteConfirm = $('gcInviteConfirm');
+  if (inviteConfirm) {
+    inviteConfirm.addEventListener('click', function () {
+      if (!currentRoom) return;
+
+      var picked = [];
+      var box = $('gcInviteList');
+      box.querySelectorAll('input[type="checkbox"]:checked:not(:disabled)').forEach(function (c) {
+        picked.push(c.value);
+      });
+
+      if (!picked.length) {
+        window.siteToast && window.siteToast('请选择要邀请的好友');
+        return;
+      }
+
+      inviteConfirm.disabled = true;
+      inviteConfirm.textContent = '邀请中…';
+
+      var inserts = picked.map(function (uid) {
+        return { room_id: currentRoom.id, user_id: uid };
+      });
+
+      client.from('room_members').insert(inserts)
+        .then(function (res) {
+          inviteConfirm.disabled = false;
+          inviteConfirm.textContent = '确认邀请';
+
+          if (res.error) {
+            console.error('[gc] 邀请失败:', res.error);
+            var msg = res.error.message || '邀请失败';
+            if (/duplicate|unique/i.test(msg)) msg = '有人已经在群里了';
+            window.siteToast && window.siteToast(msg);
+            return;
+          }
+          window.siteToast && window.siteToast('已邀请 ' + picked.length + ' 位好友');
+          inviteModal.classList.add('hide');
+          loadRoomMembers();
+        })
+        .catch(function (err) {
+          console.error('[gc] 邀请异常:', err);
+          inviteConfirm.disabled = false;
+          inviteConfirm.textContent = '确认邀请';
+          window.siteToast && window.siteToast('邀请失败');
+        });
+    });
+  }
+
+  /* ============================================================
+     退出群聊
+     ============================================================ */
+  var leaveBtn = $('gcLeaveBtn');
+  if (leaveBtn) {
+    leaveBtn.addEventListener('click', function () {
+      if (!currentRoom) return;
+      if (!confirm('确定退出「' + currentRoom.name + '」吗？')) return;
+
+      leaveBtn.disabled = true;
+      leaveBtn.textContent = '退出中…';
+
+      client.from('room_members')
+        .delete()
+        .eq('room_id', currentRoom.id)
+        .eq('user_id', me.id)
+        .then(function (res) {
+          leaveBtn.disabled = false;
+          leaveBtn.textContent = '退出群聊';
+
+          if (res.error) {
+            console.error('[gc] 退出失败:', res.error);
+            window.siteToast && window.siteToast('退出失败');
+            return;
+          }
+
+          window.siteToast && window.siteToast('已退出群聊');
+
+          /* 清空当前状态 */
+          currentRoom = null;
+          roomMessages = [];
+          roomMembers = [];
+          lastMsgId = 0;
+
+          $('gcHeader').textContent = '未选择群';
+          $('gcMemberCount').textContent = '0';
+          $('gcMessages').innerHTML = '<div class="gc-empty">从左侧选择一个群</div>';
+          $('gcHeadActions').style.display = 'none';
+
+          loadRooms();
         });
     });
   }
@@ -373,7 +579,7 @@
         content: text
       }).then(function (res) {
         sendBtn.disabled = false;
-        if (res.error) { window.siteToast && window.siteToast('发送失败'); return; }
+        if (res.error) { console.error('[gc]', res.error); window.siteToast && window.siteToast('发送失败'); return; }
         input.value = '';
         loadRoomMessages(false);
       });
@@ -402,7 +608,7 @@
         imgInput.value = '';
         loadRoomMessages(false);
       }).catch(function (err) {
-        console.error(err);
+        console.error('[gc]', err);
         sendBtn.disabled = false;
         window.siteToast && window.siteToast('上传失败');
       });

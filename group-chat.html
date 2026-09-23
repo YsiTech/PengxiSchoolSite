@@ -8,6 +8,101 @@
 <link rel="stylesheet" href="assets/css/friends.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/auth.js"></script>
+<style>
+/* 群聊头部按钮 */
+.gc-chat-head .gc-head-actions{
+  margin-left:auto;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+.gc-head-btn{
+  padding:6px 14px;
+  border-radius:8px;
+  border:1.5px solid var(--line);
+  background:#fff;
+  color:var(--ink-soft);
+  font-family:inherit;
+  font-size:12.5px;
+  font-weight:600;
+  letter-spacing:.4px;
+  cursor:pointer;
+  transition:all .18s;
+  white-space:nowrap;
+}
+.gc-head-btn:hover{
+  border-color:var(--red);
+  color:var(--red);
+}
+.gc-head-btn.danger{
+  color:#c8102e;
+  border-color:#f6cdd5;
+}
+.gc-head-btn.danger:hover{
+  background:#fdecef;
+}
+.gc-head-btn:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+/* 邀请弹窗 */
+.gc-invite-modal{
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(26,43,76,.7);
+  display:grid;place-items:center;padding:20px;
+  animation:previewIn .2s ease;
+}
+.gc-invite-modal.hide{display:none}
+.gc-invite-box{
+  background:#fff;border-radius:14px;padding:24px;
+  max-width:420px;width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.4);
+  max-height:88vh;overflow-y:auto;
+}
+.gc-invite-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:18px;
+}
+.gc-invite-head b{font-size:16px;color:var(--blue);letter-spacing:1px}
+.gc-invite-close{
+  border:0;background:transparent;font-size:18px;
+  cursor:pointer;color:var(--muted);
+  width:32px;height:32px;border-radius:50%;
+}
+.gc-invite-close:hover{background:var(--red-soft);color:var(--red)}
+.gc-invite-list{
+  max-height:300px;overflow-y:auto;
+  border:1px solid var(--line);border-radius:8px;padding:6px;
+  margin-bottom:16px;
+}
+.gc-invite-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 10px;border-radius:6px;
+  cursor:pointer;font-size:13.5px;
+  transition:background .15s;
+}
+.gc-invite-item:hover{background:var(--red-soft)}
+.gc-invite-item input{margin:0;accent-color:var(--red)}
+.gc-invite-item .ava{
+  width:26px;height:26px;border-radius:50%;
+  display:grid;place-items:center;color:#fff;
+  font-size:11px;font-weight:700;flex:0 0 auto;
+}
+.gc-invite-item .ava img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.gc-invite-item .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gc-invite-item.already{
+  opacity:.5;
+  cursor:not-allowed;
+}
+.gc-invite-item.already:hover{background:transparent}
+.gc-invite-empty{
+  text-align:center;padding:24px;color:var(--muted);font-size:13px;
+}
+.gc-invite-actions{
+  display:flex;gap:10px;justify-content:flex-end;
+}
+</style>
 </head>
 <body data-page="friends">
 
@@ -41,6 +136,10 @@
       <div class="gc-chat-head">
         <b id="gcHeader">未选择群</b>
         <span class="gc-member-count" id="gcMemberCount">0</span> 人
+        <div class="gc-head-actions" id="gcHeadActions" style="display:none">
+          <button class="gc-head-btn" id="gcInviteBtn" type="button">+ 邀请</button>
+          <button class="gc-head-btn danger" id="gcLeaveBtn" type="button">退出群聊</button>
+        </div>
       </div>
       <div class="gc-messages chat-messages" id="gcMessages">
         <div class="gc-empty">从左侧选择一个群</div>
@@ -78,6 +177,21 @@
         <button class="f-btn f-btn-primary" type="submit">创建</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- 邀请好友弹窗 -->
+<div class="gc-invite-modal hide" id="gcInviteModal">
+  <div class="gc-invite-box">
+    <div class="gc-invite-head">
+      <b>邀请好友加入</b>
+      <button class="gc-invite-close" id="gcInviteClose" type="button">✕</button>
+    </div>
+    <div class="gc-invite-list" id="gcInviteList"></div>
+    <div class="gc-invite-actions">
+      <button class="f-btn" type="button" id="gcInviteCancel">取消</button>
+      <button class="f-btn f-btn-primary" type="button" id="gcInviteConfirm">确认邀请</button>
+    </div>
   </div>
 </div>
 

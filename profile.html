@@ -23,91 +23,83 @@
 
 <main class="section profile-main">
 
-  <!-- 游客受限提示（仅游客显示） -->
-  <div class="pgb-banner hide" id="guestNotice">
+  <div class="profile-guest-banner hide" id="guestBanner">
     <div class="pgb-icon">!</div>
     <div class="pgb-body">
-      <div class="pgb-title">游客账号 · 功能受限</div>
-      <p class="pgb-text">
-        你当前是游客身份，无法访问
-        <span class="pgb-hl">视觉蓬中</span>、
-        <span class="pgb-hl">校园网订购</span>
-        和
-        <span class="pgb-hl">星图</span>
-        ，也无法跨设备登录。请退出并使用邮箱注册正式账号。
-      </p>
+      <b>游客账号 · 功能受限</b>
+      <p>你当前是游客身份，无法访问 <b>视觉蓬中</b>、<b>校园网订购</b> 和 <b>星图</b>，也无法跨设备登录。请退出并使用邮箱注册正式账号。</p>
     </div>
     <button class="pgb-btn" id="upgradeBtn" type="button">退出并注册</button>
   </div>
 
   <div class="profile-grid">
 
-    <!-- 左：头像卡片 -->
     <aside class="profile-side">
       <div class="profile-card">
         <div class="profile-avatar-wrap">
-          <div class="profile-avatar" id="avatarDisplay">
-            <span>?</span>
-          </div>
-          <button class="profile-avatar-edit" id="avatarPickBtn" type="button" title="更换头像">
-            <span class="ic">📷</span>
-          </button>
+          <div class="profile-avatar" id="avatarDisplay"><span>?</span></div>
+          <button class="profile-avatar-edit" id="avatarPickBtn" type="button" title="更换头像"><span class="ic">📷</span></button>
           <input id="avatarInput" type="file" accept="image/*" style="display:none">
         </div>
-
         <h2 class="profile-name" id="profileName">加载中…</h2>
         <p class="profile-email" id="profileEmail">—</p>
         <span class="profile-role" id="profileRole">—</span>
-
-        <div class="profile-avatar-tip">
-          支持 JPG / PNG，建议 200KB 以内
-        </div>
-
-        <button class="btn ghost" type="button" id="avatarRemoveBtn"
-                style="width:100%;color:#1a2b4c;border-color:#1a2b4c;margin-top:12px">
-          移除头像
-        </button>
+        <div class="profile-avatar-tip">支持 JPG / PNG，建议 200KB 以内</div>
+        <button class="btn ghost" type="button" id="avatarRemoveBtn" style="width:100%;color:#1a2b4c;border-color:#1a2b4c;margin-top:12px">移除头像</button>
       </div>
     </aside>
 
-    <!-- 右：信息表单 -->
     <section class="profile-content">
+
+      <!-- ============ 我的好友入口（新） ============ -->
+      <div class="card">
+        <div class="card-head">
+          <h3>我的好友</h3>
+        </div>
+        <div class="profile-friend-entry">
+          <a class="pfe-btn" href="friends.html">
+            <span class="pfe-icon">👥</span>
+            <div class="pfe-body">
+              <b>好友列表</b>
+              <span id="friendCountText">查看好友、处理请求</span>
+            </div>
+            <span class="pfe-arrow">→</span>
+            <span class="pfe-badge hide" id="profileFriendBadge">0</span>
+          </a>
+          <a class="pfe-btn" href="group-chat.html">
+            <span class="pfe-icon">💬</span>
+            <div class="pfe-body">
+              <b>群聊</b>
+              <span>与多位好友一起聊天</span>
+            </div>
+            <span class="pfe-arrow">→</span>
+          </a>
+        </div>
+      </div>
 
       <!-- 基本信息 -->
       <div class="card">
         <div class="card-head"><h3>基本信息</h3></div>
-
         <div class="form-grid">
           <div class="field full">
             <label for="nicknameInput">昵称</label>
             <input id="nicknameInput" type="text" maxlength="16" placeholder="用于页面显示，最多 16 字">
             <span class="profile-hint">登录后顶部栏都会显示此昵称</span>
           </div>
-
           <div class="field full">
             <label>邮箱</label>
             <input id="emailDisplay" type="text" disabled>
             <span class="profile-hint">邮箱用于登录和找回密码，暂不支持修改</span>
           </div>
         </div>
-
         <div class="profile-actions">
           <button class="btn red" type="button" id="saveProfileBtn">保存修改</button>
         </div>
       </div>
-<div class="card">
-  <div class="card-head">
-    <h3>我的好友</h3>
-  </div>
-  <p class="muted small" style="margin:0 0 14px">
-    查看好友列表、处理好友请求，或搜索其他同学。
-  </p>
-  <a class="btn red" href="friends.html" style="display:inline-block">进入好友管理</a>
-</div> 
+
       <!-- 修改密码 -->
       <div class="card">
         <div class="card-head"><h3>修改密码</h3></div>
-
         <div class="form-grid">
           <div class="field full">
             <label for="newPassword">新密码</label>
@@ -118,11 +110,7 @@
             <input id="newPassword2" type="password" placeholder="再次输入新密码" autocomplete="new-password">
           </div>
         </div>
-
-        <div class="profile-hint-warn">
-          修改密码后，其他设备的登录状态会保持不变。
-        </div>
-
+        <div class="profile-hint-warn">修改密码后，其他设备的登录状态会保持不变。</div>
         <div class="profile-actions">
           <button class="btn red" type="button" id="changePasswordBtn">修改密码</button>
         </div>
@@ -131,13 +119,8 @@
       <!-- 账号操作 -->
       <div class="card danger-card">
         <div class="card-head"><h3>账号操作</h3></div>
-        <p class="muted small" style="margin:0 0 14px">
-          退出登录后需要重新输入邮箱和密码才能进入。
-        </p>
-        <button class="btn ghost" type="button" id="logoutBtn"
-                style="color:#c8102e;border-color:#c8102e">
-          退出登录
-        </button>
+        <p class="muted small" style="margin:0 0 14px">退出登录后需要重新输入邮箱和密码才能进入。</p>
+        <button class="btn ghost" type="button" id="logoutBtn" style="color:#c8102e;border-color:#c8102e">退出登录</button>
       </div>
 
     </section>
@@ -150,6 +133,40 @@
 
 <script src="assets/js/main.js"></script>
 <script src="assets/js/profile.js"></script>
+
+<script>
+/* 独立加载好友红点（复用 main.js 里的逻辑） */
+(function () {
+  if (!window.Auth || !Auth.client) return;
+
+  function refreshProfileBadge() {
+    if (!Auth.isLoggedIn()) return;
+    var u = Auth.getCurrentUser();
+    if (!u) return;
+
+    Auth.client.from('friendships')
+      .select('id', { count: 'exact', head: true })
+      .eq('addressee_id', u.id)
+      .eq('status', 'pending')
+      .then(function (res) {
+        var n = res.count || 0;
+        var badge = document.getElementById('profileFriendBadge');
+        if (badge) {
+          if (n > 0) {
+            badge.textContent = n > 99 ? '99+' : n;
+            badge.classList.remove('hide');
+          } else badge.classList.add('hide');
+        }
+        var txt = document.getElementById('friendCountText');
+        if (txt) {
+          txt.textContent = n > 0 ? ('有 ' + n + ' 条新请求') : '查看好友、处理请求';
+        }
+      });
+  }
+
+  Auth.ready.then(function () { setTimeout(refreshProfileBadge, 500); });
+})();
+</script>
 
 </body>
 </html>
