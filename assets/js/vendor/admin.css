@@ -1,0 +1,420 @@
+/* ===================================================================
+   管理后台 · 独立样式
+   =================================================================== */
+
+:root{
+  --admin-red:#c8102e;
+  --admin-gold:#d4af37;
+  --admin-blue:#1a2b4c;
+  --admin-bg:#0f1726;
+  --admin-panel:#1a2332;
+  --admin-line:rgba(255,255,255,.08);
+  --admin-text:#dfe7f5;
+  --admin-muted:#8fa3c2;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  background:var(--admin-bg);
+  color:var(--admin-text);
+  min-height:100vh;
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+.hide{display:none !important}
+
+/* ============================================================
+   登录页
+   ============================================================ */
+.admin-login{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:40px 20px;
+  background:
+    radial-gradient(800px 400px at 50% 0%,rgba(200,16,46,.25),transparent 65%),
+    var(--admin-bg);
+}
+.al-card{
+  width:100%;
+  max-width:380px;
+  background:var(--admin-panel);
+  border:1px solid var(--admin-line);
+  border-radius:14px;
+  padding:36px 30px 30px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+.al-logo{
+  width:64px;height:64px;
+  margin:0 auto 16px;
+  border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,#e02040,#9d0c24);
+  display:grid;place-items:center;
+  font-size:30px;color:#f0d98a;
+  box-shadow:0 0 0 4px rgba(255,255,255,.05),0 0 0 6px var(--admin-gold);
+}
+.al-card h1{
+  margin:0 0 6px;
+  font-size:20px;
+  letter-spacing:2px;
+  color:#fff;
+}
+.al-sub{
+  margin:0 0 26px;
+  font-size:12.5px;
+  color:var(--admin-muted);
+}
+.al-field{
+  text-align:left;
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin-bottom:14px;
+}
+.al-field label{
+  font-size:12.5px;
+  color:var(--admin-muted);
+  letter-spacing:.5px;
+}
+.al-field input{
+  padding:12px 14px;
+  border:1.5px solid var(--admin-line);
+  background:rgba(255,255,255,.03);
+  color:#fff;
+  border-radius:8px;
+  font-size:14.5px;
+  outline:0;
+  font-family:inherit;
+  transition:border-color .2s,background .2s;
+}
+.al-field input:focus{
+  border-color:var(--admin-gold);
+  background:rgba(255,255,255,.06);
+}
+.al-hint{
+  font-size:12.5px;
+  min-height:18px;
+  margin-bottom:10px;
+  color:var(--admin-red);
+}
+.al-hint.ok{color:#5cd190}
+.al-btn{
+  width:100%;
+  padding:13px 0;
+  background:linear-gradient(135deg,#c8102e,#9d0c24);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  font-family:inherit;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:2px;
+  cursor:pointer;
+  transition:.2s;
+}
+.al-btn:hover{box-shadow:0 10px 24px rgba(200,16,46,.4)}
+.al-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ============================================================
+   主界面
+   ============================================================ */
+.admin-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 28px;
+  background:var(--admin-panel);
+  border-bottom:1px solid var(--admin-line);
+  position:sticky;top:0;z-index:10;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.ah-brand{
+  display:flex;align-items:center;gap:14px;
+}
+.ah-star{
+  width:40px;height:40px;
+  border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,#e02040,#9d0c24);
+  display:grid;place-items:center;
+  font-size:18px;color:#f0d98a;
+  box-shadow:0 0 0 3px rgba(212,175,55,.35);
+}
+.ah-brand b{
+  display:block;color:#fff;font-size:14.5px;letter-spacing:1px;
+}
+.ah-brand span{
+  display:block;font-size:11.5px;color:var(--admin-muted);
+  letter-spacing:.5px;margin-top:2px;
+}
+.ah-actions{display:flex;gap:10px}
+.ah-btn{
+  padding:8px 16px;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--admin-line);
+  color:var(--admin-text);
+  border-radius:8px;
+  font-size:13px;
+  font-family:inherit;
+  cursor:pointer;
+  letter-spacing:.5px;
+  transition:.2s;
+}
+.ah-btn:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2)}
+.ah-btn.danger{border-color:rgba(200,16,46,.5);color:#ff8a9c}
+.ah-btn.danger:hover{background:rgba(200,16,46,.2)}
+
+/* Tabs */
+.admin-tabs{
+  display:flex;
+  gap:4px;
+  padding:0 28px;
+  background:var(--admin-panel);
+  border-bottom:1px solid var(--admin-line);
+  overflow-x:auto;
+}
+.at-tab{
+  padding:14px 22px;
+  border:0;
+  background:transparent;
+  color:var(--admin-muted);
+  font-family:inherit;
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:1px;
+  cursor:pointer;
+  position:relative;
+  white-space:nowrap;
+  transition:color .2s;
+}
+.at-tab:hover{color:#fff}
+.at-tab.on{color:var(--admin-gold)}
+.at-tab.on::after{
+  content:"";position:absolute;left:20px;right:20px;bottom:0;
+  height:3px;background:var(--admin-gold);border-radius:3px 3px 0 0;
+}
+
+/* ============================================================
+   主体内容
+   ============================================================ */
+.admin-main{padding:24px 28px 60px}
+.admin-panel{display:none}
+.admin-panel.on{display:block}
+
+.ap-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px;
+  flex-wrap:wrap;
+}
+.ap-toolbar input{
+  flex:1 1 260px;
+  max-width:400px;
+  padding:11px 16px;
+  background:var(--admin-panel);
+  border:1.5px solid var(--admin-line);
+  border-radius:8px;
+  color:#fff;
+  font-family:inherit;
+  font-size:14px;
+  outline:0;
+  transition:border-color .2s;
+}
+.ap-toolbar input:focus{border-color:var(--admin-gold)}
+.ap-count{
+  font-size:13px;
+  color:var(--admin-muted);
+  letter-spacing:.5px;
+}
+
+/* 表格 */
+.ap-table-wrap{
+  background:var(--admin-panel);
+  border:1px solid var(--admin-line);
+  border-radius:12px;
+  overflow:auto;
+}
+.ap-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13.5px;
+  min-width:760px;
+}
+.ap-table thead th{
+  text-align:left;
+  padding:14px 18px;
+  background:rgba(255,255,255,.03);
+  color:var(--admin-muted);
+  font-weight:600;
+  font-size:12.5px;
+  letter-spacing:.5px;
+  border-bottom:1px solid var(--admin-line);
+  white-space:nowrap;
+}
+.ap-table tbody td{
+  padding:13px 18px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  vertical-align:middle;
+  color:var(--admin-text);
+}
+.ap-table tbody tr:last-child td{border-bottom:0}
+.ap-table tbody tr:hover{background:rgba(255,255,255,.02)}
+.ap-table .td-email{color:var(--admin-muted);font-size:12.5px;word-break:break-all}
+.ap-table .td-time{color:var(--admin-muted);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.ap-table .td-addr{max-width:300px;font-size:12.5px;line-height:1.6;word-break:break-all}
+.ap-table .empty-row{
+  text-align:center;
+  padding:48px 0 !important;
+  color:var(--admin-muted);
+}
+
+.bal-has{color:#5cd190;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bal-zero{color:var(--admin-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.tag{
+  display:inline-block;
+  padding:2px 10px;
+  border-radius:99px;
+  font-size:11.5px;
+  letter-spacing:.5px;
+}
+.tag-user{background:rgba(92,209,144,.15);color:#5cd190;border:1px solid rgba(92,209,144,.3)}
+.tag-guest{background:rgba(212,175,55,.15);color:#f0d98a;border:1px solid rgba(212,175,55,.3)}
+.tag-gift{background:rgba(200,16,46,.15);color:#ff8a9c;border:1px solid rgba(200,16,46,.3)}
+.tag-none{background:rgba(255,255,255,.06);color:var(--admin-muted);border:1px solid var(--admin-line)}
+
+.ap-btn{
+  padding:6px 14px;
+  background:rgba(212,175,55,.15);
+  border:1px solid rgba(212,175,55,.35);
+  color:#f0d98a;
+  border-radius:6px;
+  font-size:12.5px;
+  font-family:inherit;
+  cursor:pointer;
+  letter-spacing:.5px;
+  transition:.2s;
+}
+.ap-btn:hover{background:rgba(212,175,55,.25)}
+
+/* ============================================================
+   弹窗
+   ============================================================ */
+.admin-modal{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.7);
+  display:grid;place-items:center;
+  z-index:100;padding:20px;
+}
+.admin-modal.hide{display:none}
+.am-box{
+  background:var(--admin-panel);
+  border:1px solid var(--admin-line);
+  border-radius:14px;
+  padding:28px 26px 22px;
+  max-width:400px;width:100%;
+  position:relative;
+  animation:amIn .3s ease;
+}
+@keyframes amIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.am-close{
+  position:absolute;top:12px;right:16px;
+  font-size:24px;color:var(--admin-muted);
+  cursor:pointer;line-height:1;
+  padding:4px 8px;border-radius:6px;
+}
+.am-close:hover{background:rgba(255,255,255,.06);color:#fff}
+.am-box h3{
+  margin:0 0 6px;font-size:16px;color:#fff;
+  letter-spacing:1px;
+}
+.am-user{
+  margin:0 0 20px;
+  font-size:13px;
+  color:var(--admin-muted);
+  word-break:break-all;
+}
+.am-actions{
+  display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;
+}
+.am-quick{
+  padding:6px 12px;
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--admin-line);
+  color:var(--admin-text);
+  border-radius:6px;
+  font-size:12.5px;
+  font-family:inherit;
+  cursor:pointer;
+  transition:.2s;
+}
+.am-quick:hover{background:rgba(200,16,46,.2);border-color:rgba(200,16,46,.5);color:#ff8a9c}
+.am-field{
+  display:flex;flex-direction:column;gap:6px;margin-bottom:14px;
+}
+.am-field label{font-size:12.5px;color:var(--admin-muted);letter-spacing:.5px}
+.am-field select,
+.am-field input{
+  padding:11px 14px;
+  background:rgba(255,255,255,.03);
+  border:1.5px solid var(--admin-line);
+  border-radius:8px;
+  color:#fff;
+  font-family:inherit;
+  font-size:14px;
+  outline:0;
+  transition:border-color .2s;
+}
+.am-field select:focus,
+.am-field input:focus{border-color:var(--admin-gold)}
+.am-field select option{background:#1a2332}
+
+.am-hint{
+  font-size:12.5px;color:#ff8a9c;
+  min-height:18px;margin-bottom:10px;
+}
+.am-btns{
+  display:flex;gap:10px;justify-content:flex-end;
+}
+.am-btn-cancel,.am-btn-ok{
+  padding:10px 22px;
+  border-radius:8px;
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:600;
+  letter-spacing:.5px;
+  cursor:pointer;
+  transition:.2s;
+}
+.am-btn-cancel{
+  background:transparent;
+  border:1.5px solid var(--admin-line);
+  color:var(--admin-text);
+}
+.am-btn-cancel:hover{background:rgba(255,255,255,.06)}
+.am-btn-ok{
+  background:linear-gradient(135deg,#c8102e,#9d0c24);
+  border:0;color:#fff;
+}
+.am-btn-ok:hover{box-shadow:0 8px 20px rgba(200,16,46,.4)}
+.am-btn-ok:disabled{opacity:.5;cursor:not-allowed}
+
+/* ============================================================
+   移动端
+   ============================================================ */
+@media (max-width:640px){
+  .admin-header{padding:14px 16px}
+  .ah-brand b{font-size:13px}
+  .ah-star{width:34px;height:34px;font-size:16px}
+  .admin-tabs{padding:0 12px}
+  .at-tab{padding:12px 14px;font-size:13px}
+  .admin-main{padding:18px 12px 40px}
+  .ap-table{font-size:12.5px;min-width:640px}
+  .ap-table thead th,
+  .ap-table tbody td{padding:10px 12px}
+}

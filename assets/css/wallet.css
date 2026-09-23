@@ -1,0 +1,350 @@
+/* ===================================================================
+   星币钱包 · 卡片 + 签到
+   =================================================================== */
+
+/* ============================================================
+   卡片主体
+   ============================================================ */
+.wallet-card{
+  position:relative;
+  border-radius:18px;
+  padding:24px 26px 22px;
+  background:
+    radial-gradient(120% 160% at 100% 0%, rgba(212,175,55,.35), transparent 55%),
+    linear-gradient(135deg, #1a2b4c 0%, #243b63 55%, #12203a 100%);
+  color:#fff;
+  overflow:hidden;
+  box-shadow:
+    0 18px 44px rgba(26,43,76,.32),
+    inset 0 0 0 1px rgba(255,255,255,.06);
+  isolation:isolate;
+}
+
+/* 背景星点 */
+.wallet-card::before{
+  content:"";
+  position:absolute;inset:0;
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 24%,rgba(255,255,255,.55),transparent),
+    radial-gradient(1.2px 1.2px at 78% 68%,rgba(255,255,255,.4),transparent),
+    radial-gradient(1.6px 1.6px at 92% 22%,rgba(255,255,255,.5),transparent),
+    radial-gradient(1.3px 1.3px at 40% 88%,rgba(255,255,255,.35),transparent);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* 右下角大号星币符号水印 */
+.wallet-card::after{
+  content:"★";
+  position:absolute;
+  right:-30px;bottom:-50px;
+  font-size:200px;
+  line-height:1;
+  color:rgba(212,175,55,.13);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ============================================================
+   顶部：标签 + 余额
+   ============================================================ */
+.wallet-head{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:8px;
+}
+
+.wallet-label{
+  font-size:13px;
+  letter-spacing:3px;
+  color:#9fb0cc;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.wallet-label .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 0 3px rgba(212,175,55,.25);
+}
+
+.wallet-amount{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  margin-top:6px;
+  position:relative;
+  z-index:1;
+}
+.wallet-amount .num{
+  font-size:56px;
+  font-weight:800;
+  letter-spacing:1px;
+  color:#f0d98a;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 2px 12px rgba(212,175,55,.35);
+}
+.wallet-amount .unit{
+  font-size:13px;
+  color:#9fb0cc;
+  letter-spacing:2px;
+  padding-bottom:8px;
+}
+
+/* ============================================================
+   签到按钮
+   ============================================================ */
+.wallet-checkin-btn{
+  position:relative;
+  z-index:1;
+  flex:0 0 auto;
+  align-self:flex-start;
+  padding:11px 26px;
+  border:0;
+  border-radius:999px;
+  background:linear-gradient(135deg, #e0c455 0%, #d4af37 55%, #b8922c 100%);
+  color:#241b08;
+  font-size:14px;
+  font-weight:800;
+  letter-spacing:2px;
+  cursor:pointer;
+  box-shadow:
+    0 8px 22px rgba(212,175,55,.4),
+    inset 0 -2px 0 rgba(0,0,0,.15);
+  transition:transform .15s, box-shadow .2s, background .2s;
+  -webkit-tap-highlight-color:transparent;
+  white-space:nowrap;
+}
+.wallet-checkin-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:
+    0 12px 28px rgba(212,175,55,.5),
+    inset 0 -2px 0 rgba(0,0,0,.15);
+}
+.wallet-checkin-btn:active{transform:translateY(0) scale(.97)}
+.wallet-checkin-btn:disabled{
+  cursor:not-allowed;
+  transform:none;
+  opacity:.85;
+}
+
+/* 已签到状态 */
+.wallet-checkin-btn.done{
+  background:rgba(31,143,85,.85);
+  color:#fff;
+  box-shadow:
+    0 8px 22px rgba(31,143,85,.35),
+    inset 0 -2px 0 rgba(0,0,0,.15);
+  opacity:1;
+}
+.wallet-checkin-btn.done::before{
+  content:"✓";
+  margin-right:6px;
+  font-weight:900;
+}
+
+/* ============================================================
+   连签提示 + 进度
+   ============================================================ */
+.wallet-streak-line{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:20px;
+  padding-top:16px;
+  border-top:1px dashed rgba(255,255,255,.12);
+  flex-wrap:wrap;
+}
+
+.wallet-streak-text{
+  font-size:13px;
+  color:#dfe7f5;
+  letter-spacing:.5px;
+}
+.wallet-streak-text b{
+  color:#f0d98a;
+  font-weight:800;
+  font-size:15px;
+  margin:0 2px;
+  font-variant-numeric:tabular-nums;
+}
+
+.wallet-next-reward{
+  font-size:12.5px;
+  color:#9fb0cc;
+  letter-spacing:.3px;
+}
+.wallet-next-reward b{
+  color:#f0d98a;
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+
+/* 进度条：5 段 */
+.wallet-progress{
+  position:relative;
+  z-index:1;
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:8px;
+}
+.wallet-progress .step{
+  position:relative;
+  text-align:center;
+  padding:10px 4px 8px;
+  border-radius:10px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  transition:background .2s, border-color .2s, transform .2s;
+}
+.wallet-progress .step .s-day{
+  font-size:11px;
+  color:#9fb0cc;
+  letter-spacing:.5px;
+  margin-bottom:3px;
+}
+.wallet-progress .step .s-coin{
+  font-size:14px;
+  font-weight:800;
+  color:#dfe7f5;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.3px;
+}
+
+/* 已完成的步骤 */
+.wallet-progress .step.done{
+  background:linear-gradient(135deg, rgba(212,175,55,.28), rgba(212,175,55,.12));
+  border-color:rgba(212,175,55,.55);
+}
+.wallet-progress .step.done .s-day{color:#f0d98a}
+.wallet-progress .step.done .s-coin{color:#f0d98a}
+.wallet-progress .step.done::after{
+  content:"✓";
+  position:absolute;
+  top:-6px;right:-6px;
+  width:18px;height:18px;
+  border-radius:50%;
+  background:#1f8f55;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  display:grid;
+  place-items:center;
+  box-shadow:0 0 0 2px #1a2b4c;
+}
+
+/* 当前（今日可领） */
+.wallet-progress .step.current{
+  background:linear-gradient(135deg, rgba(200,16,46,.4), rgba(200,16,46,.18));
+  border-color:var(--red);
+  transform:translateY(-2px);
+  box-shadow:0 6px 18px rgba(200,16,46,.35);
+}
+.wallet-progress .step.current .s-day{color:#ffb3bf}
+.wallet-progress .step.current .s-coin{color:#fff}
+
+/* ============================================================
+   最近签到记录
+   ============================================================ */
+.wallet-history{
+  position:relative;
+  z-index:1;
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px dashed rgba(255,255,255,.12);
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.wallet-history-title{
+  font-size:12px;
+  color:#9fb0cc;
+  letter-spacing:2px;
+  margin-bottom:4px;
+}
+.wallet-history-empty{
+  font-size:12.5px;
+  color:#7f93b3;
+  text-align:center;
+  padding:6px 0;
+}
+.wallet-history-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:7px 12px;
+  border-radius:8px;
+  background:rgba(255,255,255,.05);
+  font-size:12.5px;
+  color:#dfe7f5;
+}
+.wallet-history-item .wh-date{
+  font-family:ui-monospace,Menlo,Consolas,monospace;
+  color:#9fb0cc;
+  letter-spacing:.4px;
+}
+.wallet-history-item .wh-streak{
+  color:#9fb0cc;
+  font-size:12px;
+}
+.wallet-history-item .wh-reward{
+  color:#f0d98a;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ============================================================
+   顶部栏星币小徽章
+   ============================================================ */
+.auth-nav .wallet-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 12px;
+  border-radius:999px;
+  background:rgba(212,175,55,.2);
+  border:1px solid rgba(212,175,55,.5);
+  color:#f0d98a;
+  font-size:12.5px;
+  font-weight:700;
+  letter-spacing:.4px;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width:640px){
+  .wallet-card{padding:20px 18px 18px;border-radius:16px}
+  .wallet-amount .num{font-size:42px}
+  .wallet-amount .unit{font-size:12px;padding-bottom:6px}
+  .wallet-checkin-btn{padding:10px 20px;font-size:13px;letter-spacing:1.5px}
+  .wallet-progress{gap:6px}
+  .wallet-progress .step{padding:8px 2px 6px;border-radius:8px}
+  .wallet-progress .step .s-day{font-size:10px}
+  .wallet-progress .step .s-coin{font-size:12.5px}
+  .wallet-progress .step.done::after{
+    width:16px;height:16px;font-size:10px;
+  }
+}
+
+@media (max-width:520px){
+  .auth-nav .wallet-badge{font-size:11.5px;padding:2px 9px}
+}
+
+/* 横排布局时让按钮不挤 */
+@media (max-width:400px){
+  .wallet-head{flex-direction:column;align-items:stretch;gap:12px}
+  .wallet-checkin-btn{align-self:flex-start}
+}

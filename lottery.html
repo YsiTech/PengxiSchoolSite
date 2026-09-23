@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>星图抽奖 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/lottery.css">
+</head>
+<body data-page="lottery">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="profile.html">个人中心</a><i>›</i><span>星图抽奖</span></div>
+    <h1>星图抽奖</h1>
+    <p>单次 <span id="costLabel">50</span> 亚斯卢布 · 赢取丰厚奖励</p>
+  </div>
+</section>
+
+<main class="lottery-main">
+
+  <div class="lottery-grid">
+
+    <!-- ==================== 左侧悬挂余额 ==================== -->
+    <aside class="lottery-side">
+
+      <div class="balance-card">
+        <div class="bc-label">我的亚斯卢布</div>
+        <div class="bc-amount" id="balanceAmount">—</div>
+        <div class="bc-unit">АСР · ₽</div>
+        <a class="bc-link" href="profile.html">去签到赚币 →</a>
+      </div>
+
+      <div class="balance-card mini">
+        <div class="bc-label">单次消耗</div>
+        <div class="bc-amount small" id="costAmount">50</div>
+      </div>
+
+      <div class="balance-card mini">
+        <div class="bc-label">今日已抽</div>
+        <div class="bc-amount small" id="todayCount">0 次</div>
+      </div>
+
+    </aside>
+
+    <!-- ==================== 右侧主内容 ==================== -->
+    <section class="lottery-content">
+
+      <!-- 抽奖按钮卡片 -->
+      <div class="draw-card">
+        <div class="draw-glow"></div>
+        <div class="draw-inner">
+          <div class="draw-head">
+            <div class="draw-icon">🎰</div>
+            <div class="draw-title">星图抽奖</div>
+            <div class="draw-sub">点击下方按钮 · 命运即将揭晓</div>
+          </div>
+
+          <button class="lottery-btn" id="drawBtn" type="button">
+            <span class="lb-text">立即抽奖</span>
+          </button>
+
+          <div class="draw-tip">
+            单次消耗 <b id="costTip">50</b> 亚斯卢布 · 奖品随机掉落
+          </div>
+        </div>
+      </div>
+
+      <!-- 奖品列表 -->
+      <div class="card prizes-card">
+        <div class="card-head">
+          <h3>奖品列表</h3>
+          <span class="muted small" id="prizesCount">共 — 种奖品</span>
+        </div>
+
+        <div class="prizes-grid" id="prizesGrid">
+          <!-- JS 渲染 -->
+        </div>
+
+        <div class="prizes-tip">
+          提示：奖品与概率可能不定期调整，以本页面实时显示为准
+        </div>
+      </div>
+
+      <!-- 中奖记录 -->
+      <div class="card">
+        <div class="card-head">
+          <h3>我的中奖记录</h3>
+          <span class="muted small">最近 10 条</span>
+        </div>
+        <div class="record-list" id="recordList">
+          <div class="record-empty">还没有抽奖记录，快来试试手气</div>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+</main>
+
+<div id="site-footer"></div>
+
+<!-- ==================== 中奖弹窗 ==================== -->
+<div class="gift-modal hide" id="resultModal">
+  <div class="gift-modal-box">
+    <div class="gm-icon" id="resultIcon">🎉</div>
+    <h2 class="gm-title" id="resultTitle">恭喜中奖</h2>
+    <p class="gm-prize" id="resultPrize">—</p>
+    <p class="gm-balance" id="resultBalance"></p>
+    <button class="btn red" type="button" id="resultOkBtn">知道了</button>
+  </div>
+</div>
+
+<!-- ==================== 收货信息弹窗 ==================== -->
+<div class="gift-modal hide" id="addressModal">
+  <div class="gift-modal-box wide">
+    <h2 class="gm-title">填写收货信息</h2>
+    <p class="gm-sub">你抽中了 <b id="giftPrizeName">亚斯精美小礼品</b>，请填写收货信息，我们会尽快寄出。</p>
+
+    <form id="addressForm" class="addr-form" novalidate>
+      <div class="addr-field">
+        <label>收货人姓名 <span class="req">*</span></label>
+        <input type="text" id="giftName" maxlength="20" placeholder="请输入姓名" required>
+      </div>
+      <div class="addr-field">
+        <label>联系电话 <span class="req">*</span></label>
+        <input type="tel" id="giftPhone" maxlength="20" placeholder="请输入手机号或座机" required>
+      </div>
+      <div class="addr-field">
+        <label>收货地址 <span class="req">*</span></label>
+        <textarea id="giftAddress" maxlength="200" placeholder="省 / 市 / 区 / 详细地址" required></textarea>
+      </div>
+      <div class="addr-field">
+        <label>备注（选填）</label>
+        <input type="text" id="giftRemark" maxlength="50" placeholder="如：工作日送达">
+      </div>
+
+      <div class="addr-actions">
+        <button class="btn red" type="submit" id="addrSubmit">提交收货信息</button>
+        <button class="btn ghost" type="button" id="addrLater"
+                style="color:#1a2b4c;border-color:#1a2b4c">稍后填写</button>
+      </div>
+      <p class="addr-tip">提交后可联系管理员查询订单状态</p>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="assets/data/lottery-prizes.js"></script>
+<script src="assets/js/wallet.js"></script>
+<script src="assets/js/lottery.js"></script>
+
+</body>
+</html>
