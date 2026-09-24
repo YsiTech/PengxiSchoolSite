@@ -15,7 +15,7 @@
   <div class="page-hero-inner">
     <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="profile.html">个人中心</a><i>›</i><span>星图抽奖</span></div>
     <h1>星图抽奖</h1>
-    <p>单次 <span id="costLabel">50</span> 亚斯卢布 · 赢取丰厚奖励</p>
+    <p>单抽 <span id="costLabel">50</span> 亚斯卢布 · 五连抽 <span id="cost5Label">250</span> 亚斯卢布</p>
   </div>
 </section>
 
@@ -23,7 +23,6 @@
 
   <div class="lottery-grid">
 
-    <!-- ==================== 左侧悬挂余额 ==================== -->
     <aside class="lottery-side">
 
       <div class="balance-card">
@@ -34,7 +33,7 @@
       </div>
 
       <div class="balance-card mini">
-        <div class="bc-label">单次消耗</div>
+        <div class="bc-label">单抽消耗</div>
         <div class="bc-amount small" id="costAmount">50</div>
       </div>
 
@@ -45,7 +44,6 @@
 
     </aside>
 
-    <!-- ==================== 右侧主内容 ==================== -->
     <section class="lottery-content">
 
       <!-- 抽奖按钮卡片 -->
@@ -55,15 +53,26 @@
           <div class="draw-head">
             <div class="draw-icon">🎰</div>
             <div class="draw-title">星图抽奖</div>
-            <div class="draw-sub">点击下方按钮 · 命运即将揭晓</div>
+            <div class="draw-sub">命运即将揭晓</div>
           </div>
 
-          <button class="lottery-btn" id="drawBtn" type="button">
-            <span class="lb-text">立即抽奖</span>
-          </button>
+          <div class="draw-actions">
+
+            <button class="lottery-btn" id="drawBtn" type="button">
+              <span class="lb-text">单抽</span>
+              <span class="lb-sub">50 ₽</span>
+            </button>
+
+            <button class="lottery-btn gold" id="draw5Btn" type="button">
+              <span class="lb-text">五连抽</span>
+              <span class="lb-sub">250 ₽</span>
+              <span class="lb-badge">推荐</span>
+            </button>
+
+          </div>
 
           <div class="draw-tip">
-            单次消耗 <b id="costTip">50</b> 亚斯卢布 · 奖品随机掉落
+            奖品随机掉落 · 五连抽更刺激
           </div>
         </div>
       </div>
@@ -75,9 +84,7 @@
           <span class="muted small" id="prizesCount">共 — 种奖品</span>
         </div>
 
-        <div class="prizes-grid" id="prizesGrid">
-          <!-- JS 渲染 -->
-        </div>
+        <div class="prizes-grid" id="prizesGrid"></div>
 
         <div class="prizes-tip">
           提示：奖品与概率可能不定期调整，以本页面实时显示为准
@@ -103,7 +110,7 @@
 
 <div id="site-footer"></div>
 
-<!-- ==================== 中奖弹窗 ==================== -->
+<!-- ==================== 单抽结果弹窗 ==================== -->
 <div class="gift-modal hide" id="resultModal">
   <div class="gift-modal-box">
     <div class="gm-icon" id="resultIcon">🎉</div>
@@ -111,6 +118,20 @@
     <p class="gm-prize" id="resultPrize">—</p>
     <p class="gm-balance" id="resultBalance"></p>
     <button class="btn red" type="button" id="resultOkBtn">知道了</button>
+  </div>
+</div>
+
+<!-- ==================== 五连抽结果弹窗 ==================== -->
+<div class="gift-modal hide" id="result5Modal">
+  <div class="gift-modal-box xwide">
+    <h2 class="gm-title5">🎊 五连抽结果</h2>
+    <p class="gm-balance5" id="result5Balance"></p>
+
+    <div class="result5-grid" id="result5Grid"></div>
+
+    <div class="result5-actions">
+      <button class="btn red" type="button" id="result5OkBtn">知道了</button>
+    </div>
   </div>
 </div>
 

@@ -1,8 +1,7 @@
 /* ===================================================================
-   星图抽奖 · 奖品网格版
+   星图抽奖 · 奖品网格 + 五连抽
    =================================================================== */
 
-/* 数字字体：Manrope */
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.1.0/400.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.1.0/600.css');
 @import url('https://cdn.jsdelivr.net/npm/@fontsource/manrope@5.1.0/700.css');
@@ -15,13 +14,14 @@
 .bc-amount,
 .bc-amount.small,
 .record-item .ri-reward,
-.wheel-tip b,
 .draw-tip b,
 #todayCount,
 #costAmount,
 #costLabel,
-#costTip,
-.gm-balance{
+#cost5Label,
+.gm-balance,
+.gm-balance5,
+.r5-reward{
   font-family: var(--num-font);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1, 'zero' 1;
@@ -97,10 +97,7 @@
   position:relative;
   z-index:1;
 }
-.balance-card.mini .bc-label{
-  color:var(--muted);
-  opacity:1;
-}
+.balance-card.mini .bc-label{color:var(--muted);opacity:1}
 
 .bc-amount{
   font-size:46px;
@@ -190,15 +187,9 @@
   animation:drawRotate 12s linear infinite;
   pointer-events:none;
 }
-@keyframes drawRotate{
-  to{transform:rotate(360deg)}
-}
+@keyframes drawRotate{to{transform:rotate(360deg)}}
 
-.draw-inner{
-  position:relative;
-  z-index:1;
-  text-align:center;
-}
+.draw-inner{position:relative;z-index:1;text-align:center}
 .draw-head{margin-bottom:22px}
 .draw-icon{
   font-size:44px;
@@ -220,30 +211,63 @@
   letter-spacing:1px;
 }
 
+/* ============================================================
+   两个按钮
+   ============================================================ */
+.draw-actions{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
 .lottery-btn{
-  min-width:260px;
-  padding:17px 42px;
+  min-width:170px;
+  padding:14px 28px 12px;
   border:0;
-  border-radius:999px;
-  background:linear-gradient(135deg,#f0d98a,#d4af37);
-  color:#241b08;
+  border-radius:16px;
+  background:linear-gradient(135deg,#c8102e,#9d0c24);
+  color:#fff;
   font-family:inherit;
-  font-size:17px;
-  font-weight:800;
-  letter-spacing:5px;
   cursor:pointer;
-  box-shadow:
-    0 14px 34px rgba(212,175,55,.45),
-    0 0 0 6px rgba(212,175,55,.12);
+  box-shadow:0 12px 28px rgba(200,16,46,.4), 0 0 0 4px rgba(255,255,255,.08);
   transition:transform .15s, box-shadow .25s, opacity .2s, filter .2s;
   -webkit-tap-highlight-color:transparent;
   position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  overflow:hidden;
 }
+.lottery-btn .lb-text{
+  font-size:16px;
+  font-weight:800;
+  letter-spacing:3px;
+}
+.lottery-btn .lb-sub{
+  font-family:var(--num-font);
+  font-size:12.5px;
+  font-weight:600;
+  letter-spacing:.5px;
+  opacity:.85;
+  font-variant-numeric:tabular-nums;
+}
+.lottery-btn .lb-badge{
+  position:absolute;
+  top:-1px;right:-1px;
+  font-size:9.5px;
+  font-weight:700;
+  padding:3px 10px;
+  border-radius:0 16px 0 10px;
+  background:linear-gradient(135deg,#f0d98a,#d4af37);
+  color:#241b08;
+  letter-spacing:1.5px;
+}
+
 .lottery-btn:hover{
-  transform:translateY(-3px) scale(1.02);
-  box-shadow:
-    0 20px 44px rgba(212,175,55,.55),
-    0 0 0 8px rgba(212,175,55,.16);
+  transform:translateY(-3px);
+  box-shadow:0 18px 40px rgba(200,16,46,.5), 0 0 0 6px rgba(255,255,255,.12);
 }
 .lottery-btn:active{transform:translateY(0) scale(.98)}
 .lottery-btn:disabled{
@@ -254,17 +278,22 @@
   filter:grayscale(.3);
 }
 
+/* 五连抽：金色 */
+.lottery-btn.gold{
+  background:linear-gradient(135deg,#f0d98a,#d4af37);
+  color:#241b08;
+  box-shadow:0 12px 28px rgba(212,175,55,.5), 0 0 0 4px rgba(255,255,255,.08);
+}
+.lottery-btn.gold .lb-sub{color:#5a4410;opacity:.9}
+.lottery-btn.gold:hover{
+  box-shadow:0 18px 40px rgba(212,175,55,.6), 0 0 0 6px rgba(255,255,255,.12);
+}
+
 .draw-tip{
   margin-top:16px;
   font-size:12.5px;
   color:#9fb0cc;
   letter-spacing:.4px;
-}
-.draw-tip b{
-  color:#f0d98a;
-  font-weight:800;
-  font-size:15px;
-  padding:0 4px;
 }
 
 /* ============================================================
@@ -296,7 +325,6 @@
   justify-content:center;
   gap:6px;
 }
-
 .prize-card .pc-icon{
   font-size:30px;
   line-height:1;
@@ -320,29 +348,11 @@
   margin-top:4px;
 }
 
-/* 稀有度标签 */
-.prize-card.common .pc-tag{
-  background:#f2f5fa;
-  color:#6b7a96;
-  border:1px solid #dfe6f0;
-}
-.prize-card.rare .pc-tag{
-  background:#eef3fb;
-  color:#3d5a8a;
-  border:1px solid #cdd9ef;
-}
-.prize-card.epic .pc-tag{
-  background:#f8eefb;
-  color:#7a3b8f;
-  border:1px solid #e4c8ed;
-}
-.prize-card.legendary .pc-tag{
-  background:#fff8e8;
-  color:#8a6d12;
-  border:1px solid #ead9a8;
-}
+.prize-card.common .pc-tag{background:#f2f5fa;color:#6b7a96;border:1px solid #dfe6f0}
+.prize-card.rare .pc-tag{background:#eef3fb;color:#3d5a8a;border:1px solid #cdd9ef}
+.prize-card.epic .pc-tag{background:#f8eefb;color:#7a3b8f;border:1px solid #e4c8ed}
+.prize-card.legendary .pc-tag{background:#fff8e8;color:#8a6d12;border:1px solid #ead9a8}
 
-/* 高亮扫描态 */
 .prize-card.active{
   background:linear-gradient(160deg,#fff,#fdecef);
   border-color:var(--red);
@@ -350,17 +360,12 @@
   box-shadow:0 8px 22px rgba(200,16,46,.3);
   z-index:2;
 }
-.prize-card.active .pc-icon{
-  transform:scale(1.2);
-}
+.prize-card.active .pc-icon{transform:scale(1.2)}
 
-/* 中奖态 */
 .prize-card.win{
   background:linear-gradient(160deg,#fff8e8,#f5d97a);
   border-color:var(--gold);
-  box-shadow:
-    0 0 0 4px rgba(212,175,55,.4),
-    0 12px 32px rgba(212,175,55,.55);
+  box-shadow:0 0 0 4px rgba(212,175,55,.4), 0 12px 32px rgba(212,175,55,.55);
   transform:scale(1.08);
   z-index:3;
   animation:winPulse 1s ease-in-out 2;
@@ -374,7 +379,6 @@
   filter:drop-shadow(0 4px 12px rgba(212,175,55,.6));
 }
 
-/* 奖品列表底部提示 */
 .prizes-tip{
   margin-top:14px;
   padding-top:12px;
@@ -388,62 +392,34 @@
 /* ============================================================
    中奖记录
    ============================================================ */
-.record-list{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
+.record-list{display:flex;flex-direction:column;gap:8px}
 .record-empty{
-  text-align:center;
-  padding:26px 12px;
-  color:var(--muted);
-  font-size:13px;
+  text-align:center;padding:26px 12px;
+  color:var(--muted);font-size:13px;
 }
 .record-item{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:11px 14px;
-  border-radius:10px;
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;border-radius:10px;
   background:#fbf9f4;
   border-left:3px solid var(--line);
   font-size:13.5px;
 }
-.record-item.win{
-  background:#e9f6ee;
-  border-left-color:#1f8f55;
-}
-.record-item.gift{
-  background:#fff8e8;
-  border-left-color:var(--gold);
-}
-.record-item.none{
-  background:#f2f5fa;
-  border-left-color:#b8c4d6;
-  opacity:.8;
-}
+.record-item.win{background:#e9f6ee;border-left-color:#1f8f55}
+.record-item.gift{background:#fff8e8;border-left-color:var(--gold)}
+.record-item.none{background:#f2f5fa;border-left-color:#b8c4d6;opacity:.8}
 .record-item .ri-time{
   font-family:ui-monospace,Menlo,Consolas,monospace;
-  font-size:12px;
-  color:var(--muted);
-  flex:0 0 auto;
-  min-width:80px;
+  font-size:12px;color:var(--muted);
+  flex:0 0 auto;min-width:80px;
 }
 .record-item .ri-name{
-  flex:1 1 auto;
-  min-width:0;
-  color:var(--ink);
-  font-weight:600;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  flex:1 1 auto;min-width:0;
+  color:var(--ink);font-weight:600;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
 }
 .record-item .ri-reward{
-  flex:0 0 auto;
-  font-weight:800;
-  font-size:15px;
-  color:var(--red);
-  letter-spacing:-.2px;
+  flex:0 0 auto;font-weight:800;font-size:15px;
+  color:var(--red);letter-spacing:-.2px;
 }
 .record-item.win .ri-reward{color:#1f8f55}
 .record-item.gift .ri-reward{color:#8a6d12;font-size:13.5px;letter-spacing:0}
@@ -459,6 +435,7 @@
   z-index:1000;
   padding:20px;
   animation:fadeIn .2s ease;
+  overflow-y:auto;
 }
 .gift-modal.hide{display:none}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -472,66 +449,140 @@
   width:100%;
   box-shadow:0 30px 80px rgba(0,0,0,.4);
   animation:popIn .3s cubic-bezier(.2,.9,.3,1.2);
+  margin:auto;
 }
 .gift-modal-box.wide{max-width:480px;text-align:left;padding:28px 26px 22px}
+.gift-modal-box.xwide{max-width:680px;text-align:center;padding:32px 28px 26px}
 @keyframes popIn{
   from{opacity:0;transform:scale(.9) translateY(10px)}
   to{opacity:1;transform:scale(1) translateY(0)}
 }
 
-.gm-icon{
-  font-size:56px;
-  line-height:1;
-  margin-bottom:12px;
-}
+.gm-icon{font-size:56px;line-height:1;margin-bottom:12px}
 .gm-title{
-  margin:0 0 10px;
-  font-size:19px;
-  color:var(--blue);
-  letter-spacing:1.5px;
+  margin:0 0 10px;font-size:19px;
+  color:var(--blue);letter-spacing:1.5px;
 }
 .gm-prize{
-  margin:0 0 8px;
-  font-size:22px;
-  font-weight:800;
-  color:var(--red);
-  letter-spacing:1px;
+  margin:0 0 8px;font-size:22px;font-weight:800;
+  color:var(--red);letter-spacing:1px;
 }
 .gm-balance{
+  margin:0 0 22px;font-size:14px;
+  color:var(--muted);letter-spacing:.2px;font-weight:500;
+}
+.gm-sub{
+  margin:0 0 20px;font-size:13.5px;
+  color:var(--muted);line-height:1.7;
+}
+.gm-sub b{color:var(--red)}
+
+.gift-modal-box .btn{min-width:130px;letter-spacing:2px}
+
+/* ============================================================
+   五连抽结果弹窗
+   ============================================================ */
+.gm-title5{
+  margin:0 0 8px;
+  font-size:21px;
+  color:var(--blue);
+  letter-spacing:2px;
+  font-weight:800;
+}
+.gm-balance5{
   margin:0 0 22px;
-  font-size:14px;
+  font-size:13.5px;
   color:var(--muted);
   letter-spacing:.2px;
   font-weight:500;
 }
-.gm-sub{
-  margin:0 0 20px;
-  font-size:13.5px;
-  color:var(--muted);
-  line-height:1.7;
+.gm-balance5 b{
+  color:var(--red);
+  font-weight:800;
+  font-size:15px;
+  padding:0 3px;
 }
-.gm-sub b{color:var(--red)}
 
-.gift-modal-box .btn{
-  min-width:130px;
-  letter-spacing:2px;
+.result5-grid{
+  display:grid;
+  grid-template-columns:repeat(5, 1fr);
+  gap:10px;
+  margin-bottom:24px;
+}
+
+.result5-card{
+  position:relative;
+  background:linear-gradient(160deg,#fbf9f3,#f2ece0);
+  border:2px solid var(--line);
+  border-radius:12px;
+  padding:16px 6px 14px;
+  text-align:center;
+  animation:r5Pop .35s cubic-bezier(.2,.9,.3,1.2) both;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  min-height:130px;
+  justify-content:center;
+}
+@keyframes r5Pop{
+  from{opacity:0;transform:scale(.5) translateY(20px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+.result5-card:nth-child(1){animation-delay:.05s}
+.result5-card:nth-child(2){animation-delay:.15s}
+.result5-card:nth-child(3){animation-delay:.25s}
+.result5-card:nth-child(4){animation-delay:.35s}
+.result5-card:nth-child(5){animation-delay:.45s}
+
+.result5-card.money{
+  background:linear-gradient(160deg,#e9f6ee,#d2efdd);
+  border-color:#7fcea3;
+}
+.result5-card.gift{
+  background:linear-gradient(160deg,#fff8e8,#f5d97a);
+  border-color:var(--gold);
+  box-shadow:0 0 0 3px rgba(212,175,55,.3);
+}
+.result5-card.none{
+  background:linear-gradient(160deg,#f2f5fa,#e4ecf7);
+  border-color:#b8c4d6;
+  opacity:.85;
+}
+
+.r5-icon{font-size:32px;line-height:1}
+.r5-name{
+  font-size:12px;
+  font-weight:700;
+  color:var(--blue);
+  line-height:1.3;
+  word-break:break-word;
+  letter-spacing:.2px;
+}
+.r5-reward{
+  font-size:15px;
+  font-weight:800;
+  letter-spacing:-.2px;
+  margin-top:2px;
+}
+.result5-card.money .r5-reward{color:#1f8f55}
+.result5-card.gift .r5-reward{color:#8a6d12;font-size:11.5px;letter-spacing:0;font-weight:700}
+.result5-card.none .r5-reward{color:var(--muted);font-size:12px;font-weight:500}
+
+.result5-actions{
+  display:flex;
+  justify-content:center;
+  gap:12px;
 }
 
 /* ============================================================
    地址表单
    ============================================================ */
-.addr-form{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  margin-bottom:16px;
-}
+.addr-form{display:flex;flex-direction:column;gap:14px;margin-bottom:16px}
 .addr-field{display:flex;flex-direction:column;gap:6px}
 .addr-field label{
-  font-size:13px;
-  font-weight:600;
-  color:var(--blue);
-  letter-spacing:.3px;
+  font-size:13px;font-weight:600;
+  color:var(--blue);letter-spacing:.3px;
 }
 .addr-field label .req{color:var(--red)}
 .addr-field input,
@@ -539,11 +590,8 @@
   padding:11px 14px;
   border:1.5px solid var(--line);
   border-radius:10px;
-  background:#fff;
-  outline:0;
-  font-size:14.5px;
-  font-family:inherit;
-  color:var(--ink);
+  background:#fff;outline:0;
+  font-size:14.5px;font-family:inherit;color:var(--ink);
   transition:border-color .2s, box-shadow .2s;
 }
 .addr-field textarea{min-height:80px;resize:vertical;line-height:1.7}
@@ -552,16 +600,11 @@
   border-color:var(--red);
   box-shadow:0 0 0 4px rgba(200,16,46,.1);
 }
-.addr-actions{
-  display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;
-}
+.addr-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .addr-actions .btn{flex:1 1 auto;min-width:120px}
 .addr-tip{
-  margin:12px 0 0;
-  font-size:12px;
-  color:var(--muted);
-  text-align:center;
-  letter-spacing:.3px;
+  margin:12px 0 0;font-size:12px;
+  color:var(--muted);text-align:center;letter-spacing:.3px;
 }
 
 /* ============================================================
@@ -570,10 +613,8 @@
 @media (max-width:900px){
   .lottery-grid{grid-template-columns:1fr}
   .lottery-side{
-    position:static;
-    flex-direction:row;
-    flex-wrap:wrap;
-    gap:10px;
+    position:static;flex-direction:row;
+    flex-wrap:wrap;gap:10px;
   }
   .balance-card{flex:1 1 200px;padding:16px 14px}
   .bc-amount{font-size:34px}
@@ -594,14 +635,19 @@
   .draw-icon{font-size:36px}
   .draw-title{font-size:19px;letter-spacing:2px}
   .draw-sub{font-size:12px}
+
+  .draw-actions{gap:10px}
   .lottery-btn{
-    min-width:200px;
-    padding:14px 32px;
-    font-size:15px;
-    letter-spacing:3px;
+    flex:1 1 auto;
+    min-width:0;
+    padding:12px 16px 10px;
+    border-radius:14px;
   }
+  .lottery-btn .lb-text{font-size:14.5px;letter-spacing:2px}
+  .lottery-btn .lb-sub{font-size:11.5px}
+  .lottery-btn .lb-badge{font-size:9px;padding:2px 8px}
+
   .draw-tip{font-size:12px}
-  .draw-tip b{font-size:14px}
 
   .prizes-card{padding:16px}
   .prizes-grid{
@@ -609,10 +655,8 @@
     gap:8px;
   }
   .prize-card{
-    padding:10px 4px 8px;
-    min-height:90px;
-    border-radius:10px;
-    gap:4px;
+    padding:10px 4px 8px;min-height:90px;
+    border-radius:10px;gap:4px;
   }
   .prize-card .pc-icon{font-size:22px}
   .prize-card .pc-name{font-size:11px;line-height:1.3}
@@ -625,14 +669,26 @@
   .record-item{font-size:12.5px;padding:9px 10px;gap:8px}
   .record-item .ri-time{min-width:66px;font-size:11px}
   .record-item .ri-reward{font-size:14px}
+
+  /* 五连抽弹窗在手机上：2列换行 */
+  .gift-modal-box.xwide{padding:24px 18px 20px}
+  .gm-title5{font-size:18px;letter-spacing:1.5px}
+  .result5-grid{
+    grid-template-columns:repeat(2, 1fr);
+    gap:8px;
+    margin-bottom:20px;
+  }
+  .result5-card{padding:14px 6px 12px;min-height:110px;border-radius:10px}
+  .r5-icon{font-size:26px}
+  .r5-name{font-size:11.5px}
+  .r5-reward{font-size:14px}
 }
 
 @media (max-width:400px){
-  .prizes-grid{
-    grid-template-columns:repeat(auto-fill, minmax(84px, 1fr));
-    gap:6px;
-  }
+  .prizes-grid{grid-template-columns:repeat(auto-fill, minmax(84px, 1fr));gap:6px}
   .prize-card .pc-icon{font-size:20px}
   .prize-card .pc-name{font-size:10.5px}
   .bc-amount{font-size:24px}
+  .lottery-btn .lb-text{font-size:13.5px}
+  .lottery-btn .lb-sub{font-size:11px}
 }

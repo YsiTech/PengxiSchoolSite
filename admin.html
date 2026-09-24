@@ -8,7 +8,6 @@
 </head>
 <body>
 
-<!-- ==================== 顶部 ==================== -->
 <header class="admin-header">
   <div class="ah-left">
     <div class="ah-logo">★</div>
@@ -29,63 +28,21 @@
   </div>
 </header>
 
-<!-- ==================== Tab ==================== -->
 <nav class="admin-tabs">
-  <button class="admin-tab on" data-tab="stats"   type="button">数据统计</button>
-  <button class="admin-tab"    data-tab="prizes"  type="button">奖品管理</button>
+  <button class="admin-tab on" data-tab="prizes"  type="button">奖品管理</button>
   <button class="admin-tab"    data-tab="records" type="button">中奖记录</button>
   <button class="admin-tab"    data-tab="orders"  type="button">礼品订单</button>
   <button class="admin-tab"    data-tab="users"   type="button">用户列表</button>
   <button class="admin-tab"    data-tab="wallets" type="button">钱包管理</button>
-  <button class="admin-tab"    data-tab="announcements" type="button">公告管理</button>
-  <button class="admin-tab"    data-tab="news"    type="button">新闻管理</button>
+  <button class="admin-tab"    data-tab="email"   type="button">邮件群发</button>
+  <button class="admin-tab"    data-tab="transactions" type="button">余额明细</button>
   <button class="admin-tab"    data-tab="batch"   type="button">批量操作</button>
-  <button class="admin-tab"    data-tab="logs"    type="button">操作日志</button>
 </nav>
 
 <main class="admin-main">
 
-  <!-- ==================== 数据统计 ==================== -->
-  <section class="admin-panel on" data-panel="stats">
-    <div class="panel-head">
-      <div class="ph-left">
-        <h2>数据概览</h2>
-        <p class="ph-sub">站点核心数据实时看板</p>
-      </div>
-      <div class="ph-right">
-        <button class="btn-secondary" id="statsRefresh" type="button">刷新数据</button>
-      </div>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card blue">
-        <div class="sc-label">总用户数</div>
-        <div class="sc-value" id="statUsers">0</div>
-      </div>
-      <div class="stat-card red">
-        <div class="sc-label">总抽奖次数</div>
-        <div class="sc-value" id="statLottery">0</div>
-      </div>
-      <div class="stat-card gold">
-        <div class="sc-label">总流水（亚斯卢布）</div>
-        <div class="sc-value" id="statTurnover">₽ 0</div>
-      </div>
-      <div class="stat-card blue">
-        <div class="sc-label">礼品订单数</div>
-        <div class="sc-value" id="statOrders">0</div>
-      </div>
-      <div class="stat-card red">
-        <div class="sc-label">总签到次数</div>
-        <div class="sc-value" id="statCheckins">0</div>
-      </div>
-      <div class="stat-card gold">
-        <div class="sc-label">当前总余额</div>
-        <div class="sc-value" id="statBalance">₽ 0</div>
-      </div>
-    </div>
-  </section>
-
   <!-- ==================== 奖品管理 ==================== -->
-  <section class="admin-panel" data-panel="prizes">
+  <section class="admin-panel on" data-panel="prizes">
     <div class="panel-head">
       <div class="ph-left">
         <h2>奖品列表</h2>
@@ -139,20 +96,26 @@
     </div>
   </section>
 
-  <!-- ==================== 礼品订单 ==================== -->
+  <!-- ==================== 礼品订单（物流优化） ==================== -->
   <section class="admin-panel" data-panel="orders">
     <div class="panel-head">
-      <div class="ph-left"><h2>礼品订单</h2><p class="ph-sub">需要发货的实物礼品订单</p></div>
+      <div class="ph-left"><h2>礼品订单</h2><p class="ph-sub">需要发货的实物礼品订单，支持查看和修改物流信息</p></div>
       <div class="ph-right">
         <button class="btn-secondary" id="ordersRefresh" type="button">刷新</button>
         <button class="btn-secondary" id="ordersExport" type="button">导出 CSV</button>
       </div>
     </div>
-        <div class="table-wrap">
+    <div class="table-wrap">
       <table class="data-table" id="ordersTable">
         <thead>
           <tr>
-            <th>时间</th><th>奖品</th><th>收货人</th><th>电话/地址</th><th>状态</th><th>物流信息</th><th>操作</th>
+            <th>时间</th>
+            <th>奖品</th>
+            <th>收货人</th>
+            <th>电话</th>
+            <th>地址</th>
+            <th>物流信息</th>
+            <th>状态 / 操作</th>
           </tr>
         </thead>
         <tbody><tr><td colspan="7" class="td-empty">加载中…</td></tr></tbody>
@@ -171,15 +134,13 @@
     </div>
     <div class="table-toolbar">
       <input type="text" id="usersSearch" placeholder="搜索昵称 / 邮箱">
-      <select id="usersFilter">
-        <option value="">全部</option>
-        <option value="user">正式用户</option>
-        <option value="guest">游客</option>
-      </select>
+      <select id="usersFilter"><option value="">全部</option><option value="user">正式用户</option><option value="guest">游客</option></select>
     </div>
     <div class="table-wrap">
       <table class="data-table" id="usersTable">
-        <thead><tr><th>UID</th><th>邮箱</th><th>昵称</th><th>类型</th><th>余额</th><th>注册时间</th><th>最后登录</th></tr></thead>
+        <thead>
+          <tr><th>UID</th><th>邮箱</th><th>昵称</th><th>类型</th><th>角色</th><th>余额</th><th>操作</th></tr>
+        </thead>
         <tbody><tr><td colspan="7" class="td-empty">加载中…</td></tr></tbody>
       </table>
     </div>
@@ -202,45 +163,76 @@
     </div>
   </section>
 
-  <!-- ==================== 公告管理 ==================== -->
-  <section class="admin-panel" data-panel="announcements">
+  <!-- ==================== 邮件群发 ==================== -->
+  <section class="admin-panel" data-panel="email">
     <div class="panel-head">
-      <div class="ph-left"><h2>公告管理</h2><p class="ph-sub">发布、编辑、隐藏前台公告</p></div>
-      <div class="ph-right">
-        <button class="btn-primary" id="annAddBtn" type="button">+ 发布公告</button>
-        <button class="btn-secondary" id="annRefresh" type="button">刷新</button>
+      <div class="ph-left">
+        <h2>邮件群发</h2>
+        <p class="ph-sub">向正式用户发送通知邮件，支持 HTML 内容。</p>
       </div>
     </div>
-    <div class="table-wrap">
-      <table class="data-table" id="annTable">
-        <thead><tr><th>时间</th><th>标题</th><th>内容摘要</th><th>状态</th><th>操作</th></tr></thead>
-        <tbody><tr><td colspan="5" class="td-empty">加载中…</td></tr></tbody>
-      </table>
+    <div class="email-box">
+      <div class="amb-field">
+        <label>邮件主题</label>
+        <input type="text" id="emailSubject" placeholder="例如：关于校园祭的通知">
+      </div>
+      <div class="amb-field">
+        <label>邮件内容（支持 HTML 标签）</label>
+        <textarea id="emailContent" rows="8" placeholder="<h1>欢迎来到蓬溪格勒</h1><p>这是一封测试邮件。</p>"></textarea>
+      </div>
+      <div class="amb-field">
+        <label>发送范围</label>
+        <select id="emailScope">
+          <option value="user">仅正式用户</option>
+          <option value="guest">仅游客</option>
+          <option value="all">全部用户</option>
+          <option value="selected">指定用户</option>
+        </select>
+      </div>
+      
+      <div id="emailCustomUserBox" class="hide" style="border:1px solid var(--line); border-radius:8px; padding:12px; margin-bottom:16px;">
+        <input type="text" id="emailUserSearch" placeholder="搜索昵称 / 邮箱" style="width:100%; padding:8px; margin-bottom:8px; border:1px solid var(--line); border-radius:6px;">
+        <div id="emailUserList" style="max-height:200px; overflow-y:auto; border-top:1px solid var(--line-soft); padding-top:8px;"></div>
+      </div>
+
+      <button class="btn-primary" id="emailSendBtn" type="button">开始发送</button>
     </div>
   </section>
 
-  <!-- ==================== 新闻管理 ==================== -->
-  <section class="admin-panel" data-panel="news">
+  <!-- ==================== 余额明细 ==================== -->
+  <section class="admin-panel" data-panel="transactions">
     <div class="panel-head">
-      <div class="ph-left"><h2>新闻管理</h2><p class="ph-sub">可视化管理 news-01 ~ news-08 的内容</p></div>
+      <div class="ph-left"><h2>余额明细</h2><p class="ph-sub">查看所有用户的余额变动流水</p></div>
       <div class="ph-right">
-        <button class="btn-primary" id="newsAddBtn" type="button">+ 添加新闻</button>
-        <button class="btn-secondary" id="newsRefresh" type="button">刷新</button>
+        <button class="btn-secondary" id="txRefresh" type="button">刷新</button>
+        <button class="btn-secondary" id="txExport" type="button">导出 CSV</button>
       </div>
     </div>
+    <div class="table-toolbar">
+      <input type="text" id="txSearch" placeholder="搜索用户昵称 / 邮箱">
+      <select id="txFilter">
+        <option value="">全部类型</option>
+        <option value="checkin">签到</option>
+        <option value="lottery">抽奖</option>
+        <option value="admin">管理员调整</option>
+        <option value="gift">礼品</option>
+      </select>
+    </div>
     <div class="table-wrap">
-      <table class="data-table" id="newsTable">
-        <thead><tr><th>编号</th><th>标题</th><th>内容摘要</th><th>更新时间</th><th>操作</th></tr></thead>
-        <tbody><tr><td colspan="5" class="td-empty">加载中…</td></tr></tbody>
+      <table class="data-table" id="txTable">
+        <thead><tr><th>时间</th><th>用户</th><th>变动</th><th>变动后余额</th><th>类型</th><th>描述</th></tr></thead>
+        <tbody><tr><td colspan="6" class="td-empty">加载中…</td></tr></tbody>
       </table>
     </div>
   </section>
 
   <!-- ==================== 批量操作 ==================== -->
-    <!-- ==================== 批量操作 ==================== -->
   <section class="admin-panel" data-panel="batch">
     <div class="panel-head">
-      <div class="ph-left"><h2>批量操作</h2><p class="ph-sub">给指定用户或全部用户发放补偿，请谨慎操作。</p></div>
+      <div class="ph-left">
+        <h2>批量操作</h2>
+        <p class="ph-sub">给指定用户发放亚斯卢布补偿，请谨慎操作。</p>
+      </div>
     </div>
     <div class="batch-box">
       <div class="amb-field">
@@ -248,7 +240,7 @@
         <input type="number" id="batchAmount" placeholder="例如：100" min="1">
       </div>
       <div class="amb-field">
-        <label>补偿备注（可选，将记录在日志）</label>
+        <label>补偿备注（将记录在流水明细中）</label>
         <input type="text" id="batchRemark" placeholder="例如：服务器维护补偿">
       </div>
       <div class="amb-field">
@@ -260,63 +252,26 @@
         </select>
       </div>
       <button class="btn-primary" id="batchSubmit" type="button">确认发放</button>
-      
-      <!-- 新增：危险操作区域 -->
-      <hr style="margin: 24px 0; border: 0; border-top: 1px dashed var(--line);">
-      <h3 style="color: var(--red); font-size: 15px; margin-bottom: 6px;">危险操作</h3>
-      <p style="font-size: 12.5px; color: var(--muted); margin-bottom: 16px;">
-        清除所有游客账号及其关联数据（钱包、抽奖记录、签到、订单），此操作不可恢复！
-      </p>
-      <button class="btn-secondary" id="batchCleanGuests" type="button" style="border-color: var(--red); color: var(--red); width: 100%;">
-        一键清除所有游客
-      </button>
-    </div>
-  </section>
 
-  <!-- ==================== 操作日志 ==================== -->
-  <section class="admin-panel" data-panel="logs">
-    <div class="panel-head">
-      <div class="ph-left"><h2>操作日志</h2><p class="ph-sub">管理员敏感操作记录（近 200 条）</p></div>
-      <div class="ph-right">
-        <button class="btn-secondary" id="logsRefresh" type="button">刷新</button>
-        <button class="btn-secondary" id="logsExport" type="button">导出 CSV</button>
+      <div class="danger-zone">
+        <h3>⚠️ 危险区域</h3>
+        <p>清除所有游客账号，此操作不可逆！关联的钱包、签到、抽奖记录也会被一并清除。</p>
+        <button class="btn-danger" id="clearGuestsBtn" type="button">清除所有游客账号</button>
       </div>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table" id="logsTable">
-        <thead><tr><th>时间</th><th>操作类型</th><th>关联用户</th><th>详情</th></tr></thead>
-        <tbody><tr><td colspan="4" class="td-empty">加载中…</td></tr></tbody>
-      </table>
     </div>
   </section>
 
 </main>
 
-<!-- ==================== 连接设置弹窗 ==================== -->
+<!-- 连接设置 -->
 <div class="admin-modal hide" id="settingsModal">
   <div class="admin-modal-box">
-    <div class="amb-head">
-      <h3>连接设置</h3>
-      <button class="amb-close" id="settingsClose" type="button">✕</button>
-    </div>
+    <div class="amb-head"><h3>连接设置</h3><button class="amb-close" id="settingsClose" type="button">✕</button></div>
     <div class="amb-body">
-      <p class="amb-tip">
-        管理员需要用到 Supabase 的 <b>service_role key</b> 来读取所有用户数据。
-        <br><span class="warn">⚠ 这个 key 权限极高，<b>不要公开分享此页面</b>，用完关闭浏览器。</span>
-      </p>
-      <div class="amb-field">
-        <label>Supabase URL</label>
-        <input type="text" id="cfgUrl" placeholder="https://xxxxx.supabase.co">
-      </div>
-      <div class="amb-field">
-        <label>Service Role Key</label>
-        <textarea id="cfgKey" rows="4" placeholder="粘贴 service_role key（以 eyJ 开头）"></textarea>
-      </div>
-      <div class="amb-field">
-        <label>API 代理（可选）</label>
-        <input type="text" id="cfgProxy" placeholder="https://api.ponxigrad.tech">
-        <span class="amb-hint">如果被墙，填入 Cloudflare Worker 代理地址</span>
-      </div>
+      <p class="amb-tip">管理员需要用到 Supabase 的 <b>service_role key</b> 来读取所有用户数据。<br><span class="warn">⚠ 这个 key 权限极高，<b>不要公开分享此页面</b>，用完关闭浏览器。</span></p>
+      <div class="amb-field"><label>Supabase URL</label><input type="text" id="cfgUrl" placeholder="https://xxxxx.supabase.co"></div>
+      <div class="amb-field"><label>Service Role Key</label><textarea id="cfgKey" rows="4" placeholder="粘贴 service_role key（以 eyJ 开头）"></textarea></div>
+      <div class="amb-field"><label>API 代理（可选）</label><input type="text" id="cfgProxy" placeholder="https://api.ponxigrad.tech"><span class="amb-hint">如果被墙，填入 Cloudflare Worker 代理地址</span></div>
     </div>
     <div class="amb-actions">
       <button class="btn-secondary" id="settingsClear" type="button">清空</button>
@@ -325,13 +280,10 @@
   </div>
 </div>
 
-<!-- ==================== 导出代码弹窗 ==================== -->
+<!-- 导出代码 -->
 <div class="admin-modal hide" id="exportModal">
   <div class="admin-modal-box wide">
-    <div class="amb-head">
-      <h3>导出代码</h3>
-      <button class="amb-close" id="exportClose" type="button">✕</button>
-    </div>
+    <div class="amb-head"><h3>导出代码</h3><button class="amb-close" id="exportClose" type="button">✕</button></div>
     <div class="amb-body">
       <p class="amb-tip">复制下面这段代码，粘贴到 <code>assets/data/lottery-prizes.js</code>，整份覆盖。</p>
       <textarea id="exportCode" rows="20" readonly></textarea>
@@ -343,27 +295,15 @@
   </div>
 </div>
 
-<!-- ==================== 调整余额弹窗 ==================== -->
+<!-- 调整余额 -->
 <div class="admin-modal hide" id="balanceModal">
   <div class="admin-modal-box">
-    <div class="amb-head">
-      <h3>调整余额</h3>
-      <button class="amb-close" id="balanceClose" type="button">✕</button>
-    </div>
+    <div class="amb-head"><h3>调整余额</h3><button class="amb-close" id="balanceClose" type="button">✕</button></div>
     <div class="amb-body">
       <p class="amb-tip" id="balanceUserTip">正在操作：—</p>
-      <div class="amb-field">
-        <label>当前余额</label>
-        <input type="text" id="balanceCurrent" readonly>
-      </div>
-      <div class="amb-field">
-        <label>调整数量（正数增加，负数减少）</label>
-        <input type="number" id="balanceDelta" placeholder="例如：100 或 -50">
-      </div>
-      <div class="amb-field">
-        <label>调整后余额</label>
-        <input type="text" id="balancePreview" readonly>
-      </div>
+      <div class="amb-field"><label>当前余额</label><input type="text" id="balanceCurrent" readonly></div>
+      <div class="amb-field"><label>调整数量（正数增加，负数减少）</label><input type="number" id="balanceDelta" placeholder="例如：100 或 -50"></div>
+      <div class="amb-field"><label>调整后余额</label><input type="text" id="balancePreview" readonly></div>
     </div>
     <div class="amb-actions">
       <button class="btn-secondary" id="balanceCancel" type="button">取消</button>
@@ -372,87 +312,71 @@
   </div>
 </div>
 
-<!-- ==================== 公告/新闻编辑弹窗 ==================== -->
-<!-- ==================== 物流信息弹窗 ==================== -->
+<!-- 修改角色弹窗 -->
+<div class="admin-modal hide" id="roleModal">
+  <div class="admin-modal-box">
+    <div class="amb-head"><h3>修改用户角色</h3><button class="amb-close" id="roleClose" type="button">✕</button></div>
+    <div class="amb-body">
+      <p class="amb-tip" id="roleUserTip">正在操作：—</p>
+      <div class="amb-field">
+        <label>选择角色</label>
+        <select id="roleSelect">
+          <option value="user">普通用户</option>
+          <option value="vip">VIP 用户</option>
+          <option value="subscriber">订阅用户</option>
+          <option value="admin">管理员</option>
+        </select>
+      </div>
+    </div>
+    <div class="amb-actions">
+      <button class="btn-secondary" id="roleCancel" type="button">取消</button>
+      <button class="btn-primary" id="roleConfirm" type="button">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- 填写物流信息弹窗 -->
 <div class="admin-modal hide" id="shippingModal">
   <div class="admin-modal-box">
-    <div class="amb-head">
-      <h3>填写物流信息</h3>
-      <button class="amb-close" id="shippingClose" type="button">✕</button>
-    </div>
+    <div class="amb-head"><h3>填写物流信息</h3><button class="amb-close" id="shippingClose" type="button">✕</button></div>
     <div class="amb-body">
-      <input type="hidden" id="shippingOrderId" value="">
-      <p class="amb-tip" id="shippingOrderTip">正在发货：—</p>
-      
+      <p class="amb-tip" id="shippingOrderTip">正在操作：—</p>
       <div class="amb-field">
-        <label>快递公司 <span style="color:var(--red)">*</span></label>
-        <select id="shippingCompany" style="width:100%; padding:10px 14px; border:1.5px solid var(--line); border-radius:8px; font-size:13.5px;">
-          <option value="">请选择...</option>
-          <option value="顺丰">顺丰</option>
-          <option value="中通">中通</option>
-          <option value="圆通">圆通</option>
-          <option value="韵达">韵达</option>
-          <option value="申通">申通</option>
-          <option value="极兔">极兔</option>
+        <label>快递公司</label>
+        <select id="shippingCompany">
+          <option value="顺丰速运">顺丰速运</option>
+          <option value="中通快递">中通快递</option>
+          <option value="圆通速递">圆通速递</option>
+          <option value="韵达快递">韵达快递</option>
+          <option value="申通快递">申通快递</option>
+          <option value="京东物流">京东物流</option>
           <option value="邮政EMS">邮政EMS</option>
           <option value="其他">其他</option>
         </select>
       </div>
-
       <div class="amb-field">
-        <label>快递单号 <span style="color:var(--red)">*</span></label>
-        <input type="text" id="shippingNumber" placeholder="例如：SF1234567890">
-      </div>
-
-      <div class="amb-field">
-        <label>快递查询链接（可选）</label>
-        <input type="text" id="shippingUrl" placeholder="https://...">
-        <span class="amb-hint">如果留空，系统会自动根据单号生成第三方查询链接（此逻辑由前台决定）</span>
+        <label>快递单号</label>
+        <input type="text" id="shippingNo" placeholder="请输入快递单号">
       </div>
     </div>
     <div class="amb-actions">
       <button class="btn-secondary" id="shippingCancel" type="button">取消</button>
-      <button class="btn-primary" id="shippingSave" type="button">确认发货</button>
-    </div>
-  </div>
-</div>
-<div class="admin-modal hide" id="contentModal">
-  <div class="admin-modal-box wide">
-    <div class="amb-head">
-      <h3 id="contentModalTitle">编辑内容</h3>
-      <button class="amb-close" id="contentClose" type="button">✕</button>
-    </div>
-    <div class="amb-body">
-      <input type="hidden" id="contentType" value="announcement">
-      <input type="hidden" id="contentId" value="">
-      <div class="amb-field">
-        <label>标题</label>
-        <input type="text" id="contentTitle" placeholder="请输入标题">
-      </div>
-      <div class="amb-field" id="contentNewsIdField" style="display:none">
-        <label>新闻编号（例如 news-01）</label>
-        <input type="text" id="contentNewsId" placeholder="news-01">
-      </div>
-      <div class="amb-field">
-        <label>内容（支持 HTML）</label>
-        <textarea id="contentBody" rows="10" placeholder="请输入内容..."></textarea>
-      </div>
-      <div class="amb-field" id="contentActiveField">
-        <label>是否启用</label>
-        <select id="contentActive">
-          <option value="true">启用</option>
-          <option value="false">隐藏</option>
-        </select>
-      </div>
-    </div>
-    <div class="amb-actions">
-      <button class="btn-secondary" id="contentCancel" type="button">取消</button>
-      <button class="btn-primary" id="contentSave" type="button">保存</button>
+      <button class="btn-primary" id="shippingConfirm" type="button">保存并标记发货</button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
+<!-- 进度弹窗 -->
+<div class="admin-modal hide" id="progressModal">
+  <div class="admin-modal-box">
+    <div class="amb-head"><h3>操作进行中</h3></div>
+    <div class="amb-body" style="text-align:center;padding:20px 0">
+      <div id="progressText" style="font-size:20px;font-weight:800;color:var(--blue)">准备中…</div>
+      <div style="margin-top:10px;color:var(--muted);font-size:13px">请勿关闭页面</div>
+    </div>
+  </div>
+</div>
+
 <div class="admin-toast" id="adminToast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

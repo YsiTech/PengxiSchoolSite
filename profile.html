@@ -21,7 +21,6 @@
 
 <main class="section profile-main">
 
-  <!-- 游客受限提示条 -->
   <div class="profile-guest-banner hide" id="guestBanner">
     <div class="pgb-icon">!</div>
     <div class="pgb-body">
@@ -33,10 +32,7 @@
 
   <div class="profile-grid">
 
-    <!-- ==================== 左侧栏 ==================== -->
     <aside class="profile-side">
-
-      <!-- 头像卡片 -->
       <div class="profile-card">
         <div class="profile-avatar-wrap">
           <div class="profile-avatar" id="avatarDisplay"><span>?</span></div>
@@ -57,65 +53,26 @@
           移除头像
         </button>
       </div>
-
-      <!-- 余额悬浮卡片（独立） -->
-      <div class="balance-card" id="balanceCard">
-        <div class="bc-top">
-          <span class="bc-label">亚斯卢布余额</span>
-          <span class="bc-flag">АСР</span>
-        </div>
-
-        <div class="bc-main">
-          <span class="bc-symbol">₽</span>
-          <span class="bc-value" id="walletBalance">—</span>
-        </div>
-
-        <div class="bc-foot">
-          <span class="bc-hint">通过签到与抽奖获取</span>
-        </div>
-      </div>
-
     </aside>
 
-    <!-- ==================== 右侧内容 ==================== -->
     <section class="profile-content">
 
-      <!-- 每日签到 -->
-      <div class="card checkin-card" id="walletCard">
+      <!-- 我的亚斯卢布 -->
+      <div class="card" id="walletCard">
         <div class="card-head">
-          <h3>每日签到</h3>
-          <span class="wallet-streak" id="walletStreak"></span>
+          <h3>我的亚斯卢布</h3>
+          <span class="wallet-balance" id="walletBalance">—</span>
         </div>
 
-        <div class="checkin-body">
-          <div class="checkin-tip">
-            每天签到可领取亚斯卢布 · 连续签到奖励递增 · 最高 +50 / 天
+        <div class="wallet-body">
+          <div class="wallet-action">
+            <button class="btn red" type="button" id="checkinBtn">今日签到</button>
+            <span class="wallet-streak" id="walletStreak"></span>
           </div>
-
-          <button class="btn red" type="button" id="checkinBtn">今日签到</button>
 
           <div class="wallet-history" id="walletHistory">
             <div class="wallet-history-empty">暂无签到记录</div>
           </div>
-        </div>
-      </div>
-
-      <!-- 我的礼品订单（独立面板） -->
-      <div class="card orders-card" id="ordersCard">
-        <div class="card-head orders-head">
-          <h3>
-            <span class="oc-icon">📦</span>
-            我的礼品订单
-          </h3>
-          <span class="muted small" id="ordersCount">—</span>
-        </div>
-
-        <div class="orders-sub">
-          这里显示你通过抽奖获得的实物奖品及其物流状态
-        </div>
-
-        <div class="orders-list" id="ordersList">
-          <div class="orders-empty">暂无礼品订单</div>
         </div>
       </div>
 
@@ -128,6 +85,20 @@
         </div>
         <div class="le-arrow">→</div>
       </a>
+
+      <!-- 我的订单（新） -->
+      <div class="card" id="ordersCard">
+        <div class="card-head">
+          <h3>我的订单</h3>
+          <button class="orders-refresh" id="ordersRefreshBtn" type="button" title="刷新订单">
+            <span class="or-icon">⟳</span>
+          </button>
+        </div>
+
+        <div class="orders-list" id="ordersList">
+          <div class="orders-empty">暂无订单</div>
+        </div>
+      </div>
 
       <!-- 基本信息 -->
       <div class="card">
