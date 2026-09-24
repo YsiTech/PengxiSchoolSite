@@ -10,7 +10,7 @@ window.LOTTERY_CONFIG = {
     { id: 'p200', name: '200 亚斯卢布', type: 'money', reward: 200, weight: 30 },
     { id: 'p500', name: '500 亚斯卢布', type: 'money', reward: 500, weight: 28 },
     { id: 'p1790195657746_981', name: '2000 亚斯卢布', type: 'money', reward: 2000, weight: 1 },
-    { id: 'p1790195569199_264', name: '明月·中秋好礼', type: 'gift', reward: 0, weight: 1 },
-    { id: 'gift', name: '精美小礼品', type: 'gift', reward: 0, weight: 2 }
+    { id: 'p1790195569199_264', name: '明月·中秋好礼', type: 'gift', reward: 0, weight: 0 },
+    { id: 'gift', name: '精美小礼品', type: 'gift', reward: 0, weight: 0 }
   ]
 };
