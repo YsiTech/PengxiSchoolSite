@@ -21,6 +21,7 @@
 
 <main class="section profile-main">
 
+  <!-- 游客提示条 -->
   <div class="profile-guest-banner hide" id="guestBanner">
     <div class="pgb-icon">!</div>
     <div class="pgb-body">
@@ -32,7 +33,10 @@
 
   <div class="profile-grid">
 
+    <!-- ==================== 左列：头像 + 余额 ==================== -->
     <aside class="profile-side">
+
+      <!-- 头像卡片 -->
       <div class="profile-card">
         <div class="profile-avatar-wrap">
           <div class="profile-avatar" id="avatarDisplay"><span>?</span></div>
@@ -53,21 +57,54 @@
           移除头像
         </button>
       </div>
+
+      <!-- 余额卡片（正式版） -->
+      <div class="balance-card" id="balanceCard">
+        <div class="bc-top">
+          <div class="bc-emblem">₽</div>
+          <div class="bc-title-group">
+            <div class="bc-title">账户余额</div>
+            <div class="bc-subtitle">Campus Account</div>
+          </div>
+        </div>
+
+        <div class="bc-amount-group">
+          <div class="bc-amount" id="walletBalance">—</div>
+          <div class="bc-amount-unit">亚斯卢布 · АСР ₽</div>
+        </div>
+
+        <div class="bc-bottom">
+          <div class="bc-holder">
+            <span class="bc-holder-label">户名</span>
+            <span class="bc-holder-value" id="bcHolder">—</span>
+          </div>
+          <a class="bc-action" href="lottery.html">
+            <span>前往抽奖</span>
+            <span class="bca-arrow">→</span>
+          </a>
+        </div>
+
+        <div class="bc-shine"></div>
+      </div>
+
     </aside>
 
+    <!-- ==================== 右列 ==================== -->
     <section class="profile-content">
 
-      <!-- 我的亚斯卢布 -->
+      <!-- 每日签到 -->
       <div class="card" id="walletCard">
         <div class="card-head">
-          <h3>我的亚斯卢布</h3>
-          <span class="wallet-balance" id="walletBalance">—</span>
+          <h3>每日签到</h3>
+          <span class="wallet-streak" id="walletStreak"></span>
         </div>
 
         <div class="wallet-body">
           <div class="wallet-action">
             <button class="btn red" type="button" id="checkinBtn">今日签到</button>
-            <span class="wallet-streak" id="walletStreak"></span>
+            <p class="wallet-hint">
+              每日签到获得 <b>10 亚斯卢布</b>，连签天数越多奖励越高，最高 <b>50/天</b>
+            </p>
           </div>
 
           <div class="wallet-history" id="walletHistory">
@@ -86,7 +123,7 @@
         <div class="le-arrow">→</div>
       </a>
 
-      <!-- 我的订单（新） -->
+      <!-- 我的订单 -->
       <div class="card" id="ordersCard">
         <div class="card-head">
           <h3>我的订单</h3>

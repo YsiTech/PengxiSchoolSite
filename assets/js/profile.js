@@ -1,6 +1,5 @@
 /* ===================================================================
    蓬溪格勒人民高等中学 · 个人中心逻辑
-   含：资料、密码、签到、订单
    =================================================================== */
 
 (function () {
@@ -30,7 +29,8 @@
     walletStreak:     $('walletStreak'),
     checkinBtn:       $('checkinBtn'),
     walletHistory:    $('walletHistory'),
-    /* 订单 */
+    balanceCard:      $('balanceCard'),
+    bcHolder:         $('bcHolder'),
     ordersCard:       $('ordersCard'),
     ordersList:       $('ordersList'),
     ordersRefreshBtn: $('ordersRefreshBtn')
@@ -154,7 +154,9 @@
 
         pendingAvatar = null;
         currentUserCache = res.user;
+
         if (els.profileName) els.profileName.textContent = res.user.nickname;
+        if (els.bcHolder)   els.bcHolder.textContent = res.user.nickname;
         renderAvatar(res.user.avatar, res.user.nickname);
 
         if (window.Auth && Auth.mountNavStatus) Auth.mountNavStatus('zh');
@@ -358,11 +360,11 @@
      订单模块
      ============================================================ */
   var STATUS_MAP = {
-    pending:    { label: '待处理', cls: 'pending',    icon: '⏳', step: 1 },
-    processing: { label: '处理中', cls: 'processing', icon: '📦', step: 2 },
-    shipped:    { label: '已发货', cls: 'shipped',    icon: '🚚', step: 3 },
-    delivered:  { label: '已签收', cls: 'delivered',  icon: '✓',  step: 4 },
-    cancelled:  { label: '已取消', cls: 'cancelled',  icon: '✕',  step: 0 }
+    pending:    { label: '待处理', cls: 'pending',    icon: '⏳' },
+    processing: { label: '处理中', cls: 'processing', icon: '📦' },
+    shipped:    { label: '已发货', cls: 'shipped',    icon: '🚚' },
+    delivered:  { label: '已签收', cls: 'delivered',  icon: '✓'  },
+    cancelled:  { label: '已取消', cls: 'cancelled',  icon: '✕'  }
   };
 
   function fmtDateTime(s) {
@@ -382,7 +384,6 @@
   function renderOrderCard(order) {
     var st = STATUS_MAP[order.status] || STATUS_MAP.pending;
 
-    /* 时间线 */
     var timeline = [];
     timeline.push({
       label: '已提交',
@@ -410,7 +411,6 @@
         done: true
       });
     } else if (order.status !== 'cancelled') {
-      /* 未来步骤 */
       if (order.status === 'pending' || order.status === 'processing') {
         timeline.push({ label: '已发货', time: '等待中', done: false });
       }
@@ -430,7 +430,6 @@
                       '</div>';
     });
 
-    /* 物流信息 */
     var logisticsHtml = '';
     if (order.status === 'shipped' || order.status === 'delivered') {
       if (order.tracking_company || order.tracking_number) {
@@ -453,7 +452,6 @@
       }
     }
 
-    /* 管理员备注 */
     var remarkHtml = '';
     if (order.admin_remark) {
       remarkHtml = '<div class="order-remark">' +
@@ -517,12 +515,9 @@
         }
 
         var html = '';
-        list.forEach(function (order) {
-          html += renderOrderCard(order);
-        });
+        list.forEach(function (order) { html += renderOrderCard(order); });
         if (els.ordersList) els.ordersList.innerHTML = html;
 
-        /* 绑定复制按钮 */
         els.ordersList.querySelectorAll('.ol-copy').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var txt = btn.getAttribute('data-copy') || '';
@@ -574,17 +569,19 @@
     if (els.profileName)  els.profileName.textContent = user.nickname || '—';
     if (els.profileEmail) els.profileEmail.textContent = user.email || '(游客账号)';
     if (els.profileRole)  els.profileRole.textContent = user.isGuest ? '游客' : '正式用户';
+    if (els.bcHolder)     els.bcHolder.textContent = user.nickname || '—';
 
     if (els.nicknameInput) els.nicknameInput.value = user.nickname || '';
     if (els.emailDisplay)  els.emailDisplay.value  = user.email || '(游客账号)';
 
     renderAvatar(user.avatar, user.nickname);
 
-    /* 游客：隐藏钱包、订单 */
+    /* 游客：隐藏钱包、订单、余额卡片 */
     if (user.isGuest) {
       if (els.guestBanner) els.guestBanner.classList.remove('hide');
-      if (els.walletCard) els.walletCard.classList.add('hide');
-      if (els.ordersCard) els.ordersCard.classList.add('hide');
+      if (els.walletCard)  els.walletCard.classList.add('hide');
+      if (els.balanceCard) els.balanceCard.classList.add('hide');
+      if (els.ordersCard)  els.ordersCard.classList.add('hide');
       return;
     }
 
