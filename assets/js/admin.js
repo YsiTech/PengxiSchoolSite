@@ -1,5 +1,5 @@
 /* ===================================================================
-   管理后台 · 逻辑 (完整版 - 含物流优化)
+   管理后台 · 逻辑 (完整无省略版)
    =================================================================== */
 
 (function (window) {
@@ -32,21 +32,12 @@
       setConnStatus('已连接', 'ok'); return true;
     } catch (e) { console.error(e); setConnStatus('连接失败', 'err'); return false; }
   }
-  function escapeHtml(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-      return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
-    });
-  }
+  function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]; }); }
   function pad(n) { return n < 10 ? '0' + n : '' + n; }
-  function fmtTime(s) {
-    if (!s) return '—'; var d = new Date(s);
-    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-  }
+  function fmtTime(s) { if (!s) return '—'; var d = new Date(s); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
   function fmtDate(s) { if (!s) return '—'; var d = new Date(s); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
   function downloadCSV(filename, rows) {
-    var csv = rows.map(function (row) { return row.map(function (cell) {
-      var s = String(cell == null ? '' : cell).replace(/"/g, '""'); return '"' + s + '"';
-    }).join(','); }).join('\r\n');
+    var csv = rows.map(function (row) { return row.map(function (cell) { var s = String(cell == null ? '' : cell).replace(/"/g, '""'); return '"' + s + '"'; }).join(','); }).join('\r\n');
     var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     var url = URL.createObjectURL(blob); var a = document.createElement('a');
     a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -65,10 +56,11 @@
       if (name === 'wallets') loadWallets();
       if (name === 'email')   loadEmailUsers();
       if (name === 'transactions') loadTransactions();
+      if (name === 'roles')   loadRoleConfigs();
     });
   });
 
-  /* ======================= 设置 ======================= */
+  /* 设置 */
   $('#settingsBtn').addEventListener('click', function () {
     if ($('#cfgUrl')) $('#cfgUrl').value = cfg.url || '';
     if ($('#cfgKey')) $('#cfgKey').value = cfg.key || '';
@@ -82,11 +74,49 @@
     var proxy = ($('#cfgProxy').value || '').trim().replace(/\/+$/, '');
     if (!url || !key) { toast('请填写 URL 和 Key'); return; }
     cfg = { url: url, key: key, proxy: proxy }; saveCfg(cfg);
-    if (initClient()) { toast('已连接'); $('#settingsModal').classList.add('hide'); loadRecords(); loadOrders(); loadUsers(); loadWallets(); loadTransactions(); loadEmailUsers(); }
+    if (initClient()) { toast('已连接'); $('#settingsModal').classList.add('hide'); loadRecords(); loadOrders(); loadUsers(); loadWallets(); loadTransactions(); loadEmailUsers(); loadRoleConfigs(); }
   });
   $('#settingsClear').addEventListener('click', function () { if(!confirm('清空连接信息？')) return; cfg = {}; saveCfg(cfg); client = null; setConnStatus('未连接', ''); toast('已清空'); });
 
-  /* ======================= 奖品管理 ======================= */
+  /* 角色配置 */
+  var roleConfigsCache = [];
+  function loadRoleConfigs() {
+    if (!client) return; $('#rolesTable tbody').innerHTML = '<tr><td colspan="5" class="td-empty">加载中…</td></tr>';
+    client.from('role_configs').select('*').order('role').then(function (res) {
+      if (res.error) { console.error(res.error); $('#rolesTable tbody').innerHTML = '<tr><td colspan="5" class="td-empty">读取失败，请检查数据库</td></tr>'; return; }
+      roleConfigsCache = res.data || []; renderRoleConfigs();
+    });
+  }
+  function renderRoleConfigs() {
+    var tbody = $('#rolesTable tbody'); if (!tbody) return;
+    if (!roleConfigsCache.length) { tbody.innerHTML = '<tr><td colspan="5" class="td-empty">暂无角色配置，请在 SQL Editor 插入默认数据</td></tr>'; return; }
+    var roleNames = { 'user': '普通用户', 'vip': 'VIP 用户', 'subscriber': '订阅用户', 'admin': '管理员', 'teacher': '老师' };
+    var html = '';
+    roleConfigsCache.forEach(function (r) {
+      html += '<tr>' +
+        '<td class="td-mono">' + escapeHtml(r.role) + '</td>' +
+        '<td>' + (roleNames[r.role] || r.role) + '</td>' +
+        '<td><input type="number" class="role-input checkin-input" data-role="' + r.role + '" value="' + (r.daily_checkin_reward || 0) + '" min="0" style="width:80px;padding:4px;border:1px solid var(--line);border-radius:4px;"></td>' +
+        '<td><input type="number" class="role-input lottery-input" data-role="' + r.role + '" value="' + (r.lottery_cost || 0) + '" min="0" style="width:80px;padding:4px;border:1px solid var(--line);border-radius:4px;"></td>' +
+        '<td><button class="btn-mini primary" data-role-save="' + r.role + '">保存</button></td>' +
+      '</tr>';
+    });
+    tbody.innerHTML = html;
+    $$('[data-role-save]', tbody).forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var role = btn.dataset.roleSave;
+        var checkinVal = parseInt($('.checkin-input[data-role="' + role + '"]').value, 10) || 0;
+        var lotteryVal = parseInt($('.lottery-input[data-role="' + role + '"]').value, 10) || 0;
+        client.from('role_configs').update({ daily_checkin_reward: checkinVal, lottery_cost: lotteryVal, updated_at: new Date().toISOString() }).eq('role', role).then(function (res) {
+          if (res.error) { toast('保存失败：' + res.error.message); return; }
+          toast('已保存 ' + (roleNames[role] || role) + ' 的配置');
+        });
+      });
+    });
+  }
+  if ($('#rolesRefresh')) $('#rolesRefresh').addEventListener('click', loadRoleConfigs);
+
+  /* 奖品管理 */
   var prizes = [], prizeCost = 50;
   function initPrizesFromConfig() {
     if (window.LOTTERY_CONFIG) {
@@ -135,42 +165,17 @@
       });
     });
   }
-  function updatePrizeStats() {
-    var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0);
-    if ($('#prizeCount')) $('#prizeCount').textContent = prizes.length;
-    if ($('#prizeWeight')) $('#prizeWeight').textContent = total;
-  }
-  function updateProbCells() {
-    var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0);
-    $$('[data-prob]').forEach(function (el) {
-      var idx = parseInt(el.dataset.prob, 10); var w = Math.max(0, prizes[idx].weight || 0);
-      el.textContent = total > 0 ? (w / total * 100).toFixed(1) + '%' : '—';
-    });
-  }
-  function renderPreview() {
-    var wrap = $('#previewBars'); if (!wrap) return;
-    var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0);
-    if (!prizes.length || total === 0) { wrap.innerHTML = '<div style="color:#6b6256;font-size:13px;text-align:center;padding:14px">还没有有效的奖品</div>'; return; }
-    var html = '';
-    prizes.forEach(function (p) {
-      var w = Math.max(0, p.weight || 0); var pct = w / total * 100;
-      html += '<div class="preview-bar"><span class="pb-name">' + escapeHtml(p.name) + '</span><div class="pb-track"><div class="pb-fill" style="width:' + pct.toFixed(2) + '%"></div></div><span class="pb-pct">' + pct.toFixed(1) + '%</span></div>';
-    });
-    wrap.innerHTML = html;
-  }
+  function updatePrizeStats() { var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); if ($('#prizeCount')) $('#prizeCount').textContent = prizes.length; if ($('#prizeWeight')) $('#prizeWeight').textContent = total; }
+  function updateProbCells() { var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); $$('[data-prob]').forEach(function (el) { var idx = parseInt(el.dataset.prob, 10); var w = Math.max(0, prizes[idx].weight || 0); el.textContent = total > 0 ? (w / total * 100).toFixed(1) + '%' : '—'; }); }
+  function renderPreview() { var wrap = $('#previewBars'); if (!wrap) return; var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); if (!prizes.length || total === 0) { wrap.innerHTML = '<div style="color:#6b6256;font-size:13px;text-align:center;padding:14px">还没有有效的奖品</div>'; return; } var html = ''; prizes.forEach(function (p) { var w = Math.max(0, p.weight || 0); var pct = w / total * 100; html += '<div class="preview-bar"><span class="pb-name">' + escapeHtml(p.name) + '</span><div class="pb-track"><div class="pb-fill" style="width:' + pct.toFixed(2) + '%"></div></div><span class="pb-pct">' + pct.toFixed(1) + '%</span></div>'; }); wrap.innerHTML = html; }
   if ($('#prizeAddBtn')) $('#prizeAddBtn').addEventListener('click', function () { prizes.push({ id: 'p' + Date.now(), name: '新奖品', type: 'money', reward: 50, weight: 10 }); renderPrizes(); });
   if ($('#prizeCost')) { $('#prizeCost').value = prizeCost; $('#prizeCost').addEventListener('input', function () { prizeCost = parseInt($('#prizeCost').value, 10) || 0; }); }
-  if ($('#prizeExportBtn')) $('#prizeExportBtn').addEventListener('click', function () {
-    var lines = ['/* 星图抽奖 · 奖品配置 */', '', 'window.LOTTERY_CONFIG = {', '  cost: ' + prizeCost + ',', '  prizes: ['];
-    prizes.forEach(function (p, idx) { lines.push('    { id: \'' + p.id + '\', name: \'' + String(p.name).replace(/'/g, "\\'") + '\', type: \'' + p.type + '\', reward: ' + (p.reward || 0) + ', weight: ' + (p.weight || 0) + ' }' + (idx < prizes.length - 1 ? ',' : '')); });
-    lines.push('  ]', '};', '');
-    $('#exportCode').value = lines.join('\n'); $('#exportModal').classList.remove('hide');
-  });
+  if ($('#prizeExportBtn')) $('#prizeExportBtn').addEventListener('click', function () { var lines = ['/* 星图抽奖 · 奖品配置 */', '', 'window.LOTTERY_CONFIG = {', '  cost: ' + prizeCost + ',', '  prizes: [']; prizes.forEach(function (p, idx) { lines.push('    { id: \'' + p.id + '\', name: \'' + String(p.name).replace(/'/g, "\\'") + '\', type: \'' + p.type + '\', reward: ' + (p.reward || 0) + ', weight: ' + (p.weight || 0) + ' }' + (idx < prizes.length - 1 ? ',' : '')); }); lines.push('  ]', '};', ''); $('#exportCode').value = lines.join('\n'); $('#exportModal').classList.remove('hide'); });
   if ($('#exportClose')) $('#exportClose').addEventListener('click', function () { $('#exportModal').classList.add('hide'); });
   if ($('#exportDone')) $('#exportDone').addEventListener('click', function () { $('#exportModal').classList.add('hide'); });
   if ($('#exportCopy')) $('#exportCopy').addEventListener('click', function () { $('#exportCode').select(); document.execCommand('copy'); toast('已复制'); });
 
-  /* ======================= 数据缓存 ======================= */
+  /* 缓存 */
   var usersCache = {}, usersLoaded = false;
   function loadUserMap() {
     if (usersLoaded) return Promise.resolve();
@@ -183,7 +188,7 @@
     }).catch(function () {});
   }
 
-  /* ======================= 中奖记录 ======================= */
+  /* 中奖记录 */
   var recordsCache = [];
   function loadRecords() {
     if (!client) return; $('#recordsTable tbody').innerHTML = '<tr><td colspan="6" class="td-empty">加载中…</td></tr>';
@@ -210,87 +215,62 @@
   if ($('#recordsSearch')) $('#recordsSearch').addEventListener('input', renderRecords);
   if ($('#recordsFilter')) $('#recordsFilter').addEventListener('change', renderRecords);
 
-  /* ======================= 礼品订单（物流优化） ======================= */
+  /* 礼品订单 */
   var ordersCache = [];
-  // 状态映射：与 profile.js 完全一致
-  var STATUS_MAP = {
-    pending:    { text: '待处理', cls: 'pending' },
-    processing: { text: '处理中', cls: 'processing' },
-    shipped:    { text: '已发货', cls: 'shipped' },
-    delivered:  { text: '已签收', cls: 'delivered' },
-    cancelled:  { text: '已取消', cls: 'cancelled' }
-  };
-
   function loadOrders() {
     if (!client) return; $('#ordersTable tbody').innerHTML = '<tr><td colspan="7" class="td-empty">加载中…</td></tr>';
-    // 注意：这里查询的是 tracking_company 和 tracking_number
-    client.from('gift_orders').select('id, user_id, prize_name, receiver_name, receiver_phone, receiver_address, remark, status, tracking_company, tracking_number, created_at').order('created_at', { ascending: false }).limit(300).then(function (res) {
+    client.from('gift_orders').select('*').order('created_at', { ascending: false }).limit(300).then(function (res) {
       if (res.error) { console.error(res.error); ordersCache = []; renderOrders(); return; }
       ordersCache = res.data || []; renderOrders();
     });
   }
-
   function renderOrders() {
     var tbody = $('#ordersTable tbody'); if (!tbody) return;
     if (!ordersCache.length) { tbody.innerHTML = '<tr><td colspan="7" class="td-empty">还没有订单</td></tr>'; return; }
     var html = '';
     ordersCache.forEach(function (o) {
-      var st = STATUS_MAP[o.status] || STATUS_MAP.pending;
-      
-      // 物流信息单元格
+      var st = o.status || 'pending';
+      var stText = st === 'pending' ? '待发货' : st === 'shipped' ? '已发货' : st === 'delivered' ? '已签收' : '已完成';
+      var stCls = st === 'shipped' ? 'shipped' : st === 'delivered' ? 'delivered' : 'pending';
       var logiHtml = '—';
       if (o.tracking_company && o.tracking_number) {
         var logiUrl = 'https://www.baidu.com/s?wd=' + encodeURIComponent(o.tracking_company + ' ' + o.tracking_number);
         logiHtml = '<div class="td-logistics"><span class="logi-company">' + escapeHtml(o.tracking_company) + '</span><div class="logi-no">' + escapeHtml(o.tracking_number) + '</div><a class="logi-link" href="' + logiUrl + '" target="_blank">查看物流</a></div>';
-      } else if (o.status === 'shipped' || o.status === 'delivered') {
+      } else if (st === 'shipped' || st === 'delivered') {
         logiHtml = '<span style="color:var(--muted);font-size:12px;">未填写单号</span>';
       }
-
-      // 操作按钮
       var actionHtml = '';
-      if (o.status === 'pending' || o.status === 'processing') {
+      if (st === 'pending') {
         actionHtml = '<button class="btn-mini primary" data-order-act="shipping" data-id="' + o.id + '">填写物流发货</button>';
-      } else if (o.status === 'shipped') {
-        actionHtml = '<button class="btn-mini" data-order-act="edit-shipping" data-id="' + o.id + '" data-company="' + escapeHtml(o.tracking_company||'') + '" data-no="' + escapeHtml(o.tracking_number||'') + '">修改物流</button>' +
-                     '<button class="btn-mini" data-order-act="delivered" data-id="' + o.id + '">标记已签收</button>';
-      } else if (o.status === 'delivered') {
+      } else {
         actionHtml = '<button class="btn-mini" data-order-act="edit-shipping" data-id="' + o.id + '" data-company="' + escapeHtml(o.tracking_company||'') + '" data-no="' + escapeHtml(o.tracking_number||'') + '">修改物流</button>';
+        if (st !== 'delivered') actionHtml += '<button class="btn-mini" data-order-act="delivered" data-id="' + o.id + '">标记已签收</button>';
       }
-
-      html += '<tr><td class="td-mono">' + fmtTime(o.created_at) + '</td><td>' + escapeHtml(o.prize_name) + '</td><td>' + escapeHtml(o.receiver_name) + '</td><td class="td-mono">' + escapeHtml(o.receiver_phone) + '</td><td style="max-width:200px;word-break:break-all">' + escapeHtml(o.receiver_address) + '</td><td>' + logiHtml + '</td><td><span class="tag ' + st.cls + '">' + st.text + '</span><div class="btn-row" style="margin-top:6px">' + actionHtml + '</div></td></tr>';
+      html += '<tr><td class="td-mono">' + fmtTime(o.created_at) + '</td><td>' + escapeHtml(o.prize_name) + '</td><td>' + escapeHtml(o.receiver_name) + '</td><td class="td-mono">' + escapeHtml(o.receiver_phone) + '</td><td style="max-width:200px;word-break:break-all">' + escapeHtml(o.receiver_address) + '</td><td>' + logiHtml + '</td><td><span class="tag ' + stCls + '">' + stText + '</span><div class="btn-row" style="margin-top:6px">' + actionHtml + '</div></td></tr>';
     });
     tbody.innerHTML = html;
-
-    // 绑定按钮事件
     $$('[data-order-act]', tbody).forEach(function (btn) {
       btn.addEventListener('click', function () {
-        var id = btn.dataset.id;
-        var act = btn.dataset.orderAct;
-        if (act === 'shipping' || act === 'edit-shipping') {
-          openShippingModal(id, btn.dataset.company, btn.dataset.no);
-        } else if (act === 'delivered') {
-          if (confirm('确定该订单已签收吗？')) {
-            client.from('gift_orders').update({ status: 'delivered' }).eq('id', id).then(function (res) {
-              if (res.error) { toast('操作失败'); return; } toast('已标记为已签收'); loadOrders();
+        var id = btn.dataset.id; var act = btn.dataset.orderAct;
+        if (act === 'shipping' || act === 'edit-shipping') { openShippingModal(id, btn.dataset.company, btn.dataset.no); }
+        else if (act === 'delivered') {
+          if (confirm('确定标记该订单为已签收吗？')) {
+            client.from('gift_orders').update({ status: 'delivered', delivered_at: new Date().toISOString() }).eq('id', id).then(function (res) {
+              if (res.error) { toast('操作失败'); return; } toast('已标记签收'); loadOrders();
             });
           }
         }
       });
     });
   }
-
   if ($('#ordersRefresh')) $('#ordersRefresh').addEventListener('click', loadOrders);
   if ($('#ordersExport')) $('#ordersExport').addEventListener('click', function () {
     if (!ordersCache.length) { toast('没有可导出的订单'); return; }
     var rows = [['时间', '奖品', '收货人', '电话', '地址', '快递公司', '快递单号', '状态']];
-    ordersCache.forEach(function (o) {
-      var st = STATUS_MAP[o.status] || STATUS_MAP.pending;
-      rows.push([fmtTime(o.created_at), o.prize_name, o.receiver_name, o.receiver_phone, o.receiver_address, o.tracking_company||'', o.tracking_number||'', st.text]);
-    });
+    ordersCache.forEach(function (o) { rows.push([fmtTime(o.created_at), o.prize_name, o.receiver_name, o.receiver_phone, o.receiver_address, o.tracking_company||'', o.tracking_number||'', o.status||'pending']); });
     downloadCSV('gift-orders-' + fmtDate(new Date()) + '.csv', rows); toast('已导出');
   });
 
-  /* 物流弹窗逻辑 */
   var shippingModal = $('#shippingModal'), currentShippingOrderId = null;
   function openShippingModal(orderId, company, no) {
     currentShippingOrderId = orderId;
@@ -298,6 +278,7 @@
     if ($('#shippingOrderTip')) $('#shippingOrderTip').textContent = '正在操作：' + (order.receiver_name||'') + ' - ' + (order.prize_name||'');
     if ($('#shippingCompany')) $('#shippingCompany').value = company || '顺丰速运';
     if ($('#shippingNo')) $('#shippingNo').value = no || '';
+    if ($('#shippingRemark')) $('#shippingRemark').value = order.admin_remark || '';
     shippingModal.classList.remove('hide');
   }
   if ($('#shippingClose')) $('#shippingClose').addEventListener('click', function () { shippingModal.classList.add('hide'); });
@@ -306,21 +287,19 @@
     if (!client || !currentShippingOrderId) return;
     var company = $('#shippingCompany').value;
     var no = $('#shippingNo').value.trim();
+    var remark = $('#shippingRemark').value.trim();
     if (!no) { toast('请填写快递单号'); return; }
-    // 注意：这里写入的是 tracking_company 和 tracking_number，与前台 profile.js 对应
-    client.from('gift_orders').update({
-      status: 'shipped',
-      tracking_company: company,
-      tracking_number: no
-    }).eq('id', currentShippingOrderId).then(function (res) {
+    var updateData = { status: 'shipped', tracking_company: company, tracking_number: no, admin_remark: remark };
+    if (!ordersCache.find(o => String(o.id) === String(currentShippingOrderId))?.shipped_at) {
+      updateData.shipped_at = new Date().toISOString();
+    }
+    client.from('gift_orders').update(updateData).eq('id', currentShippingOrderId).then(function (res) {
       if (res.error) { toast('保存失败：' + res.error.message); return; }
-      toast('物流信息已保存，订单已标记发货');
-      shippingModal.classList.add('hide');
-      loadOrders();
+      toast('物流信息已保存'); shippingModal.classList.add('hide'); loadOrders();
     });
   });
 
-  /* ======================= 用户列表 ======================= */
+  /* 用户列表 */
   var usersList = [];
   function loadUsers() {
     if (!client) return; $('#usersTable tbody').innerHTML = '<tr><td colspan="7" class="td-empty">加载中…</td></tr>';
@@ -330,7 +309,8 @@
       var walletMap = {}; ((wres && wres.data) || []).forEach(function (w) { walletMap[w.user_id] = w; });
       usersList = (ures.data.users || []).map(function (u) {
         var meta = u.user_metadata || {}; var isGuest = u.is_anonymous === true || meta.is_guest === true;
-        return { id: u.id, email: u.email || '', nickname: meta.nickname || (u.email ? u.email.split('@')[0] : '用户'), isGuest, role: meta.role || 'user', balance: walletMap[u.id] ? (walletMap[u.id].balance || 0) : 0, createdAt: u.created_at, lastSignIn: u.last_sign_in_at };
+        var wallet = walletMap[u.id] || {};
+        return { id: u.id, email: u.email || '', nickname: meta.nickname || (u.email ? u.email.split('@')[0] : '用户'), isGuest, role: wallet.role || meta.role || 'user', user_metadata: meta, balance: wallet.balance || 0, createdAt: u.created_at, lastSignIn: u.last_sign_in_at };
       });
       usersList.forEach(function (u) { usersCache[u.id] = { id: u.id, email: u.email, nickname: u.nickname, isGuest: u.isGuest, role: u.role }; });
       usersLoaded = true; renderUsers();
@@ -345,7 +325,7 @@
       if (!kw) return true; return ((u.nickname + ' ' + u.email).toLowerCase().indexOf(kw) !== -1);
     });
     if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="td-empty">没有用户</td></tr>'; return; }
-    var roleNames = { 'user': '普通用户', 'vip': 'VIP 用户', 'subscriber': '订阅用户', 'admin': '管理员' };
+    var roleNames = { 'user': '普通用户', 'vip': 'VIP 用户', 'subscriber': '订阅用户', 'admin': '管理员', 'teacher': '老师' };
     var html = '';
     list.forEach(function (u) {
       html += '<tr><td class="td-mono" style="max-width:100px;overflow:hidden;text-overflow:ellipsis">' + u.id + '</td><td>' + escapeHtml(u.email||'—') + '</td><td>' + escapeHtml(u.nickname) + '</td><td>' + (u.isGuest?'游客':'正式') + '</td><td><span class="tag role-' + u.role + '">' + (roleNames[u.role]||'普通用户') + '</span></td><td>₽ ' + (u.balance||0) + '</td><td><button class="btn-mini" data-user-edit="' + u.id + '" data-role="' + u.role + '">修改角色</button></td></tr>';
@@ -359,7 +339,6 @@
   if ($('#usersSearch')) $('#usersSearch').addEventListener('input', renderUsers);
   if ($('#usersFilter')) $('#usersFilter').addEventListener('change', renderUsers);
 
-  /* 修改角色弹窗 */
   var roleModal = $('#roleModal'), currentRoleUserId = null;
   function openRoleModal(userId, role) {
     currentRoleUserId = userId;
@@ -373,15 +352,13 @@
   if ($('#roleConfirm')) $('#roleConfirm').addEventListener('click', function () {
     if (!client || !currentRoleUserId) return;
     var newRole = $('#roleSelect').value;
-    var u = usersList.find(function (item) { return item.id === currentRoleUserId; }) || {};
-    var newMeta = { ...(u.user_metadata || {}), role: newRole };
-    client.auth.admin.updateUserById(currentRoleUserId, { user_metadata: newMeta }).then(function (res) {
+    client.from('user_wallets').upsert({ user_id: currentRoleUserId, role: newRole }, { onConflict: 'user_id' }).then(function (res) {
       if (res.error) { toast('修改失败：' + res.error.message); return; }
       toast('角色修改成功'); roleModal.classList.add('hide'); loadUsers();
     });
   });
 
-  /* ======================= 钱包管理 ======================= */
+  /* 钱包管理 */
   var walletsCache = [];
   function loadWallets() {
     if (!client) return; $('#walletsTable tbody').innerHTML = '<tr><td colspan="4" class="td-empty">加载中…</td></tr>';
@@ -429,7 +406,7 @@
     });
   });
 
-  /* ======================= 邮件群发 ======================= */
+  /* 邮件群发 */
   var emailUsers = [];
   function loadEmailUsers() {
     if (!client) return;
@@ -462,7 +439,6 @@
     const scope = $('#emailScope').value;
     if (!subject || !content) { toast('请填写邮件主题和内容'); return; }
     if (!client) { toast('请先连接数据库'); return; }
-
     let targets = [];
     if (scope === 'selected') {
       var checkedIds = $$('.email-user-cb:checked').map(function (cb) { return cb.value; });
@@ -475,20 +451,15 @@
         if (scope === 'user' && isGuest) return false; if (scope === 'guest' && !isGuest) return false; return !!u.email;
       });
     }
-
     if (!targets.length) { toast('没有找到符合条件的用户'); return; }
     const progressModal = $('#progressModal'), progressText = $('#progressText');
     progressModal.classList.remove('hide');
     const FUNC_URL = `${cfg.url}/functions/v1/send-email`;
     let success = 0, fail = 0, firstErrorMessage = '';
-
     for (let i = 0; i < targets.length; i++) {
       const user = targets[i]; progressText.textContent = `${i + 1} / ${targets.length}`;
       try {
-        const res = await fetch(FUNC_URL, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.key}` },
-          body: JSON.stringify({ to: user.email, subject: subject, html: content })
-        });
+        const res = await fetch(FUNC_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${cfg.key}` }, body: JSON.stringify({ to: user.email, subject: subject, html: content }) });
         const result = await res.json();
         if (result.success) success++; else { fail++; if (i === 0 && result.error) firstErrorMessage = result.error; }
       } catch (e) { fail++; if (i === 0) firstErrorMessage = e.message; }
@@ -499,7 +470,7 @@
   }
   if ($('#emailSendBtn')) $('#emailSendBtn').addEventListener('click', sendEmails);
 
-  /* ======================= 余额明细 ======================= */
+  /* 余额明细 */
   var txCache = [];
   function loadTransactions() {
     if (!client) return; $('#txTable tbody').innerHTML = '<tr><td colspan="6" class="td-empty">加载中…</td></tr>';
@@ -526,7 +497,7 @@
   if ($('#txSearch')) $('#txSearch').addEventListener('input', renderTransactions);
   if ($('#txFilter')) $('#txFilter').addEventListener('change', renderTransactions);
 
-  /* ======================= 批量操作 ======================= */
+  /* 批量操作 */
   if ($('#batchSubmit')) $('#batchSubmit').addEventListener('click', async function () {
     const amountStr = $('#batchAmount').value.trim(), remark = $('#batchRemark').value.trim() || '管理员批量补偿', scope = $('#batchScope').value;
     if (!amountStr) { toast('请输入补偿金额'); return; }
@@ -570,7 +541,7 @@
     usersLoaded = false; loadUsers(); loadWallets(); loadTransactions();
   });
 
-  /* ======================= 启动 ======================= */
+  /* 启动 */
   function boot() {
     initPrizesFromConfig(); renderPrizes();
     if (cfg.url && cfg.key) { initClient(); }

@@ -1,5 +1,5 @@
 /* ===================================================================
-   蓬溪格勒人民高等中学 · 个人中心逻辑 (角色专属UI版)
+   蓬溪格勒人民高等中学 · 个人中心逻辑
    =================================================================== */
 
 (function () {
@@ -33,11 +33,8 @@
     bcHolder:         $('bcHolder'),
     ordersCard:       $('ordersCard'),
     ordersList:       $('ordersList'),
-    ordersRefreshBtn: $('ordersRefreshBtn'),
-    lotteryEntryDesc: $('lotteryEntryDesc') // ⭐ 新增：抽奖入口描述
+    ordersRefreshBtn: $('ordersRefreshBtn')
   };
-
-  var currentUserRole = 'user'; // ⭐ 当前用户角色
 
   function toast(msg, duration) {
     if (window.siteToast) { window.siteToast(msg, duration); return; }
@@ -226,57 +223,6 @@
   }
 
   /* ============================================================
-     ⭐ 根据角色更新UI
-     ============================================================ */
-  function updateRoleUI() {
-    if (!els.walletCard) return;
-
-    var cardTitle = els.walletCard.querySelector('h3');
-    var hintEl = els.walletCard.querySelector('.wallet-hint');
-    var baseReward = 10;
-
-    // 1. 清理旧的角色专属类
-    els.walletCard.classList.remove('vip-checkin', 'subscriber-checkin', 'admin-checkin');
-
-    // 2. 根据角色设置标题、提示文字
-    if (currentUserRole === 'vip') {
-      baseReward = 20;
-      els.walletCard.classList.add('vip-checkin');
-      if (cardTitle) cardTitle.innerHTML = '👑 VIP 专属签到';
-      if (hintEl) hintEl.innerHTML = 'VIP 用户每日签到获得 <b>20 亚斯卢布</b>，连签天数越多奖励越高！';
-    } else if (currentUserRole === 'subscriber') {
-      baseReward = 30;
-      els.walletCard.classList.add('subscriber-checkin');
-      if (cardTitle) cardTitle.innerHTML = '💎 订阅专属签到';
-      if (hintEl) hintEl.innerHTML = '订阅用户每日签到获得 <b>30 亚斯卢布</b>，连签天数越多奖励越高！';
-    } else if (currentUserRole === 'admin') {
-      baseReward = 50;
-      els.walletCard.classList.add('admin-checkin');
-      if (cardTitle) cardTitle.innerHTML = '🛡️ 管理员签到';
-      if (hintEl) hintEl.innerHTML = '管理员每日签到获得 <b>100 亚斯卢布</b>，专属通道奖励！';
-    } else {
-      if (cardTitle) cardTitle.innerHTML = '每日签到';
-      if (hintEl) hintEl.innerHTML = '每日签到获得 <b>10 亚斯卢布</b>，连签天数越多奖励越高，最高 <b>50/天</b>';
-    }
-
-    // 3. 更新抽奖入口描述
-    if (els.lotteryEntryDesc) {
-      if (currentUserRole === 'vip') {
-        els.lotteryEntryDesc.textContent = '30 亚斯卢布一次 (VIP 专属折扣) · 最高 500 亚斯卢布 · 亚斯精美小礼品';
-      } else if (currentUserRole === 'subscriber') {
-        els.lotteryEntryDesc.textContent = '20 亚斯卢布一次 (订阅专属折扣) · 最高 500 亚斯卢布 · 亚斯精美小礼品';
-      } else if (currentUserRole === 'admin') {
-        els.lotteryEntryDesc.textContent = '管理员免费测试 · 最高 500 亚斯卢布 · 亚斯精美小礼品';
-      } else {
-        els.lotteryEntryDesc.textContent = '50 亚斯卢布一次 · 最高 500 亚斯卢布 · 亚斯精美小礼品';
-      }
-    }
-
-    // 4. 重新检查签到状态
-    checkTodayStatus();
-  }
-
-  /* ============================================================
      签到
      ============================================================ */
   function formatDate(d) {
@@ -288,12 +234,6 @@
 
   function renderWeekCalendar(history) {
     if (!els.walletHistory) return;
-
-    // 获取角色基础奖励用于显示今日预期
-    var baseReward = 10;
-    if (currentUserRole === 'vip') baseReward = 20;
-    else if (currentUserRole === 'subscriber') baseReward = 30;
-    else if (currentUserRole === 'admin') baseReward = 50;
 
     var map = {};
     (history || []).forEach(function (h) { map[h.checkin_date] = h; });
@@ -308,19 +248,11 @@
       d.setDate(today.getDate() - i);
       var key = formatDate(d);
       var info = map[key];
-      
-      var displayReward = 0;
-      if (info) {
-        displayReward = info.reward; // 已签到，显示真实记录
-      } else if (i === 0) {
-        displayReward = baseReward; // 今天未签到，显示预期奖励
-      }
-
       days.push({
         weekday: weekdayLabels[d.getDay()],
         dayNum: d.getDate(),
         checked: !!info,
-        reward: displayReward,
+        reward: info ? info.reward : 0,
         isToday: i === 0
       });
     }
@@ -330,12 +262,7 @@
       var cls = 'wallet-day';
       if (d.checked) cls += ' checked';
       if (d.isToday) cls += ' today';
-      
-      var badge = '';
-      if (d.checked || d.isToday) {
-        badge = '+' + d.reward;
-      }
-
+      var badge = d.checked ? ('+' + d.reward) : '';
       html += '<div class="' + cls + '">' +
                 '<div class="wd-weekday">' + d.weekday + '</div>' +
                 '<div class="wd-daynum">' + d.dayNum + '</div>' +
@@ -377,12 +304,6 @@
     Wallet.getCheckinHistory(1).then(function (list) {
       var today = formatDate(new Date());
       var latest = list && list[0];
-      
-      var defaultBtnText = '今日签到';
-      if (currentUserRole === 'vip') defaultBtnText = 'VIP 签到 (+20)';
-      else if (currentUserRole === 'subscriber') defaultBtnText = '订阅签到 (+30)';
-      else if (currentUserRole === 'admin') defaultBtnText = '管理员签到 (最高奖励)';
-
       if (latest && latest.checkin_date === today) {
         els.checkinBtn.classList.add('on');
         els.checkinBtn.disabled = true;
@@ -390,7 +311,7 @@
       } else {
         els.checkinBtn.classList.remove('on');
         els.checkinBtn.disabled = false;
-        els.checkinBtn.textContent = defaultBtnText;
+        els.checkinBtn.textContent = '今日签到';
       }
     });
   }
@@ -400,14 +321,13 @@
       if (!window.Wallet) { toast('钱包模块未加载'); return; }
       if (els.checkinBtn.disabled) return;
 
-      var originalText = els.checkinBtn.textContent;
       els.checkinBtn.disabled = true;
       els.checkinBtn.textContent = '签到中…';
 
       Wallet.doCheckin().then(function (res) {
         if (!res.ok) {
           els.checkinBtn.disabled = false;
-          els.checkinBtn.textContent = originalText;
+          els.checkinBtn.textContent = '今日签到';
           if (res.already) {
             els.checkinBtn.classList.add('on');
             els.checkinBtn.disabled = true;
@@ -421,12 +341,7 @@
         els.checkinBtn.disabled = true;
         els.checkinBtn.textContent = '✓ 今日已签到';
 
-        var prefix = '';
-        if (currentUserRole === 'vip') prefix = 'VIP 专属';
-        else if (currentUserRole === 'subscriber') prefix = '订阅专属';
-        else if (currentUserRole === 'admin') prefix = '管理员';
-
-        var msg = prefix + '签到成功 · +' + res.reward + ' 亚斯卢布';
+        var msg = '签到成功 · +' + res.reward + ' 亚斯卢布';
         if (res.streak > 1) msg += ' · 已连签 ' + res.streak + ' 天';
         if (res.reward >= 50) msg += ' · 已达每日上限';
         toast(msg, 3600);
@@ -470,15 +385,31 @@
     var st = STATUS_MAP[order.status] || STATUS_MAP.pending;
 
     var timeline = [];
-    timeline.push({ label: '已提交', time: fmtDateTime(order.created_at), done: true });
+    timeline.push({
+      label: '已提交',
+      time: fmtDateTime(order.created_at),
+      done: true
+    });
     if (order.status === 'processing' || order.status === 'shipped' || order.status === 'delivered') {
-      timeline.push({ label: '处理中', time: fmtDateTime(order.status_updated_at || order.created_at), done: true });
+      timeline.push({
+        label: '处理中',
+        time: fmtDateTime(order.status_updated_at || order.created_at),
+        done: true
+      });
     }
     if (order.status === 'shipped' || order.status === 'delivered') {
-      timeline.push({ label: '已发货', time: fmtDateTime(order.shipped_at), done: true });
+      timeline.push({
+        label: '已发货',
+        time: fmtDateTime(order.shipped_at),
+        done: true
+      });
     }
     if (order.status === 'delivered') {
-      timeline.push({ label: '已签收', time: fmtDateTime(order.delivered_at), done: true });
+      timeline.push({
+        label: '已签收',
+        time: fmtDateTime(order.delivered_at),
+        done: true
+      });
     } else if (order.status !== 'cancelled') {
       if (order.status === 'pending' || order.status === 'processing') {
         timeline.push({ label: '已发货', time: '等待中', done: false });
@@ -637,44 +568,15 @@
 
     if (els.profileName)  els.profileName.textContent = user.nickname || '—';
     if (els.profileEmail) els.profileEmail.textContent = user.email || '(游客账号)';
-    
-    // ⭐ 读取角色并更新UI
-    if (els.profileRole) {
-      if (user.isGuest) {
-        els.profileRole.textContent = '游客';
-        els.profileRole.className = 'profile-role';
-      } else {
-        Auth.client.from('user_wallets')
-          .select('role')
-          .eq('user_id', user.id)
-          .single()
-          .then(function (res) {
-            var role = (res.data && res.data.role) ? res.data.role : 'user';
-            currentUserRole = role;
-            
-            var roleNames = { 'user': '普通用户', 'vip': 'VIP 用户', 'subscriber': '订阅用户', 'admin': '管理员' };
-            els.profileRole.textContent = roleNames[role] || '普通用户';
-            els.profileRole.className = 'profile-role role-' + role;
-
-            updateRoleUI();
-            refreshWalletHistory();
-          })
-          .catch(function (err) {
-            console.error('[profile] 读取角色失败:', err);
-            els.profileRole.textContent = '普通用户';
-            els.profileRole.className = 'profile-role role-user';
-            updateRoleUI();
-            refreshWalletHistory();
-          });
-      }
-    }
-
+    if (els.profileRole)  els.profileRole.textContent = user.isGuest ? '游客' : '正式用户';
     if (els.bcHolder)     els.bcHolder.textContent = user.nickname || '—';
+
     if (els.nicknameInput) els.nicknameInput.value = user.nickname || '';
     if (els.emailDisplay)  els.emailDisplay.value  = user.email || '(游客账号)';
 
     renderAvatar(user.avatar, user.nickname);
 
+    /* 游客：隐藏钱包、订单、余额卡片 */
     if (user.isGuest) {
       if (els.guestBanner) els.guestBanner.classList.remove('hide');
       if (els.walletCard)  els.walletCard.classList.add('hide');

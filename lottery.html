@@ -14,8 +14,8 @@
 <section class="page-hero">
   <div class="page-hero-inner">
     <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="profile.html">个人中心</a><i>›</i><span>星图抽奖</span></div>
-    <h1>星图抽奖</h1>
-    <p>单抽 <span id="costLabel">50</span> 亚斯卢布 · 五连抽 <span id="cost5Label">250</span> 亚斯卢布</p>
+    <h1 id="pageTitle">星图抽奖</h1>
+    <p id="pageDesc">单抽 <span id="costLabel">50</span> 亚斯卢布 · 五连抽 <span id="cost5Label">250</span> 亚斯卢布</p>
   </div>
 </section>
 
@@ -47,25 +47,25 @@
     <section class="lottery-content">
 
       <!-- 抽奖按钮卡片 -->
-      <div class="draw-card">
+      <div class="draw-card" id="drawCard">
         <div class="draw-glow"></div>
         <div class="draw-inner">
           <div class="draw-head">
             <div class="draw-icon">🎰</div>
-            <div class="draw-title">星图抽奖</div>
-            <div class="draw-sub">命运即将揭晓</div>
+            <div class="draw-title" id="drawTitle">星图抽奖</div>
+            <div class="draw-sub" id="drawSub">命运即将揭晓</div>
           </div>
 
           <div class="draw-actions">
 
             <button class="lottery-btn" id="drawBtn" type="button">
               <span class="lb-text">单抽</span>
-              <span class="lb-sub">50 ₽</span>
+              <span class="lb-sub" id="btn1Cost">50 ₽</span>
             </button>
 
             <button class="lottery-btn gold" id="draw5Btn" type="button">
               <span class="lb-text">五连抽</span>
-              <span class="lb-sub">250 ₽</span>
+              <span class="lb-sub" id="btn5Cost">250 ₽</span>
               <span class="lb-badge">推荐</span>
             </button>
 

@@ -1,5 +1,5 @@
 /* ===================================================================
-   蓬溪格勒人民高等中学 · 星图抽奖
+   蓬溪格勒人民高等中学 · 星图抽奖 (角色专属UI版)
    奖品网格版 · 单抽 + 五连抽
    =================================================================== */
 
@@ -18,8 +18,11 @@
   var client = Auth.client;
   var CFG = window.LOTTERY_CONFIG;
   var PRIZES = CFG.prizes.slice();
+  
+  // ⭐ 初始价格（会被角色专属价格覆盖）
   var COST = CFG.cost;
   var COST5 = COST * 5;
+  var currentUserRole = 'user';
 
   var $ = function (id) { return document.getElementById(id); };
 
@@ -33,6 +36,15 @@
   var costAmount   = $('costAmount');
   var todayCount   = $('todayCount');
   var recordList   = $('recordList');
+
+  // ⭐ 新增：页面标题、描述、按钮价格元素
+  var pageTitle    = $('pageTitle');
+  var pageDesc     = $('pageDesc');
+  var btn1Cost     = $('btn1Cost');
+  var btn5Cost     = $('btn5Cost');
+  var drawTitle    = $('drawTitle');
+  var drawSub      = $('drawSub');
+  var drawCard     = $('drawCard');
 
   /* 单抽弹窗 */
   var resultModal  = $('resultModal');
@@ -57,12 +69,8 @@
 
   var currentRecordId = null;
   var currentPrizeName = '';
-  var pendingGiftRecords = [];  /* 待填地址的礼品记录 */
+  var pendingGiftRecords = [];
   var isDrawing = false;
-
-  if (costLabel)  costLabel.textContent  = COST;
-  if (cost5Label) cost5Label.textContent = COST5;
-  if (costAmount) costAmount.textContent = COST;
 
   /* ============================================================
      稀有度
@@ -126,6 +134,61 @@
   }
 
   /* ============================================================
+     ⭐ 角色专属UI逻辑
+     ============================================================ */
+  function applyRoleToLotteryUI() {
+    var user = Auth.getCurrentUser();
+    if (!user || user.isGuest) return;
+
+    // 1. 获取用户角色
+    client.from('user_wallets').select('role').eq('user_id', user.id).single().then(function (res) {
+      var role = (res.data && res.data.role) ? res.data.role : 'user';
+      currentUserRole = role;
+
+      // 2. 获取该角色的抽奖消耗
+      client.from('role_configs').select('lottery_cost').eq('role', role).single().then(function (cfgRes) {
+        var realCost = (cfgRes.data && cfgRes.data.lottery_cost !== undefined) ? cfgRes.data.lottery_cost : CFG.cost;
+        
+        // 3. 更新全局变量，用于后续扣费和余额判断
+        COST = realCost;
+        COST5 = realCost * 5;
+
+        // 4. 更新页面UI
+        var roleNames = { 'user': '普通用户', 'vip': 'VIP 用户', 'subscriber': '订阅用户', 'admin': '管理员' };
+        var roleLabel = roleNames[role] || '普通用户';
+
+        // 页面标题
+        if (pageTitle) pageTitle.textContent = role === 'vip' ? '👑 星图抽奖 (VIP 专属折扣)' : (role === 'admin' ? '🛡️ 星图抽奖' : '星图抽奖');
+        if (pageDesc) pageDesc.innerHTML = '单抽 <span id="costLabel">' + COST + '</span> 亚斯卢布 · 五连抽 <span id="cost5Label">' + COST5 + '</span> 亚斯卢布';
+        
+        // 侧边栏
+        if (costAmount) costAmount.textContent = COST === 0 ? '免费' : COST;
+        
+        // 按钮价格
+        if (btn1Cost) btn1Cost.textContent = COST === 0 ? '免费' : COST + ' ₽';
+        if (btn5Cost) btn5Cost.textContent = COST5 === 0 ? '免费' : COST5 + ' ₽';
+        if (costLabel) costLabel.textContent = COST;
+        if (cost5Label) cost5Label.textContent = COST5;
+
+        // 抽奖卡片标题与副标题
+        if (drawTitle) drawTitle.textContent = role === 'vip' ? 'VIP 专属星图' : (role === 'admin' ? '管理员测试' : '星图抽奖');
+        if (drawSub) drawSub.textContent = role === 'vip' ? '尊贵 VIP，折扣抽奖' : (role === 'admin' ? '测试抽奖' : '命运即将揭晓');
+
+        // 给卡片加专属样式
+        if (drawCard) {
+          drawCard.classList.remove('vip-draw', 'admin-draw');
+          if (role === 'vip') drawCard.classList.add('vip-draw');
+          if (role === 'admin') drawCard.classList.add('admin-draw');
+        }
+      }).catch(function (err) {
+        console.error('[lottery] 获取角色配置失败:', err);
+      });
+    }).catch(function (err) {
+      console.error('[lottery] 获取用户角色失败:', err);
+    });
+  }
+
+  /* ============================================================
      单抽：网格扫描动画
      ============================================================ */
   function playGridAnimation(targetPrize, done) {
@@ -183,7 +246,6 @@
     var cells = prizesGrid.querySelectorAll('.prize-card');
     if (!cells.length) { done && done(); return; }
 
-    /* 找到 5 个目标 DOM */
     var targetEls = [];
     targetPrizes.forEach(function (p) {
       for (var i = 0; i < cells.length; i++) {
@@ -195,14 +257,11 @@
     if (!targetEls.length) { done && done(); return; }
 
     var total = cells.length;
-
-    /* 快速扫描约 1.2 秒 */
     var scanSteps = 24;
     var idx = 0;
 
     function scan() {
       if (idx >= scanSteps) {
-        /* 扫描结束，依次高亮 5 个目标 */
         cells.forEach(function (c) { c.classList.remove('active'); });
         highlightOneByOne();
         return;
@@ -220,7 +279,6 @@
       var i = 0;
       function step() {
         if (i >= targetEls.length) {
-          /* 全部高亮 win 态 */
           cells.forEach(function (c) { c.classList.remove('active'); });
           targetEls.forEach(function (el, k) {
             setTimeout(function () {
@@ -367,7 +425,8 @@
     drawBtn.querySelector('.lb-text').textContent = '抽奖中…';
 
     refreshBalance().then(function (b) {
-      if (b === null || b < COST) {
+      // ⭐ 如果是管理员免费抽奖，则跳过余额检查
+      if (COST > 0 && (b === null || b < COST)) {
         toast('余额不足，还差 ' + (COST - (b || 0)) + ' 亚斯卢布');
         resetButtons();
         return;
@@ -412,18 +471,16 @@
     draw5Btn.querySelector('.lb-text').textContent = '抽奖中…';
 
     refreshBalance().then(function (b) {
-      if (b === null || b < COST5) {
+      if (COST5 > 0 && (b === null || b < COST5)) {
         toast('余额不足，还差 ' + (COST5 - (b || 0)) + ' 亚斯卢布');
         resetButtons();
         return;
       }
 
-      /* 前端一次性抽 5 个 */
       var prizes = [];
       for (var i = 0; i < 5; i++) prizes.push(pickPrize());
 
       playGridAnimation5(prizes, function () {
-        /* 依次调用 5 次 RPC */
         var results = [];
         var chain = Promise.resolve();
 
@@ -438,11 +495,9 @@
         chain.then(function () {
           resetButtons();
 
-          /* 检查是否有失败 */
           var failed = results.filter(function (r) { return !r.data.ok; });
           if (failed.length) {
             console.warn('[lottery] 五连抽部分失败:', failed);
-            /* 只要有成功的就展示，失败的跳过 */
             var successResults = results.filter(function (r) { return r.data.ok; });
             if (!successResults.length) {
               toast(failed[0].data.msg || '抽奖失败');
@@ -451,7 +506,6 @@
             }
           }
 
-          /* 取最后一个成功的余额 */
           var lastSuccess = results.filter(function (r) { return r.data.ok; }).pop();
           if (lastSuccess && balanceEl) balanceEl.textContent = lastSuccess.data.balance;
 
@@ -518,10 +572,8 @@
   function showResult5(results) {
     if (!result5Grid) return;
 
-    /* 过滤成功的 */
     var success = results.filter(function (r) { return r.data.ok; });
 
-    /* 统计获得亚斯卢布总数 */
     var totalReward = 0;
     var giftCount = 0;
     success.forEach(function (r) {
@@ -533,7 +585,6 @@
     if (giftCount > 0) summary += ' · <b>' + giftCount + '</b> 个实物礼品待填写地址';
     result5Balance.innerHTML = summary;
 
-    /* 渲染 5 张卡片 */
     var html = '';
     success.forEach(function (r, idx) {
       var p = r.prize;
@@ -551,7 +602,6 @@
     });
     result5Grid.innerHTML = html;
 
-    /* 保存待填地址的礼品记录 */
     pendingGiftRecords = success
       .filter(function (r) { return r.prize.type === 'gift'; })
       .map(function (r) {
@@ -565,7 +615,6 @@
     result5OkBtn.addEventListener('click', function () {
       if (result5Modal) result5Modal.classList.add('hide');
 
-      /* 如果有礼品待填地址，逐个弹 */
       if (pendingGiftRecords.length > 0) {
         var first = pendingGiftRecords.shift();
         currentRecordId = first.recordId;
@@ -630,7 +679,6 @@
         addressForm.reset();
         toast('收货信息已提交，我们会尽快寄出');
 
-        /* 如果还有礼品待填，继续弹下一个 */
         if (pendingGiftRecords.length > 0) {
           setTimeout(function () {
             var next = pendingGiftRecords.shift();
@@ -663,6 +711,7 @@
   if (Auth.ready && Auth.ready.then) {
     Auth.ready.then(function () {
       setTimeout(function () {
+        applyRoleToLotteryUI(); // ⭐ 加载角色专属价格
         refreshBalance();
         refreshTodayCount();
         refreshRecords();
@@ -670,5 +719,5 @@
     });
   }
 
-  console.log('%c [Lottery] 抽奖模块已加载（单抽 + 五连抽） ', 'background:#d4af37;color:#241b08;padding:2px 8px;border-radius:3px;font-weight:700');
+  console.log('%c [Lottery] 抽奖模块已加载 (角色专属版) ', 'background:#d4af37;color:#241b08;padding:2px 8px;border-radius:3px;font-weight:700');
 })(window);
