@@ -2,13 +2,14 @@
 <html lang="zh-CN">
 <head>
   <link rel="icon" type="image/png" href="photo/logo.png">
-<link rel="apple-touch-icon" href="photo/logo.png">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>学校概况 · 蓬溪格勒人民高等中学</title>
-<link rel="stylesheet" href="assets/css/style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/auth.js"></script>
+  <link rel="apple-touch-icon" href="photo/logo.png">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>学校概况 · 蓬溪格勒人民高等中学</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/about.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/auth.js"></script>
 </head>
 <body data-page="about">
 
@@ -24,7 +25,7 @@
 
 <main class="section">
 
-  <!-- 学校简介 -->
+  <!-- ==================== 学校简介 ==================== -->
   <div class="card">
     <div class="card-head"><h3>学校简介</h3></div>
     <div class="prose">
@@ -41,7 +42,7 @@
     </div>
   </div>
 
-  <!-- 校长致辞 + 校训 -->
+  <!-- ==================== 校长致辞 + 校训 ==================== -->
   <div class="grid-2" style="margin-top:24px">
     <div class="card">
       <div class="card-head"><h3>校长致辞</h3></div>
@@ -59,34 +60,30 @@
         <p><strong>校训：</strong>真理 · 劳动 · 友谊 · 前进</p>
         <p><strong>校训（俄文）：</strong>Истина · Труд · Дружба · Вперёд</p>
         <p><strong>校徽释义：</strong>红星居于中心，象征革命的理想；金色齿轮环抱，象征劳动与工业；底部的打开的书页，象征知识与教育。</p>
-        <p class="muted small">校徽由亚斯红日网络科技中心整体制作，亚斯共和国版本图书馆（2025）第 03698 号备案。</p>
+        <p class="muted small">校徽采用 2003 年版，由优秀毕业生姜方吉整体制作</p>
       </div>
     </div>
   </div>
 
-  <!-- ============================================== -->
-  <!-- 校园风光（图片）                                -->
-  <!-- ============================================== -->
+  <!-- ==================== 校园风光 ==================== -->
   <div class="card" style="margin-top:24px">
     <div class="card-head"><h3>校园风光</h3></div>
     <div class="campus-grid">
 
       <figure class="campus-card">
         <div class="campus-img-wrap">
-          <img src="photo/campus-1.jpg"
-               alt="主教学楼"
+          <img src="photo/campus-1.jpg" alt="校园一览"
                onerror="this.parentNode.classList.add('no-img');this.remove();">
         </div>
         <figcaption>
-          <h4>主教学楼</h4>
+          <h4>校园一览</h4>
           <p>1953 年落成，2015 年完成整体加固与智能化改造。</p>
         </figcaption>
       </figure>
 
       <figure class="campus-card">
         <div class="campus-img-wrap">
-          <img src="photo/campus-2.jpg"
-               alt="磁浮模型实训室"
+          <img src="photo/campus-2.jpg" alt="磁浮模型实训室"
                onerror="this.parentNode.classList.add('no-img');this.remove();">
         </div>
         <figcaption>
@@ -97,30 +94,28 @@
 
       <figure class="campus-card">
         <div class="campus-img-wrap">
-          <img src="photo/campus-3.jpg"
-               alt="复兴广场"
+          <img src="photo/campus-3.jpg" alt="复兴广场"
                onerror="this.parentNode.classList.add('no-img');this.remove();">
         </div>
         <figcaption>
           <h4>复兴广场</h4>
-          <p>每周一举行升旗仪式与"红星下的讲话"。</p>
+          <p>校园最大的广场，学生们可以在此开展各种活动。</p>
         </figcaption>
       </figure>
+
+      <!-- 想加更多校园照，复制上面 <figure> 一块，改 campus-4.jpg 和文字即可 -->
 
     </div>
   </div>
 
-  <!-- ============================================== -->
-  <!-- 现任领导班子（人物图片）                        -->
-  <!-- ============================================== -->
+  <!-- ==================== 现任领导及优秀教师 ==================== -->
   <div class="card" style="margin-top:24px">
-    <div class="card-head"><h3>现任领导</h3></div>
+    <div class="card-head"><h3>现任领导及优秀教师</h3></div>
     <div class="leader-grid">
 
       <div class="leader-card">
         <div class="leader-photo">
-          <img src="photo/leader-1.jpg"
-               alt="胥杰"
+          <img src="photo/leader-1.jpg" alt="胥杰"
                onerror="this.parentNode.classList.add('no-img');this.remove();">
         </div>
         <div class="leader-body">
@@ -129,45 +124,150 @@
           <p>主持学校全面工作，分管国际交流与研学项目。</p>
         </div>
       </div>
-
+   <div class="leader-card">
+        <div class="leader-photo">
+          <img src="photo/leader-8.jpg" alt="杨加林"
+               onerror="this.parentNode.classList.add('no-img');this.remove();">
+        </div>
+        <div class="leader-body">
+          <h4>杨加林</h4>
+          <div class="leader-role">党委书记 · 特级数学教师</div>
+          <p>中学数学特级教师。获州赛课一等奖，市赛课一等奖。辅导学生多次获州、市等级奖。</p>
+        </div>
+      </div>
+ <div class="leader-card">
+        <div class="leader-photo">
+          <img src="photo/leader-7.jpg" alt="文"
+               onerror="this.parentNode.classList.add('no-img');this.remove();">
+        </div>
+        <div class="leader-body">
+          <h4>文宏宇</h4>
+          <div class="leader-role">副校长 · 英语教研组组长</div>
+          <p>带过三届研学团，"烽火英语杯"金牌教练。</p>
+        </div>
+      </div>
       <div class="leader-card">
         <div class="leader-photo">
-          <img src="photo/leader-2.jpg"
-               alt="陈勇"
+          <img src="photo/leader-2.jpg" alt="陈勇"
                onerror="this.parentNode.classList.add('no-img');this.remove();">
         </div>
         <div class="leader-body">
           <h4>陈勇</h4>
-          <div class="leader-role">高二十二班班主任 · 地理教研组</div>
+          <div class="leader-role">名师工作室 · 地理教研组组长</div>
           <p>负责高二年级日常管理与莫斯科研学统筹工作。</p>
         </div>
       </div>
 
       <div class="leader-card">
         <div class="leader-photo">
-          <img src="photo/leader-3.jpg"
-               alt="何希"
+          <img src="photo/leader-3.jpg" alt="何希"
                onerror="this.parentNode.classList.add('no-img');this.remove();">
         </div>
         <div class="leader-body">
           <h4>何希</h4>
-          <div class="leader-role">思想政治教师 · 高二十二班</div>
+          <div class="leader-role">名师工作室 · 特级思想政治教师</div>
           <p>"抄不是目的，是手段。"—— 何希老师语录。</p>
         </div>
       </div>
 
       <div class="leader-card">
         <div class="leader-photo">
-          <img src="photo/leader-4.jpg"
-               alt="蒋德均"
+          <img src="photo/leader-4.jpg" alt="蒋德均"
                onerror="this.parentNode.classList.add('no-img');this.remove();">
         </div>
         <div class="leader-body">
           <h4>蒋德均</h4>
-          <div class="leader-role">数学教研组 · 高二十二班</div>
+          <div class="leader-role">名师工作室 · 数学教研组组长</div>
           <p>主讲微积分与最优路径规划，风格严谨。</p>
         </div>
       </div>
+
+      <!-- ==================== 以下是新增老师模板 ==================== -->
+      <!-- 想加老师，复制下面一整块，改 4 处：图片名 / alt / h4 姓名 / 职务和简介 -->
+      <!-- ========== 1. 语文 ========== -->
+      <div class="leader-card">
+        <div class="leader-photo">
+          <img src="photo/leader-5.jpg" alt="王志斌"
+               onerror="this.parentNode.classList.add('no-img');this.remove();">
+        </div>
+        <div class="leader-body">
+          <h4>王志斌</h4>
+          <div class="leader-role">数学教研组副组长 · 高级数学教师</div>
+          <p>专攻立体几何与概率统计，解题思路清晰，人称“人形坐标系”。</p>
+        </div>
+      </div>
+
+      <!-- ========== 2. 数学 ========== -->
+      <div class="leader-card">
+        <div class="leader-photo">
+          <img src="photo/leader-6.jpg" alt="巫定果"
+               onerror="this.parentNode.classList.add('no-img');this.remove();">
+        </div>
+        <div class="leader-body">
+          <h4>巫定果</h4>
+          <div class="leader-role">年级教学顾问 · 特级数学教师</div>
+          <p>主讲微积分与最优路径规划，板书从不出错。</p>
+        </div>
+      </div>
+
+      <!-- ========== 3. 英语 ========== -->
+     
+
+      <!-- ========== 4. 俄语 ========== -->
+   
+      <!-- ========== 5. 物理 ========== -->
+      <div class="leader-card">
+        <div class="leader-photo">
+          <img src="photo/leader-9.jpg" alt="王刚"
+               onerror="this.parentNode.classList.add('no-img');this.remove();">
+        </div>
+        <div class="leader-body">
+          <h4>王刚</h4>
+          <div class="leader-role">年级主任 · 金牌班主任</div>
+          <p>深受学生喜爱，十分擅长与学生交流和解决各种问题的高级数学教师。</p>
+        </div>
+      </div>
+
+      <!-- ========== 6. 化学 ========== -->
+      <div class="leader-card">
+        <div class="leader-photo">
+          <img src="photo/leader-10.jpg" alt="肖刚"
+               onerror="this.parentNode.classList.add('no-img');this.remove();">
+        </div>
+        <div class="leader-body">
+          <h4>肖刚</h4>
+          <div class="leader-role">名师工作室 · 特级数学教师</div>
+          <p>中学数学高级教师。市优秀教育工作者。市骨干教师。市高中教育先进个、市记功奖。所教学科多次获市高考质量评估一等奖。</p>
+        </div>
+      </div>
+
+      <!-- ========== 7. 生物 ========== -->
+      <div class="leader-card">
+        <div class="leader-photo">
+          <img src="photo/leader-11.jpg" alt="外教"
+               onerror="this.parentNode.classList.add('no-img');this.remove();">
+        </div>
+        <div class="leader-body">
+          <h4>阿廖娜·科尔沙科娃</h4>
+          <div class="leader-role">俄语外教 · 苏联籍交流教师</div>
+          <p>莫斯科国立大学俄语系硕士，苏联对外俄语教学协会会员。2021 年受苏联教育部派遣，作为交流教师来我校执教。</p>
+        </div>
+      </div>
+
+      <!-- ========== 8. 历史 ========== -->
+      <div class="leader-card">
+        <div class="leader-photo">
+          <img src="photo/leader-12.jpg" alt="杨勇"
+               onerror="this.parentNode.classList.add('no-img');this.remove();">
+        </div>
+        <div class="leader-body">
+          <h4>杨勇</h4>
+          <div class="leader-role">名师工作室 · 历史教研组组长</div>
+          <p>讲亚斯建国史能把全班讲笑，也能把全班讲沉默。</p>
+        </div>
+      </div>
+
+      <!-- ==================== 新增老师模板结束 ==================== -->
 
     </div>
   </div>

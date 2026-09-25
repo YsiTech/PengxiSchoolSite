@@ -1,0 +1,181 @@
+/* ===================================================================
+   蓬溪格勒人民高等中学 · 学校概况页专属样式
+   =================================================================== */
+
+/* ============================================================
+   校园风光
+   ============================================================ */
+.campus-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(260px, 1fr));
+  gap:16px;
+}
+
+.campus-card{
+  margin:0;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:var(--shadow-sm);
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  transition:transform .2s, box-shadow .22s, border-color .2s;
+}
+.campus-card:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow);
+  border-color:var(--gold);
+}
+
+.campus-img-wrap{
+  position:relative;
+  aspect-ratio:16/10;
+  background:linear-gradient(135deg,#243b63,#c8102e);
+  overflow:hidden;
+}
+.campus-img-wrap img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.campus-img-wrap.no-img::after{
+  content:"校园风光";
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:15px;
+  letter-spacing:3px;
+  color:rgba(255,255,255,.75);
+  background:repeating-linear-gradient(45deg,transparent 0 14px,rgba(255,255,255,.05) 14px 15px);
+}
+
+.campus-card figcaption{padding:14px 16px 16px}
+.campus-card figcaption h4{
+  margin:0 0 6px;
+  font-size:15.5px;
+  color:var(--blue);
+  letter-spacing:.5px;
+  font-weight:700;
+}
+.campus-card figcaption p{
+  margin:0;
+  font-size:13px;
+  line-height:1.7;
+  color:var(--muted);
+}
+
+/* ============================================================
+   现任领导及优秀教师
+   ============================================================ */
+.leader-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));
+  gap:16px;
+}
+
+.leader-card{
+  display:flex;
+  align-items:flex-start;
+  gap:16px;
+  padding:18px;
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:12px;
+  box-shadow:var(--shadow-sm);
+  box-sizing:border-box;
+  min-width:0;
+  transition:transform .2s, box-shadow .22s, border-color .2s;
+}
+.leader-card:hover{
+  transform:translateY(-3px);
+  box-shadow:var(--shadow);
+  border-color:var(--gold);
+}
+
+/* 头像 —— 竖长方形 3:4 */
+.leader-photo{
+  flex:0 0 96px;
+  width:96px;
+  height:128px;
+  border-radius:12px;
+  overflow:hidden;
+  background:linear-gradient(135deg,#243b63,#c8102e);
+  display:grid;
+  place-items:center;
+  color:#fff;
+  position:relative;
+}
+.leader-photo img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center top;    /* 竖版照片默认露头顶，避免裁到脸 */
+  display:block;
+}
+.leader-photo.no-img::after{
+  content:"人";
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  font-size:32px;
+  font-weight:700;
+  color:#fff;
+  letter-spacing:0;
+}
+
+/* 文字区 */
+.leader-body{
+  flex:1 1 auto;
+  min-width:0;
+}
+.leader-body h4{
+  margin:0 0 4px;
+  font-size:16px;
+  color:var(--blue);
+  letter-spacing:.5px;
+  font-weight:700;
+}
+.leader-role{
+  font-size:12.5px;
+  color:var(--red);
+  font-weight:600;
+  line-height:1.5;
+  margin-bottom:8px;
+  letter-spacing:.3px;
+}
+.leader-body p{
+  margin:0;
+  font-size:13.5px;
+  color:var(--muted);
+  line-height:1.7;
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width:900px){
+  .leader-grid{
+    grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width:640px){
+  .campus-grid{grid-template-columns:1fr}
+  .leader-grid{grid-template-columns:1fr}
+  .leader-card{padding:14px;gap:14px}
+
+  .leader-photo{
+    flex:0 0 80px;
+    width:80px;
+    height:107px;    /* 80 × 4/3 ≈ 107，保持 3:4 */
+  }
+  .leader-photo.no-img::after{font-size:26px}
+  .leader-body h4{font-size:15px}
+  .leader-role{font-size:12px}
+  .leader-body p{font-size:13px}
+}
