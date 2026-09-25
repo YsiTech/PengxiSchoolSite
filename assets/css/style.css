@@ -1554,3 +1554,66 @@ body.warn-page{
     padding:2px 9px;
   }
 }
+/* ===================================================================
+   校史馆 · 历史图片
+   =================================================================== */
+
+/* .fig-art 内的 img 铺满 */
+.figure .fig-art img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  border-radius:0;
+}
+
+/* 图片加载失败时的占位 */
+.figure .fig-art.no-img{
+  background:linear-gradient(140deg,#e9e2d4,#d9d0bd);
+  color:#8a8172;
+  font-size:13px;
+  letter-spacing:1px;
+  font-weight:600;
+  display:grid;
+  place-items:center;
+}
+.figure .fig-art.no-img::before{
+  content:"暂无图片 · 校史馆藏";
+  opacity:.85;
+}
+
+/* figcaption 里新增 h4 的样式 */
+.figure figcaption h4{
+  margin:0 0 6px;
+  font-size:14.5px;
+  font-weight:700;
+  color:var(--blue);
+  letter-spacing:.5px;
+  line-height:1.4;
+}
+.figure figcaption p{
+  margin:0;
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.7;
+}
+/* ===================================================================
+   校史馆 · 三张历史图统一尺寸
+   =================================================================== */
+
+/* 关键：给容器固定高度，图片用 cover 裁剪填满 */
+.figure .fig-art{
+  height: 220px;              /* ← 统一高度，可改 200 / 240 */
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  display: block;             /* 覆盖之前的 grid 居中 */
+}
+
+.figure .fig-art img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;          /* 裁剪填满，不留白 */
+  object-position: center;    /* 焦点居中，可改 top / bottom */
+  display: block;
+}
