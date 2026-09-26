@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>应用下载 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/download.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+</head>
+<body data-page="download">
+
+<div id="site-header"></div>
+
+<!-- ==================== 顶部大卡 ==================== -->
+<section class="dl-hero">
+  <div class="dl-hero-bg"></div>
+  <div class="dl-hero-inner">
+
+    <div class="dl-crumb">
+      <a href="mainsite.html">首页</a>
+      <i class="fa-solid fa-angle-right"></i>
+      <span>应用下载</span>
+    </div>
+
+    <div class="dl-hero-main">
+
+      <div class="dl-icon-wrap">
+        <img src="photo/logo.png" alt="应用图标" class="dl-icon-big">
+        <span class="dl-verified" title="官方认证">
+          <i class="fa-solid fa-circle-check"></i>
+        </span>
+      </div>
+
+      <div class="dl-hero-info">
+        <h1>蓬溪格勒人民高等中学</h1>
+        <p class="dl-hero-sub">官方校园服务 · 由亚斯红日网络科技中心出品</p>
+
+        <div class="dl-hero-tags">
+          <span class="dl-tag primary"><i class="fa-solid fa-fire"></i> 官方发布</span>
+          <span class="dl-tag"><i class="fa-brands fa-android"></i> Android 6.0+</span>
+          <span class="dl-tag"><i class="fa-solid fa-database"></i> 3.5 MB</span>
+          <span class="dl-tag"><i class="fa-solid fa-tag"></i> v1.0.0</span>
+        </div>
+
+        <div class="dl-hero-actions">
+          <a class="dl-hero-btn primary" href="Ponxigrad.apk" download="Ponxigrad.apk">
+            <i class="fa-brands fa-android"></i>
+            <span>立即下载</span>
+          </a>
+          <button class="dl-hero-btn ghost" id="dlShareBtn" type="button">
+            <i class="fa-solid fa-share-nodes"></i>
+            <span>分享</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 右侧数据 -->
+      <div class="dl-hero-stats">
+        <div class="dl-stat">
+          <b>4.9</b>
+          <span><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i></span>
+          <em>评分</em>
+        </div>
+        <div class="dl-stat">
+          <b>1.2K+</b>
+          <span>下载次数</span>
+          <em>累计</em>
+        </div>
+        <div class="dl-stat">
+          <b>0</b>
+          <span>无广告</span>
+          <em>安全</em>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 主体 ==================== -->
+<main class="dl-main">
+
+  <div class="dl-layout">
+
+    <!-- ---------- 左侧：主内容 ---------- -->
+    <div class="dl-content">
+
+      <!-- 应用介绍 -->
+      <section class="dl-section">
+        <div class="dl-section-head">
+          <h2><i class="fa-solid fa-circle-info"></i> 应用介绍</h2>
+        </div>
+        <div class="dl-intro">
+          <p>「蓬溪格勒人民高等中学」官方移动端，是学校面向师生、家长及校友推出的校园服务应用。通过移动端，你可以随时随地访问校园官网、浏览新闻资讯、观看校园影像、订购校园网服务，并在「星图」里与同学们保持联系。</p>
+
+          <h3>核心功能</h3>
+          <div class="dl-features">
+            <div class="dl-feature">
+              <i class="fa-solid fa-school"></i>
+              <div>
+                <b>校园官网</b>
+                <span>新闻、通知、教研、校史，一站浏览</span>
+              </div>
+            </div>
+            <div class="dl-feature">
+              <i class="fa-solid fa-film"></i>
+              <div>
+                <b>视觉蓬中</b>
+                <span>校园宣传片与「惊鸿学园」系列短剧</span>
+              </div>
+            </div>
+            <div class="dl-feature">
+              <i class="fa-solid fa-wifi"></i>
+              <div>
+                <b>校园网订购</b>
+                <span>三档套餐 · 亚斯卢布结算</span>
+              </div>
+            </div>
+            <div class="dl-feature">
+              <i class="fa-solid fa-star"></i>
+              <div>
+                <b>星图</b>
+                <span>文字、语音、视频、文件点对点通信</span>
+              </div>
+            </div>
+            <div class="dl-feature">
+              <i class="fa-solid fa-user-shield"></i>
+              <div>
+                <b>账号体系</b>
+                <span>邮箱注册 · 云端同步 · 跨设备登录</span>
+              </div>
+            </div>
+            <div class="dl-feature">
+              <i class="fa-solid fa-mobile-screen-button"></i>
+              <div>
+                <b>移动优化</b>
+                <span>原生外壳，网页内核，自动更新</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 更新日志 -->
+      <section class="dl-section">
+        <div class="dl-section-head">
+          <h2><i class="fa-solid fa-clock-rotate-left"></i> 更新日志</h2>
+        </div>
+        <div class="dl-changelog">
+          <div class="dl-log-item">
+            <div class="dl-log-ver">
+              <b>v1.0.0</b>
+              <span>2025-12-19</span>
+            </div>
+            <ul>
+              <li>首个公开版本发布</li>
+              <li>支持校园官网、视觉蓬中、校园网订购、星图等模块</li>
+              <li>支持邮箱注册 / 游客登录，跨设备会话同步</li>
+              <li>接入亚斯共和国教育部统一身份认证</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 权限说明 -->
+      <section class="dl-section">
+        <div class="dl-section-head">
+          <h2><i class="fa-solid fa-shield-halved"></i> 权限说明</h2>
+        </div>
+        <div class="dl-perms">
+          <div class="dl-perm">
+            <i class="fa-solid fa-globe"></i>
+            <div>
+              <b>网络访问</b>
+              <span>用于加载校园官网与账号认证</span>
+            </div>
+          </div>
+          <div class="dl-perm">
+            <i class="fa-solid fa-camera"></i>
+            <div>
+              <b>摄像头 / 麦克风</b>
+              <span>用于「星图」语音与视频通话</span>
+            </div>
+          </div>
+          <div class="dl-perm">
+            <i class="fa-solid fa-image"></i>
+            <div>
+              <b>存储 / 相册</b>
+              <span>用于选择与上传个人头像</span>
+            </div>
+          </div>
+        </div>
+        <p class="dl-perm-note">
+          <i class="fa-solid fa-lock"></i>
+          本应用不会收集与校园服务无关的个人信息。
+        </p>
+      </section>
+
+    </div>
+
+    <!-- ---------- 右侧：下载面板（桌面 sticky） ---------- -->
+    <aside class="dl-side">
+
+      <div class="dl-download-card">
+
+        <div class="dl-dl-head">
+          <i class="fa-solid fa-cloud-arrow-down"></i>
+          <span>选择下载方式</span>
+        </div>
+
+        <!-- 安卓 -->
+        <a class="dl-dl-btn primary" href="Ponxigrad.apk" download="Ponxigrad.apk">
+          <span class="dl-dl-btn-icon">
+            <i class="fa-brands fa-android"></i>
+          </span>
+          <span class="dl-dl-btn-body">
+            <b>在安卓手机上获取</b>
+            <span>APK · v1.0.0 · 3.5 MB</span>
+          </span>
+          <i class="fa-solid fa-download dl-dl-btn-arrow"></i>
+        </a>
+
+        <!-- App Store -->
+        <button class="dl-dl-btn disabled" type="button" data-coming="App Store">
+          <span class="dl-dl-btn-icon">
+            <i class="fa-brands fa-app-store-ios"></i>
+          </span>
+          <span class="dl-dl-btn-body">
+            <b>在App Store上获取</b>
+            <span>iOS 版本 · 敬请期待</span>
+          </span>
+          <i class="fa-solid fa-clock dl-dl-btn-arrow"></i>
+        </button>
+
+        <!-- 鸿蒙 -->
+        <button class="dl-dl-btn disabled" type="button" data-coming="鸿蒙（HarmonyOS）">
+          <span class="dl-dl-btn-icon">
+            <img src="photo/Huawei-Logo.png" alt="Huawei" class="dl-huawei-logo">
+          </span>
+          <span class="dl-dl-btn-body">
+            <b>在Appgallery上获取</b>
+            <span>HarmonyOS · 敬请期待</span>
+          </span>
+          <i class="fa-solid fa-clock dl-dl-btn-arrow"></i>
+        </button>
+
+        <!-- Windows -->
+        <button class="dl-dl-btn disabled" type="button" data-coming="Windows">
+          <span class="dl-dl-btn-icon">
+            <i class="fa-brands fa-windows"></i>
+          </span>
+          <span class="dl-dl-btn-body">
+            <b>在Microsoft Store上获取</b>
+            <span>桌面端 · 敬请期待</span>
+          </span>
+          <i class="fa-solid fa-clock dl-dl-btn-arrow"></i>
+        </button>
+
+        <div class="dl-dl-note">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>由亚斯红日网络科技中心打包发布</span>
+        </div>
+
+      </div>
+
+      <!-- 安装指引 -->
+      <div class="dl-guide">
+        <h3><i class="fa-solid fa-list-check"></i> 安卓安装步骤</h3>
+        <ol>
+          <li>点击上方「安卓下载」按钮，保存 <code>Ponxigrad.apk</code> 到手机。</li>
+          <li>进入「设置 → 安全」，开启「允许安装未知来源应用」。</li>
+          <li>在「文件管理 → 下载」中找到 APK，点击安装。</li>
+          <li>安装完成后，桌面出现「蓬溪格勒人民高等中学」图标。</li>
+        </ol>
+        <blockquote>
+          <i class="fa-solid fa-lightbulb"></i>
+          若提示「应用未经过安全检测」，选择「继续安装」即可。
+        </blockquote>
+      </div>
+
+    </aside>
+
+  </div>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="assets/js/main.js"></script>
+<script src="assets/js/download.js"></script>
+
+</body>
+</html>

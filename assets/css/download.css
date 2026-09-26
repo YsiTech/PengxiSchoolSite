@@ -1,0 +1,630 @@
+/* ===================================================================
+   应用下载页 · 精致版
+   =================================================================== */
+
+/* ---------- 顶部大卡 ---------- */
+.dl-hero{
+  position:relative;
+  overflow:hidden;
+  color:#fff;
+  padding:34px 20px 46px;
+  background:
+    radial-gradient(1200px 500px at 85% -10%,rgba(212,175,55,.20),transparent 60%),
+    linear-gradient(120deg,rgba(26,43,76,.95) 0%,rgba(36,59,99,.92) 45%,rgba(200,16,46,.78) 100%),
+    repeating-linear-gradient(90deg,transparent 0 38px,rgba(255,255,255,.055) 38px 39px);
+}
+.dl-hero-bg{
+  position:absolute;inset:0;
+  background-image:
+    radial-gradient(1.4px 1.4px at 12% 22%,rgba(255,255,255,.6),transparent),
+    radial-gradient(1.2px 1.2px at 42% 68%,rgba(255,255,255,.45),transparent),
+    radial-gradient(1.6px 1.6px at 68% 22%,rgba(255,255,255,.55),transparent),
+    radial-gradient(1.3px 1.3px at 88% 58%,rgba(255,255,255,.5),transparent);
+  pointer-events:none;
+  z-index:1;
+}
+.dl-hero-inner{
+  position:relative;
+  z-index:2;
+  max-width:var(--maxw);
+  margin:0 auto;
+}
+.dl-crumb{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:13px;
+  color:rgba(255,255,255,.72);
+  margin-bottom:22px;
+}
+.dl-crumb a{color:rgba(255,255,255,.86)}
+.dl-crumb a:hover{color:#f0d98a}
+.dl-crumb i{font-size:10px;opacity:.6}
+
+.dl-hero-main{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:26px;
+  align-items:center;
+}
+
+/* 图标 */
+.dl-icon-wrap{position:relative;flex:0 0 auto}
+.dl-icon-big{
+  width:112px;
+  height:112px;
+  border-radius:26px;
+  box-shadow:
+    0 0 0 4px rgba(255,255,255,.15),
+    0 20px 40px rgba(0,0,0,.35);
+  object-fit:cover;
+  background:#f7f4ec;
+  display:block;
+}
+.dl-verified{
+  position:absolute;
+  right:-4px;
+  bottom:-4px;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  background:#fff;
+  display:grid;
+  place-items:center;
+  color:#1f8f55;
+  font-size:24px;
+  box-shadow:0 4px 12px rgba(0,0,0,.25);
+}
+
+/* 信息 */
+.dl-hero-info{min-width:0}
+.dl-hero-info h1{
+  margin:0 0 8px;
+  font-size:clamp(22px,2.6vw,30px);
+  letter-spacing:2px;
+  color:#fff;
+  text-shadow:0 4px 18px rgba(0,0,0,.3);
+}
+.dl-hero-sub{
+  margin:0 0 14px;
+  font-size:14px;
+  color:#f4ead4;
+  letter-spacing:.3px;
+}
+.dl-hero-tags{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.dl-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 12px;
+  font-size:12.5px;
+  border-radius:999px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.22);
+  color:#f4ead4;
+  backdrop-filter:blur(3px);
+  letter-spacing:.3px;
+}
+.dl-tag i{font-size:12px}
+.dl-tag.primary{
+  background:rgba(200,16,46,.85);
+  border-color:rgba(240,217,138,.5);
+  color:#ffe9b8;
+}
+
+.dl-hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.dl-hero-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 26px;
+  border-radius:10px;
+  border:1.5px solid transparent;
+  font-size:14.5px;
+  font-weight:700;
+  letter-spacing:.6px;
+  cursor:pointer;
+  text-decoration:none;
+  transition:transform .18s,box-shadow .22s,background .22s,border-color .22s,color .22s;
+  font-family:inherit;
+}
+.dl-hero-btn.primary{
+  background:linear-gradient(135deg,#f0d98a,#d4af37);
+  color:#241b08;
+  box-shadow:0 10px 26px rgba(212,175,55,.38);
+}
+.dl-hero-btn.primary:hover{
+  transform:translateY(-2px);
+  box-shadow:0 14px 32px rgba(212,175,55,.5);
+  background:linear-gradient(135deg,#f5e4a3,#e2be45);
+}
+.dl-hero-btn.ghost{
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  border-color:rgba(255,255,255,.4);
+}
+.dl-hero-btn.ghost:hover{
+  background:rgba(255,255,255,.18);
+  border-color:#f0d98a;
+  color:#f0d98a;
+}
+
+/* 右侧数据 */
+.dl-hero-stats{
+  display:flex;
+  gap:22px;
+  padding:18px 22px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:14px;
+  backdrop-filter:blur(6px);
+}
+.dl-stat{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  text-align:center;
+  min-width:74px;
+}
+.dl-stat b{
+  font-size:22px;
+  color:#fff;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.5px;
+}
+.dl-stat span{
+  font-size:11.5px;
+  color:#f0d98a;
+  letter-spacing:.3px;
+}
+.dl-stat span i{font-size:10px}
+.dl-stat em{
+  font-style:normal;
+  font-size:11px;
+  color:rgba(255,255,255,.6);
+}
+
+/* ---------- 主体布局 ---------- */
+.dl-main{
+  max-width:var(--maxw);
+  margin:0 auto;
+  padding:34px 20px 60px;
+}
+.dl-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 340px;
+  gap:24px;
+  align-items:start;
+}
+
+/* ---------- 左栏 section ---------- */
+.dl-content{display:flex;flex-direction:column;gap:22px;min-width:0}
+
+.dl-section{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
+  padding:26px;
+}
+.dl-section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:18px;
+  padding-bottom:14px;
+  border-bottom:1px solid var(--line-soft);
+}
+.dl-section-head h2{
+  margin:0;
+  font-size:17px;
+  color:var(--blue);
+  letter-spacing:1px;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+}
+.dl-section-head h2 i{
+  color:var(--red);
+  font-size:16px;
+}
+
+/* ---------- 介绍 ---------- */
+.dl-intro p{
+  font-size:14.5px;
+  line-height:1.9;
+  color:var(--ink-soft);
+  margin:0 0 16px;
+}
+.dl-intro h3{
+  margin:22px 0 14px;
+  font-size:15px;
+  color:var(--blue);
+  letter-spacing:.6px;
+  padding-left:10px;
+  border-left:3px solid var(--gold);
+}
+.dl-features{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+.dl-feature{
+  display:flex;
+  gap:12px;
+  padding:14px;
+  border-radius:10px;
+  background:#fbf9f4;
+  border:1px solid var(--line-soft);
+  transition:transform .18s,border-color .2s,box-shadow .22s;
+}
+.dl-feature:hover{
+  transform:translateY(-2px);
+  border-color:var(--gold);
+  box-shadow:var(--shadow-sm);
+}
+.dl-feature i{
+  flex:0 0 36px;
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(140deg,#c8102e,#9d0c24);
+  color:#fff;
+  font-size:16px;
+}
+.dl-feature div{min-width:0}
+.dl-feature b{
+  display:block;
+  font-size:14px;
+  color:var(--blue);
+  margin-bottom:3px;
+  letter-spacing:.3px;
+}
+.dl-feature span{
+  font-size:12.5px;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+/* ---------- 更新日志 ---------- */
+.dl-changelog{position:relative}
+.dl-log-item{
+  padding:16px 18px;
+  border-radius:10px;
+  background:#fbf9f4;
+  border-left:3px solid var(--red);
+}
+.dl-log-ver{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  margin-bottom:10px;
+}
+.dl-log-ver b{
+  font-size:15px;
+  color:var(--red);
+  letter-spacing:.6px;
+}
+.dl-log-ver span{
+  font-size:12px;
+  color:var(--muted);
+}
+.dl-log-item ul{
+  margin:0;
+  padding-left:20px;
+  list-style:disc;
+}
+.dl-log-item li{
+  font-size:13.5px;
+  line-height:1.9;
+  color:var(--ink-soft);
+}
+
+/* ---------- 权限 ---------- */
+.dl-perms{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+.dl-perm{
+  display:flex;
+  gap:12px;
+  padding:14px;
+  border-radius:10px;
+  background:#fbf9f4;
+  border:1px solid var(--line-soft);
+}
+.dl-perm i{
+  flex:0 0 34px;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:#eef3fb;
+  color:var(--blue);
+  font-size:14px;
+}
+.dl-perm b{
+  display:block;
+  font-size:13.5px;
+  color:var(--blue);
+  margin-bottom:2px;
+}
+.dl-perm span{
+  font-size:12.5px;
+  color:var(--muted);
+  line-height:1.6;
+}
+.dl-perm-note{
+  margin-top:14px;
+  font-size:12.5px;
+  color:#1f8f55;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* ---------- 右栏 ---------- */
+.dl-side{
+  position:sticky;
+  top:78px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+/* 下载面板 */
+.dl-download-card{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:20px;
+}
+.dl-dl-head{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding-bottom:14px;
+  margin-bottom:16px;
+  border-bottom:1px solid var(--line-soft);
+  font-size:14.5px;
+  font-weight:700;
+  color:var(--blue);
+  letter-spacing:1px;
+}
+.dl-dl-head i{color:var(--red)}
+
+/* 下载按钮 */
+.dl-dl-btn{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:13px 16px;
+  margin-bottom:10px;
+  border-radius:11px;
+  border:1.5px solid var(--line);
+  background:#fff;
+  cursor:pointer;
+  text-decoration:none;
+  color:var(--ink);
+  font-family:inherit;
+  text-align:left;
+  transition:transform .18s,border-color .2s,box-shadow .22s,background .2s;
+  box-sizing:border-box;
+}
+.dl-dl-btn:last-of-type{margin-bottom:0}
+.dl-dl-btn:hover{
+  border-color:var(--gold);
+  transform:translateY(-2px);
+  box-shadow:var(--shadow);
+}
+.dl-dl-btn-icon{
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  display:grid;
+  place-items:center;
+  background:#f2f5fa;
+  color:var(--blue);
+  font-size:20px;
+  overflow:hidden;
+}
+.dl-huawei-logo{
+  width:34px;
+  height:34px;
+  object-fit:contain;
+  display:block;
+}
+.dl-dl-btn-body{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.dl-dl-btn-body b{
+  font-size:14px;
+  color:var(--ink);
+  letter-spacing:.3px;
+}
+.dl-dl-btn-body span{
+  font-size:12px;
+  color:var(--muted);
+}
+.dl-dl-btn-arrow{
+  flex:0 0 auto;
+  font-size:13px;
+  color:var(--muted);
+  opacity:.7;
+}
+
+/* 主按钮（安卓） */
+.dl-dl-btn.primary{
+  background:linear-gradient(135deg,#c8102e,#9d0c24);
+  border-color:#c8102e;
+  box-shadow:0 10px 24px rgba(200,16,46,.28);
+}
+.dl-dl-btn.primary .dl-dl-btn-icon{
+  background:rgba(255,255,255,.18);
+  color:#fff;
+}
+.dl-dl-btn.primary .dl-dl-btn-body b{color:#fff}
+.dl-dl-btn.primary .dl-dl-btn-body span{color:#ffd9df}
+.dl-dl-btn.primary .dl-dl-btn-arrow{color:#fff;opacity:.9}
+.dl-dl-btn.primary:hover{
+  background:linear-gradient(135deg,#d81535,#a80e27);
+  border-color:#d81535;
+  box-shadow:0 14px 30px rgba(200,16,46,.42);
+}
+
+/* 敬请期待 */
+.dl-dl-btn.disabled{
+  background:#f8f6f0;
+  border-color:var(--line-soft);
+  cursor:not-allowed;
+  opacity:.75;
+}
+.dl-dl-btn.disabled .dl-dl-btn-icon{
+  background:#ebe5d7;
+  color:var(--muted);
+}
+.dl-dl-btn.disabled:hover{
+  transform:none;
+  border-color:var(--line-soft);
+  box-shadow:none;
+}
+
+.dl-dl-note{
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid var(--line-soft);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  color:var(--muted);
+}
+.dl-dl-note i{color:#1f8f55}
+
+/* 安装指引 */
+.dl-guide{
+  background:linear-gradient(180deg,#fffdf6,#fff8e8);
+  border:1px solid #ead9a8;
+  border-radius:var(--radius);
+  padding:20px;
+}
+.dl-guide h3{
+  margin:0 0 14px;
+  font-size:15px;
+  color:#8a6d12;
+  letter-spacing:.6px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.dl-guide h3 i{color:var(--red)}
+.dl-guide ol{
+  margin:0;
+  padding-left:22px;
+  font-size:13px;
+  line-height:1.9;
+  color:var(--ink-soft);
+}
+.dl-guide ol li{margin-bottom:6px}
+.dl-guide code{
+  background:#fff;
+  padding:1px 6px;
+  border-radius:4px;
+  color:var(--red-dark);
+  font-size:12px;
+}
+.dl-guide blockquote{
+  margin:14px 0 0;
+  padding:10px 14px;
+  background:rgba(255,255,255,.7);
+  border-left:3px solid var(--gold);
+  border-radius:0 6px 6px 0;
+  font-size:12.5px;
+  color:#7a6414;
+  line-height:1.7;
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+}
+.dl-guide blockquote i{margin-top:2px;color:var(--gold)}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:1000px){
+  .dl-layout{grid-template-columns:1fr}
+  .dl-side{position:static}
+  .dl-hero-main{grid-template-columns:auto 1fr}
+  .dl-hero-stats{grid-column:1/-1;justify-content:space-around}
+}
+
+@media (max-width:700px){
+  .dl-hero{padding:22px 16px 32px}
+  .dl-icon-big{width:84px;height:84px;border-radius:20px}
+  .dl-verified{width:26px;height:26px;font-size:18px}
+  .dl-hero-info h1{font-size:20px;letter-spacing:1px}
+  .dl-hero-actions .dl-hero-btn{padding:10px 20px;font-size:13.5px}
+  .dl-hero-stats{padding:14px;gap:14px}
+  .dl-stat b{font-size:18px}
+  .dl-main{padding:20px 14px 40px}
+  .dl-section{padding:20px 16px}
+  .dl-features{grid-template-columns:1fr}
+  .dl-perms{grid-template-columns:1fr}
+}
+
+@media (max-width:480px){
+  .dl-hero-main{grid-template-columns:1fr;text-align:center}
+  .dl-icon-wrap{margin:0 auto}
+  .dl-hero-tags{justify-content:center}
+  .dl-hero-actions{justify-content:center}
+  .dl-hero-stats{flex-wrap:wrap;justify-content:center}
+}
+
+/* ===================================================================
+   顶部栏 · 下载入口
+   =================================================================== */
+
+.topbar-download{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff;
+  font-size:13px;
+  letter-spacing:.4px;
+  opacity:.92;
+  transition:background .2s,border-color .2s,color .2s,opacity .2s;
+  white-space:nowrap;
+}
+.topbar-download:hover{
+  background:rgba(255,255,255,.14);
+  border-color:#f0d98a;
+  color:#f0d98a;
+  opacity:1;
+}
+.topbar-download i{font-size:12px}
+
+@media (max-width:600px){
+  .topbar-download span{display:none}
+  .topbar-download{padding:3px 10px}
+  .topbar-download i{font-size:13px}
+}

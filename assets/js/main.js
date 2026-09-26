@@ -295,11 +295,15 @@
       '<div class="topbar">' +
         '<div class="topbar-inner">' +
           '<div class="topbar-left">' + T.topLeft + '</div>' +
-          '<div class="topbar-right">' +
-            '<a href="' + asHref + '"' + asCls + '>' + T.langAs + '</a>' +
-            '<a href="' + ruHref + '"' + ruCls + '>' + T.langRu + '</a>' +
-            '<span class="auth-nav"></span>' +
-          '</div>' +
+         '<div class="topbar-right">' +
+  '<a href="' + asHref + '"' + asCls + '>' + T.langAs + '</a>' +
+  '<a href="' + ruHref + '"' + ruCls + '>' + T.langRu + '</a>' +
+  '<a href="' + (IS_RU ? '../download.html' : 'download.html') + '" class="topbar-download" title="' + (IS_RU ? 'Скачать приложение' : '下载应用') + '">' +
+    '<i class="fa-solid fa-download"></i>' +
+    '<span>' + (IS_RU ? 'Скачать' : '下载应用') + '</span>' +
+  '</a>' +
+  '<span class="auth-nav"></span>' +
+'</div>' +
         '</div>' +
       '</div>' +
       '<header class="site-header">' +

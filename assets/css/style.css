@@ -1617,3 +1617,45 @@ body.warn-page{
   object-position: center;    /* 焦点居中，可改 top / bottom */
   display: block;
 }
+/* ===================================================================
+   顶部栏 · 下载入口
+   =================================================================== */
+
+.topbar-download{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.35);
+  color:#fff;
+  font-size:13px;
+  letter-spacing:.4px;
+  opacity:.92;
+  transition:background .2s,border-color .2s,color .2s,opacity .2s;
+  white-space:nowrap;
+}
+
+.topbar-download:hover{
+  background:rgba(255,255,255,.14);
+  border-color:#f0d98a;
+  color:#f0d98a;
+  opacity:1;
+}
+
+.topbar-download i{
+  font-size:12px;
+}
+
+/* 移动端：隐藏文字，只显示图标 */
+@media (max-width:600px){
+  .topbar-download span{
+    display:none;
+  }
+  .topbar-download{
+    padding:3px 10px;
+  }
+  .topbar-download i{
+    font-size:13px;
+  }
+}
