@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>新闻动态 · 亚斯红日网络科技中心</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+.news-filter{display:flex;gap:0;flex-wrap:wrap;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--surface);margin-bottom:40px}
+.news-filter button{
+  padding:12px 24px;border:0;border-right:1px solid var(--line);
+  background:transparent;color:var(--body);font-size:13.5px;cursor:pointer;
+  transition:.18s;font-family:var(--sans);letter-spacing:.5px;
+}
+.news-filter button:last-child{border-right:0}
+.news-filter button:hover{background:var(--surface-2);color:var(--red)}
+.news-filter button.active{background:var(--ink);color:#fff}
+</style>
+</head>
+<body data-page="news">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="index.html">首页</a><i>/</i><span>新闻动态</span></div>
+    <h1>新闻动态</h1>
+    <p>中心要闻 · 技术前沿 · 国际合作 · 安全动态</p>
+  </div>
+</section>
+
+<main class="section">
+  <div class="container">
+
+    <div class="news-filter">
+      <button class="active" data-news-filter="all">全部</button>
+      <button data-news-filter="corp">中心要闻</button>
+      <button data-news-filter="tech">技术前沿</button>
+      <button data-news-filter="intl">国际合作</button>
+      <button data-news-filter="sec">安全动态</button>
+    </div>
+
+    <div class="news-wrap">
+
+      <a class="news-row" data-news-cat="corp" href="#">
+        <div class="news-date"><b>18</b>2022 · 09</div>
+        <div>
+          <div class="news-title">国家政务云平台完成第五次全国性扩容</div>
+          <p class="news-desc">本次扩容新增服务器 8.6 万台，覆盖全部省级行政区，政务系统上云率提升至 92%。</p>
+        </div>
+        <div class="news-cat">中心要闻</div>
+      </a>
+
+      <a class="news-row" data-news-cat="intl" href="#">
+        <div class="news-date"><b>12</b>2022 · 09</div>
+        <div>
+          <div class="news-title">与苏联国家计算中心签署新一轮合作协议</div>
+          <p class="news-desc">双方将在高性能计算、数据跨境流通、人才联合培养等方面开展深度合作。</p>
+        </div>
+        <div class="news-cat">国际合作</div>
+      </a>
+
+      <a class="news-row" data-news-cat="tech" href="#">
+        <div class="news-date"><b>05</b>2022 · 09</div>
+        <div>
+          <div class="news-title">自主数据库 RedDB 6.0 正式发布</div>
+          <p class="news-desc">新版本在分布式事务、混合负载、多模态数据支持等方面实现重大突破，性能较上一代提升 3 倍。</p>
+        </div>
+        <div class="news-cat">技术前沿</div>
+      </a>
+
+      <a class="news-row" data-news-cat="sec" href="#">
+        <div class="news-date"><b>28</b>2022 · 08</div>
+        <div>
+          <div class="news-title">全国政务数据安全应急演练在蓬溪格勒举行</div>
+          <p class="news-desc">本次演练模拟极端场景下的数据保护与恢复，全国 32 个省级数据中心参与。</p>
+        </div>
+        <div class="news-cat">安全动态</div>
+      </a>
+
+      <a class="news-row" data-news-cat="tech" href="#">
+        <div class="news-date"><b>20</b>2022 · 08</div>
+        <div>
+          <div class="news-title">RedMind 大模型框架通过国家测评</div>
+          <p class="news-desc">在国产 AI 加速卡上完成 5,000 亿参数模型训练验证，效率达到国际先进水平。</p>
+        </div>
+        <div class="news-cat">技术前沿</div>
+      </a>
+
+      <a class="news-row" data-news-cat="corp" href="#">
+        <div class="news-date"><b>12</b>2022 · 08</div>
+        <div>
+          <div class="news-title">中心入选国家数字化转型标杆企业</div>
+          <p class="news-desc">工业和信息化部公布首批国家数字化转型标杆企业名单，中心作为唯一云计算服务商入选。</p>
+        </div>
+        <div class="news-cat">中心要闻</div>
+      </a>
+
+      <a class="news-row" data-news-cat="sec" href="#">
+        <div class="news-date"><b>05</b>2022 · 08</div>
+        <div>
+          <div class="news-title">RedGuard 系统检出新型网络攻击样本</div>
+          <p class="news-desc">安全团队成功识别并阻断一起针对政务系统的定向攻击，相关情报已上报国家网络安全中心。</p>
+        </div>
+        <div class="news-cat">安全动态</div>
+      </a>
+
+      <a class="news-row" data-news-cat="intl" href="#">
+        <div class="news-date"><b>28</b>2022 · 07</div>
+        <div>
+          <div class="news-title">中心代表团访问美利坚社会主义联邦共和国</div>
+          <p class="news-desc">双方就跨太平洋数据通道建设、AI 算力共享等议题展开技术交流。</p>
+        </div>
+        <div class="news-cat">国际合作</div>
+      </a>
+
+    </div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

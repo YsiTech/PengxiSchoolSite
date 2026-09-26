@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>联系我们 · 苏联教育部</title>
+<link rel="stylesheet" href="../assets/css/main.css">
+<link rel="stylesheet" href="../assets/css/cn.css">
+</head>
+<body data-page="contact">
+
+<div id="site-header"></div>
+
+<section class="page-head">
+  <div class="page-head-inner">
+    <div class="breadcrumb">
+      <a href="index.html">首页</a><i>›</i><span>联系我们</span>
+    </div>
+    <h1>联系我们</h1>
+    <p>接待处、新闻处与公民来信来访处</p>
+  </div>
+</section>
+
+<main class="container section">
+
+  <div class="contact-grid" style="margin-bottom:24px">
+
+    <div class="card">
+      <div class="card-head"><h3>基本信息</h3></div>
+      <div class="card-body">
+        <div class="contact-item">
+          <span class="label">地址</span>
+          <span class="value">莫斯科市教育街 1 号</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">邮政编码</span>
+          <span class="value">101000</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">接待处电话</span>
+          <span class="value">8 (495) 000-00-01</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">新闻处电话</span>
+          <span class="value">8 (495) 000-00-02</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">电子邮箱</span>
+          <span class="value"><a href="mailto:press@minobr.su">press@minobr.su</a></span>
+        </div>
+        <div class="contact-item">
+          <span class="label">工作时间</span>
+          <span class="value">周一至周五：9:00 — 18:00<br>午休：13:00 — 14:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>公民来信来访处</h3></div>
+      <div class="card-body">
+        <div class="contact-item">
+          <span class="label">电话</span>
+          <span class="value">8 (495) 000-00-03</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">电子邮箱</span>
+          <span class="value"><a href="mailto:obrashenie@minobr.su">obrashenie@minobr.su</a></span>
+        </div>
+        <div class="contact-item">
+          <span class="label">当面接待</span>
+          <span class="value">每周二、周四：14:00 — 17:00<br>需提前预约</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">办理时限</span>
+          <span class="value">自登记之日起 30 日内答复</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>在线留言</h3></div>
+    <div class="card-body">
+      <form onsubmit="event.preventDefault(); alert('感谢！您的留言已登记。'); this.reset();">
+        <div class="form-grid">
+          <div class="field">
+            <label>姓名</label>
+            <input type="text" placeholder="请输入您的姓名" required>
+          </div>
+          <div class="field">
+            <label>单位</label>
+            <input type="text" placeholder="所在单位名称">
+          </div>
+          <div class="field">
+            <label>电子邮箱</label>
+            <input type="email" placeholder="example@mail.su" required>
+          </div>
+          <div class="field">
+            <label>联系电话</label>
+            <input type="tel" placeholder="8 (___) ___-__-__">
+          </div>
+          <div class="field full">
+            <label>留言主题</label>
+            <select>
+              <option>普通教育问题</option>
+              <option>高等教育问题</option>
+              <option>中等专业教育问题</option>
+              <option>意见建议或投诉</option>
+              <option>信息查询</option>
+              <option>其他</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>留言内容</label>
+            <textarea placeholder="请简要说明您的问题..." required></textarea>
+          </div>
+          <div class="field full">
+            <button class="btn btn-primary" type="submit">提交留言</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</main>
+
+<div id="site-footer"></div>
+<script src="../assets/js/main-cn.js"></script>
+</body>
+</html>

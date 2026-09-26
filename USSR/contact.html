@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Контакты · Минобразования СССР</title>
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body data-page="contact">
+
+<div id="site-header"></div>
+
+<section class="page-head">
+  <div class="page-head-inner">
+    <div class="breadcrumb">
+      <a href="index.html">Главная</a><i>›</i><span>Контакты</span>
+    </div>
+    <h1>Контакты</h1>
+    <p>Приёмная, пресс-служба и отдел по работе с обращениями граждан</p>
+  </div>
+</section>
+
+<main class="container section">
+
+  <div class="contact-grid" style="margin-bottom:24px">
+
+    <div class="card">
+      <div class="card-head"><h3>Общие сведения</h3></div>
+      <div class="card-body">
+        <div class="contact-item">
+          <span class="label">Адрес</span>
+          <span class="value">г. Москва, ул. Просвещения, д. 1</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Почтовый индекс</span>
+          <span class="value">101000</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Телефон приёмной</span>
+          <span class="value">8 (495) 000-00-01</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Телефон пресс-службы</span>
+          <span class="value">8 (495) 000-00-02</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Эл. почта</span>
+          <span class="value"><a href="mailto:press@minobr.su">press@minobr.su</a></span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Часы работы</span>
+          <span class="value">Пн—Пт: 9:00 — 18:00<br>Перерыв: 13:00 — 14:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Отдел по работе с обращениями</h3></div>
+      <div class="card-body">
+        <div class="contact-item">
+          <span class="label">Телефон</span>
+          <span class="value">8 (495) 000-00-03</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Эл. почта</span>
+          <span class="value"><a href="mailto:obrashenie@minobr.su">obrashenie@minobr.su</a></span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Личный приём</span>
+          <span class="value">Вторник, четверг: 14:00 — 17:00<br>по предварительной записи</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Срок рассмотрения</span>
+          <span class="value">до 30 дней со дня регистрации обращения</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Обратная связь</h3></div>
+    <div class="card-body">
+      <form onsubmit="event.preventDefault(); alert('Спасибо! Ваше обращение зарегистрировано.'); this.reset();">
+        <div class="form-grid">
+          <div class="field">
+            <label>Фамилия, имя, отчество</label>
+            <input type="text" placeholder="Иванов Иван Иванович" required>
+          </div>
+          <div class="field">
+            <label>Организация</label>
+            <input type="text" placeholder="Наименование организации">
+          </div>
+          <div class="field">
+            <label>Электронная почта</label>
+            <input type="email" placeholder="example@mail.su" required>
+          </div>
+          <div class="field">
+            <label>Телефон</label>
+            <input type="tel" placeholder="8 (___) ___-__-__">
+          </div>
+          <div class="field full">
+            <label>Тема обращения</label>
+            <select>
+              <option>Вопрос по общему образованию</option>
+              <option>Вопрос по высшему образованию</option>
+              <option>Вопрос по среднему специальному образованию</option>
+              <option>Жалоба или предложение</option>
+              <option>Запрос информации</option>
+              <option>Иное</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>Текст обращения</label>
+            <textarea placeholder="Изложите суть вашего вопроса..." required></textarea>
+          </div>
+          <div class="field full">
+            <button class="btn btn-primary" type="submit">Отправить обращение</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</main>
+
+<div id="site-footer"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+/* ===================================================================
+   苏联教育部 · 中文版字体与排版覆盖
+   放在 main.css 之后引入
+   =================================================================== */
+
+:root{
+  /* 中文标题：优先思源宋体 / 华文中宋 / 宋体，再回退到西文衬线 */
+  --font-head:"Source Han Serif SC","Noto Serif SC","Songti SC","STSong",
+              "SimSun","PT Serif",Georgia,"Times New Roman",serif;
+
+  /* 中文正文：优先思源黑体 / 苹方 / 微软雅黑 */
+  --font-body:"Source Han Sans SC","Noto Sans SC","PingFang SC",
+              "Hiragino Sans GB","Microsoft YaHei","PT Sans",
+              "Helvetica Neue",Arial,sans-serif;
+}
+
+/* 中文标题字距略放大，更有"机关文件"感 */
+.header-title h1{letter-spacing:2px}
+.page-head h1{letter-spacing:3px}
+.section-title{letter-spacing:2px}
+.card-head h3{letter-spacing:1.5px}
+.hero h2{letter-spacing:1.5px}
+
+/* 数字部分保持等宽显示，用西文字体 */
+.hero-stat b,
+.news-list .n-date,
+.doc-list .d-num,
+.doc-list .d-date,
+.structure-item .dept-code,
+.news-detail .nd-date{
+  font-family:"PT Sans","Helvetica Neue",Arial,sans-serif;
+  font-variant-numeric:tabular-nums;
+}
+
+/* 中文版顶部信息条：语言切换突出显示当前语言 */
+.topbar-right a[data-lang="cn"]{
+  color:var(--gold-soft);
+  font-weight:600;
+}
+
+/* 中文段落行高微调，更符合中文阅读习惯 */
+body{line-height:1.78}
+.prose p,
+.card-body p,
+.news-detail .nd-lead{
+  line-height:1.9;
+}
+
+/* 中文版引用块：使用全角引号 */
+.quote-card .q-text::before{content:""}
+.quote-card::before{
+  content:"「";
+  font-size:140px;
+  top:-10px;
+}

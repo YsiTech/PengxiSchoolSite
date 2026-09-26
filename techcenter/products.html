@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>产品中心 · 亚斯红日网络科技中心</title>
+<link rel="icon" href="logo.png">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+.prod-filter{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px}
+.prod-filter button{
+  padding:9px 22px;border-radius:var(--radius-pill);
+  border:1.5px solid var(--line-2);background:transparent;color:var(--body);
+  font-size:13.5px;cursor:pointer;transition:.2s;font-family:var(--mono);
+  letter-spacing:.8px;
+}
+.prod-filter button:hover{border-color:var(--red);color:var(--red)}
+.prod-filter button.active{
+  background:linear-gradient(135deg,var(--red),var(--red-2));
+  border-color:transparent;color:#fff;font-weight:600;
+  box-shadow:0 6px 20px rgba(225,29,46,.3);
+}
+</style>
+</head>
+<body data-page="products">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="index.html">首页</a><i>›</i><span>产品中心</span></div>
+    <h1>产品中心</h1>
+    <p>从操作系统到终端设备，从云平台到安全产品，构建完整的数字技术产品矩阵</p>
+  </div>
+</section>
+
+<main class="section">
+  <div class="container">
+
+    <div class="prod-filter">
+      <button class="active" data-prod-filter="all">全部产品</button>
+      <button data-prod-filter="cloud">云平台</button>
+      <button data-prod-filter="terminal">终端设备</button>
+      <button data-prod-filter="security">安全产品</button>
+      <button data-prod-filter="industry">行业方案</button>
+    </div>
+
+    <div class="products-grid">
+
+      <article class="prod-card reveal" data-prod-cat="cloud">
+        <span class="prod-badge">Cloud</span>
+        <h3>红日政务云 OS</h3>
+        <p class="desc">面向各级政府的云操作系统，支持多云管理、信创适配、一键部署与智能运维。全面兼容国产芯片与操作系统。</p>
+        <div class="prod-meta"><span>v5.2</span><span class="ver">稳定</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="cloud">
+        <span class="prod-badge">Cloud</span>
+        <h3>红日容器云平台</h3>
+        <p class="desc">基于 Kubernetes 的企业级容器云平台，提供应用编排、灰度发布、服务网格与可观测能力。</p>
+        <div class="prod-meta"><span>v3.6</span><span class="ver">稳定</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="cloud">
+        <span class="prod-badge">Data</span>
+        <h3>红日数据中台</h3>
+        <p class="desc">一站式数据采集、治理、分析与服务平台，支持实时计算、湖仓一体与数据资产目录。</p>
+        <div class="prod-meta"><span>v4.1</span><span class="ver">稳定</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="terminal">
+        <span class="prod-badge">Terminal</span>
+        <h3>天问终端 · 教育版</h3>
+        <p class="desc">专为中学与高校设计的智能终端，搭载 RedStarOS，集成学习日志、智慧课堂与研学系统。</p>
+        <div class="prod-meta"><span>v4.0</span><span class="ver">稳定</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="terminal">
+        <span class="prod-badge">Terminal</span>
+        <h3>天问终端 · 政务版</h3>
+        <p class="desc">面向政务场景的安全终端，支持可信启动、加密存储、远程管理，已在全国 20 个省级政务系统部署。</p>
+        <div class="prod-meta"><span>v3.8</span><span class="ver">稳定</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="terminal">
+        <span class="prod-badge">Terminal</span>
+        <h3>RedStarOS 5.0</h3>
+        <p class="desc">红日自主研发的桌面操作系统，支持 X86 / ARM / LoongArch 三大指令集，兼容主流办公与应用软件。</p>
+        <div class="prod-meta"><span>v5.0</span><span class="ver">稳定</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="security">
+        <span class="prod-badge">Security</span>
+        <h3>红星安全态势感知</h3>
+        <p class="desc">面向关键信息基础设施的实时安全监测平台，支持威胁情报、异常检测与自动化响应。</p>
+        <div class="prod-meta"><span>v3.8</span><span class="ver">稳定</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="security">
+        <span class="prod-badge">Security</span>
+        <h3>红日零信任网关</h3>
+        <p class="desc">基于零信任架构的访问控制网关，支持 SDP、mTLS、动态授权与细粒度审计。</p>
+        <div class="prod-meta"><span>v2.5</span><span class="ver">稳定</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="industry">
+        <span class="prod-badge">Industry</span>
+        <h3>智慧校园解决方案</h3>
+        <p class="desc">为中学与高校提供从基础设施、教学平台到智慧终端的完整方案，已服务 1,842 所学校。</p>
+        <div class="prod-meta"><span>Solution</span><span class="ver">推荐</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="industry">
+        <span class="prod-badge">Industry</span>
+        <h3>智慧交通解决方案</h3>
+        <p class="desc">为城市与交通企业提供智能调度、客流预测、设备监控与数字孪生方案。</p>
+        <div class="prod-meta"><span>Solution</span><span class="ver">推荐</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="industry">
+        <span class="prod-badge">Industry</span>
+        <h3>工业互联网解决方案</h3>
+        <p class="desc">为大型制造企业提供设备互联、边缘计算、数字孪生与智能运维方案。</p>
+        <div class="prod-meta"><span>Solution</span><span class="ver">推荐</span></div>
+      </article>
+
+      <article class="prod-card reveal" data-prod-cat="industry">
+        <span class="prod-badge">Industry</span>
+        <h3>政务数字化解决方案</h3>
+        <p class="desc">为各级政府部门提供一网通办、数据共享、政务云迁移与安全合规的完整方案。</p>
+        <div class="prod-meta"><span>Solution</span><span class="ver">推荐</span></div>
+      </article>
+
+    </div>
+
+  </div>
+</main>
+
+<div id="site-footer"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

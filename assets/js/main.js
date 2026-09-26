@@ -53,11 +53,11 @@
         { text:'联系我们', href:'contact.html' }
       ],
       footerLinksItems: [
-        { text:'亚斯共和国教育部', href:'#' },
-        { text:'苏联教育部', href:'#' },
-        { text:'莫斯科国立大学', href:'#' },
-        { text:'蓬溪格勒磁悬浮集团', href:'#' },
-        { text:'亚斯红日网络科技中心', href:'#' }
+        { text:'亚斯共和国教育部', href:'yas-ministry-of-education/index.html' },
+        { text:'苏联教育部', href:'USSR/index.html'},
+        { text:'莫斯科国立大学', href:'https://msu.ru/ch' },
+        { text:'蓬溪格勒磁悬浮集团', href:'cxf/index.html' },
+        { text:'亚斯红日网络科技中心', href:'techcenter/index.html' }
       ],
       copyright: '© {year} 蓬溪格勒人民高等中学',
       footerNote: '蓬溪格勒人民高等中学 · 技术支持：亚斯红日网络科技中心 · 备案号：亚斯共和国版本图书馆（2025）第 03698 号',
