@@ -1,15 +1,11 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <link rel="icon" type="image/png" href="photo/logo.png">
-<link rel="apple-touch-icon" href="photo/logo.png">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/js/auth.js"></script>
-<script src="assets/js/main.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>星图搜索 · 蓬溪格勒人民高等中学</title>
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/search.css">
 </head>
 <body data-page="search">
 
@@ -17,14 +13,20 @@
 
 <section class="search-hero">
   <div class="search-hero-inner">
-    <div class="crumb"><a href="index.html">首页</a><i>›</i><span>星图搜索</span></div>
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><span>星图搜索</span></div>
     <h1>星图搜索</h1>
-    <p id="searchPageHeadline" class="search-hero-sub">全站检索 · 新闻 · 通知 · 教研 · 校史</p>
+    <p id="searchPageHeadline" class="search-hero-sub">全站检索 · 校园 + 全网</p>
 
     <form class="search-big" id="searchPageForm" autocomplete="off" role="search">
       <input id="searchPageInput" type="text" placeholder="输入关键词开始搜索……" aria-label="搜索" aria-autocomplete="list">
       <button type="submit">搜索</button>
     </form>
+
+    <div class="search-tabs" id="searchTabs">
+      <button class="search-tab on" data-scope="all"  type="button">综合</button>
+      <button class="search-tab"    data-scope="site" type="button">本站</button>
+      <button class="search-tab"    data-scope="web"  type="button">全网</button>
+    </div>
   </div>
 </section>
 
@@ -32,11 +34,16 @@
   <div id="searchResults"></div>
 
   <div class="pager" style="margin-top:32px">
-    <a href="index.html">← 返回首页</a>
+    <a href="mainsite.html">← 返回首页</a>
   </div>
 </main>
 
 <div id="site-footer"></div>
+
+<script src="assets/js/lib/supabase.js"></script>
+<script src="assets/js/auth.js"></script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/websearch.js"></script>
+
 </body>
 </html>

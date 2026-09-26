@@ -1,0 +1,127 @@
+/* ===================================================================
+   星图搜索 · 全网搜索样式
+   =================================================================== */
+
+/* Tab 切换 */
+.search-tabs{
+  display:inline-flex;
+  gap:6px;
+  margin-top:20px;
+  background:rgba(255,255,255,.12);
+  border-radius:999px;
+  padding:4px;
+}
+.search-tab{
+  border:0;
+  background:transparent;
+  color:rgba(255,255,255,.85);
+  padding:6px 20px;
+  font-size:13.5px;
+  letter-spacing:1px;
+  border-radius:999px;
+  cursor:pointer;
+  transition:background .2s,color .2s;
+  font-family:inherit;
+}
+.search-tab:hover{color:#fff}
+.search-tab.on{
+  background:#fff;
+  color:#1a2b4c;
+  font-weight:600;
+}
+
+/* Tavily 标识 */
+.tavily-badge{
+  display:inline-block;
+  font-size:10.5px;
+  padding:1px 8px;
+  border-radius:4px;
+  background:#e8f0fe;
+  color:#1a5fd4;
+  border:1px solid #c7dcfc;
+  letter-spacing:.5px;
+  font-weight:500;
+  margin-left:6px;
+  vertical-align:2px;
+}
+
+/* AI 摘要卡片 */
+.search-answer{
+  padding:18px 22px;
+  background:linear-gradient(135deg,#eef6ff,#e8f0fe);
+  border:1px solid #c7dcfc;
+  border-radius:14px;
+  margin-bottom:18px;
+  position:relative;
+  overflow:hidden;
+}
+.search-answer::before{
+  content:"★";
+  position:absolute;
+  right:-10px;top:-14px;
+  font-size:70px;
+  color:rgba(26,95,212,.08);
+  line-height:1;
+}
+.sa-label{
+  font-size:12px;
+  color:#1a5fd4;
+  letter-spacing:2px;
+  margin-bottom:8px;
+  font-weight:600;
+  position:relative;
+}
+.sa-body{
+  font-size:14.5px;
+  line-height:1.9;
+  color:#1a2b4c;
+  position:relative;
+  word-break:break-word;
+}
+
+/* 加载动画 */
+.search-loading{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:40px 20px;
+  color:#6b6256;
+  font-size:14px;
+  letter-spacing:.5px;
+}
+.spinner{
+  width:18px;
+  height:18px;
+  border:2px solid #e4dccb;
+  border-top-color:#c8102e;
+  border-radius:50%;
+  animation:wsSpin .8s linear infinite;
+}
+@keyframes wsSpin{to{transform:rotate(360deg)}}
+
+/* 外链标识 */
+.search-result[target="_blank"] h4::after{
+  content:"↗";
+  display:inline-block;
+  margin-left:6px;
+  color:#a89e8e;
+  font-size:13px;
+  vertical-align:1px;
+}
+
+@media (max-width:600px){
+  .search-tabs{
+    width:100%;
+    justify-content:center;
+    margin-top:16px;
+  }
+  .search-tab{
+    flex:1;
+    padding:6px 10px;
+    font-size:12.5px;
+    letter-spacing:.5px;
+  }
+  .search-answer{padding:16px}
+  .sa-body{font-size:13.5px}
+}
