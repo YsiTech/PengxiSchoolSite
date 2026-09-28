@@ -1,6 +1,7 @@
 /* ===================================================================
    蓬溪格勒人民高等中学 · 星图抽奖 (角色专属UI版 + 管理员体验卡转化)
    奖品网格版 · 单抽 + 五连抽
+   稀有度：6 级系统
    =================================================================== */
 
 (function (window) {
@@ -19,7 +20,6 @@
   var CFG = window.LOTTERY_CONFIG;
   var PRIZES = CFG.prizes.slice();
   
-  // ⭐ 初始价格（会被角色专属价格覆盖）
   var COST = CFG.cost;
   var COST5 = COST * 5;
   var currentUserRole = 'user';
@@ -37,7 +37,6 @@
   var todayCount   = $('todayCount');
   var recordList   = $('recordList');
 
-  // ⭐ 页面标题、描述、按钮价格元素
   var pageTitle    = $('pageTitle');
   var pageDesc     = $('pageDesc');
   var btn1Cost     = $('btn1Cost');
@@ -46,7 +45,6 @@
   var drawSub      = $('drawSub');
   var drawCard     = $('drawCard');
 
-  /* 单抽弹窗 */
   var resultModal  = $('resultModal');
   var resultIcon   = $('resultIcon');
   var resultTitle  = $('resultTitle');
@@ -54,13 +52,11 @@
   var resultBalance= $('resultBalance');
   var resultOkBtn  = $('resultOkBtn');
 
-  /* 五连抽弹窗 */
   var result5Modal   = $('result5Modal');
   var result5Grid    = $('result5Grid');
   var result5Balance = $('result5Balance');
   var result5OkBtn   = $('result5OkBtn');
 
-  /* 地址弹窗 */
   var addressModal = $('addressModal');
   var giftPrizeName= $('giftPrizeName');
   var addressForm  = $('addressForm');
@@ -73,18 +69,24 @@
   var isDrawing = false;
 
   /* ============================================================
-     稀有度
+     ⭐ 稀有度（6 级）
      ============================================================ */
   function rarityOf(weight) {
-    if (weight >= 20) return { label: '常见', cls: 'common' };
-    if (weight >= 10) return { label: '稀有', cls: 'rare' };
-    if (weight >= 5)  return { label: '珍贵', cls: 'epic' };
-    return { label: '极稀有', cls: 'legendary' };
+    if (weight >= 15)  return { label: '普通', cls: 'common' };
+    if (weight >= 10)  return { label: '优秀', cls: 'uncommon' };
+    if (weight >= 5)   return { label: '稀有', cls: 'rare' };
+    if (weight >= 2)   return { label: '史诗', cls: 'epic' };
+    if (weight >= 0.5) return { label: '传说', cls: 'legendary' };
+    return { label: '神话', cls: 'mythic' };
   }
 
   function iconFor(p) {
-    if (p.type === 'gift') return '🎁';
-    if (p.type === 'none') return '💫';
+    if (p.type === 'vip_card')        return '👑';
+    if (p.type === 'subscriber_card') return '💎';
+    if (p.type === 'money_card')      return '💰';
+    if (p.type === 'exp_card')        return '⭐';
+    if (p.type === 'gift')            return '🎁';
+    if (p.type === 'none')            return '💫';
     if (p.reward >= 500) return '💰';
     if (p.reward >= 200) return '💎';
     if (p.reward >= 100) return '🏆';
@@ -140,41 +142,29 @@
     var user = Auth.getCurrentUser();
     if (!user || user.isGuest) return;
 
-    // 1. 获取用户角色
     client.from('user_wallets').select('role').eq('user_id', user.id).single().then(function (res) {
       var role = (res.data && res.data.role) ? res.data.role : 'user';
       currentUserRole = role;
 
-      // 2. 获取该角色的抽奖消耗
       client.from('role_configs').select('lottery_cost').eq('role', role).single().then(function (cfgRes) {
         var realCost = (cfgRes.data && cfgRes.data.lottery_cost !== undefined) ? cfgRes.data.lottery_cost : CFG.cost;
         
-        // 3. 更新全局变量，用于后续扣费和余额判断
         COST = realCost;
         COST5 = realCost * 5;
 
-        // 4. 更新页面UI
-        var roleNames = { 'user': '普通用户', 'vip': 'VIP 用户', 'subscriber': '订阅用户', 'admin': '管理员' };
-        var roleLabel = roleNames[role] || '普通用户';
-
-        // 页面标题
         if (pageTitle) pageTitle.textContent = role === 'vip' ? '👑 星图抽奖 (VIP 专属折扣)' : (role === 'admin' ? '🛡️ 星图抽奖' : '星图抽奖');
         if (pageDesc) pageDesc.innerHTML = '单抽 <span id="costLabel">' + COST + '</span> 亚斯卢布 · 五连抽 <span id="cost5Label">' + COST5 + '</span> 亚斯卢布';
         
-        // 侧边栏
         if (costAmount) costAmount.textContent = COST === 0 ? '免费' : COST;
         
-        // 按钮价格
         if (btn1Cost) btn1Cost.textContent = COST === 0 ? '免费' : COST + ' ₽';
         if (btn5Cost) btn5Cost.textContent = COST5 === 0 ? '免费' : COST5 + ' ₽';
         if (costLabel) costLabel.textContent = COST;
         if (cost5Label) cost5Label.textContent = COST5;
 
-        // 抽奖卡片标题与副标题
         if (drawTitle) drawTitle.textContent = role === 'vip' ? 'VIP 专属星图' : (role === 'admin' ? '管理员测试' : '星图抽奖');
         if (drawSub) drawSub.textContent = role === 'vip' ? '尊贵 VIP，折扣抽奖' : (role === 'admin' ? '测试抽奖' : '命运即将揭晓');
 
-        // 给卡片加专属样式
         if (drawCard) {
           drawCard.classList.remove('vip-draw', 'admin-draw');
           if (role === 'vip') drawCard.classList.add('vip-draw');
@@ -529,10 +519,9 @@
   }
 
   /* ============================================================
-     单抽结果弹窗（⭐ 支持管理员体验卡转化）
+     单抽结果弹窗
      ============================================================ */
   function showResult(prize, data) {
-    // ⭐ 管理员抽中体验卡 -> 已转化为亚斯卢布
     if (data.converted_reward && data.converted_reward > 0) {
       resultIcon.textContent = '💰';
       resultTitle.textContent = '管理员福利';
@@ -549,7 +538,6 @@
       resultPrize.textContent = prize.name;
       resultBalance.textContent = '请填写收货信息';
     } else if (prize.type === 'vip_card' || prize.type === 'subscriber_card' || prize.type === 'money_card' || prize.type === 'exp_card') {
-      // 普通/VIP/订阅用户抽中道具
       resultIcon.textContent = '🎒';
       resultTitle.textContent = '获得道具';
       resultPrize.textContent = prize.name;
@@ -571,7 +559,6 @@
     resultOkBtn.addEventListener('click', function () {
       if (resultModal) resultModal.classList.add('hide');
 
-      // ⭐ 只有实物礼品(gift)才弹出填写地址；道具(vip_card等)不需要
       var prize = PRIZES.filter(function (p) { return p.name === currentPrizeName; })[0];
       if (prize && prize.type === 'gift') {
         if (giftPrizeName) giftPrizeName.textContent = prize.name;
@@ -581,7 +568,7 @@
   }
 
   /* ============================================================
-     五连抽结果弹窗（⭐ 支持管理员体验卡转化）
+     五连抽结果弹窗
      ============================================================ */
   function showResult5(results) {
     if (!result5Grid) return;
@@ -595,7 +582,6 @@
 
     success.forEach(function (r) {
       if (r.data.converted_reward && r.data.converted_reward > 0) {
-        // ⭐ 管理员转化
         convertedCount++;
         convertedTotal += r.data.converted_reward;
         totalReward += r.data.converted_reward;
@@ -629,7 +615,7 @@
         cls = 'gift';
         rewardText = '待填地址';
       } else if (p.type === 'vip_card' || p.type === 'subscriber_card' || p.type === 'money_card' || p.type === 'exp_card') {
-        cls = 'gift'; // 用金色显示道具
+        cls = 'gift';
         rewardText = '已入背包';
         icon = '🎒';
       }
@@ -642,7 +628,6 @@
     });
     result5Grid.innerHTML = html;
 
-    // ⭐ 只有纯实物礼品需要填地址，道具不用
     pendingGiftRecords = success
       .filter(function (r) {
         return r.prize.type === 'gift' && (!r.data.converted_reward || r.data.converted_reward === 0);
@@ -762,5 +747,5 @@
     });
   }
 
-  console.log('%c [Lottery] 抽奖模块已加载 (角色专属版 + 管理员转化) ', 'background:#d4af37;color:#241b08;padding:2px 8px;border-radius:3px;font-weight:700');
+  console.log('%c [Lottery] 抽奖模块已加载 (6级稀有度 + 管理员转化) ', 'background:#d4af37;color:#241b08;padding:2px 8px;border-radius:3px;font-weight:700');
 })(window);
