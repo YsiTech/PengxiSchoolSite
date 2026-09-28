@@ -33,169 +33,122 @@
 
   <div class="profile-grid">
 
-    <!-- ==================== 左列：头像 + 余额 ==================== -->
+    <!-- 左列 -->
     <aside class="profile-side">
 
       <!-- 头像卡片 -->
       <div class="profile-card">
         <div class="profile-avatar-wrap">
           <div class="profile-avatar" id="avatarDisplay"><span>?</span></div>
-          <button class="profile-avatar-edit" id="avatarPickBtn" type="button" title="更换头像">
-            <span class="ic">📷</span>
-          </button>
+          <button class="profile-avatar-edit" id="avatarPickBtn" type="button" title="更换头像"><span class="ic">📷</span></button>
           <input id="avatarInput" type="file" accept="image/*" style="display:none">
         </div>
 
         <h2 class="profile-name" id="profileName">加载中…</h2>
         <p class="profile-email" id="profileEmail">—</p>
         <span class="profile-role" id="profileRole">—</span>
-
-        <div class="profile-avatar-tip">支持 JPG / PNG，建议 200KB 以内</div>
-
-        <button class="btn ghost" type="button" id="avatarRemoveBtn"
-                style="width:100%;color:#1a2b4c;border-color:#1a2b4c;margin-top:12px">
-          移除头像
-        </button>
-      </div>
-
-      <!-- 余额卡片（独立卡片，在头像下面） -->
-      <div class="balance-card" id="balanceCard">
-        <div class="bc-top">
-          <div class="bc-emblem">₽</div>
-          <div class="bc-title-group">
-            <div class="bc-title">账户余额</div>
-            <div class="bc-subtitle">Campus Account</div>
+        
+        <!-- ⭐ 升级版经验条 -->
+        <div class="exp-bar-wrap">
+          <div class="exp-text">
+            <span>Lv.<span id="userLevel">1</span></span>
+            <span><span id="userExp">0</span> / <span id="userExpNext">100</span> EXP</span>
+          </div>
+          <div class="exp-track">
+            <div id="expProgress" class="exp-fill"></div>
           </div>
         </div>
 
+        <!-- ⭐ 到期时间 -->
+        <p class="profile-expire hide" id="profileExpire">到期时间：—</p>
+
+        <div class="profile-avatar-tip">支持 JPG / PNG，建议 200KB 以内</div>
+        <button class="btn ghost" type="button" id="avatarRemoveBtn" style="width:100%;color:#1a2b4c;border-color:#1a2b4c;margin-top:12px">移除头像</button>
+      </div>
+
+      <!-- 余额卡片 -->
+      <div class="balance-card" id="balanceCard">
+        <div class="bc-top">
+          <div class="bc-emblem">₽</div>
+          <div class="bc-title-group"><div class="bc-title">账户余额</div><div class="bc-subtitle">Campus Account</div></div>
+        </div>
         <div class="bc-amount-group">
           <div class="bc-amount" id="walletBalance">—</div>
           <div class="bc-amount-unit">亚斯卢布 · АСР ₽</div>
         </div>
-
-               <div class="bc-bottom">
-          <div class="bc-holder">
-            <span class="bc-holder-label">户名</span>
-            <span class="bc-holder-value" id="bcHolder">—</span>
-          </div>
+        <div class="bc-bottom">
+          <div class="bc-holder"><span class="bc-holder-label">户名</span><span class="bc-holder-value" id="bcHolder">—</span></div>
         </div>
-
         <div class="bc-shine"></div>
       </div>
 
     </aside>
 
-    <!-- ==================== 右列 ==================== -->
+    <!-- 右列 -->
     <section class="profile-content">
 
       <!-- 每日签到 -->
       <div class="card" id="walletCard">
-        <div class="card-head">
-          <h3>每日签到</h3>
-          <span class="wallet-streak" id="walletStreak"></span>
-        </div>
-
+        <div class="card-head"><h3>每日签到</h3><span class="wallet-streak" id="walletStreak"></span></div>
         <div class="wallet-body">
           <div class="wallet-action">
             <button class="btn red" type="button" id="checkinBtn">今日签到</button>
-            <p class="wallet-hint" id="checkinHint">
-              每日签到获得 <b>10 亚斯卢布</b>，连签天数越多奖励越高，最高 <b>50/天</b>
-            </p>
+            <p class="wallet-hint" id="checkinHint">每日签到获得 <b>10 亚斯卢布</b>，连签天数越多奖励越高，最高 <b>50/天</b></p>
           </div>
-
-          <div class="wallet-history" id="walletHistory">
-            <div class="wallet-history-empty">暂无签到记录</div>
-          </div>
+          <div class="wallet-history" id="walletHistory"><div class="wallet-history-empty">暂无签到记录</div></div>
         </div>
       </div>
 
       <!-- 抽奖入口 -->
       <a class="card lottery-entry" href="lottery.html">
         <div class="le-icon">🎰</div>
-        <div class="le-body">
-          <b>星图抽奖</b>
-          <span id="lotteryEntryDesc">50 亚斯卢布一次 · 最高 500 亚斯卢布 · 亚斯精美小礼品</span>
-        </div>
+        <div class="le-body"><b>星图抽奖</b><span id="lotteryEntryDesc">50 亚斯卢布一次 · 最高 500 亚斯卢布 · 亚斯精美小礼品</span></div>
+        <div class="le-arrow">→</div>
+      </a>
+
+      <!-- 背包入口 -->
+      <a class="card lottery-entry" href="inventory.html" style="background:linear-gradient(135deg,#2d1810,#1a2b4c);">
+        <div class="le-icon">🎒</div>
+        <div class="le-body"><b>我的背包</b><span>查看并使用你的体验卡、亚斯卢布卡与经验卡</span></div>
         <div class="le-arrow">→</div>
       </a>
 
       <!-- 我的订单 -->
       <div class="card" id="ordersCard">
-        <div class="card-head">
-          <h3>我的订单</h3>
-          <button class="orders-refresh" id="ordersRefreshBtn" type="button" title="刷新订单">
-            <span class="or-icon">⟳</span>
-          </button>
-        </div>
-
-        <div class="orders-list" id="ordersList">
-          <div class="orders-empty">暂无订单</div>
-        </div>
+        <div class="card-head"><h3>我的订单</h3><button class="orders-refresh" id="ordersRefreshBtn" type="button" title="刷新订单"><span class="or-icon">⟳</span></button></div>
+        <div class="orders-list" id="ordersList"><div class="orders-empty">暂无订单</div></div>
       </div>
 
       <!-- 基本信息 -->
       <div class="card">
         <div class="card-head"><h3>基本信息</h3></div>
-
         <div class="form-grid">
-          <div class="field full">
-            <label for="nicknameInput">昵称</label>
-            <input id="nicknameInput" type="text" maxlength="16" placeholder="用于页面显示，最多 16 字">
-            <span class="profile-hint">登录后顶部栏都会显示此昵称</span>
-          </div>
-
-          <div class="field full">
-            <label>邮箱</label>
-            <input id="emailDisplay" type="text" disabled>
-            <span class="profile-hint">邮箱用于登录和找回密码，暂不支持修改</span>
-          </div>
+          <div class="field full"><label for="nicknameInput">昵称</label><input id="nicknameInput" type="text" maxlength="16" placeholder="用于页面显示，最多 16 字"><span class="profile-hint">登录后顶部栏都会显示此昵称</span></div>
+          <div class="field full"><label>邮箱</label><input id="emailDisplay" type="text" disabled><span class="profile-hint">邮箱用于登录和找回密码，暂不支持修改</span></div>
         </div>
-
-        <div class="profile-actions">
-          <button class="btn red" type="button" id="saveProfileBtn">保存修改</button>
-        </div>
+        <div class="profile-actions"><button class="btn red" type="button" id="saveProfileBtn">保存修改</button></div>
       </div>
 
       <!-- 修改密码 -->
       <div class="card">
         <div class="card-head"><h3>修改密码</h3></div>
-
         <div class="form-grid">
-          <div class="field full">
-            <label for="newPassword">新密码</label>
-            <input id="newPassword" type="password" placeholder="至少 6 位" autocomplete="new-password">
-          </div>
-          <div class="field full">
-            <label for="newPassword2">确认新密码</label>
-            <input id="newPassword2" type="password" placeholder="再次输入新密码" autocomplete="new-password">
-          </div>
+          <div class="field full"><label for="newPassword">新密码</label><input id="newPassword" type="password" placeholder="至少 6 位" autocomplete="new-password"></div>
+          <div class="field full"><label for="newPassword2">确认新密码</label><input id="newPassword2" type="password" placeholder="再次输入新密码" autocomplete="new-password"></div>
         </div>
-
-        <div class="profile-hint-warn">
-          修改密码后，其他设备的登录状态会保持不变。
-        </div>
-
-        <div class="profile-actions">
-          <button class="btn red" type="button" id="changePasswordBtn">修改密码</button>
-        </div>
+        <div class="profile-hint-warn">修改密码后，其他设备的登录状态会保持不变。</div>
+        <div class="profile-actions"><button class="btn red" type="button" id="changePasswordBtn">修改密码</button></div>
       </div>
 
       <!-- 账号操作 -->
       <div class="card danger-card">
         <div class="card-head"><h3>账号操作</h3></div>
-        <p class="muted small" style="margin:0 0 14px">
-          退出登录后需要重新输入邮箱和密码才能进入。
-        </p>
-        <button class="btn ghost" type="button" id="logoutBtn"
-                style="color:#c8102e;border-color:#c8102e">
-          退出登录
-        </button>
+        <p class="muted small" style="margin:0 0 14px">退出登录后需要重新输入邮箱和密码才能进入。</p>
+        <button class="btn ghost" type="button" id="logoutBtn" style="color:#c8102e;border-color:#c8102e">退出登录</button>
       </div>
 
     </section>
-
   </div>
-
 </main>
 
 <div id="site-footer"></div>

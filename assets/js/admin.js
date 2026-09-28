@@ -1,5 +1,5 @@
 /* ===================================================================
-   管理后台 · 逻辑 (完整无省略版)
+   管理后台 · 逻辑 (完整版：道具+经验递增+到期时间+发道具+改等级+导出修复)
    =================================================================== */
 
 (function (window) {
@@ -42,6 +42,31 @@
     var url = URL.createObjectURL(blob); var a = document.createElement('a');
     a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  /* 等级递增公式 */
+  function calculateLevel(totalExp) {
+    var level = 1;
+    var expForNext = 100;
+    var currentExp = totalExp || 0;
+    while (currentExp >= expForNext) {
+      currentExp -= expForNext;
+      level++;
+      expForNext = level * 100;
+    }
+    return { level: level, currentExp: currentExp, expForNext: expForNext };
+  }
+  /* 反推：根据目标等级算出需要多少总经验 */
+  function getTotalExpByLevel(level) {
+    var total = 0;
+    for (var i = 1; i < level; i++) {
+      total += i * 100;
+    }
+    return total;
+  }
+  /* 判断是否是道具类型 */
+  function isItemType(type) {
+    return type === 'vip_card' || type === 'subscriber_card' || type === 'money_card' || type === 'exp_card';
   }
 
   /* Tab 切换 */
@@ -116,28 +141,40 @@
   }
   if ($('#rolesRefresh')) $('#rolesRefresh').addEventListener('click', loadRoleConfigs);
 
-  /* 奖品管理 */
+  /* ======================= 奖品管理 ======================= */
   var prizes = [], prizeCost = 50;
   function initPrizesFromConfig() {
     if (window.LOTTERY_CONFIG) {
       prizeCost = window.LOTTERY_CONFIG.cost || 50;
-      prizes = (window.LOTTERY_CONFIG.prizes || []).map(function (p) { return { id: p.id, name: p.name, type: p.type, reward: p.reward || 0, weight: p.weight || 0 }; });
+      prizes = (window.LOTTERY_CONFIG.prizes || []).map(function (p) {
+        var itemType = p.item_type || '';
+        if (!itemType && isItemType(p.type)) itemType = p.type;
+        return { id: p.id, name: p.name, type: p.type, reward: p.reward || 0, weight: p.weight || 0, item_type: itemType, item_value: p.item_value || p.reward || 0 };
+      });
     }
-    if (!prizes.length) prizes = [{ id: 'p' + Date.now(), name: '示例奖品', type: 'money', reward: 50, weight: 10 }];
+    if (!prizes.length) prizes = [{ id: 'p' + Date.now(), name: '示例奖品', type: 'money', reward: 50, weight: 100, item_type: '', item_value: 0 }];
   }
   function renderPrizes() {
     var list = $('#prizeList'); if (!list) return;
     if (!prizes.length) { list.innerHTML = '<div class="prize-empty">还没有奖品</div>'; return; }
     var html = '';
     prizes.forEach(function (p, idx) {
+      var isItem = isItemType(p.type);
+      var valLabel = isItem ? '数值/天数' : '奖励金额';
+      var valValue = isItem ? (p.item_value || p.reward || 0) : (p.reward || 0);
+      
       html += '<div class="prize-row" data-idx="' + idx + '"><div class="pr-handle">⋮⋮</div><div class="pr-fields">' +
         '<div class="pr-field"><label>奖品名称</label><input type="text" data-field="name" value="' + escapeHtml(p.name) + '"></div>' +
         '<div class="pr-field"><label>类型</label><select data-field="type">' +
         '<option value="money"' + (p.type === 'money' ? ' selected' : '') + '>奖励</option>' +
         '<option value="gift"' + (p.type === 'gift' ? ' selected' : '') + '>礼品</option>' +
+        '<option value="vip_card"' + (p.type === 'vip_card' ? ' selected' : '') + '>VIP体验卡</option>' +
+        '<option value="subscriber_card"' + (p.type === 'subscriber_card' ? ' selected' : '') + '>订阅体验卡</option>' +
+        '<option value="money_card"' + (p.type === 'money_card' ? ' selected' : '') + '>亚斯卢布卡</option>' +
+        '<option value="exp_card"' + (p.type === 'exp_card' ? ' selected' : '') + '>经验卡</option>' +
         '<option value="none"' + (p.type === 'none' ? ' selected' : '') + '>再接再厉</option></select></div>' +
-        '<div class="pr-field"><label>奖励金额</label><input type="number" data-field="reward" value="' + (p.reward || 0) + '" min="0"></div>' +
-        '<div class="pr-field"><label>权重</label><input type="number" data-field="weight" value="' + (p.weight || 0) + '" min="0"></div></div>' +
+        '<div class="pr-field"><label>' + valLabel + '</label><input type="number" data-field="item_value" value="' + valValue + '" min="0"></div>' +
+        '<div class="pr-field"><label>权重</label><input type="number" data-field="weight" value="' + (p.weight || 0) + '" min="0" step="0.01"></div></div>' +
         '<div class="pr-prob">中奖率<b data-prob="' + idx + '">—</b></div>' +
         '<div class="pr-actions"><button class="btn-mini" data-act="up">↑</button><button class="btn-mini" data-act="down">↓</button><button class="btn-mini danger" data-act="del">删除</button></div></div>';
     });
@@ -147,13 +184,30 @@
     var list = $('#prizeList'); if (!list) return;
     $$('.prize-row', list).forEach(function (row) {
       var idx = parseInt(row.dataset.idx, 10);
-      $$('input, select', row).forEach(function (input) {
+      $$('input', row).forEach(function (input) {
         input.addEventListener('input', function () {
           var field = input.dataset.field; if (!field) return;
-          var val = input.value; if (field === 'reward' || field === 'weight') val = parseInt(val, 10) || 0;
-          prizes[idx][field] = val; updatePrizeStats(); renderPreview(); updateProbCells();
+          var val = input.value;
+          if (field === 'item_value') { val = parseInt(val, 10) || 0; prizes[idx].item_value = val; prizes[idx].reward = val; }
+          else if (field === 'weight') { val = parseFloat(val) || 0; val = Math.round(val * 100) / 100; prizes[idx][field] = val; }
+          else prizes[idx][field] = val;
+          updatePrizeStats(); renderPreview(); updateProbCells();
         });
       });
+      var typeSelect = row.querySelector('select[data-field="type"]');
+      if (typeSelect) {
+        typeSelect.addEventListener('change', function() {
+          var newType = this.value;
+          prizes[idx].type = newType;
+          // ⭐ 核心修复1：自动同步 item_type
+          if (isItemType(newType)) {
+            prizes[idx].item_type = newType;
+          } else {
+            prizes[idx].item_type = '';
+          }
+          renderPrizes();
+        });
+      }
     });
     $$('[data-act]', list).forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -165,18 +219,59 @@
       });
     });
   }
-  function updatePrizeStats() { var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); if ($('#prizeCount')) $('#prizeCount').textContent = prizes.length; if ($('#prizeWeight')) $('#prizeWeight').textContent = total; }
-  function updateProbCells() { var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); $$('[data-prob]').forEach(function (el) { var idx = parseInt(el.dataset.prob, 10); var w = Math.max(0, prizes[idx].weight || 0); el.textContent = total > 0 ? (w / total * 100).toFixed(1) + '%' : '—'; }); }
-  function renderPreview() { var wrap = $('#previewBars'); if (!wrap) return; var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); if (!prizes.length || total === 0) { wrap.innerHTML = '<div style="color:#6b6256;font-size:13px;text-align:center;padding:14px">还没有有效的奖品</div>'; return; } var html = ''; prizes.forEach(function (p) { var w = Math.max(0, p.weight || 0); var pct = w / total * 100; html += '<div class="preview-bar"><span class="pb-name">' + escapeHtml(p.name) + '</span><div class="pb-track"><div class="pb-fill" style="width:' + pct.toFixed(2) + '%"></div></div><span class="pb-pct">' + pct.toFixed(1) + '%</span></div>'; }); wrap.innerHTML = html; }
-  if ($('#prizeAddBtn')) $('#prizeAddBtn').addEventListener('click', function () { prizes.push({ id: 'p' + Date.now(), name: '新奖品', type: 'money', reward: 50, weight: 10 }); renderPrizes(); });
+  function updatePrizeStats() { 
+    var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); 
+    if ($('#prizeCount')) $('#prizeCount').textContent = prizes.length; 
+    if ($('#prizeWeight')) {
+      $('#prizeWeight').textContent = total.toFixed(2) + '%';
+      if (Math.abs(total - 100) > 0.01) { $('#prizeWeight').style.color = 'var(--red)'; } else { $('#prizeWeight').style.color = ''; }
+    }
+  }
+  function updateProbCells() { 
+    var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); 
+    $$('[data-prob]').forEach(function (el) { 
+      var idx = parseInt(el.dataset.prob, 10); var w = Math.max(0, prizes[idx].weight || 0); 
+      el.textContent = total > 0 ? (w / total * 100).toFixed(2) + '%' : '0.00%'; 
+    }); 
+  }
+  function renderPreview() { 
+    var wrap = $('#previewBars'); if (!wrap) return; 
+    var total = prizes.reduce(function (s, p) { return s + Math.max(0, p.weight || 0); }, 0); 
+    var warningHtml = '';
+    if (total > 0 && Math.abs(total - 100) > 0.01) { warningHtml = '<div style="color:var(--red);font-size:13px;font-weight:600;padding:10px 0;text-align:center;">⚠️ 总概率不为100%，实际中奖率将按比例折算。</div>'; }
+    if (!prizes.length || total === 0) { wrap.innerHTML = '<div style="color:#6b6256;font-size:13px;text-align:center;padding:14px">还没有有效的奖品</div>'; return; } 
+    var html = warningHtml;
+    prizes.forEach(function (p) { 
+      var w = Math.max(0, p.weight || 0); var pct = w / total * 100; 
+      html += '<div class="preview-bar"><span class="pb-name">' + escapeHtml(p.name) + '</span><div class="pb-track"><div class="pb-fill" style="width:' + pct.toFixed(2) + '%"></div></div><span class="pb-pct">' + pct.toFixed(2) + '%</span></div>'; 
+    }); 
+    wrap.innerHTML = html; 
+  }
+  if ($('#prizeAddBtn')) $('#prizeAddBtn').addEventListener('click', function () { prizes.push({ id: 'p' + Date.now(), name: '新奖品', type: 'money', reward: 50, weight: 0, item_type: '', item_value: 0 }); renderPrizes(); });
   if ($('#prizeCost')) { $('#prizeCost').value = prizeCost; $('#prizeCost').addEventListener('input', function () { prizeCost = parseInt($('#prizeCost').value, 10) || 0; }); }
-  if ($('#prizeExportBtn')) $('#prizeExportBtn').addEventListener('click', function () { var lines = ['/* 星图抽奖 · 奖品配置 */', '', 'window.LOTTERY_CONFIG = {', '  cost: ' + prizeCost + ',', '  prizes: [']; prizes.forEach(function (p, idx) { lines.push('    { id: \'' + p.id + '\', name: \'' + String(p.name).replace(/'/g, "\\'") + '\', type: \'' + p.type + '\', reward: ' + (p.reward || 0) + ', weight: ' + (p.weight || 0) + ' }' + (idx < prizes.length - 1 ? ',' : '')); }); lines.push('  ]', '};', ''); $('#exportCode').value = lines.join('\n'); $('#exportModal').classList.remove('hide'); });
+
+  /* ⭐ 核心修复2：导出时兜底 */
+  if ($('#prizeExportBtn')) $('#prizeExportBtn').addEventListener('click', function () { 
+    var lines = ['/* 星图抽奖 · 奖品配置 */', '', 'window.LOTTERY_CONFIG = {', '  cost: ' + prizeCost + ',', '  prizes: [']; 
+    prizes.forEach(function (p, idx) { 
+      var finalItemType = p.item_type || '';
+      if (finalItemType === '' && isItemType(p.type)) {
+        finalItemType = p.type;
+      }
+      var finalItemValue = p.item_value || p.reward || 0;
+
+      lines.push('    { id: \'' + p.id + '\', name: \'' + String(p.name).replace(/'/g, "\\'") + '\', type: \'' + p.type + '\', reward: ' + (p.reward || 0) + ', weight: ' + (p.weight || 0) + ', item_type: \'' + finalItemType + '\', item_value: ' + finalItemValue + ' }' + (idx < prizes.length - 1 ? ',' : '')); 
+    }); 
+    lines.push('  ]', '};', ''); 
+    $('#exportCode').value = lines.join('\n'); $('#exportModal').classList.remove('hide'); 
+  });
   if ($('#exportClose')) $('#exportClose').addEventListener('click', function () { $('#exportModal').classList.add('hide'); });
   if ($('#exportDone')) $('#exportDone').addEventListener('click', function () { $('#exportModal').classList.add('hide'); });
   if ($('#exportCopy')) $('#exportCopy').addEventListener('click', function () { $('#exportCode').select(); document.execCommand('copy'); toast('已复制'); });
 
-  /* 缓存 */
+  /* ======================= 用户列表 ======================= */
   var usersCache = {}, usersLoaded = false;
+  var usersList = [];
   function loadUserMap() {
     if (usersLoaded) return Promise.resolve();
     return client.auth.admin.listUsers().then(function (res) {
@@ -187,6 +282,159 @@
       }); usersLoaded = true;
     }).catch(function () {});
   }
+  function loadUsers() {
+    if (!client) return; $('#usersTable tbody').innerHTML = '<tr><td colspan="9" class="td-empty">加载中…</td></tr>';
+    Promise.all([client.auth.admin.listUsers(), client.from('user_wallets').select('*')]).then(function (results) {
+      var ures = results[0], wres = results[1];
+      if (ures.error) { usersList = []; renderUsers(); return; }
+      var walletMap = {}; ((wres && wres.data) || []).forEach(function (w) { walletMap[w.user_id] = w; });
+      usersList = (ures.data.users || []).map(function (u) {
+        var meta = u.user_metadata || {}; var isGuest = u.is_anonymous === true || meta.is_guest === true;
+        var wallet = walletMap[u.id] || {};
+        return { 
+          id: u.id, email: u.email || '', nickname: meta.nickname || (u.email ? u.email.split('@')[0] : '用户'), 
+          isGuest, role: wallet.role || meta.role || 'user', user_metadata: meta, 
+          balance: wallet.balance || 0, exp: wallet.exp || 0, roleExpireAt: wallet.role_expire_at || null, 
+          createdAt: u.created_at, lastSignIn: u.last_sign_in_at 
+        };
+      });
+      usersList.forEach(function (u) { usersCache[u.id] = { id: u.id, email: u.email, nickname: u.nickname, isGuest: u.isGuest, role: u.role }; });
+      usersLoaded = true; renderUsers();
+    }).catch(function () { renderUsers(); });
+  }
+  function renderUsers() {
+    var tbody = $('#usersTable tbody'); if (!tbody) return;
+    var kw = ($('#usersSearch') && $('#usersSearch').value || '').toLowerCase();
+    var filter = $('#usersFilter') ? $('#usersFilter').value : '';
+    var list = usersList.filter(function (u) {
+      if (filter === 'user' && u.isGuest) return false; if (filter === 'guest' && !u.isGuest) return false;
+      if (!kw) return true; return ((u.nickname + ' ' + u.email).toLowerCase().indexOf(kw) !== -1);
+    });
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="9" class="td-empty">没有用户</td></tr>'; return; }
+    var roleNames = { 'user': '普通用户', 'vip': 'VIP 用户', 'subscriber': '订阅用户', 'admin': '管理员', 'teacher': '老师' };
+    var html = '';
+    list.forEach(function (u) {
+      var expireText = '—';
+      if (u.role === 'vip' && u.roleExpireAt) expireText = 'VIP: ' + fmtDate(u.roleExpireAt);
+      else if (u.role === 'subscriber' && u.roleExpireAt) expireText = '订阅: ' + fmtDate(u.roleExpireAt);
+      
+      var expData = calculateLevel(u.exp);
+      var expText = 'Lv.' + expData.level + ' (' + expData.currentExp + '/' + expData.expForNext + ')';
+
+      html += '<tr><td class="td-mono" style="max-width:100px;overflow:hidden;text-overflow:ellipsis">' + u.id + '</td><td>' + escapeHtml(u.email||'—') + '</td><td>' + escapeHtml(u.nickname) + '</td><td>' + (u.isGuest?'游客':'正式') + '</td><td><span class="tag role-' + u.role + '">' + (roleNames[u.role]||'普通用户') + '</span></td><td>' + expireText + '</td><td>' + expText + '</td><td>₽ ' + (u.balance||0) + '</td><td>' +
+        '<button class="btn-mini primary" data-user-senditem="' + u.id + '" data-nickname="' + escapeHtml(u.nickname) + '">发道具</button> ' +
+        '<button class="btn-mini" data-user-editlevel="' + u.id + '" data-nickname="' + escapeHtml(u.nickname) + '" data-exp="' + (u.exp || 0) + '">改等级</button> ' +
+        '<button class="btn-mini" data-user-edit="' + u.id + '" data-role="' + u.role + '">改角色</button>' +
+      '</td></tr>';
+    });
+    tbody.innerHTML = html;
+
+    $$('[data-user-senditem]', tbody).forEach(function (btn) { btn.addEventListener('click', function () { openSendItemModal(btn.dataset.userSenditem, btn.dataset.nickname); }); });
+    $$('[data-user-editlevel]', tbody).forEach(function (btn) { btn.addEventListener('click', function () { openEditLevelModal(btn.dataset.userEditlevel, btn.dataset.nickname, parseInt(btn.dataset.exp, 10) || 0); }); });
+    $$('[data-user-edit]', tbody).forEach(function (btn) { btn.addEventListener('click', function () { openRoleModal(btn.dataset.userEdit, btn.dataset.role); }); });
+  }
+  if ($('#usersRefresh')) $('#usersRefresh').addEventListener('click', function () { usersLoaded = false; loadUsers(); });
+  if ($('#usersSearch')) $('#usersSearch').addEventListener('input', renderUsers);
+  if ($('#usersFilter')) $('#usersFilter').addEventListener('change', renderUsers);
+
+  /* 发道具 */
+  var sendItemModal = $('#sendItemModal'), currentSendItemUserId = null;
+  function openSendItemModal(userId, nickname) {
+    currentSendItemUserId = userId;
+    if ($('#sendItemUserTip')) $('#sendItemUserTip').textContent = '正在给：' + nickname + ' 发送道具';
+    if ($('#sendItemName')) $('#sendItemName').value = '';
+    if ($('#sendItemValue')) $('#sendItemValue').value = '';
+    if ($('#sendItemQty')) $('#sendItemQty').value = '1';
+    sendItemModal.classList.remove('hide');
+  }
+  if ($('#sendItemClose')) $('#sendItemClose').addEventListener('click', function () { sendItemModal.classList.add('hide'); });
+  if ($('#sendItemCancel')) $('#sendItemCancel').addEventListener('click', function () { sendItemModal.classList.add('hide'); });
+  if ($('#sendItemConfirm')) $('#sendItemConfirm').addEventListener('click', function () {
+    if (!client || !currentSendItemUserId) return;
+    var type = $('#sendItemType').value;
+    var name = $('#sendItemName').value.trim();
+    var value = parseInt($('#sendItemValue').value, 10) || 0;
+    var qty = parseInt($('#sendItemQty').value, 10) || 1;
+    if (!name) { toast('请填写道具名称'); return; }
+    if (value <= 0) { toast('数值必须大于0'); return; }
+
+    client.from('user_inventory')
+      .select('id, quantity')
+      .eq('user_id', currentSendItemUserId)
+      .eq('item_type', type)
+      .eq('item_value', value)
+      .eq('prize_name', name)
+      .limit(1)
+      .then(function (res) {
+        if (res.data && res.data.length > 0) {
+          var exist = res.data[0];
+          client.from('user_inventory')
+            .update({ quantity: (exist.quantity || 1) + qty })
+            .eq('id', exist.id)
+            .then(function (updRes) {
+              if (updRes.error) { toast('叠加失败：' + updRes.error.message); return; }
+              toast('道具已叠加，当前数量 ' + ((exist.quantity || 1) + qty));
+              sendItemModal.classList.add('hide'); loadUsers();
+            });
+        } else {
+          client.from('user_inventory').insert({
+            user_id: currentSendItemUserId,
+            prize_id: 'admin_' + Date.now(),
+            prize_name: name,
+            item_type: type,
+            item_value: value,
+            quantity: qty
+          }).then(function (insRes) {
+            if (insRes.error) { toast('发送失败：' + insRes.error.message); return; }
+            toast('道具发送成功'); sendItemModal.classList.add('hide'); loadUsers();
+          });
+        }
+      });
+  });
+
+  /* 改等级 */
+  var editLevelModal = $('#editLevelModal'), currentEditLevelUserId = null;
+  function openEditLevelModal(userId, nickname, exp) {
+    currentEditLevelUserId = userId;
+    var expData = calculateLevel(exp);
+    if ($('#editLevelUserTip')) $('#editLevelUserTip').textContent = '正在操作：' + nickname;
+    if ($('#editLevelCurrent')) $('#editLevelCurrent').value = 'Lv.' + expData.level + ' (' + expData.currentExp + '/' + expData.expForNext + ')';
+    if ($('#editLevelTarget')) $('#editLevelTarget').value = expData.level;
+    editLevelModal.classList.remove('hide');
+  }
+  if ($('#editLevelClose')) $('#editLevelClose').addEventListener('click', function () { editLevelModal.classList.add('hide'); });
+  if ($('#editLevelCancel')) $('#editLevelCancel').addEventListener('click', function () { editLevelModal.classList.add('hide'); });
+  if ($('#editLevelConfirm')) $('#editLevelConfirm').addEventListener('click', function () {
+    if (!client || !currentEditLevelUserId) return;
+    var targetLevel = parseInt($('#editLevelTarget').value, 10) || 1;
+    if (targetLevel < 1) { toast('等级不能小于1'); return; }
+    var newExp = getTotalExpByLevel(targetLevel);
+
+    client.from('user_wallets').update({ exp: newExp, updated_at: new Date().toISOString() }).eq('user_id', currentEditLevelUserId).then(function (res) {
+      if (res.error) { toast('修改失败：' + res.error.message); return; }
+      toast('等级修改成功'); editLevelModal.classList.add('hide'); loadUsers();
+    });
+  });
+
+  /* 修改角色 */
+  var roleModal = $('#roleModal'), currentRoleUserId = null;
+  function openRoleModal(userId, role) {
+    currentRoleUserId = userId;
+    var u = usersList.find(function (item) { return item.id === userId; }) || {};
+    if ($('#roleUserTip')) $('#roleUserTip').textContent = '正在操作：' + (u.nickname||'') + ' (' + (u.email||'') + ')';
+    if ($('#roleSelect')) $('#roleSelect').value = role || 'user';
+    roleModal.classList.remove('hide');
+  }
+  if ($('#roleClose')) $('#roleClose').addEventListener('click', function () { roleModal.classList.add('hide'); });
+  if ($('#roleCancel')) $('#roleCancel').addEventListener('click', function () { roleModal.classList.add('hide'); });
+  if ($('#roleConfirm')) $('#roleConfirm').addEventListener('click', function () {
+    if (!client || !currentRoleUserId) return;
+    var newRole = $('#roleSelect').value;
+    client.from('user_wallets').upsert({ user_id: currentRoleUserId, role: newRole }, { onConflict: 'user_id' }).then(function (res) {
+      if (res.error) { toast('修改失败：' + res.error.message); return; }
+      toast('角色修改成功'); roleModal.classList.add('hide'); loadUsers();
+    });
+  });
 
   /* 中奖记录 */
   var recordsCache = [];
@@ -214,6 +462,15 @@
   if ($('#recordsRefresh')) $('#recordsRefresh').addEventListener('click', loadRecords);
   if ($('#recordsSearch')) $('#recordsSearch').addEventListener('input', renderRecords);
   if ($('#recordsFilter')) $('#recordsFilter').addEventListener('change', renderRecords);
+  if ($('#recordsExport')) $('#recordsExport').addEventListener('click', function () {
+    if (!recordsCache.length) { toast('没有可导出的记录'); return; }
+    var rows = [['时间', '用户ID', '昵称', '奖品', '类型', '奖励', '消耗']];
+    recordsCache.forEach(function (r) {
+      var u = usersCache[r.user_id] || {};
+      rows.push([fmtTime(r.created_at), r.user_id, u.nickname||'', r.prize_name, r.prize_type, r.reward, r.cost]);
+    });
+    downloadCSV('lottery-records-' + fmtDate(new Date()) + '.csv', rows); toast('已导出');
+  });
 
   /* 礼品订单 */
   var ordersCache = [];
@@ -290,71 +547,12 @@
     var remark = $('#shippingRemark').value.trim();
     if (!no) { toast('请填写快递单号'); return; }
     var updateData = { status: 'shipped', tracking_company: company, tracking_number: no, admin_remark: remark };
-    if (!ordersCache.find(o => String(o.id) === String(currentShippingOrderId))?.shipped_at) {
+    if (!ordersCache.find(function(o){ return String(o.id) === String(currentShippingOrderId); })?.shipped_at) {
       updateData.shipped_at = new Date().toISOString();
     }
     client.from('gift_orders').update(updateData).eq('id', currentShippingOrderId).then(function (res) {
       if (res.error) { toast('保存失败：' + res.error.message); return; }
       toast('物流信息已保存'); shippingModal.classList.add('hide'); loadOrders();
-    });
-  });
-
-  /* 用户列表 */
-  var usersList = [];
-  function loadUsers() {
-    if (!client) return; $('#usersTable tbody').innerHTML = '<tr><td colspan="7" class="td-empty">加载中…</td></tr>';
-    Promise.all([client.auth.admin.listUsers(), client.from('user_wallets').select('*')]).then(function (results) {
-      var ures = results[0], wres = results[1];
-      if (ures.error) { usersList = []; renderUsers(); return; }
-      var walletMap = {}; ((wres && wres.data) || []).forEach(function (w) { walletMap[w.user_id] = w; });
-      usersList = (ures.data.users || []).map(function (u) {
-        var meta = u.user_metadata || {}; var isGuest = u.is_anonymous === true || meta.is_guest === true;
-        var wallet = walletMap[u.id] || {};
-        return { id: u.id, email: u.email || '', nickname: meta.nickname || (u.email ? u.email.split('@')[0] : '用户'), isGuest, role: wallet.role || meta.role || 'user', user_metadata: meta, balance: wallet.balance || 0, createdAt: u.created_at, lastSignIn: u.last_sign_in_at };
-      });
-      usersList.forEach(function (u) { usersCache[u.id] = { id: u.id, email: u.email, nickname: u.nickname, isGuest: u.isGuest, role: u.role }; });
-      usersLoaded = true; renderUsers();
-    }).catch(function () { renderUsers(); });
-  }
-  function renderUsers() {
-    var tbody = $('#usersTable tbody'); if (!tbody) return;
-    var kw = ($('#usersSearch') && $('#usersSearch').value || '').toLowerCase();
-    var filter = $('#usersFilter') ? $('#usersFilter').value : '';
-    var list = usersList.filter(function (u) {
-      if (filter === 'user' && u.isGuest) return false; if (filter === 'guest' && !u.isGuest) return false;
-      if (!kw) return true; return ((u.nickname + ' ' + u.email).toLowerCase().indexOf(kw) !== -1);
-    });
-    if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="td-empty">没有用户</td></tr>'; return; }
-    var roleNames = { 'user': '普通用户', 'vip': 'VIP 用户', 'subscriber': '订阅用户', 'admin': '管理员', 'teacher': '老师' };
-    var html = '';
-    list.forEach(function (u) {
-      html += '<tr><td class="td-mono" style="max-width:100px;overflow:hidden;text-overflow:ellipsis">' + u.id + '</td><td>' + escapeHtml(u.email||'—') + '</td><td>' + escapeHtml(u.nickname) + '</td><td>' + (u.isGuest?'游客':'正式') + '</td><td><span class="tag role-' + u.role + '">' + (roleNames[u.role]||'普通用户') + '</span></td><td>₽ ' + (u.balance||0) + '</td><td><button class="btn-mini" data-user-edit="' + u.id + '" data-role="' + u.role + '">修改角色</button></td></tr>';
-    });
-    tbody.innerHTML = html;
-    $$('[data-user-edit]', tbody).forEach(function (btn) {
-      btn.addEventListener('click', function () { openRoleModal(btn.dataset.userEdit, btn.dataset.role); });
-    });
-  }
-  if ($('#usersRefresh')) $('#usersRefresh').addEventListener('click', function () { usersLoaded = false; loadUsers(); });
-  if ($('#usersSearch')) $('#usersSearch').addEventListener('input', renderUsers);
-  if ($('#usersFilter')) $('#usersFilter').addEventListener('change', renderUsers);
-
-  var roleModal = $('#roleModal'), currentRoleUserId = null;
-  function openRoleModal(userId, role) {
-    currentRoleUserId = userId;
-    var u = usersList.find(function (item) { return item.id === userId; }) || {};
-    if ($('#roleUserTip')) $('#roleUserTip').textContent = '正在操作：' + (u.nickname||'') + ' (' + (u.email||'') + ')';
-    if ($('#roleSelect')) $('#roleSelect').value = role || 'user';
-    roleModal.classList.remove('hide');
-  }
-  if ($('#roleClose')) $('#roleClose').addEventListener('click', function () { roleModal.classList.add('hide'); });
-  if ($('#roleCancel')) $('#roleCancel').addEventListener('click', function () { roleModal.classList.add('hide'); });
-  if ($('#roleConfirm')) $('#roleConfirm').addEventListener('click', function () {
-    if (!client || !currentRoleUserId) return;
-    var newRole = $('#roleSelect').value;
-    client.from('user_wallets').upsert({ user_id: currentRoleUserId, role: newRole }, { onConflict: 'user_id' }).then(function (res) {
-      if (res.error) { toast('修改失败：' + res.error.message); return; }
-      toast('角色修改成功'); roleModal.classList.add('hide'); loadUsers();
     });
   });
 
@@ -378,6 +576,12 @@
     $$('[data-wallet-edit]', tbody).forEach(function (btn) { btn.addEventListener('click', function () { openBalanceModal(btn.dataset.walletEdit, parseInt(btn.dataset.balance, 10) || 0); }); });
   }
   if ($('#walletsRefresh')) $('#walletsRefresh').addEventListener('click', loadWallets);
+  if ($('#walletsExport')) $('#walletsExport').addEventListener('click', function () {
+    if (!walletsCache.length) { toast('没有可导出的钱包'); return; }
+    var rows = [['UID', '昵称', '邮箱', '余额', '更新时间']];
+    walletsCache.forEach(function (w) { var u = usersCache[w.user_id] || {}; rows.push([w.user_id, u.nickname||'', u.email||'', w.balance||0, fmtTime(w.updated_at)]); });
+    downloadCSV('wallets-' + fmtDate(new Date()) + '.csv', rows); toast('已导出');
+  });
 
   var balanceModal = $('#balanceModal'), currentWalletUserId = null, currentWalletBalance = 0;
   function openBalanceModal(userId, balance) {
@@ -474,7 +678,7 @@
   var txCache = [];
   function loadTransactions() {
     if (!client) return; $('#txTable tbody').innerHTML = '<tr><td colspan="6" class="td-empty">加载中…</td></tr>';
-    client.from('wallet_transactions').select('*').order('created_at', { ascending: false }).limit(500).then(res => {
+    client.from('wallet_transactions').select('*').order('created_at', { ascending: false }).limit(500).then(function(res) {
       txCache = res.data || []; loadUserMap().then(renderTransactions);
     });
   }
@@ -482,20 +686,26 @@
     var tbody = $('#txTable tbody'); if (!tbody) return;
     var kw = ($('#txSearch') && $('#txSearch').value || '').toLowerCase();
     var filter = $('#txFilter') ? $('#txFilter').value : '';
-    var list = txCache.filter(tx => {
+    var list = txCache.filter(function(tx) {
       if (filter && tx.type !== filter) return false;
       if (!kw) return true; var u = usersCache[tx.user_id] || {}; return ((u.nickname||'') + (u.email||'')).toLowerCase().indexOf(kw) !== -1;
     });
     if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="td-empty">没有流水记录</td></tr>'; return; }
     var typeTextMap = { 'checkin': '签到', 'lottery': '抽奖', 'admin': '管理员调整', 'gift': '礼品' };
-    var html = ''; list.forEach(tx => {
+    var html = ''; list.forEach(function(tx) {
       var u = usersCache[tx.user_id] || {};
-      html += `<tr><td class="td-mono">${fmtTime(tx.created_at)}</td><td>${escapeHtml(u.nickname||'—')}<div style="font-size:11.5px;color:#6b6256">${escapeHtml(u.email||'')}</div></td><td><span class="${tx.amount>0?'tag money':'tag none'}">${(tx.amount>0?'+':'')+tx.amount}</span></td><td>₽ ${tx.balance_after}</td><td>${typeTextMap[tx.type]||tx.type}</td><td>${escapeHtml(tx.description||'—')}</td></tr>`;
+      html += '<tr><td class="td-mono">' + fmtTime(tx.created_at) + '</td><td>' + escapeHtml(u.nickname||'—') + '<div style="font-size:11.5px;color:#6b6256">' + escapeHtml(u.email||'') + '</div></td><td><span class="' + (tx.amount>0?'tag money':'tag none') + '">' + ((tx.amount>0?'+':'')+tx.amount) + '</span></td><td>₽ ' + tx.balance_after + '</td><td>' + (typeTextMap[tx.type]||tx.type) + '</td><td>' + escapeHtml(tx.description||'—') + '</td></tr>';
     }); tbody.innerHTML = html;
   }
   if ($('#txRefresh')) $('#txRefresh').addEventListener('click', loadTransactions);
   if ($('#txSearch')) $('#txSearch').addEventListener('input', renderTransactions);
   if ($('#txFilter')) $('#txFilter').addEventListener('change', renderTransactions);
+  if ($('#txExport')) $('#txExport').addEventListener('click', function () {
+    if (!txCache.length) { toast('没有可导出的记录'); return; }
+    var rows = [['时间', '用户ID', '变动', '变动后余额', '类型', '描述']];
+    txCache.forEach(function(tx) { rows.push([fmtTime(tx.created_at), tx.user_id, tx.amount, tx.balance_after, tx.type, tx.description||'']); });
+    downloadCSV('wallet-transactions-' + fmtDate(new Date()) + '.csv', rows); toast('已导出');
+  });
 
   /* 批量操作 */
   if ($('#batchSubmit')) $('#batchSubmit').addEventListener('click', async function () {
@@ -504,7 +714,7 @@
     const amount = parseInt(amountStr, 10); if (isNaN(amount) || amount <= 0) { toast('补偿金额必须是正整数'); return; }
     if (!confirm(`确定要给【${scope === 'all' ? '全部' : scope === 'user' ? '仅正式' : '仅游客'}】用户每人发放 ₽ ${amount} 吗？`)) return;
     const { data: { users }, error } = await client.auth.admin.listUsers(); if (error) { toast('获取用户失败'); return; }
-    const targets = users.filter(u => { const meta = u.user_metadata || {}; const isGuest = u.is_anonymous === true || meta.is_guest === true; if (scope === 'user' && isGuest) return false; if (scope === 'guest' && !isGuest) return false; return true; });
+    const targets = users.filter(function(u) { const meta = u.user_metadata || {}; const isGuest = u.is_anonymous === true || meta.is_guest === true; if (scope === 'user' && isGuest) return false; if (scope === 'guest' && !isGuest) return false; return true; });
     if (!targets.length) { toast('没有符合条件的目标用户'); return; }
     const progressModal = $('#progressModal'), progressText = $('#progressText'); progressModal.classList.remove('hide');
     let success = 0, fail = 0;
@@ -528,7 +738,7 @@
     if (!confirm('⚠️ 确定要清除所有游客账号吗？此操作不可逆！关联数据也会被清除。')) return;
     if (prompt('请输入「确认删除」以执行：') !== '确认删除') { toast('已取消操作'); return; }
     const { data: { users }, error } = await client.auth.admin.listUsers(); if (error) { toast('获取用户失败'); return; }
-    const guests = users.filter(u => { const meta = u.user_metadata || {}; return u.is_anonymous === true || meta.is_guest === true; });
+    const guests = users.filter(function(u) { const meta = u.user_metadata || {}; return u.is_anonymous === true || meta.is_guest === true; });
     if (!guests.length) { toast('没有找到游客账号'); return; }
     const progressModal = $('#progressModal'), progressText = $('#progressText'); progressModal.classList.remove('hide');
     let success = 0, fail = 0;

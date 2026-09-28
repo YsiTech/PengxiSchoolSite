@@ -1,5 +1,5 @@
 /* ===================================================================
-   蓬溪格勒人民高等中学 · 星图抽奖 (角色专属UI版)
+   蓬溪格勒人民高等中学 · 星图抽奖 (角色专属UI版 + 管理员体验卡转化)
    奖品网格版 · 单抽 + 五连抽
    =================================================================== */
 
@@ -37,7 +37,7 @@
   var todayCount   = $('todayCount');
   var recordList   = $('recordList');
 
-  // ⭐ 新增：页面标题、描述、按钮价格元素
+  // ⭐ 页面标题、描述、按钮价格元素
   var pageTitle    = $('pageTitle');
   var pageDesc     = $('pageDesc');
   var btn1Cost     = $('btn1Cost');
@@ -399,7 +399,9 @@
       p_reward: prize.type === 'money' ? prize.reward : 0,
       p_prize_id: prize.id,
       p_prize_name: prize.name,
-      p_prize_type: prize.type
+      p_prize_type: prize.type,
+      p_item_type: prize.item_type || null,
+      p_item_value: prize.item_value || 0
     }).then(function (res) {
       if (res.error) {
         console.error('[lottery] RPC 失败:', res.error);
@@ -425,7 +427,6 @@
     drawBtn.querySelector('.lb-text').textContent = '抽奖中…';
 
     refreshBalance().then(function (b) {
-      // ⭐ 如果是管理员免费抽奖，则跳过余额检查
       if (COST > 0 && (b === null || b < COST)) {
         toast('余额不足，还差 ' + (COST - (b || 0)) + ' 亚斯卢布');
         resetButtons();
@@ -528,10 +529,16 @@
   }
 
   /* ============================================================
-     单抽结果弹窗
+     单抽结果弹窗（⭐ 支持管理员体验卡转化）
      ============================================================ */
   function showResult(prize, data) {
-    if (prize.type === 'money') {
+    // ⭐ 管理员抽中体验卡 -> 已转化为亚斯卢布
+    if (data.converted_reward && data.converted_reward > 0) {
+      resultIcon.textContent = '💰';
+      resultTitle.textContent = '管理员福利';
+      resultPrize.textContent = prize.name + ' 已转化';
+      resultBalance.textContent = '已获得 ₽ ' + data.converted_reward + ' 亚斯卢布 · 当前余额：₽ ' + data.balance;
+    } else if (prize.type === 'money') {
       resultIcon.textContent = '🎉';
       resultTitle.textContent = '恭喜中奖';
       resultPrize.textContent = prize.name;
@@ -541,6 +548,12 @@
       resultTitle.textContent = '恭喜获得实物奖品';
       resultPrize.textContent = prize.name;
       resultBalance.textContent = '请填写收货信息';
+    } else if (prize.type === 'vip_card' || prize.type === 'subscriber_card' || prize.type === 'money_card' || prize.type === 'exp_card') {
+      // 普通/VIP/订阅用户抽中道具
+      resultIcon.textContent = '🎒';
+      resultTitle.textContent = '获得道具';
+      resultPrize.textContent = prize.name;
+      resultBalance.textContent = '已放入背包，当前余额：₽ ' + data.balance;
     } else {
       resultIcon.textContent = '💫';
       resultTitle.textContent = '谢谢参与';
@@ -558,6 +571,7 @@
     resultOkBtn.addEventListener('click', function () {
       if (resultModal) resultModal.classList.add('hide');
 
+      // ⭐ 只有实物礼品(gift)才弹出填写地址；道具(vip_card等)不需要
       var prize = PRIZES.filter(function (p) { return p.name === currentPrizeName; })[0];
       if (prize && prize.type === 'gift') {
         if (giftPrizeName) giftPrizeName.textContent = prize.name;
@@ -567,7 +581,7 @@
   }
 
   /* ============================================================
-     五连抽结果弹窗
+     五连抽结果弹窗（⭐ 支持管理员体验卡转化）
      ============================================================ */
   function showResult5(results) {
     if (!result5Grid) return;
@@ -576,34 +590,63 @@
 
     var totalReward = 0;
     var giftCount = 0;
+    var convertedCount = 0;
+    var convertedTotal = 0;
+
     success.forEach(function (r) {
-      if (r.prize.type === 'money') totalReward += r.prize.reward || 0;
-      if (r.prize.type === 'gift')  giftCount++;
+      if (r.data.converted_reward && r.data.converted_reward > 0) {
+        // ⭐ 管理员转化
+        convertedCount++;
+        convertedTotal += r.data.converted_reward;
+        totalReward += r.data.converted_reward;
+      } else if (r.prize.type === 'money') {
+        totalReward += r.prize.reward || 0;
+      } else if (r.prize.type === 'gift') {
+        giftCount++;
+      }
     });
 
     var summary = '获得 <b>₽ ' + totalReward + '</b> 亚斯卢布';
     if (giftCount > 0) summary += ' · <b>' + giftCount + '</b> 个实物礼品待填写地址';
+    if (convertedCount > 0) summary += ' · <b>' + convertedCount + '</b> 张体验卡已转化为亚斯卢布';
     result5Balance.innerHTML = summary;
 
     var html = '';
     success.forEach(function (r, idx) {
       var p = r.prize;
-      var cls = p.type === 'money' ? 'money' :
-                p.type === 'gift'  ? 'gift' : 'none';
-      var rewardText = p.type === 'money'
-        ? '+' + p.reward
-        : (p.type === 'gift' ? '待填地址' : '—');
+      var cls = 'none';
+      var rewardText = '—';
+      var icon = iconFor(p);
+
+      if (r.data.converted_reward && r.data.converted_reward > 0) {
+        cls = 'money';
+        rewardText = '转化 +' + r.data.converted_reward;
+        icon = '💰';
+      } else if (p.type === 'money') {
+        cls = 'money';
+        rewardText = '+' + p.reward;
+      } else if (p.type === 'gift') {
+        cls = 'gift';
+        rewardText = '待填地址';
+      } else if (p.type === 'vip_card' || p.type === 'subscriber_card' || p.type === 'money_card' || p.type === 'exp_card') {
+        cls = 'gift'; // 用金色显示道具
+        rewardText = '已入背包';
+        icon = '🎒';
+      }
 
       html += '<div class="result5-card ' + cls + '">' +
-                '<div class="r5-icon">' + iconFor(p) + '</div>' +
+                '<div class="r5-icon">' + icon + '</div>' +
                 '<div class="r5-name">' + escHtml(p.name) + '</div>' +
                 '<div class="r5-reward">' + rewardText + '</div>' +
               '</div>';
     });
     result5Grid.innerHTML = html;
 
+    // ⭐ 只有纯实物礼品需要填地址，道具不用
     pendingGiftRecords = success
-      .filter(function (r) { return r.prize.type === 'gift'; })
+      .filter(function (r) {
+        return r.prize.type === 'gift' && (!r.data.converted_reward || r.data.converted_reward === 0);
+      })
       .map(function (r) {
         return { recordId: r.data.record_id, prizeName: r.prize.name };
       });
@@ -711,7 +754,7 @@
   if (Auth.ready && Auth.ready.then) {
     Auth.ready.then(function () {
       setTimeout(function () {
-        applyRoleToLotteryUI(); // ⭐ 加载角色专属价格
+        applyRoleToLotteryUI();
         refreshBalance();
         refreshTodayCount();
         refreshRecords();
@@ -719,5 +762,5 @@
     });
   }
 
-  console.log('%c [Lottery] 抽奖模块已加载 (角色专属版) ', 'background:#d4af37;color:#241b08;padding:2px 8px;border-radius:3px;font-weight:700');
+  console.log('%c [Lottery] 抽奖模块已加载 (角色专属版 + 管理员转化) ', 'background:#d4af37;color:#241b08;padding:2px 8px;border-radius:3px;font-weight:700');
 })(window);

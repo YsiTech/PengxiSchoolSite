@@ -82,7 +82,24 @@
       <input type="text" id="usersSearch" placeholder="搜索昵称 / 邮箱">
       <select id="usersFilter"><option value="">全部</option><option value="user">正式用户</option><option value="guest">游客</option></select>
     </div>
-    <div class="table-wrap"><table class="data-table" id="usersTable"><thead><tr><th>UID</th><th>邮箱</th><th>昵称</th><th>类型</th><th>角色</th><th>余额</th><th>操作</th></tr></thead><tbody><tr><td colspan="7" class="td-empty">加载中…</td></tr></tbody></table></div>
+    <div class="table-wrap">
+      <table class="data-table" id="usersTable">
+        <thead>
+          <tr>
+            <th>UID</th>
+            <th>邮箱</th>
+            <th>昵称</th>
+            <th>类型</th>
+            <th>角色</th>
+            <th>到期时间</th>
+            <th>经验/等级</th>
+            <th>余额</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody><tr><td colspan="9" class="td-empty">加载中…</td></tr></tbody>
+      </table>
+    </div>
   </section>
 
   <!-- 钱包管理 -->
@@ -160,6 +177,34 @@
 <div class="admin-modal hide" id="balanceModal"><div class="admin-modal-box"><div class="amb-head"><h3>调整余额</h3><button class="amb-close" id="balanceClose" type="button">✕</button></div><div class="amb-body"><p class="amb-tip" id="balanceUserTip">正在操作：—</p><div class="amb-field"><label>当前余额</label><input type="text" id="balanceCurrent" readonly></div><div class="amb-field"><label>调整数量</label><input type="number" id="balanceDelta" placeholder="例如：100 或 -50"></div><div class="amb-field"><label>调整后余额</label><input type="text" id="balancePreview" readonly></div></div><div class="amb-actions"><button class="btn-secondary" id="balanceCancel" type="button">取消</button><button class="btn-primary" id="balanceConfirm" type="button">确认调整</button></div></div></div>
 
 <div class="admin-modal hide" id="roleModal"><div class="admin-modal-box"><div class="amb-head"><h3>修改用户角色</h3><button class="amb-close" id="roleClose" type="button">✕</button></div><div class="amb-body"><p class="amb-tip" id="roleUserTip">正在操作：—</p><div class="amb-field"><label>选择角色</label><select id="roleSelect"><option value="user">普通用户</option><option value="vip">VIP 用户</option><option value="subscriber">订阅用户</option><option value="admin">管理员</option></select></div></div><div class="amb-actions"><button class="btn-secondary" id="roleCancel" type="button">取消</button><button class="btn-primary" id="roleConfirm" type="button">确认修改</button></div></div></div>
+
+<!-- ⭐ 新增：发道具弹窗 -->
+<div class="admin-modal hide" id="sendItemModal">
+  <div class="admin-modal-box">
+    <div class="amb-head"><h3>发送道具</h3><button class="amb-close" id="sendItemClose" type="button">✕</button></div>
+    <div class="amb-body">
+      <p class="amb-tip" id="sendItemUserTip">正在操作：—</p>
+      <div class="amb-field"><label>道具类型</label><select id="sendItemType"><option value="vip_card">VIP体验卡</option><option value="subscriber_card">订阅体验卡</option><option value="money_card">亚斯卢布卡</option><option value="exp_card">经验卡</option></select></div>
+      <div class="amb-field"><label>道具名称</label><input type="text" id="sendItemName" placeholder="例如：VIP体验卡(7天)"></div>
+      <div class="amb-field"><label>数值/天数</label><input type="number" id="sendItemValue" placeholder="例如：7" min="1"></div>
+      <div class="amb-field"><label>数量</label><input type="number" id="sendItemQty" value="1" min="1"></div>
+    </div>
+    <div class="amb-actions"><button class="btn-secondary" id="sendItemCancel" type="button">取消</button><button class="btn-primary" id="sendItemConfirm" type="button">确认发送</button></div>
+  </div>
+</div>
+
+<!-- ⭐ 新增：修改等级弹窗 -->
+<div class="admin-modal hide" id="editLevelModal">
+  <div class="admin-modal-box">
+    <div class="amb-head"><h3>修改用户等级</h3><button class="amb-close" id="editLevelClose" type="button">✕</button></div>
+    <div class="amb-body">
+      <p class="amb-tip" id="editLevelUserTip">正在操作：—</p>
+      <div class="amb-field"><label>当前等级</label><input type="text" id="editLevelCurrent" readonly></div>
+      <div class="amb-field"><label>目标等级</label><input type="number" id="editLevelTarget" min="1" placeholder="例如：10"></div>
+    </div>
+    <div class="amb-actions"><button class="btn-secondary" id="editLevelCancel" type="button">取消</button><button class="btn-primary" id="editLevelConfirm" type="button">确认修改</button></div>
+  </div>
+</div>
 
 <div class="admin-modal hide" id="shippingModal"><div class="admin-modal-box"><div class="amb-head"><h3>填写物流信息</h3><button class="amb-close" id="shippingClose" type="button">✕</button></div><div class="amb-body"><p class="amb-tip" id="shippingOrderTip">正在操作：—</p><div class="amb-field"><label>快递公司</label><select id="shippingCompany"><option value="顺丰速运">顺丰速运</option><option value="中通快递">中通快递</option><option value="圆通速递">圆通速递</option><option value="韵达快递">韵达快递</option><option value="申通快递">申通快递</option><option value="京东物流">京东物流</option><option value="邮政EMS">邮政EMS</option><option value="其他">其他</option></select></div><div class="amb-field"><label>快递单号</label><input type="text" id="shippingNo" placeholder="请输入快递单号"></div><div class="amb-field"><label>管理员备注（选填）</label><input type="text" id="shippingRemark" placeholder="例如：已发货，请注意查收"></div></div><div class="amb-actions"><button class="btn-secondary" id="shippingCancel" type="button">取消</button><button class="btn-primary" id="shippingConfirm" type="button">保存并标记发货</button></div></div></div>
 

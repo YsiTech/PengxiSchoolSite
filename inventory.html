@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的背包 · 蓬溪格勒人民高等中学</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/profile.css">
+<style>
+  .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+  .item-card { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 20px; text-align: center; position: relative; transition: transform .2s, box-shadow .2s; }
+  .item-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.06); border-color: var(--gold); }
+  .item-icon { font-size: 42px; margin-bottom: 8px; line-height: 1; }
+  .item-name { font-size: 14px; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+  .item-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+  .item-qty { position: absolute; top: 10px; right: 10px; background: var(--red); color: #fff; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 999px; }
+  .item-btn { width: 100%; padding: 8px 0; font-size: 13px; border-radius: 8px; border: 0; background: linear-gradient(135deg, #d4af37, #b8860b); color: #fff; font-weight: 600; cursor: pointer; transition: opacity .2s; }
+  .item-btn:hover { opacity: .9; }
+  .item-btn:disabled { background: #ccc; cursor: not-allowed; }
+  .empty-inv { text-align: center; padding: 60px 0; color: var(--muted); }
+</style>
+</head>
+<body data-page="inventory">
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="page-hero-inner">
+    <div class="crumb"><a href="mainsite.html">首页</a><i>›</i><a href="profile.html">个人中心</a><i>›</i><span>我的背包</span></div>
+    <h1>我的背包</h1>
+    <p>查看并使用你抽到的各类道具</p>
+  </div>
+</section>
+
+<main class="section profile-main" style="max-width: 800px;">
+  <div class="card">
+    <div class="card-head"><h3>道具列表</h3></div>
+    <div class="inventory-grid" id="inventoryGrid">
+      <div class="empty-inv">加载中…</div>
+    </div>
+  </div>
+</main>
+
+<div id="site-footer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/inventory.js"></script>
+</body>
+</html>
