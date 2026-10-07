@@ -1,0 +1,428 @@
+/* ===================================================================
+   语言信息终端 · 页面脚本
+   =================================================================== */
+
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* ============================================================
+     0. 角色列表
+     ============================================================ */
+  var AGENTS = [
+    {
+      id: 'c2d5b0c388804b049c3ed414eb947b89',
+      name: '蒋洪',
+      role: '教务老师',
+      desc: '负责学籍、课程、成绩等教务相关咨询',
+      tags: ['教务', '学籍', '成绩'],
+      avatar: '蒋',
+      color: '#c8102e',
+      greeting: '你好，我是蒋洪老师，有什么教务方面的问题可以问我。'
+    },
+    {
+      id: '93ec0586ecf547499ebea0773ef348e6',
+      name: '刘艾琳',
+      role: '客服老师',
+      desc: '负责校园服务、活动、生活相关咨询',
+      tags: ['客服', '活动', '生活'],
+      avatar: '刘',
+      color: '#1a7f37',
+      greeting: '你好呀，我是刘艾琳，有什么可以帮到你？'
+    }
+  ];
+
+  var currentAgent = AGENTS[0];
+  var agentReady = false;
+
+  /* ============================================================
+     1. 时钟（现在显示在左侧"本地时间"）
+     ============================================================ */
+  function updateClock() {
+    var el = $('termClock');
+    if (!el) return;
+    var d = new Date();
+    var p = function (n) { return n < 10 ? '0' + n : '' + n; };
+    el.textContent = p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* ============================================================
+     2. 状态 —— 现在只操作 sessStatus
+     ============================================================ */
+  function setStatus(text, state) {
+    var s = $('sessStatus');
+    if (!s) return;
+    s.textContent = text;
+    s.classList.remove('ok', 'err');
+    if (state === 'ok') s.classList.add('ok');
+    else if (state === 'err') s.classList.add('err');
+  }
+  function setHint(text, state) {
+    var hint = $('termHint');
+    var txt = $('hintText');
+    if (txt) txt.textContent = text;
+    if (hint) {
+      hint.classList.remove('ok', 'err');
+      if (state) hint.classList.add(state);
+    }
+  }
+  function setTvStatus(text, state) {
+    var el = $('tvStatus');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove('ok', 'err');
+    if (state === 'ok') el.classList.add('ok');
+    else if (state === 'err') el.classList.add('err');
+  }
+  function setDot(on) {
+    var d = $('tvcDot');
+    if (d) d.classList.toggle('on', !!on);
+  }
+  function setCardActive(on) {
+    var c = $('voiceCard');
+    if (c) c.classList.toggle('active', !!on);
+  }
+
+  /* ============================================================
+     3. 终端打印
+     ============================================================ */
+  var termBody = $('termBody');
+  var lineQueue = [];
+  var printing = false;
+
+  function pushLine(html, opts) {
+    lineQueue.push({ html: html, opts: opts || {} });
+    if (!printing) drainQueue();
+  }
+  function drainQueue() {
+    if (!lineQueue.length) { printing = false; return; }
+    printing = true;
+    var item = lineQueue.shift();
+    var el = document.createElement('span');
+    el.className = 'term-line';
+    el.innerHTML = item.html;
+    var delay = item.opts.delay != null ? item.opts.delay : 0;
+    termBody.appendChild(el);
+    scrollTerm();
+    setTimeout(drainQueue, delay);
+  }
+  function scrollTerm() {
+    if (termBody) termBody.scrollTop = termBody.scrollHeight;
+  }
+
+  /* ============================================================
+     4. 开机自检
+     ============================================================ */
+  function bootSequence() {
+    if (!termBody) return;
+    termBody.innerHTML = '';
+    var lines = [
+      { html: '<span class="tk-prompt">$</span><span class="tk-info">lt-init</span> --verbose', delay: 160 },
+      { html: '<span class="tk-muted">[00:00:01]</span> 加载终端核心模块……', delay: 340 },
+      { html: '<span class="tk-muted">[00:00:02]</span> 语音引擎 <span class="tk-ok">Fish Audio</span> 已连接', delay: 320 },
+      { html: '<span class="tk-muted">[00:00:03]</span> 加载角色列表 <span class="tk-ok">[' + AGENTS.length + ' 位老师]</span>', delay: 300 },
+      { html: '<span class="tk-muted">[00:00:04]</span> 加载多语言识别模型 <span class="tk-ok">[OK]</span>', delay: 280 },
+      { html: '<span class="tk-muted">[00:00:05]</span> 加载四川方言模型 <span class="tk-ok">[OK]</span>', delay: 280 },
+      { html: '<span class="tk-muted">[00:00:06]</span> 默认角色：<span class="tk-info">' + AGENTS[0].name + '</span>（' + AGENTS[0].role + '）', delay: 320 },
+      { html: '', delay: 140 },
+      { html: '<span class="tk-ok">✓</span> 系统自检完成，终端已就绪。', delay: 460 },
+      { html: '<span class="tk-muted">在上方选择角色，点击按钮开始对话</span><span class="tk-blink"></span>', delay: 0 }
+    ];
+    lines.forEach(function (l) { pushLine(l.html, { delay: l.delay }); });
+    setTimeout(function () {
+      setStatus('终端就绪', 'ok');
+      setHint('终端已就绪，请选择角色后启动语音对话', 'ok');
+    }, 3000);
+  }
+
+  /* ============================================================
+     5. 渲染角色卡片
+     ============================================================ */
+  function renderAgentList() {
+    var list = $('agentList');
+    if (!list) return;
+
+    list.innerHTML = AGENTS.map(function (a, i) {
+      var activeCls = (a === currentAgent) ? ' active' : '';
+      var tagsHtml = a.tags.map(function (t) {
+        return '<span class="tac-tag">' + t + '</span>';
+      }).join('');
+
+      return '' +
+        '<div class="tac-item' + activeCls + '" data-agent-index="' + i + '">' +
+          '<div class="tac-avatar" style="background:' + a.color + '">' + a.avatar + '</div>' +
+          '<div class="tac-body">' +
+            '<div class="tac-name">' +
+              a.name +
+              '<span class="tac-role">' + a.role + '</span>' +
+            '</div>' +
+            '<div class="tac-desc">' + a.desc + '</div>' +
+            '<div class="tac-tags">' + tagsHtml + '</div>' +
+          '</div>' +
+        '</div>';
+    }).join('');
+
+    list.querySelectorAll('.tac-item').forEach(function (el) {
+      el.addEventListener('click', function () {
+        var idx = parseInt(el.getAttribute('data-agent-index'), 10);
+        selectAgent(AGENTS[idx]);
+      });
+    });
+
+    var countEl = $('agentCount');
+    if (countEl) countEl.textContent = AGENTS.length;
+  }
+
+  /* ============================================================
+     6. 选择角色
+     ============================================================ */
+  function selectAgent(agent) {
+    if (agent === currentAgent && document.querySelector('fish-agent')) return;
+
+    currentAgent = agent;
+
+    document.querySelectorAll('.tac-item').forEach(function (el) {
+      var idx = parseInt(el.getAttribute('data-agent-index'), 10);
+      el.classList.toggle('active', AGENTS[idx] === agent);
+    });
+
+    var ca = $('currentAgent');
+    if (ca) ca.textContent = agent.name;
+    var tvcAgentName = $('tvcAgentName');
+    if (tvcAgentName) tvcAgentName.textContent = agent.name;
+    var tvcOrbIcon = $('tvcOrbIcon');
+    if (tvcOrbIcon) tvcOrbIcon.textContent = agent.avatar;
+    var tvcSub = $('tvcSub');
+    if (tvcSub) tvcSub.textContent = '正在与 ' + agent.name + ' 老师连线';
+
+    var core = document.querySelector('.tvc-orb-core');
+    if (core) {
+      var c = agent.color;
+      core.style.background =
+        'radial-gradient(circle at 32% 28%, ' + lighten(c, 15) + ', ' + c + ' 55%, ' + darken(c, 15) + ')';
+      core.style.boxShadow =
+        '0 0 0 6px ' + hexAlpha(c, 0.15) + ', 0 8px 24px ' + hexAlpha(c, 0.4);
+    }
+
+    pushLine('<span class="tk-prompt">$</span><span class="tk-info">lt-switch</span> --agent=' + agent.name, { delay: 60 });
+    pushLine('<span class="tk-ok">✓</span> 已切换至 <span class="tk-info">' + agent.name + '</span>（' + agent.role + '）', { delay: 200 });
+
+    rebuildAgent();
+
+    setTvStatus('待启动', '');
+    setHint('已选择 ' + agent.name + ' 老师，点击「启动语音对话」开始', 'ok');
+    setCardActive(false);
+    setDot(false);
+  }
+
+  /* 颜色工具 */
+  function lighten(hex, pct) { return mixColor(hex, '#ffffff', pct / 100); }
+  function darken(hex, pct) { return mixColor(hex, '#000000', pct / 100); }
+  function mixColor(a, b, t) {
+    var ca = parseHex(a), cb = parseHex(b);
+    var r = Math.round(ca.r + (cb.r - ca.r) * t);
+    var g = Math.round(ca.g + (cb.g - ca.g) * t);
+    var bl = Math.round(ca.b + (cb.b - ca.b) * t);
+    return 'rgb(' + r + ',' + g + ',' + bl + ')';
+  }
+  function parseHex(hex) {
+    hex = hex.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+    return {
+      r: parseInt(hex.substr(0, 2), 16),
+      g: parseInt(hex.substr(2, 2), 16),
+      b: parseInt(hex.substr(4, 2), 16)
+    };
+  }
+  function hexAlpha(hex, alpha) {
+    var c = parseHex(hex);
+    return 'rgba(' + c.r + ',' + c.g + ',' + c.b + ',' + alpha + ')';
+  }
+
+  /* ============================================================
+     7. 重建 fish-agent
+     ============================================================ */
+  function rebuildAgent() {
+    var old = document.querySelector('fish-agent');
+    if (old) {
+      try { if (typeof old.disconnect === 'function') old.disconnect(); } catch (e) {}
+      try { old.removeAttribute('agent-id'); } catch (e) {}
+      try { if (old.parentNode) old.parentNode.removeChild(old); } catch (e) {}
+    }
+
+    if (!agentReady) {
+      console.log('[terminal] widget 脚本未就绪，等待中…');
+      return;
+    }
+
+    setTimeout(function () {
+      if (document.querySelector('fish-agent')) return;
+
+      var el = document.createElement('fish-agent');
+      el.setAttribute('agent-id', currentAgent.id);
+      el.setAttribute('agent-name', currentAgent.name);
+      el.setAttribute('greeting', currentAgent.greeting);
+      el.setAttribute('consent', 'false');
+
+      document.body.appendChild(el);
+      bindAgentEvents(el);
+
+      console.log('[terminal] fish-agent 已创建：' + currentAgent.name + ' (' + currentAgent.id + ')');
+      pushLine('<span class="tk-muted">[Agent] 已创建 ' + currentAgent.name + ' 的会话连接</span>', { delay: 0 });
+    }, 300);
+  }
+
+  /* ============================================================
+     8. 绑定事件
+     ============================================================ */
+  function bindAgentEvents(el) {
+    if (!el) return;
+
+    el.addEventListener('fish-agent:connect', function (e) {
+      console.log('[terminal] 会话建立:', e.detail);
+      setStatus('通话中', 'ok');
+      setTvStatus('通话中', 'ok');
+      setDot(true);
+      setCardActive(true);
+      pushLine('<span class="tk-ok">●</span> 与 <span class="tk-info">' + currentAgent.name + '</span> 的会话已建立', { delay: 0 });
+      setHint('正在与 ' + currentAgent.name + ' 老师通话中……', 'ok');
+
+      var t = $('tvcTitle');
+      var s = $('tvcSub');
+      if (t) t.textContent = '正在通话中';
+      if (s) s.textContent = '直接对着麦克风说话即可';
+    });
+
+    el.addEventListener('fish-agent:disconnect', function (e) {
+      console.log('[terminal] 会话结束:', e.detail);
+      setStatus('终端就绪', 'ok');
+      setTvStatus('已断开', '');
+      setDot(false);
+      setCardActive(false);
+      pushLine('<span class="tk-muted">[会话结束]</span> ' +
+        (e.detail && e.detail.reason ? e.detail.reason : '通话已结束'), { delay: 0 });
+      setHint('会话已结束，可再次启动', 'ok');
+
+      var t = $('tvcTitle');
+      var s = $('tvcSub');
+      if (t) t.textContent = '点击启动语音对话';
+      if (s) s.textContent = '正在与 ' + currentAgent.name + ' 老师连线';
+    });
+
+    el.addEventListener('fish-agent:error', function (e) {
+      console.error('[terminal] 会话出错:', e.detail);
+      setTvStatus('出错', 'err');
+      setDot(false);
+
+      var msg = (e.detail && e.detail.message) ? e.detail.message : '会话启动失败';
+      var shortMsg = msg;
+      if (/not found/i.test(msg)) shortMsg = 'Agent 未找到 —— 请检查 Fish Audio 后台的 agent-id 与白名单';
+      else if (/not allowed/i.test(msg)) shortMsg = '该来源不被允许 —— 请在 Fish Audio 后台添加白名单';
+      else if (/network|fetch/i.test(msg)) shortMsg = '网络连接失败 —— 请检查网络';
+
+      pushLine('<span class="tk-err">✗</span> ' + shortMsg, { delay: 0 });
+      setHint('语音助手出错：' + shortMsg, 'err');
+    });
+  }
+
+  /* ============================================================
+     9. 启动语音助手
+     ============================================================ */
+  function launchAgent() {
+    pushLine('<span class="tk-prompt">$</span><span class="tk-info">lt-connect</span> --agent=' + currentAgent.name, { delay: 100 });
+    pushLine('<span class="tk-muted">正在展开语音助手面板……</span>', { delay: 260 });
+
+    var fish = document.querySelector('fish-agent');
+    if (!fish) {
+      setTvStatus('未加载', 'err');
+      pushLine('<span class="tk-err">✗</span> 语音助手未加载，请刷新页面', { delay: 0 });
+      setHint('语音助手未加载，请刷新页面', 'err');
+      return;
+    }
+
+    try {
+      fish.dispatchEvent(new CustomEvent('fish-agent:expand', { bubbles: true, composed: true }));
+      document.dispatchEvent(new CustomEvent('fish-agent:expand', { bubbles: true, composed: true }));
+    } catch (e) {
+      console.warn('[terminal] expand 事件派发失败:', e);
+    }
+
+    setCardActive(true);
+    setTvStatus('已启动', 'ok');
+    pushLine('<span class="tk-ok">✓</span> 语音面板已展开，请按照提示操作', { delay: 0 });
+    setHint('语音面板已展开，点击面板中的按钮开始对话', 'ok');
+  }
+
+  /* ============================================================
+     10. 按钮事件
+     ============================================================ */
+  var startBtn = $('startBtn');
+  var helpBtn = $('helpBtn');
+  var manualSection = $('manualSection');
+  var manualClose = $('manualClose');
+  var orbBtn = $('tvcOrb');
+
+  if (startBtn) startBtn.addEventListener('click', launchAgent);
+  if (orbBtn) orbBtn.addEventListener('click', launchAgent);
+
+  if (helpBtn) {
+    helpBtn.addEventListener('click', function () {
+      if (!manualSection) return;
+      manualSection.classList.toggle('hide');
+      if (!manualSection.classList.contains('hide')) {
+        manualSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  }
+  if (manualClose) {
+    manualClose.addEventListener('click', function () {
+      if (manualSection) manualSection.classList.add('hide');
+    });
+  }
+
+  /* ============================================================
+     11. 等 widget 脚本
+     ============================================================ */
+  function waitForWidget() {
+    var tries = 0;
+    var timer = setInterval(function () {
+      tries++;
+      if (window.customElements && customElements.get('fish-agent')) {
+        clearInterval(timer);
+        agentReady = true;
+        renderAgentList();
+        rebuildAgent();
+        setStatus('语音引擎已加载', 'ok');
+        setTvStatus('待启动', '');
+      } else if (tries > 60) {
+        clearInterval(timer);
+        renderAgentList();
+        setStatus('语音引擎未加载', 'err');
+        setTvStatus('未加载', 'err');
+        pushLine('<span class="tk-err">✗</span> 语音引擎未加载', { delay: 0 });
+        setHint('语音引擎加载失败，请刷新页面', 'err');
+      }
+    }, 200);
+  }
+
+  /* ============================================================
+     12. 启动
+     ============================================================ */
+  function init() {
+    setTimeout(bootSequence, 200);
+    renderAgentList();
+    waitForWidget();
+
+    console.log('%c 语言信息终端 LT-01 ', 'background:#3fb950;color:#0a0e14;padding:3px 10px;font-weight:700;letter-spacing:1px');
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();

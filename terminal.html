@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>语言信息终端 · 蓬溪格勒人民高等中学</title>
+<meta name="description" content="语言信息终端 · 多角色语音对话 · 与校园 AI 助手交流">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/terminal.css">
+</head>
+<body data-page="terminal">
+
+<!-- 学校站导航（由 main.js 注入） -->
+<div id="site-header"></div>
+
+<main class="term-main">
+
+  <aside class="term-side">
+
+    <div class="term-panel">
+      <div class="term-panel-head">
+        <span class="term-panel-title">系统信息</span>
+        <span class="term-panel-code">SYS.INFO</span>
+      </div>
+      <ul class="term-kv">
+        <li><span>本地时间</span><b id="termClock">--:--:--</b></li>
+        <li><span>终端编号</span><b>LT-01</b></li>
+        <li><span>语音引擎</span><b>Fish Audio</b></li>
+        <li><span>运行模式</span><b>多角色对话</b></li>
+        <li><span>在线角色</span><b id="agentCount">2</b></li>
+        <li><span>当前角色</span><b class="term-accent" id="currentAgent">—</b></li>
+        <li><span>会话状态</span><b class="term-accent" id="sessStatus">待接入</b></li>
+      </ul>
+    </div>
+
+    <div class="term-panel">
+      <div class="term-panel-head">
+        <span class="term-panel-title">功能模块</span>
+        <span class="term-panel-code">MODULES</span>
+      </div>
+      <ul class="term-modules">
+        <li>
+          <span class="tm-icon tm-icon-on"></span>
+          <div>
+            <b>多角色切换</b>
+            <i>根据需求选择不同老师</i>
+          </div>
+        </li>
+        <li>
+          <span class="tm-icon tm-icon-on"></span>
+          <div>
+            <b>语音对话</b>
+            <i>实时语音问答与交流</i>
+          </div>
+        </li>
+        <li>
+          <span class="tm-icon tm-icon-on"></span>
+          <div>
+            <b>多语言识别</b>
+            <i>中文 / 俄语 / 四川方言</i>
+          </div>
+        </li>
+        <li>
+          <span class="tm-icon tm-icon-on"></span>
+          <div>
+            <b>校园服务</b>
+            <i>学籍、课程、活动咨询</i>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+  </aside>
+
+  <section class="term-stage">
+
+    <!-- 终端窗口 -->
+    <div class="term-window">
+      <div class="term-window-bar">
+        <span class="term-dot term-dot-red"></span>
+        <span class="term-dot term-dot-yellow"></span>
+        <span class="term-dot term-dot-green"></span>
+        <span class="term-window-title">terminal — /dev/voice</span>
+      </div>
+      <div class="term-window-body" id="termBody"></div>
+    </div>
+
+    <!-- 人物选择 -->
+    <div class="term-agent-card">
+      <div class="tac-header">
+        <div class="tac-title">
+          <span class="tac-title-dot"></span>
+          <span>选择对话角色</span>
+        </div>
+        <span class="tac-hint">点击卡片切换 · 与校园 AI 老师对话</span>
+      </div>
+
+      <div class="tac-list" id="agentList"></div>
+    </div>
+
+    <!-- 语音助手控制卡 -->
+    <div class="term-voice-card" id="voiceCard">
+      <div class="tvc-header">
+        <div class="tvc-brand">
+          <span class="tvc-dot" id="tvcDot"></span>
+          <span>实时语音助手 · <b id="tvcAgentName">—</b></span>
+          <span class="tvc-chip">Fish Audio</span>
+        </div>
+        <span class="tvc-status" id="tvStatus">待启动</span>
+      </div>
+
+      <div class="tvc-body">
+
+        <div class="tvc-launcher">
+          <button class="tvc-orb" id="tvcOrb" type="button" aria-label="启动语音对话">
+            <span class="tvc-orb-ring"></span>
+            <span class="tvc-orb-ring"></span>
+            <span class="tvc-orb-core">
+              <span class="tvc-orb-icon" id="tvcOrbIcon">蒋</span>
+            </span>
+          </button>
+          <div class="tvc-launcher-text">
+            <b id="tvcTitle">点击启动语音对话</b>
+            <span id="tvcSub">正在与 蒋洪 老师连线</span>
+          </div>
+        </div>
+
+        <ul class="tvc-steps">
+          <li>
+            <span class="tvc-step-num">01</span>
+            <div>
+              <b>选择角色</b>
+              <i>在上方卡片中选择对话对象</i>
+            </div>
+          </li>
+          <li>
+            <span class="tvc-step-num">02</span>
+            <div>
+              <b>启动对话</b>
+              <i>点击左侧按钮，面板自动展开</i>
+            </div>
+          </li>
+          <li>
+            <span class="tvc-step-num">03</span>
+            <div>
+              <b>授权麦克风</b>
+              <i>在浏览器提示中点击"允许"</i>
+            </div>
+          </li>
+        </ul>
+
+      </div>
+
+      <div class="tvc-footer">
+        <span class="tvc-footer-tip">
+          语音助手面板由 Fish Audio 提供 · 数据端到端加密
+        </span>
+      </div>
+    </div>
+
+    <!-- 提示 -->
+    <div class="term-hint" id="termHint">
+      <span class="term-hint-icon">▸</span>
+      <span id="hintText">正在连接语音引擎……</span>
+    </div>
+
+    <!-- 按钮 -->
+    <div class="term-actions">
+      <button class="term-btn term-btn-primary" id="startBtn" type="button">
+        <span class="term-btn-glyph">◉</span>
+        <span>启动语音对话</span>
+      </button>
+      <button class="term-btn" id="helpBtn" type="button">
+        <span class="term-btn-glyph">?</span>
+        <span>使用说明</span>
+      </button>
+    </div>
+
+  </section>
+
+</main>
+
+<section class="term-manual hide" id="manualSection">
+  <div class="term-manual-inner">
+    <div class="term-manual-head">
+      <h2>使用说明</h2>
+      <button class="term-manual-close" id="manualClose" type="button" aria-label="关闭">×</button>
+    </div>
+    <ol class="term-manual-list">
+      <li>在 <strong>选择对话角色</strong> 卡片中选择你需要的老师。</li>
+      <li>点击 <strong>启动语音对话</strong> 按钮，语音面板将自动展开。</li>
+      <li>在面板中点击开始按钮，浏览器会请求麦克风权限。</li>
+      <li>点击 <strong>允许</strong>，然后对着麦克风说话即可。</li>
+      <li>支持普通话、四川话、俄语，可自然切换。</li>
+      <li>切换角色会自动断开当前会话，需要重新启动。</li>
+      <li>若听不到声音，检查设备音量与浏览器静音状态。</li>
+    </ol>
+  </div>
+</section>
+
+<!-- 学校站页脚 -->
+<div id="site-footer"></div>
+
+<!-- Fish Audio widget 脚本 -->
+<script
+  src="https://unpkg.com/@fishaudio/agent-widget-embed"
+  async
+  type="text/javascript"
+></script>
+
+<!-- 学校站脚本（注入导航、页脚、登录状态） -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/terminal.js"></script>
+
+</body>
+</html>
