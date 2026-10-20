@@ -6,6 +6,79 @@
 <title>战争系统 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<style>
+  /* 战争专属动态样式 */
+  @keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(2px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(2px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+  }
+  .shake { animation: shake 0.5s; }
+  
+  .war-log {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--cyan);
+    background: rgba(0,0,0,0.3);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 12px;
+    border-left: 2px solid var(--cyan);
+    min-height: 20px;
+    display: none;
+  }
+  .war-log.show { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .tactics-panel {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    grid-column: 1 / -1;
+    border-top: 1px dashed var(--border);
+    padding-top: 14px;
+  }
+  .btn-tactic {
+    flex: 1;
+    background: var(--glass-2);
+    border: 1px solid var(--border-2);
+    color: var(--ink-2);
+    padding: 10px 6px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-tactic:hover:not(:disabled) {
+    background: var(--glass-3);
+    border-color: var(--cyan);
+    color: #fff;
+  }
+  .btn-tactic:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .btn-tactic .cost {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--gold-2);
+  }
+  .btn-tactic:disabled .cost {
+    color: var(--muted);
+  }
+</style>
 </head>
 <body>
 
@@ -25,8 +98,12 @@
     <div class="iecp-breadcrumb">
       <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>战争系统</span>
     </div>
-    <h1><i class="fa-solid fa-shield-halved"></i> 战争系统</h1>
-    <p>娱乐性质的军事演练 · 每次进攻增加 1 分 · 先到 100 分者获胜</p>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px">
+      <div>
+        <h1><i class="fa-solid fa-shield-halved"></i> 战争系统</h1>
+        <p>战况瞬息万变 · 先达到 100 分的国家将取得最终胜利</p>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -43,6 +120,7 @@
 (function () {
   var I = IECP;
   var profile = null;
+  var cooldowns = {}; // 记录每场战争的冷却状态
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
@@ -51,13 +129,7 @@
     I.getProfile(true).then(function (p) {
       profile = p;
       if (!profile) {
-        I.$('#warsList').innerHTML = `
-          <div class="empty-state glass" style="max-width:600px;margin:40px auto;">
-            <i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i>
-            <p>无法获取你的国家档案</p>
-            <small>请先完成注册，或返回首页重新登录。</small>
-          </div>
-        `;
+        I.$('#warsList').innerHTML = `<div class="empty-state glass"><p style="color:var(--red)">无法获取你的国家档案，请重新登录</p></div>`;
         return;
       }
       loadWars();
@@ -105,23 +177,19 @@
           var canPlay = w.status === 'ongoing' && (isA || isD);
           
           var winner = w.winner_id === w.attacker_id ? att.username : (w.winner_id === w.defender_id ? def.username : null);
-
           var myRoleTag = '';
+
           if (w.status === 'ongoing') {
             if (isA) myRoleTag = '<span style="color:var(--cyan);font-size:11px;margin-left:6px;border:1px solid var(--cyan);padding:1px 6px;border-radius:4px;">我方参战</span>';
             if (isD) myRoleTag = '<span style="color:var(--cyan);font-size:11px;margin-left:6px;border:1px solid var(--cyan);padding:1px 6px;border-radius:4px;">我方参战</span>';
           }
 
-          // 操作按钮区
           var actionButtons = '';
           if (canPlay) {
             actionButtons = `
-              <div style="display:flex; gap:10px;">
-                <button class="btn btn-red btn-sm" onclick="attack('${w.id}', '${isA ? 'attacker' : 'defender'}', this)">
-                  <i class="fa-solid fa-bolt"></i> 发起进攻 +1
-                </button>
-                <button class="btn btn-ghost btn-sm" onclick="surrender('${w.id}', '${isA ? 'attacker' : 'defender'}')">
-                  <i class="fa-solid fa-flag"></i> 投降 / 求和
+              <div style="display:flex; gap:10px; width:100%;">
+                <button class="btn btn-ghost btn-sm" onclick="surrender('${w.id}', '${isA ? 'attacker' : 'defender'}')" style="width:100px;">
+                  <i class="fa-solid fa-flag"></i> 投降
                 </button>
               </div>
             `;
@@ -131,8 +199,32 @@
             actionButtons = `<span style="font-size:12px;color:var(--muted)"><i class="fa-solid fa-check"></i> 战争已结束</span>`;
           }
 
+          // 战术面板 (只有参战且进行中才显示)
+          var tacticsPanel = '';
+          if (canPlay) {
+            tacticsPanel = `
+              <div class="tactics-panel" id="tactics-${w.id}">
+                <button class="btn-tactic" onclick="attack('${w.id}', '${isA ? 'attacker' : 'defender'}', 'infantry', 0, this)">
+                  <i class="fa-solid fa-person-rifle" style="font-size:16px;"></i>
+                  <span>步兵冲锋</span>
+                  <span class="cost">免费</span>
+                </button>
+                <button class="btn-tactic" onclick="attack('${w.id}', '${isA ? 'attacker' : 'defender'}', 'airstrike', 500, this)">
+                  <i class="fa-solid fa-jet-fighter" style="font-size:16px; color:var(--gold);"></i>
+                  <span>精确打击</span>
+                  <span class="cost">-500 ₽</span>
+                </button>
+                <button class="btn-tactic" onclick="attack('${w.id}', '${isA ? 'attacker' : 'defender'}', 'emp', 1000, this)">
+                  <i class="fa-solid fa-satellite-dish" style="font-size:16px; color:var(--cyan);"></i>
+                  <span>电子干扰</span>
+                  <span class="cost">-1000 ₽</span>
+                </button>
+              </div>
+            `;
+          }
+
           html += `
-            <div class="war-card glass">
+            <div class="war-card glass" id="war-${w.id}">
               <div class="war-side">
                 <img src="${I.escapeHtml(att.flag_url || I.avatarFallback(att.username))}">
                 <div>
@@ -141,7 +233,7 @@
                 </div>
               </div>
               
-              <div class="war-score">
+              <div class="war-score" id="score-${w.id}">
                 ${w.attacker_score} : ${w.defender_score}
                 <small>${w.status === 'ongoing' ? '进行中' : '已结束'}</small>
               </div>
@@ -162,6 +254,10 @@
                 </span>
                 ${actionButtons}
               </div>
+
+              ${tacticsPanel}
+              
+              <div class="war-log" id="log-${w.id}"></div>
             </div>
           `;
         });
@@ -170,13 +266,27 @@
       });
   }
 
-  window.attack = function (warId, side, btnEl) {
+  // 核心：战术进攻
+  window.attack = function (warId, side, type, cost, btnEl) {
     if (!profile) return;
-    
-    var originalText = btnEl.innerHTML;
-    btnEl.disabled = true;
-    btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 作战中...';
 
+    // 1. 冷却检查
+    if (cooldowns[warId]) { I.toast('战术冷却中，请稍候...', 'error'); return; }
+
+    // 2. 费用检查
+    if (profile.balance < cost) { I.toast('国库余额不足，无法执行该战术！', 'error'); return; }
+
+    // 3. 禁用所有战术按钮
+    var card = I.$(`#war-${warId}`);
+    var btns = card.querySelectorAll('.btn-tactic');
+    btns.forEach(function(b){ b.disabled = true; });
+    cooldowns[warId] = true;
+    
+    // 震动动画
+    card.classList.add('shake');
+    setTimeout(function(){ card.classList.remove('shake'); }, 500);
+
+    // 4. 处理战术逻辑
     I.client.from('wars').select('*').eq('id', warId).maybeSingle().then(function (r) {
       if (!r.data || r.data.status !== 'ongoing') {
         I.toast('该战争已结束', 'error');
@@ -185,61 +295,88 @@
       }
 
       var w = r.data;
-      var field = side === 'attacker' ? 'attacker_score' : 'defender_score';
-      var newScore = (w[field] || 0) + 1;
-      
-      var updateData = {};
-      updateData[field] = newScore;
+      var scoreAtt = w.attacker_score;
+      var scoreDef = w.defender_score;
+      var logs = {
+        infantry: ["我军步兵突破了敌军第一道防线！", "步兵连队发起猛烈冲锋！", "双方在战壕内发生激烈交火。"],
+        airstrike: ["空军实施精确轰炸，敌军阵地化为火海！", "导弹精准命中敌军指挥所！", "轰炸机群完成地毯式轰炸！"],
+        emp: ["成功瘫痪敌方通讯网络！", "电子战部队干扰了敌军雷达！", "敌军的防空系统出现大面积故障！"]
+      };
 
-      var isWin = newScore >= 100;
+      // 随机战报文本
+      var logText = logs[type][Math.floor(Math.random() * logs[type].length)];
+      I.$(`#log-${warId}`).classList.add('show');
+      I.$(`#log-${warId}`).innerText = `> ` + logText;
+
+      // 扣钱
+      if (cost > 0) {
+        I.client.from('profiles').update({ balance: profile.balance - cost }).eq('id', profile.id).then(function(){
+          profile.balance -= cost; // 本地同步
+        });
+      }
+
+      // 计算分数变化
+      var updateData = {};
+      
+      if (type === 'infantry') {
+        var add = Math.floor(Math.random() * 3) + 1; // 1-3分
+        if (side === 'attacker') { scoreAtt += add; updateData.attacker_score = scoreAtt; }
+        else { scoreDef += add; updateData.defender_score = scoreDef; }
+      } 
+      else if (type === 'airstrike') {
+        var add = Math.floor(Math.random() * 6) + 5; // 5-10分
+        if (side === 'attacker') { scoreAtt += add; updateData.attacker_score = scoreAtt; }
+        else { scoreDef += add; updateData.defender_score = scoreDef; }
+      } 
+      else if (type === 'emp') {
+        // 扣除对方 3-8 分，最低为 0
+        var sub = Math.floor(Math.random() * 6) + 3;
+        if (side === 'attacker') { scoreDef = Math.max(0, scoreDef - sub); updateData.defender_score = scoreDef; }
+        else { scoreAtt = Math.max(0, scoreAtt - sub); updateData.attacker_score = scoreAtt; }
+      }
+
+      // 胜负判定
+      var isWin = scoreAtt >= 100 || scoreDef >= 100;
       if (isWin) {
         updateData.status = 'finished';
-        updateData.winner_id = side === 'attacker' ? w.attacker_id : w.defender_id;
+        updateData.winner_id = scoreAtt >= 100 ? w.attacker_id : w.defender_id;
         updateData.ended_at = new Date().toISOString();
       }
 
+      // 更新数据库
       return I.client.from('wars').update(updateData).eq('id', warId).then(function (updateRes) {
         if (updateRes.error) {
-          I.toast('网络卡顿，进攻失败', 'error');
-          btnEl.disabled = false;
-          btnEl.innerHTML = originalText;
-          return;
-        }
-
-        if (isWin) {
-          // 🚨 修复：自然打到 100 分结束时，同步把外交关系重置为中立
-          var a = w.attacker_id < w.defender_id ? w.attacker_id : w.defender_id;
-          var b = w.attacker_id < w.defender_id ? w.defender_id : w.attacker_id;
-          
-          I.client.from('relations').update({ relation_type: 'neutral' })
-            .eq('country_a', a).eq('country_b', b).then(function() {
-              I.toast('战役胜利！你方取得了最终胜利！两国关系已恢复中立', 'success', 4000);
-              loadWars();
-            });
+          I.toast('网络卡顿，命令下达失败', 'error');
         } else {
-          I.toast('进攻成功 +1 分', 'success', 1000);
-          var scoreEl = btnEl.closest('.war-card').querySelector('.war-score');
-          scoreEl.innerHTML = `
-            ${side === 'attacker' ? newScore : w.attacker_score} : ${side === 'defender' ? newScore : w.defender_score}
-            <small>进行中</small>
+          // 更新 UI 分数
+          I.$(`#score-${warId}`).innerHTML = `
+            ${scoreAtt} : ${scoreDef}
+            <small>${isWin ? '已结束' : '进行中'}</small>
           `;
-          btnEl.disabled = false;
-          btnEl.innerHTML = originalText;
+          
+          if (isWin) {
+            I.toast('战役胜利！你方取得了最终胜利！', 'success', 4000);
+            // 重置关系
+            var a = w.attacker_id < w.defender_id ? w.attacker_id : w.defender_id;
+            var b = w.attacker_id < w.defender_id ? w.defender_id : w.attacker_id;
+            I.client.from('relations').update({ relation_type: 'neutral' }).eq('country_a', a).eq('country_b', b).then(function(){
+              setTimeout(loadWars, 1500);
+            });
+          }
         }
+        
+        // 解除冷却
+        setTimeout(function(){
+          cooldowns[warId] = false;
+          btns.forEach(function(b){ b.disabled = false; });
+        }, 3000); // 3秒冷却
       });
-    }).catch(function (err) {
-      console.error("进攻异常:", err);
-      I.toast('系统繁忙，请稍后再试', 'error');
-      btnEl.disabled = false;
-      btnEl.innerHTML = originalText;
     });
   };
 
-  // 投降 / 求和 逻辑（已包含关系重置）
+  // 投降逻辑
   window.surrender = function (warId, side) {
-    if (!confirm('确定要投降结束这场战争吗？\n\n战争将立刻结束，对方将获得最终胜利，两国关系将恢复中立。')) {
-      return;
-    }
+    if (!confirm('确定要投降结束这场战争吗？\n\n战争将立刻结束，对方将获得最终胜利，两国关系将恢复中立。')) return;
 
     I.client.from('wars').select('*').eq('id', warId).maybeSingle().then(function (r) {
       if (!r.data || r.data.status !== 'ongoing') return;
@@ -256,17 +393,13 @@
       I.client.from('wars').update(updateData).eq('id', warId).then(function (upRes) {
         if (upRes.error) { I.toast(upRes.error.message, 'error'); return; }
 
-        // 🚨 同步重置外交关系为中立
         var a = w.attacker_id < w.defender_id ? w.attacker_id : w.defender_id;
         var b = w.attacker_id < w.defender_id ? w.defender_id : w.attacker_id;
 
-        I.client.from('relations').update({ relation_type: 'neutral' })
-          .eq('country_a', a)
-          .eq('country_b', b)
-          .then(function () {
-            I.toast('战争已结束，两国关系恢复中立', 'success', 3000);
-            loadWars();
-          });
+        I.client.from('relations').update({ relation_type: 'neutral' }).eq('country_a', a).eq('country_b', b).then(function () {
+          I.toast('战争已结束，两国关系恢复中立', 'success', 3000);
+          loadWars();
+        });
       });
     });
   };
