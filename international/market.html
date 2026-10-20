@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交易行 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb">
+      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>交易行</span>
+    </div>
+    <h1><i class="fa-solid fa-store"></i> 交易行</h1>
+    <p>以亚斯卢布（₽）结算 · 发布并管理你的交易物品</p>
+  </div>
+</section>
+
+<main class="iecp-main">
+
+  <section class="glass" style="padding:24px;margin-bottom:32px">
+    <h3 style="margin:0 0 18px;font-size:16px;letter-spacing:1px"><i class="fa-solid fa-plus" style="color:var(--gold)"></i> 发布物品</h3>
+    <form id="itemForm">
+      <div class="field-group two">
+        <div class="field">
+          <label>物品名称 <span class="req">*</span></label>
+          <input id="iTitle" type="text" placeholder="如：稀有矿产 × 100 吨" maxlength="60">
+        </div>
+        <div class="field">
+          <label>价格（亚斯卢布 ₽） <span class="req">*</span></label>
+          <input id="iPrice" type="number" placeholder="如 5000" min="1">
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>物品描述</label>
+          <textarea id="iDesc" placeholder="简单描述一下你的物品……" style="min-height:80px"></textarea>
+        </div>
+        <div class="field">
+          <label>物品图片（可选）</label>
+          <input id="iFile" type="file" accept="image/*" style="padding:9px 12px">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
+        <span id="itemHint" style="font-size:13px;color:var(--muted);margin-right:auto;align-self:center"></span>
+        <button class="btn btn-gold" type="submit" id="itemSubmit"><i class="fa-solid fa-plus"></i> 发布</button>
+      </div>
+    </form>
+  </section>
+
+  <div id="marketList">
+    <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('market');
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      loadMarket();
+    });
+  });
+
+  function loadMarket() {
+    I.client.from('market_items')
+      .select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url, role)')
+      .eq('status', 'on_sale')
+      .order('created_at', { ascending: false })
+      .then(function (res) {
+        var wrap = I.$('#marketList');
+        var list = res.data || [];
+        if (!list.length) {
+          wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-store"></i><p>交易行暂无物品</p><small>发布第一件物品吧</small></div>';
+          return;
+        }
+        var html = '<div class="market-grid">';
+        list.forEach(function (m) {
+          var seller = m.seller || {};
+          var isMine = m.seller_id === profile.id;
+          var isAdmin = m.is_admin_post || seller.role === 'admin';
+          var tag = isAdmin
+            ? '<span class="market-tag admin"><i class="fa-solid fa-crown"></i> 官方</span>'
+            : (isMine ? '<span class="market-tag"><i class="fa-solid fa-user"></i> 我的</span>' : '');
+
+          html +=
+            '<article class="market-card glass">' +
+              '<div class="market-img">' +
+                (m.image_url
+                  ? '<img src="' + I.escapeHtml(m.image_url) + '" alt="">'
+                  : '<i class="fa-solid fa-box-open"></i>') +
+              '</div>' +
+              '<div class="market-body">' +
+                tag +
+                '<h4>' + I.escapeHtml(m.title) + '</h4>' +
+                '<p>' + I.escapeHtml(m.description || '（暂无描述）') + '</p>' +
+                '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽</span></div>' +
+                (isMine
+                  ? '<button class="btn btn-ghost btn-sm" onclick="removeItem(\'' + m.id + '\')"><i class="fa-solid fa-trash"></i> 下架</button>'
+                  : '<button class="btn btn-gold btn-sm" onclick="buyItem(\'' + m.id + '\',' + m.price + ',\'' + m.seller_id + '\')"><i class="fa-solid fa-cart-shopping"></i> 购买</button>'
+                ) +
+              '</div>' +
+            '</article>';
+        });
+        html += '</div>';
+        wrap.innerHTML = html;
+      });
+  }
+
+  /* 发布 */
+  I.$('#itemForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = I.$('#itemSubmit');
+    var hint = I.$('#itemHint');
+    var title = I.$('#iTitle').value.trim();
+    var price = parseInt(I.$('#iPrice').value, 10);
+    var desc = I.$('#iDesc').value.trim();
+    var file = I.$('#iFile').files[0];
+
+    if (!title) { hint.textContent = '请填写名称'; return; }
+    if (!price || price < 1) { hint.textContent = '价格必须大于 0'; return; }
+
+    btn.disabled = true;
+    hint.textContent = file ? '正在上传图片…' : '正在发布…';
+
+    function insert(imgUrl) {
+      return I.client.from('market_items').insert({
+        seller_id: profile.id,
+        title: title,
+        price: price,
+        description: desc || null,
+        image_url: imgUrl || null,
+        is_admin_post: profile.role === 'admin'
+      }).then(function (r) {
+        btn.disabled = false;
+        if (r.error) { hint.textContent = r.error.message; return; }
+        I.toast('发布成功', 'success');
+        I.$('#itemForm').reset();
+        hint.textContent = '';
+        loadMarket();
+      });
+    }
+
+    if (file) {
+      var ext = (file.name.split('.').pop() || 'png').toLowerCase();
+      var path = profile.id + '/' + Date.now() + '.' + ext;
+      I.client.storage.from('media').upload(path, file, { upsert: true }).then(function (r) {
+        if (r.error) { btn.disabled = false; hint.textContent = r.error.message; return; }
+        var pub = I.client.storage.from('media').getPublicUrl(path);
+        insert(pub.data.publicUrl);
+      });
+    } else {
+      insert(null);
+    }
+  });
+
+  /* 购买 */
+  window.buyItem = function (itemId, price, sellerId) {
+    if (!confirm('确认花费 ' + I.fmtNumber(price) + ' ₽ 购买该物品吗？')) return;
+    if (profile.balance < price) { I.toast('国库余额不足', 'error'); return; }
+
+    /* 1. 扣款买方 */
+    I.client.from('profiles').update({ balance: profile.balance - price }).eq('id', profile.id).then(function (r1) {
+      if (r1.error) { I.toast(r1.error.message, 'error'); return; }
+
+      /* 2. 加款卖方 */
+      I.client.rpc('add_balance', { uid: sellerId, amount: price }).then(function () {
+        /* 无 rpc 也能工作，这里用两步 update 兜底 */
+      });
+
+      /* 3. 更新物品状态 */
+      I.client.from('market_items').update({
+        status: 'sold', buyer_id: profile.id, sold_at: new Date().toISOString()
+      }).eq('id', itemId).then(function () {
+        /* 4. 记录交易 */
+        I.client.from('transactions').insert({
+          buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: price
+        }).then(function () {
+          I.toast('购买成功', 'success');
+          setTimeout(function () { location.reload(); }, 600);
+        });
+      });
+    });
+  };
+
+  /* 下架 */
+  window.removeItem = function (itemId) {
+    if (!confirm('确认下架该物品吗？')) return;
+    I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
+      I.toast('已下架', 'success');
+      setTimeout(function () { location.reload(); }, 500);
+    });
+  };
+})();
+</script>
+
+</body>
+</html>

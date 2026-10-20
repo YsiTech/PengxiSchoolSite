@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>交流中心 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb">
+      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>交流中心</span>
+    </div>
+    <h1><i class="fa-solid fa-handshake"></i> 交流中心</h1>
+    <p>公开对话 · 申请建交 · 处理宣战</p>
+  </div>
+</section>
+
+<main class="iecp-main">
+  <div class="comm-feed" id="feed">
+
+    <!-- 待处理外交请求 -->
+    <section class="glass" style="padding:20px 22px;margin-bottom:8px">
+      <h3 style="margin:0 0 16px;font-size:15px;letter-spacing:1px"><i class="fa-solid fa-inbox" style="color:var(--gold)"></i> 收到的新申请</h3>
+      <div id="requestsWrap">
+        <div class="loading-state" style="padding:20px 0"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <!-- 发帖 -->
+    <div class="comm-compose glass">
+      <img class="comm-avatar" id="composeAvatar" src="" alt="">
+      <textarea id="postContent" placeholder="向国际社会发表声明或问候……" maxlength="500"></textarea>
+      <button class="btn btn-gold btn-sm" id="postBtn" style="align-self:flex-end"><i class="fa-solid fa-paper-plane"></i> 发表</button>
+    </div>
+
+    <!-- 动态流 -->
+    <div id="postsWrap">
+      <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
+    </div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('diplomacy');
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      I.$('#composeAvatar').src = p.flag_url || I.avatarFallback(p.username);
+      loadRequests();
+      loadPosts();
+    });
+  });
+
+  /* 处理收到的外交请求 */
+  function loadRequests() {
+    I.client.from('diplomacy_requests')
+      .select('*, from:profiles!diplomacy_requests_from_country_fkey(id, username, flag_url)')
+      .eq('to_country', profile.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .then(function (res) {
+        var wrap = I.$('#requestsWrap');
+        var list = res.data || [];
+        if (!list.length) {
+          wrap.innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0"><i class="fa-solid fa-check"></i> 暂无待处理申请</p>';
+          return;
+        }
+        var html = '';
+        list.forEach(function (r) {
+          var from = r.from || {};
+          var typeLabel = r.request_type === 'ally' ? '建交' : '宣战';
+          var typeIcon = r.request_type === 'ally' ? 'fa-handshake' : 'fa-shield-halved';
+          var color = r.request_type === 'ally' ? 'var(--green)' : 'var(--red)';
+          html +=
+            '<div style="display:flex;gap:14px;align-items:center;padding:12px 14px;background:var(--glass);border-radius:10px;border:1px solid var(--border);margin-bottom:10px;flex-wrap:wrap">' +
+              '<img src="' + I.escapeHtml(from.flag_url || I.avatarFallback(from.username)) + '" style="width:40px;height:26px;object-fit:cover;border-radius:4px">' +
+              '<div style="flex:1;min-width:150px">' +
+                '<b style="font-size:13.5px;display:block">' + I.escapeHtml(from.username || '未知') + '</b>' +
+                '<span style="font-size:12px;color:' + color + '"><i class="fa-solid ' + typeIcon + '"></i> 申请' + typeLabel + '</span>' +
+                (r.message ? '<p style="font-size:12.5px;color:var(--muted);margin:6px 0 0;line-height:1.6">“' + I.escapeHtml(r.message) + '”</p>' : '') +
+              '</div>' +
+              '<div style="display:flex;gap:8px">' +
+                '<button class="btn btn-ghost btn-sm" onclick="respondRequest(\'' + r.id + '\',\'rejected\',\'' + r.request_type + '\')">拒绝</button>' +
+                '<button class="btn btn-gold btn-sm" onclick="respondRequest(\'' + r.id + '\',\'accepted\',\'' + r.request_type + '\')">接受</button>' +
+              '</div>' +
+            '</div>';
+        });
+        wrap.innerHTML = html;
+      });
+  }
+
+  window.respondRequest = function (reqId, status, type) {
+    I.client.from('diplomacy_requests').update({ status: status }).eq('id', reqId).then(function (r) {
+      if (r.error) { I.toast(r.error.message, 'error'); return; }
+
+      if (status === 'accepted') {
+        /* 建立关系 */
+        I.client.from('diplomacy_requests').select('*').eq('id', reqId).maybeSingle().then(function (req) {
+          if (!req.data) return;
+          var a = req.data.from_country < profile.id ? req.data.from_country : profile.id;
+          var b = req.data.from_country < profile.id ? profile.id : req.data.from_country;
+          I.client.from('relations').upsert({
+            country_a: a, country_b: b,
+            relation_type: type === 'ally' ? 'ally' : 'war'
+          }).then(function () {
+            I.toast(type === 'ally' ? '已建立友好关系' : '战争已开始', 'success');
+            loadRequests();
+          });
+        });
+      } else {
+        I.toast('已拒绝', 'success');
+        loadRequests();
+      }
+    });
+  };
+
+  /* 发帖 */
+  I.$('#postBtn').addEventListener('click', function () {
+    var content = I.$('#postContent').value.trim();
+    if (!content) { I.toast('请输入内容', 'error'); return; }
+    var btn = this;
+    btn.disabled = true;
+    I.client.from('posts').insert({ author_id: profile.id, content: content }).then(function (r) {
+      btn.disabled = false;
+      if (r.error) { I.toast(r.error.message, 'error'); return; }
+      I.$('#postContent').value = '';
+      I.toast('发表成功', 'success');
+      loadPosts();
+    });
+  });
+
+  function loadPosts() {
+    I.client.from('posts')
+      .select('*, author:profiles!posts_author_id_fkey(id, username, flag_url)')
+      .order('created_at', { ascending: false })
+      .limit(80)
+      .then(function (res) {
+        var wrap = I.$('#postsWrap');
+        var list = res.data || [];
+        if (!list.length) {
+          wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-comments"></i><p>还没有动态</p><small>发表第一条国际声明</small></div>';
+          return;
+        }
+        var html = '';
+        list.forEach(function (p) {
+          var a = p.author || {};
+          html +=
+            '<div class="comm-post glass">' +
+              '<img class="comm-avatar" src="' + I.escapeHtml(a.flag_url || I.avatarFallback(a.username)) + '">' +
+              '<div class="comm-body">' +
+                '<div class="comm-head">' +
+                  '<a href="country.html?id=' + I.escapeHtml(a.id || '') + '"><b>' + I.escapeHtml(a.username || '未知') + '</b></a>' +
+                  '<time>' + I.relativeTime(p.created_at) + '</time>' +
+                '</div>' +
+                '<p>' + I.escapeHtml(p.content) + '</p>' +
+              '</div>' +
+            '</div>';
+        });
+        wrap.innerHTML = html;
+      });
+  }
+})();
+</script>
+
+</body>
+</html>

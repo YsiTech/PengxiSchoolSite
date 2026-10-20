@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>国家列表 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb">
+      <a href="index.html">首页</a>
+      <i class="fa-solid fa-chevron-right"></i>
+      <span>国家列表</span>
+    </div>
+    <h1><i class="fa-solid fa-globe"></i> 国家列表</h1>
+    <p>浏览平台上已建立的所有国家，点击查看详情并申请建交</p>
+  </div>
+</section>
+
+<main class="iecp-main">
+  <div id="countriesWrap">
+    <div class="loading-state"><div class="spinner"></div><span>正在加载国家…</span></div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('countries');
+    loadCountries();
+  });
+
+  function loadCountries() {
+    I.client.from('profiles').select('*').order('created_at', { ascending: false }).then(function (res) {
+      var wrap = I.$('#countriesWrap');
+      if (res.error) {
+        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>加载失败</p><small>' + I.escapeHtml(res.error.message) + '</small></div>';
+        return;
+      }
+      var list = res.data || [];
+      if (!list.length) {
+        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-globe"></i><p>还没有国家</p><small>成为第一个建立国家的用户</small></div>';
+        return;
+      }
+      var html = '<div class="countries-grid">';
+      list.forEach(function (c) {
+        html +=
+          '<div class="country-card glass" onclick="location.href=\'country.html?id=' + c.id + '\'">' +
+            '<div class="country-card-head">' +
+              '<img class="country-flag" src="' + I.escapeHtml(c.flag_url || I.avatarFallback(c.username)) + '" alt="">' +
+              '<div class="country-name">' +
+                '<b>' + I.escapeHtml(c.username) + '</b>' +
+                '<span>' + I.escapeHtml(c.social_system || '—') + '</span>' +
+              '</div>' +
+              (c.emblem_url ? '<img class="country-emblem" src="' + I.escapeHtml(c.emblem_url) + '" alt="">' : '') +
+            '</div>' +
+            '<div class="country-meta">' +
+              '<div class="country-meta-row"><span>首都</span><b>' + I.escapeHtml(c.capital || '—') + '</b></div>' +
+              '<div class="country-meta-row"><span>官方语言</span><b>' + I.escapeHtml(c.official_language || '—') + '</b></div>' +
+              '<div class="country-meta-row"><span>国库</span><b style="color:var(--gold-2);font-family:var(--mono)">' + I.fmtNumber(c.balance) + ' ₽</b></div>' +
+            '</div>' +
+          '</div>';
+      });
+      html += '</div>';
+      wrap.innerHTML = html;
+    });
+  }
+})();
+</script>
+
+</body>
+</html>

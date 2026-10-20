@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>登录 · IECP 国际交流与合作平台</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="iecp-auth-wrap">
+  <div class="iecp-auth-card glass-2">
+
+    <div class="auth-logo">
+      <img src="photo/un.png" alt="IECP">
+      <b>IECP</b>
+      <span>International Exchange &amp; Cooperation Platform</span>
+    </div>
+
+    <h2>登录你的国家账号</h2>
+    <p class="auth-sub">联结文明 · 共享未来</p>
+
+    <form id="loginForm">
+      <div class="field-group">
+        <div class="field">
+          <label for="loginEmail"><i class="fa-regular fa-envelope"></i> 邮箱</label>
+          <input id="loginEmail" type="email" placeholder="请输入注册邮箱" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="loginPassword"><i class="fa-solid fa-lock"></i> 密码</label>
+          <input id="loginPassword" type="password" placeholder="请输入密码" autocomplete="current-password">
+        </div>
+      </div>
+
+      <div class="auth-hint" id="loginHint"></div>
+
+      <button class="btn-submit" type="submit">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> 登 录
+      </button>
+    </form>
+
+    <div class="auth-bottom">
+      还没有国家账号？<a href="register.html">立即注册</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>IECP.initLogin();</script>
+
+</body>
+</html>

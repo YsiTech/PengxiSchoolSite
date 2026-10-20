@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>战争系统 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb">
+      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>战争系统</span>
+    </div>
+    <h1><i class="fa-solid fa-shield-halved"></i> 战争系统</h1>
+    <p>娱乐性质的军事演练 · 每次点击增加 1 分 · 先到 100 分者获胜</p>
+  </div>
+</section>
+
+<main class="iecp-main">
+  <div id="warsList">
+    <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('wars');
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      loadWars();
+    });
+  });
+
+  function loadWars() {
+    I.client.from('wars')
+      .select('*, attacker:profiles!wars_attacker_id_fkey(username, flag_url), defender:profiles!wars_defender_id_fkey(username, flag_url)')
+      .order('started_at', { ascending: false })
+      .limit(50)
+      .then(function (res) {
+        var wrap = I.$('#warsList');
+        var list = res.data || [];
+        if (!list.length) {
+          wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-shield-halved"></i><p>暂无进行中的战争</p><small>到国家详情页向某国宣战，即可开启演练</small></div>';
+          return;
+        }
+        var html = '<div class="war-list">';
+        list.forEach(function (w) {
+          var att = w.attacker || {};
+          var def = w.defender || {};
+          var isA = profile.id === w.attacker_id;
+          var isD = profile.id === w.defender_id;
+          var canPlay = w.status === 'ongoing' && (isA || isD);
+          var winner = w.winner_id === w.attacker_id ? att.username : (w.winner_id === w.defender_id ? def.username : null);
+
+          html +=
+            '<div class="war-card glass">' +
+              '<div class="war-side">' +
+                '<img src="' + I.escapeHtml(att.flag_url || I.avatarFallback(att.username || '?')) + '">' +
+                '<div><b>' + I.escapeHtml(att.username || '未知') + '</b><span>进攻方</span></div>' +
+              '</div>' +
+              '<div class="war-score">' + w.attacker_score + ' : ' + w.defender_score +
+                '<small>' + (w.status === 'ongoing' ? '进行中' : '已结束') + '</small>' +
+              '</div>' +
+              '<div class="war-side right">' +
+                '<img src="' + I.escapeHtml(def.flag_url || I.avatarFallback(def.username || '?')) + '">' +
+                '<div><b>' + I.escapeHtml(def.username || '未知') + '</b><span>防守方</span></div>' +
+              '</div>' +
+              '<div class="war-status">' +
+                '<span><i class="fa-regular fa-clock"></i> ' + I.relativeTime(w.started_at) +
+                  (winner ? ' · 胜者：' + I.escapeHtml(winner) : '') + '</span>' +
+                (canPlay
+                  ? '<button class="btn btn-red btn-sm" onclick="attack(\'' + w.id + '\',' + (isA ? '\'attacker\'' : '\'defender\'') + ')"><i class="fa-solid fa-bolt"></i> 进攻</button>'
+                  : '') +
+              '</div>' +
+            '</div>';
+        });
+        html += '</div>';
+        wrap.innerHTML = html;
+      });
+  }
+
+  window.attack = function (warId, side) {
+    I.client.from('wars').select('*').eq('id', warId).maybeSingle().then(function (r) {
+      if (!r.data || r.data.status !== 'ongoing') { I.toast('战争已结束', 'error'); return; }
+      var w = r.data;
+      var field = side === 'attacker' ? 'attacker_score' : 'defender_score';
+      var newScore = (w[field] || 0) + 1;
+      var update = {};
+      update[field] = newScore;
+
+      if (newScore >= 100) {
+        update.status = 'finished';
+        update.winner_id = side === 'attacker' ? w.attacker_id : w.defender_id;
+        update.ended_at = new Date().toISOString();
+      }
+
+      I.client.from('wars').update(update).eq('id', warId).then(function (r2) {
+        if (r2.error) { I.toast(r2.error.message, 'error'); return; }
+        if (newScore >= 100) {
+          I.toast('战争结束！你方获胜', 'success');
+        } else {
+          I.toast('进攻成功 +1', 'success', 1000);
+        }
+        loadWars();
+      });
+    });
+  };
+})();
+</script>
+
+</body>
+</html>

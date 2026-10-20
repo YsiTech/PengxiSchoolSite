@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>新闻发布 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb">
+      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>新闻发布</span>
+    </div>
+    <h1><i class="fa-solid fa-newspaper"></i> 新闻发布</h1>
+    <p>发布你的国家动态、外交声明与重大事件</p>
+  </div>
+</section>
+
+<main class="iecp-main">
+
+  <!-- 发布表单 -->
+  <section class="glass" style="padding:28px;margin-bottom:32px">
+    <h3 style="margin:0 0 20px;letter-spacing:1px;font-size:16px"><i class="fa-solid fa-pen-nib" style="color:var(--gold)"></i> 发布新闻</h3>
+    <form id="newsForm">
+      <div class="field-group">
+        <div class="field">
+          <label>标题 <span class="req">*</span></label>
+          <input id="nTitle" type="text" placeholder="新闻标题" maxlength="100">
+        </div>
+        <div class="field">
+          <label>正文 <span class="req">*</span></label>
+          <textarea id="nContent" placeholder="新闻正文内容……" style="min-height:130px"></textarea>
+        </div>
+        <div class="field-group two">
+          <div class="field">
+            <label>媒体类型</label>
+            <select id="nMediaType">
+              <option value="">无媒体</option>
+              <option value="image">图片</option>
+              <option value="video">视频</option>
+              <option value="audio">音频</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>上传媒体</label>
+            <input id="nMediaFile" type="file" accept="image/*,video/*,audio/*" style="padding:9px 12px">
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
+        <span id="newsHint" style="font-size:13px;color:var(--muted);margin-right:auto;align-self:center"></span>
+        <button class="btn btn-gold" type="submit" id="newsSubmit"><i class="fa-solid fa-paper-plane"></i> 发布</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- 新闻列表 -->
+  <div id="newsList">
+    <div class="loading-state"><div class="spinner"></div><span>正在加载新闻…</span></div>
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('news');
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      loadNews();
+    });
+  });
+
+  function loadNews() {
+    I.client.from('news').select('*, profiles(id, username, flag_url)').order('created_at', { ascending: false }).limit(60).then(function (res) {
+      var wrap = I.$('#newsList');
+      var list = res.data || [];
+      if (!list.length) {
+        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-newspaper"></i><p>还没有新闻</p><small>成为第一个发布新闻的国家</small></div>';
+        return;
+      }
+      var html = '<div class="news-grid">';
+      list.forEach(function (n) {
+        var media = '';
+        if (n.media_url && n.media_type === 'image') {
+          media = '<div class="news-media"><img src="' + I.escapeHtml(n.media_url) + '" alt=""><div class="media-badge"><i class="fa-solid fa-image"></i> 图片</div></div>';
+        } else if (n.media_url && n.media_type === 'video') {
+          media = '<div class="news-media"><video src="' + I.escapeHtml(n.media_url) + '" controls></video><div class="media-badge"><i class="fa-solid fa-video"></i> 视频</div></div>';
+        } else if (n.media_url && n.media_type === 'audio') {
+          media = '<div class="news-media"><audio src="' + I.escapeHtml(n.media_url) + '" controls></audio><div class="media-badge"><i class="fa-solid fa-headphones"></i> 音频</div></div>';
+        }
+
+        var author = n.profiles || {};
+        var avatar = author.flag_url || I.avatarFallback(author.username || '?');
+
+        html +=
+          '<article class="news-card glass">' +
+            media +
+            '<div class="news-body">' +
+              '<h3>' + I.escapeHtml(n.title) + '</h3>' +
+              '<p>' + I.escapeHtml(n.content) + '</p>' +
+              '<div class="news-foot">' +
+                '<div class="news-author">' +
+                  '<img src="' + I.escapeHtml(avatar) + '" alt="">' +
+                  '<a href="country.html?id=' + I.escapeHtml(author.id || '') + '" style="color:var(--ink-2)">' +
+                    I.escapeHtml(author.username || '未知') +
+                  '</a>' +
+                '</div>' +
+                '<span>' + I.relativeTime(n.created_at) + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</article>';
+      });
+      html += '</div>';
+      wrap.innerHTML = html;
+    });
+  }
+
+  I.$('#newsForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = I.$('#newsSubmit');
+    var hint = I.$('#newsHint');
+    var title = I.$('#nTitle').value.trim();
+    var content = I.$('#nContent').value.trim();
+    var mtype = I.$('#nMediaType').value;
+    var file = I.$('#nMediaFile').files[0];
+
+    if (!title) { hint.textContent = '请填写标题'; return; }
+    if (!content) { hint.textContent = '请填写正文'; return; }
+    if (mtype && !file) { hint.textContent = '请上传媒体文件'; return; }
+
+    btn.disabled = true;
+    hint.textContent = mtype ? '正在上传媒体…' : '正在发布…';
+
+    function doInsert(mediaUrl) {
+      return I.client.from('news').insert({
+        author_id: profile.id,
+        title: title,
+        content: content,
+        media_url: mediaUrl || null,
+        media_type: mtype || null
+      }).then(function (r) {
+        btn.disabled = false;
+        if (r.error) { hint.textContent = r.error.message; return; }
+        I.toast('新闻已发布', 'success');
+        I.$('#newsForm').reset();
+        hint.textContent = '';
+        loadNews();
+      });
+    }
+
+    if (mtype && file) {
+      var ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+      var path = profile.id + '/' + Date.now() + '.' + ext;
+      I.client.storage.from('media').upload(path, file, { upsert: true }).then(function (r) {
+        if (r.error) { btn.disabled = false; hint.textContent = r.error.message; return; }
+        var pub = I.client.storage.from('media').getPublicUrl(path);
+        doInsert(pub.data.publicUrl);
+      });
+    } else {
+      doInsert(null);
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

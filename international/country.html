@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>国家详情 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<main class="iecp-main" id="countryWrap">
+  <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
+</main>
+
+<!-- 建交 / 宣战弹窗 -->
+<div class="iecp-modal" id="actionModal">
+  <div class="iecp-modal-box glass-2">
+    <h3 id="modalTitle"><i class="fa-solid fa-handshake"></i> 申请建交</h3>
+    <p class="modal-sub" id="modalSub">向对方发送建交申请，对方同意后即建立友好关系。</p>
+    <div class="field-group">
+      <div class="field">
+        <label>附加信息（可选）</label>
+        <textarea id="modalMessage" placeholder="写一段话给对方……"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-ghost" onclick="document.getElementById('actionModal').classList.remove('open')">取消</button>
+      <button class="btn btn-gold" id="modalConfirm"><i class="fa-solid fa-paper-plane"></i> 发送申请</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var targetId = new URLSearchParams(location.search).get('id');
+  var currentProfile = null;
+  var targetProfile = null;
+  var actionType = 'ally';
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('countries');
+    if (!targetId) { location.replace('countries.html'); return; }
+    Promise.all([I.getProfile(true), loadTarget()]).then(function () {
+      render();
+    });
+  });
+
+  function loadTarget() {
+    return I.client.from('profiles').select('*').eq('id', targetId).maybeSingle().then(function (r) {
+      targetProfile = r.data;
+    });
+  }
+
+  function render() {
+    var wrap = I.$('#countryWrap');
+    if (!targetProfile) {
+      wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>国家不存在</p></div>';
+      return;
+    }
+
+    var c = targetProfile;
+    var isSelf = currentProfile && currentProfile.id === c.id;
+
+    wrap.innerHTML =
+      '<section class="glass" style="padding:32px;margin-bottom:24px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">' +
+        '<img src="' + I.escapeHtml(c.flag_url || I.avatarFallback(c.username)) + '" style="width:120px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-2)">' +
+        '<div style="flex:1;min-width:200px">' +
+          '<h1 style="font-size:28px;letter-spacing:2px;margin:0 0 8px">' + I.escapeHtml(c.username) + '</h1>' +
+          '<p style="color:var(--muted);margin:0">' + I.escapeHtml(c.social_system) + '</p>' +
+        '</div>' +
+        (c.emblem_url ? '<img src="' + I.escapeHtml(c.emblem_url) + '" style="width:70px;height:70px;object-fit:contain;opacity:.9">' : '') +
+      '</section>' +
+
+      '<section class="glass" style="padding:28px;margin-bottom:24px">' +
+        '<h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-circle-info" style="color:var(--gold)"></i> 国家档案</h3>' +
+        '<div class="country-meta" style="gap:14px;font-size:14px">' +
+          '<div class="country-meta-row"><span>社会性质</span><b>' + I.escapeHtml(c.social_system) + '</b></div>' +
+          '<div class="country-meta-row"><span>首都</span><b>' + I.escapeHtml(c.capital) + '</b></div>' +
+          '<div class="country-meta-row"><span>官方语言</span><b>' + I.escapeHtml(c.official_language) + '</b></div>' +
+          '<div class="country-meta-row"><span>国库余额</span><b style="color:var(--gold-2);font-family:var(--mono)">' + I.fmtNumber(c.balance) + ' ₽</b></div>' +
+          '<div class="country-meta-row"><span>加入时间</span><b>' + I.fmtDate(c.created_at) + '</b></div>' +
+        '</div>' +
+      '</section>' +
+
+      '<section class="glass" style="padding:28px;margin-bottom:24px">' +
+        '<h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-link" style="color:var(--gold)"></i> 外交关系</h3>' +
+        '<div id="relationsWrap"><div class="loading-state" style="padding:30px 0"><div class="spinner"></div></div></div>' +
+      '</section>' +
+
+      (isSelf ? '' :
+        '<section class="glass" style="padding:28px">' +
+          '<h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-bolt" style="color:var(--gold)"></i> 外交行动</h3>' +
+          '<div style="display:flex;gap:12px;flex-wrap:wrap">' +
+            '<button class="btn btn-gold" onclick="openAction(\'ally\')"><i class="fa-solid fa-handshake"></i> 申请建交</button>' +
+            '<button class="btn btn-red" onclick="openAction(\'war\')"><i class="fa-solid fa-shield-halved"></i> 宣战</button>' +
+          '</div>' +
+        '</section>'
+      );
+
+    loadRelations();
+  }
+
+  function loadRelations() {
+    I.client.from('relations')
+      .select('*')
+      .or('country_a.eq.' + targetId + ',country_b.eq.' + targetId)
+      .then(function (res) {
+        var wrap = I.$('#relationsWrap');
+        var list = (res.data || []);
+        if (!list.length) {
+          wrap.innerHTML = '<div class="empty-state" style="padding:30px 0"><i class="fa-solid fa-circle-nodes" style="font-size:32px"></i><p>暂无外交关系</p></div>';
+          return;
+        }
+        /* 拿到对方的 profile */
+        var otherIds = list.map(function (r) {
+          return r.country_a === targetId ? r.country_b : r.country_a;
+        });
+        I.client.from('profiles').select('id, username, flag_url').in('id', otherIds).then(function (r2) {
+          var map = {};
+          (r2.data || []).forEach(function (p) { map[p.id] = p; });
+          var html = '<div style="display:flex;flex-direction:column;gap:12px">';
+          list.forEach(function (r) {
+            var otherId = r.country_a === targetId ? r.country_b : r.country_a;
+            var o = map[otherId];
+            if (!o) return;
+            var tag = r.relation_type === 'ally' ? '友好' : r.relation_type === 'war' ? '战争' : '中立';
+            var tagColor = r.relation_type === 'ally' ? 'var(--green)' : r.relation_type === 'war' ? 'var(--red)' : 'var(--muted)';
+            html +=
+              '<div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--glass);border-radius:10px;border:1px solid var(--border)">' +
+                '<img src="' + I.escapeHtml(o.flag_url || I.avatarFallback(o.username)) + '" style="width:36px;height:24px;object-fit:cover;border-radius:4px">' +
+                '<a href="country.html?id=' + o.id + '" style="flex:1;color:var(--ink)">' + I.escapeHtml(o.username) + '</a>' +
+                '<span style="color:' + tagColor + ';font-size:12px;letter-spacing:1px;padding:3px 12px;border-radius:99px;background:var(--glass-2);border:1px solid var(--border)">' + tag + '</span>' +
+              '</div>';
+          });
+          html += '</div>';
+          wrap.innerHTML = html;
+        });
+      });
+  }
+
+  window.openAction = function (type) {
+    actionType = type;
+    var t = I.$('#modalTitle');
+    var s = I.$('#modalSub');
+    if (type === 'ally') {
+      t.innerHTML = '<i class="fa-solid fa-handshake" style="color:var(--gold)"></i> 申请建交';
+      s.textContent = '向 ' + targetProfile.username + ' 发送建交申请，对方同意后即建立友好关系。';
+    } else {
+      t.innerHTML = '<i class="fa-solid fa-shield-halved" style="color:var(--red)"></i> 宣战';
+      s.textContent = '向 ' + targetProfile.username + ' 正式宣战。宣战将立即建立敌对关系，请三思。';
+    }
+    I.$('#modalMessage').value = '';
+    I.$('#actionModal').classList.add('open');
+  };
+
+  I.$('#modalConfirm').addEventListener('click', function () {
+    var btn = this;
+    var msg = I.$('#modalMessage').value.trim();
+    btn.disabled = true;
+    btn.textContent = '发送中…';
+
+    I.client.from('diplomacy_requests').insert({
+      from_country: currentProfile.id,
+      to_country: targetId,
+      request_type: actionType,
+      message: msg || null
+    }).then(function (r) {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
+      if (r.error) { I.toast(r.error.message, 'error'); return; }
+
+      /* 如果是宣战，立即建立关系 */
+      if (actionType === 'war') {
+        var a = currentProfile.id < targetId ? currentProfile.id : targetId;
+        var b = currentProfile.id < targetId ? targetId : currentProfile.id;
+        I.client.from('relations').upsert({
+          country_a: a, country_b: b, relation_type: 'war'
+        }).then(function () {
+          I.toast('已宣战', 'success');
+          I.$('#actionModal').classList.remove('open');
+          loadRelations();
+        });
+        return;
+      }
+
+      I.toast('建交申请已发送', 'success');
+      I.$('#actionModal').classList.remove('open');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

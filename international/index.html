@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IECP 国际交流与合作平台 · 联结文明 · 共享未来</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text">
+        <b>IECP</b>
+        <span>Exchange &amp; Cooperation</span>
+      </div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-hero">
+  <div class="iecp-hero-inner">
+    <div class="iecp-hero-tag">International Exchange &amp; Cooperation Platform</div>
+    <h1>联结文明<em>·</em>共享未来</h1>
+    <p class="iecp-hero-sub">
+      IECP 是一个面向虚构国家与文明体的国际交流与合作平台。在这里，你可以建立国家、发布新闻、申请建交、开展贸易、参与战争演练，与来自各地的国家共同书写属于我们的世界。
+    </p>
+    <div class="iecp-hero-actions">
+      <a class="btn btn-gold" href="register.html"><i class="fa-solid fa-plus"></i> 建立国家</a>
+      <a class="btn btn-ghost" href="countries.html"><i class="fa-solid fa-globe"></i> 浏览国家</a>
+    </div>
+
+    <div class="iecp-features">
+      <div class="iecp-feature glass reveal">
+        <i class="fa-solid fa-flag"></i>
+        <h4>国家档案</h4>
+        <p>填写国家名、社会性质、首都、官方语言，上传国旗与国徽，建立你的国家档案。</p>
+      </div>
+      <div class="iecp-feature glass reveal">
+        <i class="fa-solid fa-handshake"></i>
+        <h4>建交与外交</h4>
+        <p>向其他国家申请建交或宣战，建立友好或敌对关系，在交流中心公开对话。</p>
+      </div>
+      <div class="iecp-feature glass reveal">
+        <i class="fa-solid fa-store"></i>
+        <h4>贸易与交易</h4>
+        <p>以亚斯卢布结算，在交易行发布或购买资源，管理你的国家财富。</p>
+      </div>
+      <div class="iecp-feature glass reveal">
+        <i class="fa-solid fa-shield-halved"></i>
+        <h4>战争演练</h4>
+        <p>参与娱乐性质的战争系统，通过军事演练提升国家声誉，赢取奖励。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+  (function () {
+    IECP.requireAuth().then(function (ok) {
+      if (!ok) return;
+      IECP.initTopbar('index');
+    });
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>注册 · IECP 国际交流与合作平台</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="iecp-auth-wrap">
+  <div class="iecp-auth-card glass-2" style="max-width:680px">
+
+    <div class="auth-logo">
+      <img src="photo/un.png" alt="IECP">
+      <b>IECP</b>
+      <span>International Exchange &amp; Cooperation Platform</span>
+    </div>
+
+    <h2>建立你的国家账号</h2>
+    <p class="auth-sub">填写以下信息，即可加入国际交流与合作平台</p>
+
+    <form id="registerForm">
+
+      <div class="field-group two">
+        <div class="field">
+          <label for="regUsername"><i class="fa-solid fa-landmark-flag"></i> 国家名 <span class="req">*</span></label>
+          <input id="regUsername" type="text" placeholder="如：亚斯共和国" maxlength="30">
+        </div>
+        <div class="field">
+          <label for="regEmail"><i class="fa-regular fa-envelope"></i> 邮箱 <span class="req">*</span></label>
+          <input id="regEmail" type="email" placeholder="用于登录与找回密码" autocomplete="email">
+        </div>
+      </div>
+
+      <div class="field-group two">
+        <div class="field">
+          <label for="regPassword"><i class="fa-solid fa-lock"></i> 密码 <span class="req">*</span></label>
+          <input id="regPassword" type="password" placeholder="至少 6 位">
+        </div>
+        <div class="field">
+          <label for="regPassword2"><i class="fa-solid fa-lock"></i> 确认密码 <span class="req">*</span></label>
+          <input id="regPassword2" type="password" placeholder="再次输入密码">
+        </div>
+      </div>
+
+      <div class="field-group two">
+        <div class="field">
+          <label for="regSocial"><i class="fa-solid fa-scale-balanced"></i> 社会性质 <span class="req">*</span></label>
+          <input id="regSocial" type="text" placeholder="如：社会主义共和国" maxlength="40">
+        </div>
+        <div class="field">
+          <label for="regCapital"><i class="fa-solid fa-city"></i> 首都 <span class="req">*</span></label>
+          <input id="regCapital" type="text" placeholder="如：蓬溪格勒" maxlength="40">
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field">
+          <label for="regLanguage"><i class="fa-solid fa-language"></i> 官方语言 <span class="req">*</span></label>
+          <input id="regLanguage" type="text" placeholder="如：亚斯语、俄语" maxlength="80">
+        </div>
+      </div>
+
+      <div class="field-group two">
+        <div class="field">
+          <label><i class="fa-solid fa-flag"></i> 国旗 <span class="req">*</span></label>
+          <label class="upload-box" for="flagFile">
+            <i class="fa-regular fa-image"></i>
+            <span>点击上传国旗</span>
+            <span style="font-size:11px;opacity:.7">JPG / PNG · 2MB 以内</span>
+            <input id="flagFile" type="file" accept="image/*">
+          </label>
+        </div>
+        <div class="field">
+          <label><i class="fa-solid fa-shield-halved"></i> 国徽 <span class="req">*</span></label>
+          <label class="upload-box" for="emblemFile">
+            <i class="fa-regular fa-image"></i>
+            <span>点击上传国徽</span>
+            <span style="font-size:11px;opacity:.7">JPG / PNG · 2MB 以内</span>
+            <input id="emblemFile" type="file" accept="image/*">
+          </label>
+        </div>
+      </div>
+
+      <div class="auth-hint" id="registerHint"></div>
+
+      <button class="btn-submit" type="submit">
+        <i class="fa-solid fa-plus"></i> 建立国家
+      </button>
+
+    </form>
+
+    <div class="auth-bottom">
+      已有账号？<a href="login.html" id="goLogin">返回登录</a>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/auth.js"></script>
+<script>IECP.initRegister();</script>
+
+</body>
+</html>
