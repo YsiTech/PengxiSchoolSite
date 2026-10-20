@@ -104,7 +104,7 @@
     `;
   }
 
-  window.buyItem = function (itemId, price, sellerId) {
+   window.buyItem = function (itemId, price, sellerId) {
     if (!confirm('确认花费 ' + I.fmtNumber(price) + ' ₽ 购买该物品吗？')) return;
     if (profile.balance < price) { I.toast('国库余额不足', 'error'); return; }
 
@@ -112,21 +112,34 @@
 
     // 1. 扣款买方
     I.client.from('profiles').update({ balance: profile.balance - price }).eq('id', profile.id).then(function (r1) {
-      if (r1.error) { I.toast(r1.error.message, 'error'); return; }
+      if (r1.error) { I.toast('扣款失败：' + r1.error.message, 'error'); return; }
 
-      // 2. 加款卖方（如果有 RPC 函数最好，这里用直接 update 兜底）
-      I.client.rpc('add_balance', { uid: sellerId, amount: price }).then(function(){});
-
-      // 3. 更新物品状态
+      // 2. 更新物品状态（核心：加上错误判断）
       I.client.from('market_items').update({
-        status: 'sold', buyer_id: profile.id, sold_at: new Date().toISOString()
-      }).eq('id', itemId).then(function () {
-        // 4. 记录交易
-        I.client.from('transactions').insert({
-          buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: price
-        }).then(function () {
-          I.toast('购买成功！', 'success');
-          setTimeout(function () { location.reload(); }, 800);
+        status: 'sold', 
+        buyer_id: profile.id, 
+        sold_at: new Date().toISOString()
+      }).eq('id', itemId).then(function (r2) {
+        
+        // 🚨 如果更新被拦截，这里会立刻报错，并退还买家的钱
+        if (r2.error) {
+          I.toast('交易失败：' + r2.error.message, 'error');
+          // 退还刚才扣的钱
+          I.client.from('profiles').update({ balance: profile.balance }).eq('id', profile.id);
+          return;
+        }
+
+        // 3. 加款卖方
+        I.client.rpc('add_balance', { uid: sellerId, amount: price }).then(function(r3){
+          if (r3.error) console.warn('加款失败:', r3.error);
+
+          // 4. 记录交易
+          I.client.from('transactions').insert({
+            buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: price
+          }).then(function () {
+            I.toast('购买成功！物品已存入仓库', 'success');
+            setTimeout(function () { location.reload(); }, 800);
+          });
         });
       });
     });
