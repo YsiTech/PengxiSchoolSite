@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>国家仓库 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/profile.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb">
+      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i>
+      <a href="profile.html">个人中心</a><i class="fa-solid fa-chevron-right"></i>
+      <span>国家仓库</span>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px">
+      <div>
+        <h1><i class="fa-solid fa-boxes-stacked"></i> 国家仓库</h1>
+        <p>管理你的物资 · 上架交易行、回收或丢弃</p>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="market.html" class="btn btn-ghost"><i class="fa-solid fa-store"></i> 前往交易行</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="iecp-main" id="inventoryWrap">
+  <div class="loading-state"><div class="spinner"></div><span>正在清点仓库物资…</span></div>
+</main>
+
+<!-- 上架弹窗 -->
+<div class="iecp-modal" id="listModal">
+  <div class="iecp-modal-box glass-2" style="max-width:400px">
+    <h3><i class="fa-solid fa-store" style="color:var(--gold)"></i> 重新上架</h3>
+    <p class="modal-sub">将物品放回交易行，供其他国家购买。</p>
+    <div class="field-group">
+      <div class="field">
+        <label>设定新价格（亚斯卢布 ₽ / 单价）</label>
+        <input id="listPrice" type="number" min="1">
+      </div>
+      <div class="field">
+        <label>上架数量</label>
+        <input id="listQty" type="number" min="1">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-ghost" onclick="document.getElementById('listModal').classList.remove('open')">取消</button>
+      <button class="btn btn-gold" id="confirmListBtn"><i class="fa-solid fa-check"></i> 确认上架</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+  var currentItems = [];
+  var listingItemId = null;
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('profile'); 
+    
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      if (!profile) { location.replace('index.html'); return; }
+      loadInventory();
+    });
+  });
+
+  function loadInventory() {
+    var wrap = I.$('#inventoryWrap');
+    
+    // 🚨 核心修复：只查询 status 为 'sold' 的物品（过滤掉 recycled、on_sale、removed）
+    I.client.from('market_items')
+      .select('*')
+      .eq('buyer_id', profile.id)
+      .eq('status', 'sold')
+      .not('sold_at', 'is', null)
+      .order('sold_at', { ascending: false })
+      .then(function(res) {
+        if (res.error) {
+          wrap.innerHTML = `<div class="empty-state"><p style="color:var(--red)">获取仓库失败：${res.error.message}</p></div>`;
+          return;
+        }
+        
+        currentItems = res.data || [];
+
+        if (!currentItems.length) {
+          wrap.innerHTML = `
+            <div class="empty-state glass" style="max-width:600px;margin:40px auto;padding:60px 20px;">
+              <i class="fa-solid fa-box-open" style="font-size:44px; color:var(--muted-2); opacity:0.5; margin-bottom:16px;"></i>
+              <p style="font-size:18px;color:var(--ink);margin-bottom:10px;">仓库空空如也</p>
+              <small>你还没有购买任何物品，去交易行看看吧。</small>
+              <div style="margin-top:24px;">
+                <a href="market.html" class="btn btn-gold"><i class="fa-solid fa-store"></i> 前往交易行</a>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        var html = '<div class="inventory-grid">';
+        currentItems.forEach(function(item) {
+          // 核心修复：为了防止部分购买造成的脏数据，这里直接显示单价 × 数量
+          var unitPrice = item.price || 0;
+          var qty = item.quantity || 1;
+          var totalValue = unitPrice * qty;
+
+          html += `
+            <div class="inv-item">
+              <div class="inv-img">
+                ${item.image_url ? `<img src="${item.image_url}">` : `<i class="fa-solid fa-box"></i>`}
+                <div class="inv-qty-badge">×${qty}</div>
+              </div>
+              <div class="inv-body">
+                <h4 class="inv-title">${I.escapeHtml(item.title)}</h4>
+                <div class="inv-meta">
+                  <span>估值: ${I.fmtNumber(totalValue)} ₽</span>
+                  <span>${I.fmtDate(item.sold_at).split(' ')[0]}</span>
+                </div>
+                <div class="inv-actions">
+                  <button class="btn btn-gold" onclick="openListModal('${item.id}', ${unitPrice}, ${qty})">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i> 上架
+                  </button>
+                  <button class="btn btn-cyan" onclick="recycleItem('${item.id}', ${totalValue})">
+                    <i class="fa-solid fa-recycle"></i> 回收(60%)
+                  </button>
+                  <button class="btn btn-red" onclick="dropItem('${item.id}')">
+                    <i class="fa-solid fa-trash"></i> 丢弃
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        wrap.innerHTML = html;
+      });
+  }
+
+  window.openListModal = function(id, price, qty) {
+    listingItemId = id;
+    I.$('#listPrice').value = price > 0 ? price : 100; // 如果单价为0，默认给个100
+    I.$('#listQty').value = qty;
+    I.$('#listQty').max = qty;
+    I.$('#listModal').classList.add('open');
+  };
+
+  I.$('#confirmListBtn').addEventListener('click', function() {
+    var newPrice = parseInt(I.$('#listPrice').value, 10);
+    var newQty = parseInt(I.$('#listQty').value, 10);
+    var item = currentItems.find(function(x){ return x.id === listingItemId; });
+    
+    if (!newPrice || newPrice < 1) { I.toast('价格必须大于 0', 'error'); return; }
+    if (!newQty || newQty < 1 || newQty > item.quantity) { I.toast('数量不合理', 'error'); return; }
+
+    var btn = this; btn.disabled = true;
+
+    if (newQty === item.quantity) {
+      // 全部上架：更新原记录状态
+      I.client.from('market_items').update({
+        status: 'on_sale',
+        price: newPrice,
+        buyer_id: null,
+        sold_at: null,
+        created_at: new Date().toISOString()
+      }).eq('id', item.id).then(function(r){
+        btn.disabled = false;
+        if (r.error) { I.toast(r.error.message, 'error'); return; }
+        I.toast('已成功重新上架', 'success');
+        I.$('#listModal').classList.remove('open');
+        loadInventory();
+      });
+    } else {
+      // 部分上架：原记录扣减数量，新建一条上架记录
+      I.client.from('market_items').update({
+        quantity: item.quantity - newQty
+      }).eq('id', item.id).then(function(r1){
+        if (r1.error) { btn.disabled = false; I.toast(r1.error.message, 'error'); return; }
+        
+        I.client.from('market_items').insert({
+          seller_id: profile.id,
+          title: item.title,
+          description: item.description,
+          price: newPrice,
+          image_url: item.image_url,
+          quantity: newQty,
+          status: 'on_sale'
+        }).then(function(r2){
+          btn.disabled = false;
+          if (r2.error) { I.toast(r2.error.message, 'error'); return; }
+          I.toast('已拆分并上架部分物品', 'success');
+          I.$('#listModal').classList.remove('open');
+          loadInventory();
+        });
+      });
+    }
+  });
+
+  // 🚨 核心修复：回收逻辑（带并发锁）
+  window.recycleItem = function(id, totalCost) {
+    var btns = document.querySelectorAll('.inv-actions button');
+    btns.forEach(function(b){ b.disabled = true; });
+
+    var refund = Math.floor(totalCost * 0.6);
+    if (!confirm(`国际资源回收部门将以原价的 60% 回收该物品。\n\n你将获得：${I.fmtNumber(refund)} ₽\n确认回收吗？`)) {
+      btns.forEach(function(b){ b.disabled = false; });
+      return;
+    }
+
+    I.toast('正在处理回收...', 'success', 1000);
+
+    // 只有当前状态是 sold 才能改成 recycled，防止连点
+    I.client.from('market_items')
+      .update({ status: 'recycled' })
+      .eq('id', id)
+      .eq('status', 'sold') 
+      .select()
+      .then(function(r1){
+        if (r1.error || !r1.data || r1.data.length === 0) {
+          I.toast('物品已回收或状态异常，无法重复回收', 'error');
+          btns.forEach(function(b){ b.disabled = false; });
+          loadInventory();
+          return;
+        }
+        
+        I.client.from('profiles').update({ balance: profile.balance + refund }).eq('id', profile.id).then(function(r2){
+          if (r2.error) { I.toast('国库入账失败', 'error'); return; }
+          I.toast(`回收成功！国库入账 ${I.fmtNumber(refund)} ₽`, 'success');
+          profile.balance += refund; 
+          loadInventory();
+        });
+      });
+  };
+
+  window.dropItem = function(id) {
+    if (!confirm('⚠️ 警告：丢弃后物品将彻底消失，无法找回！\n确定要丢弃吗？')) return;
+
+    I.client.from('market_items').delete().eq('id', id).then(function(r){
+      if (r.error) { I.toast('丢弃失败：' + r.error.message, 'error'); return; }
+      I.toast('物品已丢弃', 'success');
+      loadInventory();
+    });
+  };
+})();
+</script>
+</body>
+</html>
