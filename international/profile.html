@@ -277,14 +277,15 @@
     });
   }
 
-  // 加载仓库物品
+  // 加载仓库物品 (已修复：不再受卖家下架影响)
   function loadInventory() {
     var wrap = I.$('#inventoryWrap');
     
+    // 只查买家是自己，且购买时间不为空的物品
     I.client.from('market_items')
       .select('*')
       .eq('buyer_id', profile.id)
-      .eq('status', 'sold')
+      .not('sold_at', 'is', null)
       .order('sold_at', { ascending: false })
       .then(function(res) {
         if (res.error) {
@@ -293,6 +294,7 @@
         }
         
         var items = res.data || [];
+
         if (!items.length) {
           wrap.innerHTML = `
             <div style="text-align:center; padding:30px 10px; color:var(--muted);">
@@ -314,6 +316,7 @@
               <div class="inv-body">
                 <h4>${I.escapeHtml(item.title)}</h4>
                 <div class="inv-meta">
+                  <span>${item.quantity > 0 ? '剩余 ' + item.quantity + ' 件' : '已全部收入'}</span>
                   <span>${I.fmtDate(item.sold_at).split(' ')[0]} 获得</span>
                 </div>
               </div>

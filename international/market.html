@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
   .market-card { cursor: pointer; }
+  .market-qty { font-size: 11px; color: var(--muted); background: var(--glass-2); padding: 2px 6px; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -52,11 +53,21 @@
       <div class="field-group two">
         <div class="field">
           <label>物品名称 <span class="req">*</span></label>
-          <input id="iTitle" type="text" placeholder="如：稀有矿产 × 100 吨" maxlength="60">
+          <input id="iTitle" type="text" placeholder="如：稀有矿产" maxlength="60">
         </div>
         <div class="field">
-          <label>价格（亚斯卢布 ₽） <span class="req">*</span></label>
+          <label>总价（亚斯卢布 ₽） <span class="req">*</span></label>
           <input id="iPrice" type="number" placeholder="如 5000" min="1">
+        </div>
+      </div>
+      <div class="field-group two">
+        <div class="field">
+          <label>数量 <span class="req">*</span></label>
+          <input id="iQuantity" type="number" placeholder="如 100" min="1" value="1">
+        </div>
+        <div class="field">
+          <label>物品图片（可选）</label>
+          <input id="iFile" type="file" accept="image/*" style="padding:9px 12px">
         </div>
       </div>
       <div class="field-group">
@@ -64,13 +75,9 @@
           <label>物品描述</label>
           <textarea id="iDesc" placeholder="简单描述一下你的物品……" style="min-height:80px"></textarea>
         </div>
-        <div class="field">
-          <label>物品图片（可选）</label>
-          <input id="iFile" type="file" accept="image/*" style="padding:9px 12px">
-        </div>
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
-        <span id="itemHint" style="font-size:13px;color:var(--muted);margin-right:auto;align-self:center"></span>
+        <span id="itemHint" style="font-size:13px;color:var(--muted);margin-right:auto;align-self:center;"></span>
         <button type="button" class="btn btn-ghost" onclick="document.getElementById('publishModal').classList.remove('open')">取消</button>
         <button class="btn btn-gold" type="submit" id="itemSubmit"><i class="fa-solid fa-check"></i> 确认发布</button>
       </div>
@@ -127,9 +134,12 @@
                 '<h4>' + I.escapeHtml(m.title) + '</h4>' +
                 '<p>' + I.escapeHtml(m.description || '（暂无描述）') + '</p>' +
                 '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽</span></div>' +
-                '<div style="font-size:12px; color:var(--muted); margin-top:8px; display:flex; align-items:center; gap:6px;">' +
-                  '<img src="' + I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username)) + '" style="width:16px;height:12px;border-radius:2px;"> ' +
-                  I.escapeHtml(seller.username || '未知') +
+                '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">' +
+                  '<div style="font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">' +
+                    '<img src="' + I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username)) + '" style="width:16px;height:12px;border-radius:2px;"> ' +
+                    I.escapeHtml(seller.username || '未知') +
+                  '</div>' +
+                  '<span class="market-qty">库存 ' + m.quantity + '</span>' +
                 '</div>' +
               '</div>' +
             '</article>';
@@ -145,18 +155,20 @@
     var hint = I.$('#itemHint');
     var title = I.$('#iTitle').value.trim();
     var price = parseInt(I.$('#iPrice').value, 10);
+    var qty = parseInt(I.$('#iQuantity').value, 10);
     var desc = I.$('#iDesc').value.trim();
     var file = I.$('#iFile').files[0];
 
     if (!title) { hint.textContent = '请填写名称'; return; }
     if (!price || price < 1) { hint.textContent = '价格必须大于 0'; return; }
+    if (!qty || qty < 1) { hint.textContent = '数量必须大于 0'; return; }
 
     btn.disabled = true;
     hint.textContent = file ? '正在上传图片…' : '正在发布…';
 
     function insert(imgUrl) {
       return I.client.from('market_items').insert({
-        seller_id: profile.id, title: title, price: price, description: desc || null,
+        seller_id: profile.id, title: title, price: price, quantity: qty, description: desc || null,
         image_url: imgUrl || null, is_admin_post: profile.role === 'admin'
       }).then(function (r) {
         btn.disabled = false;

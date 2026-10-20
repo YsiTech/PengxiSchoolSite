@@ -32,6 +32,7 @@
   var I = IECP;
   var itemId = new URLSearchParams(location.search).get('id');
   var profile = null;
+  var currentItem = null;
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
@@ -43,10 +44,11 @@
       return I.client.from('market_items').select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url)').eq('id', itemId).maybeSingle();
     }).then(function(res){
       if (!res || res.error || !res.data) {
-        I.$('#detailWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>物品不存在或已下架</p><a href="market.html" class="btn btn-ghost" style="margin-top:20px">返回交易行</a></div>`;
+        I.$('#detailWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>物品不存在或已被彻底删除</p><a href="market.html" class="btn btn-ghost" style="margin-top:20px">返回交易行</a></div>`;
         return;
       }
-      renderItem(res.data);
+      currentItem = res.data;
+      renderItem(currentItem);
     });
   });
 
@@ -54,14 +56,29 @@
     var seller = m.seller || {};
     var isMine = m.seller_id === profile.id;
     var isSold = m.status === 'sold';
+    var isRemoved = m.status === 'removed';
 
+    // 动态操作按钮
     var actionBtn = '';
     if (isSold) {
-      actionBtn = `<button class="btn btn-ghost" disabled><i class="fa-solid fa-ban"></i> 已售出</button>`;
+      actionBtn = `<button class="btn btn-ghost" disabled><i class="fa-solid fa-ban"></i> 已售罄</button>`;
+    } else if (isRemoved) {
+      actionBtn = `<button class="btn btn-ghost" disabled><i class="fa-solid fa-ban"></i> 已下架</button>`;
     } else if (isMine) {
       actionBtn = `<button class="btn btn-red" onclick="removeItem('${m.id}')"><i class="fa-solid fa-trash"></i> 下架物品</button>`;
     } else {
-      actionBtn = `<button class="btn btn-gold" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}')"><i class="fa-solid fa-cart-shopping"></i> 花费 ${I.fmtNumber(m.price)} ₽ 购买</button>`;
+      // 买家购买输入框
+      actionBtn = `
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="field" style="margin:0; width:100px;">
+            <input type="number" id="buyQty" value="1" min="1" max="${m.quantity}" style="padding:10px; text-align:center; font-weight:bold;">
+          </div>
+          <button class="btn btn-gold" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}', ${m.quantity})" style="flex:1;">
+            <i class="fa-solid fa-cart-shopping"></i> 确认购买
+          </button>
+        </div>
+        <div style="font-size:12px; color:var(--muted); margin-top:8px;">单价: ${I.fmtNumber(m.price)} ₽ / 件，当前库存: ${m.quantity}</div>
+      `;
     }
 
     var imgHtml = m.image_url 
@@ -104,24 +121,34 @@
     `;
   }
 
-   window.buyItem = function (itemId, price, sellerId) {
-    if (!confirm('确认花费 ' + I.fmtNumber(price) + ' ₽ 购买该物品吗？')) return;
-    if (profile.balance < price) { I.toast('国库余额不足', 'error'); return; }
+  window.buyItem = function (itemId, price, sellerId, maxQty) {
+    var qty = parseInt(I.$('#buyQty').value, 10);
+    if (!qty || qty < 1) { I.toast('请输入正确的购买数量', 'error'); return; }
+    if (qty > maxQty) { I.toast('库存不足', 'error'); return; }
+
+    var totalCost = price * qty;
+    if (profile.balance < totalCost) { I.toast('国库余额不足', 'error'); return; }
+
+    if (!confirm(`确认花费 ${I.fmtNumber(totalCost)} ₽ 购买 ${qty} 件该物品吗？`)) return;
 
     I.toast('正在处理交易...', 'success', 1000);
 
     // 1. 扣款买方
-    I.client.from('profiles').update({ balance: profile.balance - price }).eq('id', profile.id).then(function (r1) {
+    I.client.from('profiles').update({ balance: profile.balance - totalCost }).eq('id', profile.id).then(function (r1) {
       if (r1.error) { I.toast('扣款失败：' + r1.error.message, 'error'); return; }
 
-      // 2. 更新物品状态（核心：加上错误判断）
-      I.client.from('market_items').update({
-        status: 'sold', 
-        buyer_id: profile.id, 
-        sold_at: new Date().toISOString()
-      }).eq('id', itemId).then(function (r2) {
+      // 2. 更新物品状态或库存
+      var newQty = maxQty - qty;
+      var updateData = {};
+      if (newQty === 0) {
+        updateData.status = 'sold';
+        updateData.buyer_id = profile.id; 
+        updateData.sold_at = new Date().toISOString();
+      }
+      updateData.quantity = newQty;
+
+      I.client.from('market_items').update(updateData).eq('id', itemId).then(function (r2) {
         
-        // 🚨 如果更新被拦截，这里会立刻报错，并退还买家的钱
         if (r2.error) {
           I.toast('交易失败：' + r2.error.message, 'error');
           // 退还刚才扣的钱
@@ -130,14 +157,14 @@
         }
 
         // 3. 加款卖方
-        I.client.rpc('add_balance', { uid: sellerId, amount: price }).then(function(r3){
+        I.client.rpc('add_balance', { uid: sellerId, amount: totalCost }).then(function(r3){
           if (r3.error) console.warn('加款失败:', r3.error);
 
           // 4. 记录交易
           I.client.from('transactions').insert({
-            buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: price
+            buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: totalCost
           }).then(function () {
-            I.toast('购买成功！物品已存入仓库', 'success');
+            I.toast('购买成功！', 'success');
             setTimeout(function () { location.reload(); }, 800);
           });
         });
@@ -147,7 +174,8 @@
 
   window.removeItem = function (itemId) {
     if (!confirm('确认下架该物品吗？')) return;
-    I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
+    // 只能在售出前下架
+    I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).eq('status', 'on_sale').then(function () {
       I.toast('已下架', 'success');
       setTimeout(function () { location.href = 'market.html'; }, 800);
     });
