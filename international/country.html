@@ -21,7 +21,7 @@
 </header>
 
 <main class="iecp-main" id="countryWrap">
-  <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
+  <div class="loading-state"><div class="spinner"></div><span>正在读取国家档案…</span></div>
 </main>
 
 <!-- 建交 / 宣战弹窗 -->
@@ -56,27 +56,54 @@
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('countries');
-    if (!targetId) { location.replace('countries.html'); return; }
-    Promise.all([I.getProfile(true), loadTarget()]).then(function () {
-      render();
+    
+    if (!targetId) { 
+      location.replace('countries.html'); 
+      return; 
+    }
+
+    // 1. 先获取当前登录用户的档案
+    I.getProfile(true).then(function (myProfile) {
+      currentProfile = myProfile;
+      
+      if (!currentProfile) {
+        I.$('#countryWrap').innerHTML = `
+          <div class="empty-state glass" style="margin:40px auto;max-width:600px">
+            <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i>
+            <p style="font-size:18px;font-weight:bold;color:var(--ink)">无法获取你的国家档案</p>
+            <p style="color:var(--muted);margin:10px 0">你的账号可能未完成注册流程，或者数据库中没有你的信息。</p>
+            <div style="margin-top:20px">
+              <a href="register.html" class="btn btn-gold">重新建立国家</a>
+              <button class="btn btn-ghost" onclick="IECP.logout()">退出登录</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 2. 获取目标国家档案
+      return I.client.from('profiles').select('*').eq('id', targetId).maybeSingle().then(function (r) {
+        if (r.error || !r.data) throw new Error('该国家不存在或已注销。');
+        targetProfile = r.data;
+        render();
+      });
+    }).catch(function (err) {
+      console.error('[IECP] 加载失败:', err);
+      I.$('#countryWrap').innerHTML = `
+        <div class="empty-state glass" style="margin:40px auto;max-width:600px">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i>
+          <p style="font-size:18px;color:var(--ink)">读取失败</p>
+          <p style="color:var(--red);margin:10px 0">${err.message || '网络异常'}</p>
+          <a href="countries.html" class="btn btn-ghost" style="margin-top:20px">返回国家列表</a>
+        </div>
+      `;
     });
   });
 
-  function loadTarget() {
-    return I.client.from('profiles').select('*').eq('id', targetId).maybeSingle().then(function (r) {
-      targetProfile = r.data;
-    });
-  }
-
   function render() {
     var wrap = I.$('#countryWrap');
-    if (!targetProfile) {
-      wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>国家不存在</p></div>';
-      return;
-    }
-
     var c = targetProfile;
-    var isSelf = currentProfile && currentProfile.id === c.id;
+    var isSelf = currentProfile.id === c.id;
 
     wrap.innerHTML =
       '<section class="glass" style="padding:32px;margin-bottom:24px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">' +
@@ -128,20 +155,23 @@
           wrap.innerHTML = '<div class="empty-state" style="padding:30px 0"><i class="fa-solid fa-circle-nodes" style="font-size:32px"></i><p>暂无外交关系</p></div>';
           return;
         }
-        /* 拿到对方的 profile */
+        
         var otherIds = list.map(function (r) {
           return r.country_a === targetId ? r.country_b : r.country_a;
         });
+        
         I.client.from('profiles').select('id, username, flag_url').in('id', otherIds).then(function (r2) {
           var map = {};
           (r2.data || []).forEach(function (p) { map[p.id] = p; });
           var html = '<div style="display:flex;flex-direction:column;gap:12px">';
+          
           list.forEach(function (r) {
             var otherId = r.country_a === targetId ? r.country_b : r.country_a;
             var o = map[otherId];
             if (!o) return;
             var tag = r.relation_type === 'ally' ? '友好' : r.relation_type === 'war' ? '战争' : '中立';
             var tagColor = r.relation_type === 'ally' ? 'var(--green)' : r.relation_type === 'war' ? 'var(--red)' : 'var(--muted)';
+            
             html +=
               '<div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--glass);border-radius:10px;border:1px solid var(--border)">' +
                 '<img src="' + I.escapeHtml(o.flag_url || I.avatarFallback(o.username)) + '" style="width:36px;height:24px;object-fit:cover;border-radius:4px">' +
@@ -156,9 +186,16 @@
   }
 
   window.openAction = function (type) {
+    // 🚨 核心防御：如果当前用户没有登录或没有档案，直接拦截
+    if (!currentProfile) {
+      I.toast('请先登录并创建国家档案', 'error');
+      return;
+    }
+    
     actionType = type;
     var t = I.$('#modalTitle');
     var s = I.$('#modalSub');
+    
     if (type === 'ally') {
       t.innerHTML = '<i class="fa-solid fa-handshake" style="color:var(--gold)"></i> 申请建交';
       s.textContent = '向 ' + targetProfile.username + ' 发送建交申请，对方同意后即建立友好关系。';
@@ -171,6 +208,8 @@
   };
 
   I.$('#modalConfirm').addEventListener('click', function () {
+    if (!currentProfile) return; // 再次防御
+    
     var btn = this;
     var msg = I.$('#modalMessage').value.trim();
     btn.disabled = true;
@@ -184,12 +223,14 @@
     }).then(function (r) {
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
+      
       if (r.error) { I.toast(r.error.message, 'error'); return; }
 
-      /* 如果是宣战，立即建立关系 */
+      // 如果是宣战，立即建立关系
       if (actionType === 'war') {
         var a = currentProfile.id < targetId ? currentProfile.id : targetId;
         var b = currentProfile.id < targetId ? targetId : currentProfile.id;
+        
         I.client.from('relations').upsert({
           country_a: a, country_b: b, relation_type: 'war'
         }).then(function () {
