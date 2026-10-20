@@ -1,5 +1,5 @@
 /* ===================================================================
-   IECP · 通用脚本 (修复错误捕获版)
+   IECP · 通用脚本
    =================================================================== */
 
 (function (w) {
@@ -48,6 +48,31 @@
     return w.IECP.fmtDate(iso);
   };
 
+  /* ============================================================
+     🚨 国库隐私控制中心 (绝对保密模式)
+     ============================================================ */
+  
+  // 判断是否有权限查看该国库
+  w.IECP.canViewBalance = function (targetId) {
+    // 🚨 终极保密：公共页面（列表、详情、顶栏）任何人都不显示真实数字
+    // 以后上架间谍卫星后，在此处加入权限判断即可解锁
+    
+    // var myProfile = w.IECP._currentProfileCache;
+    // if (myProfile && myProfile.role === 'admin') return true; // 管理员可见
+    // if (hasSpySatellite(targetId)) return true; // 拥有间谍卫星可见
+
+    return false; // 默认在公共页面全部隐藏
+  };
+
+  // 格式化余额显示
+  w.IECP.formatBalance = function (balance, targetId) {
+    if (w.IECP.canViewBalance(targetId)) {
+      return w.IECP.fmtNumber(balance) + ' ₽';
+    } else {
+      return '<span style="color:var(--muted); font-size:12px; border:1px solid var(--border); padding:2px 8px; border-radius:4px; background:var(--glass)"><i class="fa-solid fa-lock" style="font-size:10px; margin-right:4px;"></i>机密</span>';
+    }
+  };
+
   /* Toast */
   var toastTimer = null;
   w.IECP.toast = function (msg, type, duration) {
@@ -80,32 +105,18 @@
       if (!res.data || !res.data.user) throw new Error('未登录或登录已过期');
       return client.from('profiles').select('*').eq('id', res.data.user.id).maybeSingle()
         .then(function (r) {
-          if (r.error) {
-            console.error('获取档案失败:', r.error);
-            throw new Error(r.error.message); // 🚨 抛出错误，让前端能捕获
-          }
-          if (!r.data) {
-            throw new Error('数据库中没有你的档案，请检查是否建表或数据插入失败');
-          }
+          if (r.error) { throw new Error(r.error.message); }
+          if (!r.data) { throw new Error('数据库中没有你的档案，请检查是否建表或数据插入失败'); }
           profileCache = r.data;
+          w.IECP._currentProfileCache = profileCache;
           return profileCache;
         });
     });
   };
 
-  w.IECP.refreshProfile = function () {
-    profileCache = null;
-    return w.IECP.getProfile(true);
-  };
-
   w.IECP.clearProfileCache = function () {
     profileCache = null;
-  };
-
-  w.IECP.getUser = function () {
-    return client.auth.getUser().then(function (r) {
-      return (r.data && r.data.user) || null;
-    });
+    w.IECP._currentProfileCache = null;
   };
 
   w.IECP.requireAuth = function () {
@@ -121,7 +132,7 @@
 
   w.IECP.logout = function () {
     client.auth.signOut().then(function () {
-      profileCache = null;
+      w.IECP.clearProfileCache();
       location.href = 'login.html';
     });
   };
@@ -160,6 +171,7 @@
     }).join('');
   };
 
+  // 🚨 移除了顶栏的余额显示，彻底防偷窥
   w.IECP.renderUserBadge = function () {
     var host = document.getElementById('iecp-user');
     if (!host) return;
@@ -175,10 +187,9 @@
           '<img class="iecp-user-avatar" src="' + w.IECP.escapeHtml(flag) + '" alt="">' +
           '<span class="iecp-user-name">' + w.IECP.escapeHtml(profile.username) + '</span>' +
         '</a>' +
-        '<span class="iecp-user-balance"><i class="fa-solid fa-coins"></i>' + w.IECP.fmtNumber(profile.balance) + ' ₽</span>';
-    }).catch(function(){
-        // 如果获取失败，只显示“个人中心”文字
-        host.innerHTML = '<a class="btn btn-ghost btn-sm" href="profile.html">个人中心</a>';
+        '<a href="profile.html" style="font-size:12px; color:var(--gold-2); margin-left:10px; border:1px solid rgba(212,175,55,0.3); padding:4px 10px; border-radius:99px;"><i class="fa-solid fa-wallet"></i> 我的国库</a>';
+    }).catch(function(err){
+        host.innerHTML = '<a class="btn btn-ghost btn-sm" href="profile.html">用户中心</a>';
     });
   };
 

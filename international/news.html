@@ -27,6 +27,25 @@
   .custom-upload.has-file { border-style: solid; border-color: var(--cyan); background: rgba(79,195,247,0.05); }
   .custom-upload.has-file > i, .custom-upload.has-file > span.placeholder { display: none; }
   .custom-upload.has-file .file-preview { display: flex; }
+
+  /* 🚨 修复下拉框：半透明暗底，拒绝白底白字 */
+  select {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    color: var(--ink) !important;
+    border: 1px solid var(--border-2) !important;
+    border-radius: var(--r-sm);
+    outline: none;
+    cursor: pointer;
+    padding: 12px 14px;
+  }
+  select:focus {
+    border-color: var(--gold) !important;
+  }
+  /* 修复 Windows 浏览器下 option 纯黑或白底问题，改为深空灰 */
+  select option {
+    background-color: #111827 !important; 
+    color: #fff !important;
+  }
 </style>
 </head>
 <body>
@@ -103,7 +122,7 @@
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
-        <span id="newsHint" style="font-size:13px;color:var(--muted);margin-right:auto;align-self:center"></span>
+        <span id="newsHint" style="font-size:13px;color:var(--red);margin-right:auto;align-self:center;font-weight:bold;"></span>
         <button type="button" class="btn btn-ghost" onclick="document.getElementById('publishModal').classList.remove('open')">取消</button>
         <button class="btn btn-gold" type="submit" id="newsSubmit"><i class="fa-solid fa-paper-plane"></i> 确认发布</button>
       </div>

@@ -82,8 +82,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
-<script src="assets/js/common.js"></script>
-<script>
+<script src="assets/js/common.js"></script><script>
 (function () {
   var I = IECP;
   I.requireAuth().then(function (ok) {
@@ -96,14 +95,15 @@
     I.client.from('profiles').select('*').order('created_at', { ascending: false }).then(function (res) {
       var wrap = I.$('#countriesWrap');
       if (res.error) {
-        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>加载失败</p><small>' + I.escapeHtml(res.error.message) + '</small></div>';
+        wrap.innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
         return;
       }
       var list = res.data || [];
       if (!list.length) {
-        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-globe"></i><p>还没有国家</p><small>成为第一个建立国家的用户</small></div>';
+        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-globe"></i><p>还没有国家</p></div>';
         return;
       }
+      
       var html = '<div class="countries-grid">';
       list.forEach(function (c) {
         html +=
@@ -119,7 +119,8 @@
             '<div class="country-meta">' +
               '<div class="country-meta-row"><span>首都</span><b>' + I.escapeHtml(c.capital || '—') + '</b></div>' +
               '<div class="country-meta-row"><span>官方语言</span><b>' + I.escapeHtml(c.official_language || '—') + '</b></div>' +
-              '<div class="country-meta-row"><span>国库</span><b style="color:var(--gold-2);font-family:var(--mono)">' + I.fmtNumber(c.balance) + ' ₽</b></div>' +
+              // 🚨 核心改动：隐藏余额
+              '<div class="country-meta-row"><span>国库</span><b style="color:var(--gold-2);font-family:var(--mono)">' + I.formatBalance(c.balance, c.id, true) + '</b></div>' +
             '</div>' +
           '</div>';
       });

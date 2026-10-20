@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>物品详情 · IECP</title>
+<title>商品详情 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -21,7 +21,7 @@
 </header>
 
 <main class="iecp-main" id="detailWrap" style="max-width:900px; margin:40px auto;">
-  <div class="loading-state"><div class="spinner"></div><span>正在加载物品信息…</span></div>
+  <div class="loading-state"><div class="spinner"></div><span>正在加载商品信息…</span></div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -44,7 +44,7 @@
       return I.client.from('market_items').select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url)').eq('id', itemId).maybeSingle();
     }).then(function(res){
       if (!res || res.error || !res.data) {
-        I.$('#detailWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>物品不存在或已被彻底删除</p><a href="market.html" class="btn btn-ghost" style="margin-top:20px">返回交易行</a></div>`;
+        I.$('#detailWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>商品不存在或已被彻底删除</p><a href="market.html" class="btn btn-ghost" style="margin-top:20px">返回交易行</a></div>`;
         return;
       }
       currentItem = res.data;
@@ -56,18 +56,15 @@
     var seller = m.seller || {};
     var isMine = m.seller_id === profile.id;
     var isSold = m.status === 'sold';
-    var isRemoved = m.status === 'removed';
 
-    // 动态操作按钮
+    var unitDisplay = m.custom_unit ? ` ${m.custom_unit}` : '';
+
     var actionBtn = '';
     if (isSold) {
       actionBtn = `<button class="btn btn-ghost" disabled><i class="fa-solid fa-ban"></i> 已售罄</button>`;
-    } else if (isRemoved) {
-      actionBtn = `<button class="btn btn-ghost" disabled><i class="fa-solid fa-ban"></i> 已下架</button>`;
     } else if (isMine) {
-      actionBtn = `<button class="btn btn-red" onclick="removeItem('${m.id}')"><i class="fa-solid fa-trash"></i> 下架物品</button>`;
+      actionBtn = `<button class="btn btn-red" onclick="removeItem('${m.id}')"><i class="fa-solid fa-trash"></i> 下架商品</button>`;
     } else {
-      // 买家购买输入框
       actionBtn = `
         <div style="display:flex; gap:10px; align-items:center;">
           <div class="field" style="margin:0; width:100px;">
@@ -77,13 +74,15 @@
             <i class="fa-solid fa-cart-shopping"></i> 确认购买
           </button>
         </div>
-        <div style="font-size:12px; color:var(--muted); margin-top:8px;">单价: ${I.fmtNumber(m.price)} ₽ / 件，当前库存: ${m.quantity}</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:8px;">单价: ${I.fmtNumber(m.price)} ₽ / ${unitDisplay}，当前库存: ${m.quantity}${unitDisplay}</div>
       `;
     }
 
     var imgHtml = m.image_url 
       ? `<img src="${m.image_url}" style="width:100%; border-radius:12px; margin-bottom:24px; border:1px solid var(--border-2);">` 
-      : `<div style="width:100%; aspect-ratio:16/9; background:var(--glass-2); border-radius:12px; margin-bottom:24px; display:grid; place-items:center; font-size:60px; color:var(--muted-2);"><i class="fa-solid fa-box-open"></i></div>`;
+      : `<div style="width:100%; aspect-ratio:16/9; background:var(--glass-2); border-radius:12px; margin-bottom:24px; display:grid; place-items:center; font-size:60px; color:var(--muted-2);"><i class="fa-solid fa-${m.item_type === 'resource' ? 'cubes' : 'box-open'}"></i></div>`;
+
+    var typeTag = m.item_type === 'resource' ? `<span style="background:var(--cyan); color:#000; padding:2px 8px; border-radius:4px; font-size:12px; margin-left:10px;">资源</span>` : '';
 
     I.$('#detailWrap').innerHTML = `
       <div style="margin-bottom:20px;">
@@ -96,9 +95,9 @@
         </div>
         
         <div style="flex:1; min-width:300px; display:flex; flex-direction:column;">
-          <h1 style="font-size:26px; margin-bottom:10px; color:var(--ink);">${I.escapeHtml(m.title)}</h1>
+          <h1 style="font-size:26px; margin-bottom:10px; color:var(--ink);">${I.escapeHtml(m.title)} ${typeTag}</h1>
           <div style="font-size:32px; font-family:var(--mono); color:var(--gold-2); font-weight:700; margin-bottom:20px;">
-            ${I.fmtNumber(m.price)} <span style="font-size:16px; color:var(--muted); font-weight:400;">₽</span>
+            ${I.fmtNumber(m.price)} <span style="font-size:14px; color:var(--muted); font-weight:400;">₽ / ${m.custom_unit || '件'}</span>
           </div>
           
           <div style="padding:16px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:24px;">
@@ -129,55 +128,90 @@
     var totalCost = price * qty;
     if (profile.balance < totalCost) { I.toast('国库余额不足', 'error'); return; }
 
-    if (!confirm(`确认花费 ${I.fmtNumber(totalCost)} ₽ 购买 ${qty} 件该物品吗？`)) return;
+    if (!confirm(`确认花费 ${I.fmtNumber(totalCost)} ₽ 购买 ${qty}${currentItem.custom_unit || ''}该物品吗？`)) return;
 
     I.toast('正在处理交易...', 'success', 1000);
 
-    // 1. 扣款买方
     I.client.from('profiles').update({ balance: profile.balance - totalCost }).eq('id', profile.id).then(function (r1) {
       if (r1.error) { I.toast('扣款失败：' + r1.error.message, 'error'); return; }
 
-      // 2. 更新物品状态或库存
       var newQty = maxQty - qty;
-      var updateData = {};
+      var updateData = { quantity: newQty };
       if (newQty === 0) {
         updateData.status = 'sold';
         updateData.buyer_id = profile.id; 
         updateData.sold_at = new Date().toISOString();
       }
-      updateData.quantity = newQty;
 
       I.client.from('market_items').update(updateData).eq('id', itemId).then(function (r2) {
-        
         if (r2.error) {
           I.toast('交易失败：' + r2.error.message, 'error');
-          // 退还刚才扣的钱
-          I.client.from('profiles').update({ balance: profile.balance }).eq('id', profile.id);
+          I.client.from('profiles').update({ balance: profile.balance }).eq('id', profile.id); // 退还
           return;
         }
 
-        // 3. 加款卖方
-        I.client.rpc('add_balance', { uid: sellerId, amount: totalCost }).then(function(r3){
-          if (r3.error) console.warn('加款失败:', r3.error);
+        I.client.rpc('add_balance', { uid: sellerId, amount: totalCost }).then(function(){
+          
+          // 🚨 给买方增加资源，直接加底层基础量
+          if (currentItem.item_type === 'resource' && currentItem.resource_type) {
+            var actualBaseQty = (currentItem.base_quantity || 0) * qty; // 真实给买家的基础量
+            I.client.from('country_resources').select(currentItem.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
+              if (resRes.data) {
+                var myCurrent = parseFloat(resRes.data[currentItem.resource_type]) || 0;
+                var upObj = {};
+                upObj[currentItem.resource_type] = parseFloat((myCurrent + actualBaseQty).toFixed(4));
+                
+                I.client.from('country_resources').update(upObj).eq('country_id', profile.id).then(function(){
+                  finishTransaction();
+                });
+              } else {
+                finishTransaction();
+              }
+            });
+          } else {
+            finishTransaction();
+          }
 
-          // 4. 记录交易
-          I.client.from('transactions').insert({
-            buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: totalCost
-          }).then(function () {
-            I.toast('购买成功！', 'success');
-            setTimeout(function () { location.reload(); }, 800);
-          });
+          function finishTransaction() {
+            I.client.from('transactions').insert({
+              buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: totalCost
+            }).then(function () {
+              I.toast('购买成功！物资已入库', 'success');
+              setTimeout(function () { location.reload(); }, 800);
+            });
+          }
         });
       });
     });
   };
 
   window.removeItem = function (itemId) {
-    if (!confirm('确认下架该物品吗？')) return;
-    // 只能在售出前下架
-    I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).eq('status', 'on_sale').then(function () {
-      I.toast('已下架', 'success');
-      setTimeout(function () { location.href = 'market.html'; }, 800);
+    if (!confirm('确认下架该商品吗？如果是资源，将退回你的国家仓库。')) return;
+    
+    I.client.from('market_items').select('*').eq('id', itemId).maybeSingle().then(function(r){
+      var item = r.data;
+      if (!item) return;
+
+      I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
+        
+        if (item.item_type === 'resource' && item.resource_type) {
+          var backBaseQty = (item.base_quantity || 0) * item.quantity; // 退回全部基础量
+          I.client.from('country_resources').select(item.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
+            if (resRes.data) {
+              var currentBase = parseFloat(resRes.data[item.resource_type]) || 0;
+              var upObj = {};
+              upObj[item.resource_type] = parseFloat((currentBase + backBaseQty).toFixed(4));
+              I.client.from('country_resources').update(upObj).eq('country_id', profile.id).then(function(){
+                I.toast('商品已下架，资源已退还', 'success');
+                setTimeout(function () { location.href = 'market.html'; }, 800);
+              });
+            }
+          });
+        } else {
+          I.toast('商品已下架', 'success');
+          setTimeout(function () { location.href = 'market.html'; }, 800);
+        }
+      });
     });
   };
 })();

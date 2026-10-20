@@ -14,7 +14,7 @@
     width: 100px;
     height: 100px;
     margin-top: 8px;
-    border-radius: 50%; /* 圆形设计 */
+    border-radius: 50%;
     border: 2px dashed var(--border-2);
     background: var(--glass-2);
     cursor: pointer;
@@ -37,7 +37,7 @@
   }
   .emblem-upload-wrap:hover img {
     transform: scale(1.05);
-    opacity: 0.3; /* 悬停时图片变暗，露出文字 */
+    opacity: 0.3;
   }
   .emblem-overlay {
     position: absolute;
@@ -98,6 +98,7 @@
       if (!p) throw new Error('未找到国家档案。');
       profile = p;
       render();
+      loadResources(); // 加载真实资源数据
     }).catch(function (err) {
       console.error('[IECP] 加载失败:', err);
       I.$('#profileWrap').innerHTML = `
@@ -121,6 +122,8 @@
       <div class="profile-grid">
         <!-- 左列 -->
         <aside class="profile-side">
+          
+          <!-- 1. 基础档案 -->
           <div class="profile-card glass">
             <div class="profile-avatar-wrap">
               <div class="profile-avatar" id="avatarDisplay">
@@ -152,6 +155,7 @@
             <p class="profile-hint">加入时间：${I.fmtDate(profile.created_at).split(' ')[0]}</p>
           </div>
 
+          <!-- 2. 国库储备 -->
           <div class="balance-card">
             <div class="bc-top">
               <div class="bc-emblem">₽</div>
@@ -174,6 +178,21 @@
             <div class="bc-shine"></div>
           </div>
 
+          <!-- 3. 国家战略资源卡片 (动态渲染) -->
+          <div class="resource-card" id="resourceCard">
+            <div class="res-header">
+              <div class="res-title"><i class="fa-solid fa-cubes-stacked" style="color:var(--gold);"></i> 战略资源</div>
+              <div class="res-total" id="resTotalEval">综合评估：-</div>
+            </div>
+            <div class="res-grid" id="resGrid">
+              <div style="text-align:center; padding:20px; color:var(--muted); font-size:12px;">
+                <div class="spinner" style="width:20px;height:20px;margin:0 auto 10px;"></div>
+                正在探测资源...
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. 国家仓库入口 -->
           <div class="inventory-card" onclick="location.href='inventory.html'">
             <div class="ic-top">
               <div class="ic-emblem"><i class="fa-solid fa-boxes-stacked"></i></div>
@@ -187,6 +206,7 @@
               <i class="fa-solid fa-arrow-right ic-arrow"></i>
             </div>
           </div>
+
         </aside>
 
         <!-- 右列 -->
@@ -214,7 +234,7 @@
                 <input id="pLanguage" type="text" value="${I.escapeHtml(profile.official_language)}" maxlength="80">
               </div>
               
-              <!-- 修改后的更换国徽组件 -->
+              <!-- 更换国徽组件 -->
               <div class="field full">
                 <label>更换国徽</label>
                 <div class="emblem-upload-wrap" id="emblemBtn" title="点击上传新国徽">
@@ -273,7 +293,6 @@
       if (u) I.$('#pEmail').value = u.email || '';
     });
 
-    // 国旗上传预览
     I.$('#pFlag').addEventListener('change', function() {
       var file = this.files[0];
       if (file) {
@@ -285,7 +304,6 @@
       }
     });
 
-    // 国徽点击与预览
     I.$('#emblemBtn').addEventListener('click', function() {
       I.$('#pEmblem').click();
     });
@@ -295,14 +313,12 @@
         var reader = new FileReader();
         reader.onload = function(e) {
           I.$('#emblemPreview').src = e.target.result;
-          // 悬停时图片变暗的逻辑依赖CSS，这里给个提示
           I.$('#emblemPreview').style.opacity = '1';
         };
         reader.readAsDataURL(file);
       }
     });
 
-    // 保存资料
     I.$('#saveProfileBtn').addEventListener('click', function () {
       var btn = this; btn.disabled = true;
       var data = {
@@ -342,7 +358,6 @@
         });
     });
 
-    // 修改密码
     I.$('#savePwdBtn').addEventListener('click', function () {
       var p1 = I.$('#pPassword').value;
       var p2 = I.$('#pPassword2').value;
@@ -360,9 +375,56 @@
       });
     });
 
-    // 退出
     I.$('#logoutBtn').addEventListener('click', function () {
       if (confirm('确定退出登录吗？')) I.logout();
+    });
+  }
+
+  // 🚨 新增：从数据库拉取资源并渲染
+  function loadResources() {
+    I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle().then(function(res) {
+      var grid = I.$('#resGrid');
+      if (res.error || !res.data) {
+        grid.innerHTML = `<div style="color:var(--red); font-size:12px;">资源勘探失败，请刷新页面。</div>`;
+        return;
+      }
+      
+      var r = res.data;
+      // 计算综合评估 (极简算法：根据资源总量定级)
+      var total = (r.oil || 0) + (r.gas || 0) + (r.iron_ore || 0) + (r.rare_metal || 0) + (r.food || 0);
+      var evalGrade = "C";
+      if (total > 50000) evalGrade = "S";
+      else if (total > 30000) evalGrade = "A";
+      else if (total > 15000) evalGrade = "B";
+      I.$('#resTotalEval').innerText = '综合评估：' + evalGrade;
+
+      // 格式化数据
+      var resData = [
+        { name: '原油储备', val: r.oil, unit: '万吨', max: 10000, icon: 'fa-oil-well', cls: 'oil' },
+        { name: '天然气', val: r.gas, unit: '亿m³', max: 15000, icon: 'fa-fire-flame-simple', cls: 'gas' },
+        { name: '铁矿石', val: r.iron_ore, unit: '万吨', max: 5000, icon: 'fa-mountain', cls: 'mineral' },
+        { name: '稀有金属', val: r.rare_metal, unit: '吨', max: 2000, icon: 'fa-atom', cls: 'rare' },
+        { name: '粮食储备', val: r.food, unit: '万吨', max: 6000, icon: 'fa-wheat-awn', cls: 'food' }
+      ];
+
+      var html = '';
+      resData.forEach(function(item) {
+        var valFormatted = I.fmtNumber(item.val);
+        // 进度条百分比计算，最大 100%
+        var pct = Math.min(100, Math.round((item.val / item.max) * 100));
+        
+        html += `
+          <div class="res-item">
+            <div class="res-icon ${item.cls}"><i class="fa-solid ${item.icon}"></i></div>
+            <div class="res-info">
+              <div class="res-name-row"><span>${item.name}</span><span>${valFormatted} ${item.unit}</span></div>
+              <div class="res-bar"><div class="res-fill ${item.cls}" style="width: ${pct}%;"></div></div>
+            </div>
+          </div>
+        `;
+      });
+      
+      grid.innerHTML = html;
     });
   }
 })();
