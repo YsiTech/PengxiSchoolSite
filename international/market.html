@@ -9,6 +9,27 @@
 <style>
   .market-card { cursor: pointer; }
   .market-qty { font-size: 11px; color: var(--muted); background: var(--glass-2); padding: 2px 6px; border-radius: 4px; }
+  
+  /* 高颜值上传框 (复用样式) */
+  .custom-upload {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; min-height: 80px; padding: 16px;
+    background: rgba(0,0,0,0.2); border: 1.5px dashed var(--border-2);
+    border-radius: var(--r-sm); cursor: pointer; transition: 0.2s;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .custom-upload:hover { border-color: var(--gold); background: var(--glass-2); }
+  .custom-upload i { font-size: 24px; color: var(--gold); margin-bottom: 6px; }
+  .custom-upload span { font-size: 12px; color: var(--muted); }
+  .custom-upload .file-preview {
+    display: none; align-items: center; gap: 10px; background: var(--glass-3);
+    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); z-index: 2;
+  }
+  .custom-upload .file-preview img { width: 32px; height: 32px; object-fit: cover; border-radius: 4px; }
+  .custom-upload .file-preview span { color: var(--ink); font-weight: 600; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .custom-upload.has-file { border-style: solid; border-color: var(--cyan); background: rgba(79,195,247,0.05); }
+  .custom-upload.has-file > i, .custom-upload.has-file > span.placeholder { display: none; }
+  .custom-upload.has-file .file-preview { display: flex; }
 </style>
 </head>
 <body>
@@ -67,7 +88,17 @@
         </div>
         <div class="field">
           <label>物品图片（可选）</label>
-          <input id="iFile" type="file" accept="image/*" style="padding:9px 12px">
+          <!-- 自定义上传框 -->
+          <label class="custom-upload" id="marketUploadBox" for="iFile" style="min-height: 60px;">
+            <i class="fa-solid fa-image"></i>
+            <span class="placeholder">点击上传图片</span>
+            <div class="file-preview">
+              <img id="iFilePreview" src="" style="display:none;">
+              <i id="iFileIcon" class="fa-solid fa-file" style="display:none;"></i>
+              <span id="iFileName">未选择</span>
+            </div>
+            <input id="iFile" type="file" accept="image/*" style="display:none">
+          </label>
         </div>
       </div>
       <div class="field-group">
@@ -104,6 +135,33 @@
 
   I.$('#openPublishBtn').addEventListener('click', function(){
     I.$('#publishModal').classList.add('open');
+  });
+
+  // 监听图片选择，显示预览
+  I.$('#iFile').addEventListener('change', function() {
+    var file = this.files[0];
+    var box = I.$('#marketUploadBox');
+    if (file) {
+      box.classList.add('has-file');
+      I.$('#iFileName').textContent = file.name;
+      
+      // 如果是图片，显示缩略图
+      if (file.type.startsWith('image/')) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          I.$('#iFilePreview').src = e.target.result;
+          I.$('#iFilePreview').style.display = 'block';
+          I.$('#iFileIcon').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        I.$('#iFilePreview').style.display = 'none';
+        I.$('#iFileIcon').style.display = 'block';
+      }
+    } else {
+      box.classList.remove('has-file');
+      I.$('#iFileName').textContent = '未选择';
+    }
   });
 
   function loadMarket() {
@@ -166,6 +224,13 @@
     btn.disabled = true;
     hint.textContent = file ? '正在上传图片…' : '正在发布…';
 
+    function resetForm() {
+      I.$('#itemForm').reset();
+      I.$('#marketUploadBox').classList.remove('has-file');
+      I.$('#iFileName').textContent = '未选择';
+      I.$('#publishModal').classList.remove('open');
+    }
+
     function insert(imgUrl) {
       return I.client.from('market_items').insert({
         seller_id: profile.id, title: title, price: price, quantity: qty, description: desc || null,
@@ -174,8 +239,7 @@
         btn.disabled = false;
         if (r.error) { hint.textContent = r.error.message; return; }
         I.toast('发布成功', 'success');
-        I.$('#itemForm').reset();
-        I.$('#publishModal').classList.remove('open');
+        resetForm();
         loadMarket();
       });
     }

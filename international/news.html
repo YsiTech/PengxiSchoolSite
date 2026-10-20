@@ -7,7 +7,26 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  .news-card { cursor: pointer; }
+  /* 高颜值上传框 */
+  .custom-upload {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; min-height: 100px; padding: 16px;
+    background: rgba(0,0,0,0.2); border: 1.5px dashed var(--border-2);
+    border-radius: var(--r-sm); cursor: pointer; transition: 0.2s;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .custom-upload:hover { border-color: var(--gold); background: var(--glass-2); }
+  .custom-upload i { font-size: 28px; color: var(--gold); margin-bottom: 8px; }
+  .custom-upload span { font-size: 13px; color: var(--muted); }
+  .custom-upload .file-preview {
+    display: none; align-items: center; gap: 10px; background: var(--glass-3);
+    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); z-index: 2;
+  }
+  .custom-upload .file-preview i { font-size: 20px; margin: 0; color: var(--cyan); }
+  .custom-upload .file-preview span { color: var(--ink); font-weight: 600; max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .custom-upload.has-file { border-style: solid; border-color: var(--cyan); background: rgba(79,195,247,0.05); }
+  .custom-upload.has-file > i, .custom-upload.has-file > span.placeholder { display: none; }
+  .custom-upload.has-file .file-preview { display: flex; }
 </style>
 </head>
 <body>
@@ -56,7 +75,7 @@
         </div>
         <div class="field">
           <label>正文 <span class="req">*</span></label>
-          <textarea id="nContent" placeholder="新闻正文内容……" style="min-height:150px"></textarea>
+          <textarea id="nContent" placeholder="新闻正文内容……" style="min-height:120px"></textarea>
         </div>
         <div class="field-group two">
           <div class="field">
@@ -70,7 +89,16 @@
           </div>
           <div class="field">
             <label>上传媒体</label>
-            <input id="nMediaFile" type="file" accept="image/*,video/*,audio/*" style="padding:9px 12px">
+            <!-- 自定义上传框 -->
+            <label class="custom-upload" id="newsUploadBox" for="nMediaFile">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <span class="placeholder">点击选择文件</span>
+              <div class="file-preview">
+                <i class="fa-solid fa-file"></i>
+                <span id="newsFileName">未选择文件</span>
+              </div>
+              <input id="nMediaFile" type="file" accept="image/*,video/*,audio/*" style="display:none">
+            </label>
           </div>
         </div>
       </div>
@@ -102,6 +130,19 @@
 
   I.$('#openPublishBtn').addEventListener('click', function(){
     I.$('#publishModal').classList.add('open');
+  });
+
+  // 监听文件选择，显示预览
+  I.$('#nMediaFile').addEventListener('change', function() {
+    var file = this.files[0];
+    var box = I.$('#newsUploadBox');
+    if (file) {
+      box.classList.add('has-file');
+      I.$('#newsFileName').textContent = file.name;
+    } else {
+      box.classList.remove('has-file');
+      I.$('#newsFileName').textContent = '未选择文件';
+    }
   });
 
   function loadNews() {
@@ -163,6 +204,13 @@
     btn.disabled = true;
     hint.textContent = mtype ? '正在上传媒体…' : '正在发布…';
 
+    function resetForm() {
+      I.$('#newsForm').reset();
+      I.$('#newsUploadBox').classList.remove('has-file');
+      I.$('#newsFileName').textContent = '未选择文件';
+      I.$('#publishModal').classList.remove('open');
+    }
+
     function doInsert(mediaUrl) {
       return I.client.from('news').insert({
         author_id: profile.id, title: title, content: content,
@@ -171,8 +219,7 @@
         btn.disabled = false;
         if (r.error) { hint.textContent = r.error.message; return; }
         I.toast('新闻已发布', 'success');
-        I.$('#newsForm').reset();
-        I.$('#publishModal').classList.remove('open');
+        resetForm();
         loadNews();
       });
     }

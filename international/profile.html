@@ -7,6 +7,63 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/profile.css">
+<style>
+  /* 更换国徽组件的专属样式 */
+  .emblem-upload-wrap {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin-top: 8px;
+    border-radius: 50%; /* 圆形设计 */
+    border: 2px dashed var(--border-2);
+    background: var(--glass-2);
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+  .emblem-upload-wrap:hover {
+    border-color: var(--gold);
+    background: var(--glass-3);
+  }
+  .emblem-upload-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+  }
+  .emblem-upload-wrap:hover img {
+    transform: scale(1.05);
+    opacity: 0.3; /* 悬停时图片变暗，露出文字 */
+  }
+  .emblem-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .emblem-upload-wrap:hover .emblem-overlay {
+    opacity: 1;
+  }
+  .emblem-overlay i {
+    font-size: 20px;
+    color: var(--gold);
+  }
+  .emblem-overlay span {
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+</style>
 </head>
 <body>
 
@@ -95,7 +152,6 @@
             <p class="profile-hint">加入时间：${I.fmtDate(profile.created_at).split(' ')[0]}</p>
           </div>
 
-          <!-- 国库储备卡片 -->
           <div class="balance-card">
             <div class="bc-top">
               <div class="bc-emblem">₽</div>
@@ -118,7 +174,6 @@
             <div class="bc-shine"></div>
           </div>
 
-          <!-- 国家仓库入口卡片 -->
           <div class="inventory-card" onclick="location.href='inventory.html'">
             <div class="ic-top">
               <div class="ic-emblem"><i class="fa-solid fa-boxes-stacked"></i></div>
@@ -132,12 +187,10 @@
               <i class="fa-solid fa-arrow-right ic-arrow"></i>
             </div>
           </div>
-
         </aside>
 
         <!-- 右列 -->
         <section class="profile-content">
-          
           <!-- 国家档案编辑 -->
           <div class="card glass">
             <div class="card-head">
@@ -160,11 +213,21 @@
                 <label>官方语言</label>
                 <input id="pLanguage" type="text" value="${I.escapeHtml(profile.official_language)}" maxlength="80">
               </div>
+              
+              <!-- 修改后的更换国徽组件 -->
               <div class="field full">
                 <label>更换国徽</label>
-                <input id="pEmblem" type="file" accept="image/*" style="padding:9px 12px;font-size:13px">
+                <div class="emblem-upload-wrap" id="emblemBtn" title="点击上传新国徽">
+                  <img id="emblemPreview" src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" alt="国徽">
+                  <div class="emblem-overlay">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>点击更换</span>
+                  </div>
+                </div>
+                <input id="pEmblem" type="file" accept="image/*" style="display:none">
               </div>
             </div>
+            
             <div class="profile-actions">
               <button class="btn btn-gold" id="saveProfileBtn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</button>
             </div>
@@ -210,6 +273,7 @@
       if (u) I.$('#pEmail').value = u.email || '';
     });
 
+    // 国旗上传预览
     I.$('#pFlag').addEventListener('change', function() {
       var file = this.files[0];
       if (file) {
@@ -221,6 +285,24 @@
       }
     });
 
+    // 国徽点击与预览
+    I.$('#emblemBtn').addEventListener('click', function() {
+      I.$('#pEmblem').click();
+    });
+    I.$('#pEmblem').addEventListener('change', function() {
+      var file = this.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          I.$('#emblemPreview').src = e.target.result;
+          // 悬停时图片变暗的逻辑依赖CSS，这里给个提示
+          I.$('#emblemPreview').style.opacity = '1';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 保存资料
     I.$('#saveProfileBtn').addEventListener('click', function () {
       var btn = this; btn.disabled = true;
       var data = {
@@ -260,6 +342,7 @@
         });
     });
 
+    // 修改密码
     I.$('#savePwdBtn').addEventListener('click', function () {
       var p1 = I.$('#pPassword').value;
       var p2 = I.$('#pPassword2').value;
@@ -277,6 +360,7 @@
       });
     });
 
+    // 退出
     I.$('#logoutBtn').addEventListener('click', function () {
       if (confirm('确定退出登录吗？')) I.logout();
     });
