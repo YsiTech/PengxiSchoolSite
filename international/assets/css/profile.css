@@ -313,3 +313,69 @@
   
   .bc-amount { font-size: 36px; }
 }
+/* ===================================================================
+   🚨 移动端强制适配 (修复个人中心错乱)
+   =================================================================== */
+@media (max-width: 768px) {
+  /* 1. 取消桌面端的侧边栏内部滚动，恢复页面自然滑动 */
+  .profile-side {
+    max-height: none !important;
+    overflow-y: visible !important;
+    padding-right: 0 !important;
+  }
+
+  /* 2. 强制主网格变成单列，防止左右挤压 */
+  .profile-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* 3. 修复所有卡片溢出屏幕的问题 */
+  .profile-card, 
+  .balance-card, 
+  .resource-card, 
+  .inventory-card,
+  .profile-content .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 4. 修复国库卡片金额太宽导致切断 (016 问题) */
+  .bc-amount {
+    font-size: 36px !important; /* 手机上字体稍微缩小 */
+    white-space: nowrap !important;
+  }
+  .bc-top {
+    flex-wrap: wrap;
+  }
+
+  /* 5. 修复资源条被截断 */
+  .res-name-row {
+    flex-wrap: wrap; /* 允许文字换行，防止撑破卡片 */
+    gap: 4px;
+  }
+  .res-name-row span:last-child {
+    font-size: 12px;
+  }
+
+  /* 6. 头像卡片下方的文字防截断 */
+  .profile-name {
+    font-size: 18px !important;
+    word-break: break-all;
+  }
+  .profile-avatar-wrap {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  .profile-avatar {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  /* 7. 右侧表单在手机端变成单列 */
+  .form-grid.two {
+    grid-template-columns: 1fr !important;
+  }
+}
