@@ -1,5 +1,5 @@
 /* ===================================================================
-   IECP · 通用脚本
+   IECP · 通用脚本 (修复错误捕获版)
    =================================================================== */
 
 (function (w) {
@@ -77,10 +77,16 @@
   w.IECP.getProfile = function (force) {
     if (profileCache && !force) return Promise.resolve(profileCache);
     return client.auth.getUser().then(function (res) {
-      if (!res.data || !res.data.user) return null;
+      if (!res.data || !res.data.user) throw new Error('未登录或登录已过期');
       return client.from('profiles').select('*').eq('id', res.data.user.id).maybeSingle()
         .then(function (r) {
-          if (r.error) { console.warn(r.error); return null; }
+          if (r.error) {
+            console.error('获取档案失败:', r.error);
+            throw new Error(r.error.message); // 🚨 抛出错误，让前端能捕获
+          }
+          if (!r.data) {
+            throw new Error('数据库中没有你的档案，请检查是否建表或数据插入失败');
+          }
           profileCache = r.data;
           return profileCache;
         });
@@ -96,14 +102,12 @@
     profileCache = null;
   };
 
-  /* 当前登录用户 raw */
   w.IECP.getUser = function () {
     return client.auth.getUser().then(function (r) {
       return (r.data && r.data.user) || null;
     });
   };
 
-  /* 未登录跳转 */
   w.IECP.requireAuth = function () {
     return client.auth.getSession().then(function (res) {
       var s = res.data && res.data.session;
@@ -115,7 +119,6 @@
     });
   };
 
-  /* 登出 */
   w.IECP.logout = function () {
     client.auth.signOut().then(function () {
       profileCache = null;
@@ -123,7 +126,6 @@
     });
   };
 
-  /* 头像兜底 */
   w.IECP.avatarFallback = function (name) {
     var initial = String(name || '?').trim().charAt(0).toUpperCase() || '?';
     var colors = ['#d4af37','#4fc3f7','#a78bfa','#f87171','#22c55e','#f59e0b','#ec4899'];
@@ -137,7 +139,6 @@
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   };
 
-  /* 导航渲染 */
   w.IECP.renderNav = function (activeId) {
     var host = document.getElementById('iecp-nav');
     if (!host) return;
@@ -159,7 +160,6 @@
     }).join('');
   };
 
-  /* 渲染右上角用户区 */
   w.IECP.renderUserBadge = function () {
     var host = document.getElementById('iecp-user');
     if (!host) return;
@@ -176,10 +176,12 @@
           '<span class="iecp-user-name">' + w.IECP.escapeHtml(profile.username) + '</span>' +
         '</a>' +
         '<span class="iecp-user-balance"><i class="fa-solid fa-coins"></i>' + w.IECP.fmtNumber(profile.balance) + ' ₽</span>';
+    }).catch(function(){
+        // 如果获取失败，只显示“个人中心”文字
+        host.innerHTML = '<a class="btn btn-ghost btn-sm" href="profile.html">个人中心</a>';
     });
   };
 
-  /* 初始化顶栏 */
   w.IECP.initTopbar = function (activeId) {
     w.IECP.renderNav(activeId);
     w.IECP.renderUserBadge();

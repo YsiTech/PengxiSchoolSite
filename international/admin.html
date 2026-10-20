@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>控制台 · IECP 管理中心</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/admin.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Admin Console</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<main class="iecp-main" id="adminWrap">
+  <div class="loading-state"><div class="spinner"></div><span>正在验证管理员权限…</span></div>
+</main>
+
+<!-- 编辑用户弹窗 -->
+<div class="iecp-modal" id="editModal">
+  <div class="iecp-modal-box glass-2">
+    <h3 id="modalTitle"><i class="fa-solid fa-pen"></i> 编辑国家数据</h3>
+    <div class="field-group">
+      <div class="field">
+        <label>国家名 (Username)</label>
+        <input id="editUsername" type="text" disabled>
+      </div>
+      <div class="field">
+        <label>国库余额 (Balance ₽)</label>
+        <input id="editBalance" type="number">
+      </div>
+      <div class="field">
+        <label>身份角色 (Role)</label>
+        <select id="editRole">
+          <option value="user">普通用户 (user)</option>
+          <option value="admin">管理员 (admin)</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-ghost" onclick="document.getElementById('editModal').classList.remove('open')">取消</button>
+      <button class="btn btn-gold" id="modalSaveBtn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script src="assets/js/admin.js"></script>
+
+</body>
+</html>

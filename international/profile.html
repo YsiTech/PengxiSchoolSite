@@ -6,6 +6,7 @@
 <title>用户中心 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/profile.css">
 </head>
 <body>
 
@@ -20,18 +21,9 @@
   </div>
 </header>
 
-<section class="iecp-page-head">
-  <div class="iecp-page-head-inner">
-    <div class="iecp-breadcrumb">
-      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>用户中心</span>
-    </div>
-    <h1><i class="fa-solid fa-user"></i> 用户中心</h1>
-    <p>管理你的国家档案与账号信息</p>
-  </div>
-</section>
-
 <main class="iecp-main" id="profileWrap">
-  <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
+  <!-- 页面加载状态 -->
+  <div class="loading-state"><div class="spinner"></div><span>正在读取国家档案…</span></div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -45,73 +37,187 @@
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('profile');
+    
     I.getProfile(true).then(function (p) {
+      if (!p) throw new Error('未找到国家档案。');
       profile = p;
       render();
+    }).catch(function (err) {
+      console.error('[IECP] 加载失败:', err);
+      I.$('#profileWrap').innerHTML = `
+        <div class="empty-state glass" style="margin:40px auto;max-width:600px">
+          <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i>
+          <p style="font-size:18px;font-weight:bold;color:var(--ink)">无法读取国家数据</p>
+          <p style="color:var(--red);margin:10px 0">${err.message || '网络请求超时'}</p>
+          <div style="margin-top:20px">
+            <button class="btn btn-ghost" onclick="location.reload()">刷新重试</button>
+            <button class="btn btn-ghost" onclick="IECP.logout()">退出登录</button>
+          </div>
+        </div>
+      `;
     });
   });
 
   function render() {
-    if (!profile) return;
     var wrap = I.$('#profileWrap');
 
-    wrap.innerHTML =
-      '<section class="glass" style="padding:32px;margin-bottom:24px;display:flex;gap:24px;align-items:center;flex-wrap:wrap">' +
-        '<img src="' + I.escapeHtml(profile.flag_url || I.avatarFallback(profile.username)) + '" style="width:100px;height:66px;object-fit:cover;border-radius:8px;border:1px solid var(--border-2)">' +
-        '<div style="flex:1;min-width:200px">' +
-          '<h2 style="font-size:22px;margin:0 0 4px">' + I.escapeHtml(profile.username) + '</h2>' +
-          '<p style="color:var(--muted);margin:0">' + I.escapeHtml(profile.social_system) + '</p>' +
-        '</div>' +
-        '<div style="text-align:right">' +
-          '<div style="font-size:11.5px;color:var(--muted);letter-spacing:1px">国库余额</div>' +
-          '<div style="font-family:var(--mono);font-size:22px;color:var(--gold-2)">' + I.fmtNumber(profile.balance) + ' ₽</div>' +
-        '</div>' +
-      '</section>' +
+    // 整体采用 左卡片 + 右信息流 的布局
+    wrap.innerHTML = `
+      <div class="profile-grid">
+        <!-- 左列 -->
+        <aside class="profile-side">
+          
+          <!-- 国家身份卡片 -->
+          <div class="profile-card glass">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar" id="avatarDisplay">
+                <img src="${I.escapeHtml(profile.flag_url || I.avatarFallback(profile.username))}" alt="">
+              </div>
+              <label class="profile-avatar-edit" for="pFlag" title="更换国旗">
+                <i class="fa-solid fa-camera"></i>
+              </label>
+              <input id="pFlag" type="file" accept="image/*" style="display:none">
+            </div>
 
-      '<div class="field-group two" style="grid-template-columns:1fr 1fr;gap:22px">' +
+            <h2 class="profile-name">${I.escapeHtml(profile.username)}</h2>
+            <p class="profile-email">${I.escapeHtml(profile.social_system)}</p>
+            
+            <div style="margin-bottom:14px">
+              <span class="role-tag"><i class="fa-solid fa-shield-halved"></i> 主权国家</span>
+            </div>
 
-        '<section class="glass" style="padding:28px">' +
-          '<h3 style="margin:0 0 20px;font-size:15.5px;letter-spacing:1px"><i class="fa-solid fa-pen" style="color:var(--gold)"></i> 编辑国家档案</h3>' +
-          '<div class="field-group">' +
-            '<div class="field"><label>国家名</label><input id="pUsername" type="text" value="' + I.escapeHtml(profile.username) + '" maxlength="30"></div>' +
-            '<div class="field"><label>社会性质</label><input id="pSocial" type="text" value="' + I.escapeHtml(profile.social_system) + '" maxlength="40"></div>' +
-            '<div class="field"><label>首都</label><input id="pCapital" type="text" value="' + I.escapeHtml(profile.capital) + '" maxlength="40"></div>' +
-            '<div class="field"><label>官方语言</label><input id="pLanguage" type="text" value="' + I.escapeHtml(profile.official_language) + '" maxlength="80"></div>' +
-            '<div class="field-group two" style="gap:12px">' +
-              '<div class="field"><label>国旗</label><input id="pFlag" type="file" accept="image/*" style="padding:8px 10px;font-size:12.5px"></div>' +
-              '<div class="field"><label>国徽</label><input id="pEmblem" type="file" accept="image/*" style="padding:8px 10px;font-size:12.5px"></div>' +
-            '</div>' +
-          '</div>' +
-          '<div style="display:flex;justify-content:flex-end;margin-top:16px">' +
-            '<button class="btn btn-gold" id="saveProfileBtn"><i class="fa-solid fa-floppy-disk"></i> 保存</button>' +
-          '</div>' +
-        '</section>' +
+            <!-- 装饰性经验/活跃度条 (代表国际影响力) -->
+            <div class="exp-bar-wrap">
+              <div class="exp-text">
+                <span>Lv.<span>1</span></span>
+                <span>国际影响力 <span>100</span> / 500</span>
+              </div>
+              <div class="exp-track">
+                <div class="exp-fill" style="width: 20%;"></div>
+              </div>
+            </div>
+            
+            <p class="profile-hint">加入时间：${I.fmtDate(profile.created_at).split(' ')[0]}</p>
+          </div>
 
-        '<section class="glass" style="padding:28px">' +
-          '<h3 style="margin:0 0 20px;font-size:15.5px;letter-spacing:1px"><i class="fa-solid fa-shield-halved" style="color:var(--gold)"></i> 账号安全</h3>' +
-          '<div class="field-group">' +
-            '<div class="field"><label>邮箱</label><input type="text" value="' + I.escapeHtml((I.client.auth.getUser && '') || '') + '" disabled placeholder="—" id="pEmail"></div>' +
-            '<div class="field"><label>新密码（留空不修改）</label><input id="pPassword" type="password" placeholder="至少 6 位"></div>' +
-            '<div class="field"><label>确认新密码</label><input id="pPassword2" type="password" placeholder="再次输入"></div>' +
-          '</div>' +
-          '<div style="display:flex;justify-content:space-between;margin-top:16px;gap:10px;flex-wrap:wrap">' +
-            '<button class="btn btn-red" id="logoutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i> 退出登录</button>' +
-            '<button class="btn btn-gold" id="savePwdBtn"><i class="fa-solid fa-key"></i> 修改密码</button>' +
-          '</div>' +
-        '</section>' +
+          <!-- 国库资金卡片 -->
+          <div class="balance-card">
+            <div class="bc-top">
+              <div class="bc-emblem">₽</div>
+              <div class="bc-title-group">
+                <div class="bc-title">国库储备</div>
+                <div class="bc-subtitle">National Treasury</div>
+              </div>
+            </div>
+            <div class="bc-amount-group">
+              <div class="bc-amount">${I.fmtNumber(profile.balance)}</div>
+              <div class="bc-amount-unit">亚斯卢布 · АСР ₽</div>
+            </div>
+            <div class="bc-bottom">
+              <div class="bc-holder">
+                <span class="bc-holder-label">国家元首 / 户名</span>
+                <span class="bc-holder-value">${I.escapeHtml(profile.username)}</span>
+              </div>
+              <!-- 国徽放在右下角 -->
+              <img src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" style="width:38px;height:38px;object-fit:contain;opacity:0.8;border-radius:50%;">
+            </div>
+            <div class="bc-shine"></div>
+          </div>
 
-      '</div>';
+        </aside>
 
-    /* 显示邮箱 */
+        <!-- 右列 -->
+        <section class="profile-content">
+          
+          <!-- 国家档案编辑 -->
+          <div class="card glass">
+            <div class="card-head">
+              <h3><i class="fa-solid fa-pen-to-square" style="color:var(--gold)"></i> 编辑国家档案</h3>
+            </div>
+            <div class="form-grid two">
+              <div class="field full">
+                <label>国家名</label>
+                <input id="pUsername" type="text" value="${I.escapeHtml(profile.username)}" maxlength="30">
+              </div>
+              <div class="field">
+                <label>社会性质</label>
+                <input id="pSocial" type="text" value="${I.escapeHtml(profile.social_system)}" maxlength="40">
+              </div>
+              <div class="field">
+                <label>首都</label>
+                <input id="pCapital" type="text" value="${I.escapeHtml(profile.capital)}" maxlength="40">
+              </div>
+              <div class="field full">
+                <label>官方语言</label>
+                <input id="pLanguage" type="text" value="${I.escapeHtml(profile.official_language)}" maxlength="80">
+              </div>
+              <div class="field full">
+                <label>更换国徽</label>
+                <input id="pEmblem" type="file" accept="image/*" style="padding:9px 12px;font-size:13px">
+              </div>
+            </div>
+            <div class="profile-actions">
+              <button class="btn btn-gold" id="saveProfileBtn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</button>
+            </div>
+          </div>
+
+          <!-- 账号安全 -->
+          <div class="card glass">
+            <div class="card-head">
+              <h3><i class="fa-solid fa-shield-halved" style="color:var(--gold)"></i> 账号安全</h3>
+            </div>
+            <div class="form-grid">
+              <div class="field full">
+                <label>登录邮箱</label>
+                <input type="text" id="pEmail" disabled style="background:rgba(255,255,255,0.02);color:var(--muted)">
+                <span class="profile-hint">邮箱用于登录和找回密码，暂不支持修改</span>
+              </div>
+              <div class="field">
+                <label>新密码</label>
+                <input id="pPassword" type="password" placeholder="留空则不修改">
+              </div>
+              <div class="field">
+                <label>确认新密码</label>
+                <input id="pPassword2" type="password" placeholder="再次输入新密码">
+              </div>
+            </div>
+            <div class="profile-actions">
+              <button class="btn btn-cyan" id="savePwdBtn"><i class="fa-solid fa-key"></i> 修改密码</button>
+            </div>
+          </div>
+
+          <!-- 危险操作 -->
+          <div class="card glass danger-card">
+            <div class="card-head"><h3><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i> 账号操作</h3></div>
+            <p class="muted small" style="margin:0 0 16px">退出登录后需要重新输入邮箱和密码才能进入。</p>
+            <button class="btn btn-red" id="logoutBtn" style="width:100%;max-width:200px"><i class="fa-solid fa-arrow-right-from-bracket"></i> 退出登录</button>
+          </div>
+
+        </section>
+      </div>
+    `;
+
+    // 获取邮箱
     I.client.auth.getUser().then(function (res) {
       var u = res.data && res.data.user;
       if (u) I.$('#pEmail').value = u.email || '';
     });
 
-    /* 保存资料 */
+    // 上传国旗预览
+    I.$('#pFlag').addEventListener('change', function() {
+      var file = this.files[0];
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          I.$('#avatarDisplay').innerHTML = `<img src="${e.target.result}" alt="">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 保存基本资料
     I.$('#saveProfileBtn').addEventListener('click', function () {
-      var btn = this;
-      btn.disabled = true;
+      var btn = this; btn.disabled = true;
       var data = {
         username: I.$('#pUsername').value.trim(),
         social_system: I.$('#pSocial').value.trim(),
@@ -135,12 +241,45 @@
 
       up('flags', flagFile, 'flag')
         .then(function () { return up('emblems', emblemFile, 'emblem'); })
-        .then(function () {
-          return I.client.from('profiles').update(data).eq('id', profile.id);
-        })
+        .then(function () { return I.client.from('profiles').update(data).eq('id', profile.id); })
         .then(function (r) {
           btn.disabled = false;
           if (r && r.error) { I.toast(r.error.message, 'error'); return; }
-          I.toast('已保存', 'success');
+          I.toast('档案已更新', 'success');
           I.clearProfileCache();
-          setTimeout
+          setTimeout(function() { location.reload(); }, 800);
+        })
+        .catch(function(err){
+          btn.disabled = false;
+          I.toast('保存失败: ' + err.message, 'error');
+        });
+    });
+
+    // 修改密码
+    I.$('#savePwdBtn').addEventListener('click', function () {
+      var p1 = I.$('#pPassword').value;
+      var p2 = I.$('#pPassword2').value;
+      if (!p1) { I.toast('请输入新密码', 'error'); return; }
+      if (p1.length < 6) { I.toast('密码至少 6 位', 'error'); return; }
+      if (p1 !== p2) { I.toast('两次输入不一致', 'error'); return; }
+      
+      var btn = this; btn.disabled = true;
+      I.client.auth.updateUser({ password: p1 }).then(function (r) {
+        btn.disabled = false;
+        if (r.error) { I.toast(r.error.message, 'error'); return; }
+        I.toast('密码修改成功', 'success');
+        I.$('#pPassword').value = '';
+        I.$('#pPassword2').value = '';
+      });
+    });
+
+    // 退出
+    I.$('#logoutBtn').addEventListener('click', function () {
+      if (confirm('确定退出登录吗？')) I.logout();
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
