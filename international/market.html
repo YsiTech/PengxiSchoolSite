@@ -6,6 +6,9 @@
 <title>交易行 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .market-card { cursor: pointer; }
+</style>
 </head>
 <body>
 
@@ -25,16 +28,27 @@
     <div class="iecp-breadcrumb">
       <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>交易行</span>
     </div>
-    <h1><i class="fa-solid fa-store"></i> 交易行</h1>
-    <p>以亚斯卢布（₽）结算 · 发布并管理你的交易物品</p>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px">
+      <div>
+        <h1><i class="fa-solid fa-store"></i> 交易行</h1>
+        <p>以亚斯卢布（₽）结算 · 发布并管理你的交易物品</p>
+      </div>
+      <button class="btn btn-gold" id="openPublishBtn"><i class="fa-solid fa-plus"></i> 发布物品</button>
+    </div>
   </div>
 </section>
 
 <main class="iecp-main">
+  <div id="marketList">
+    <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
+  </div>
+</main>
 
-  <section class="glass" style="padding:24px;margin-bottom:32px">
-    <h3 style="margin:0 0 18px;font-size:16px;letter-spacing:1px"><i class="fa-solid fa-plus" style="color:var(--gold)"></i> 发布物品</h3>
-    <form id="itemForm">
+<!-- 上架物品弹窗 -->
+<div class="iecp-modal" id="publishModal">
+  <div class="iecp-modal-box glass-2" style="max-width:550px">
+    <h3><i class="fa-solid fa-plus" style="color:var(--gold)"></i> 发布物品</h3>
+    <form id="itemForm" style="margin-top:20px">
       <div class="field-group two">
         <div class="field">
           <label>物品名称 <span class="req">*</span></label>
@@ -57,16 +71,12 @@
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
         <span id="itemHint" style="font-size:13px;color:var(--muted);margin-right:auto;align-self:center"></span>
-        <button class="btn btn-gold" type="submit" id="itemSubmit"><i class="fa-solid fa-plus"></i> 发布</button>
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('publishModal').classList.remove('open')">取消</button>
+        <button class="btn btn-gold" type="submit" id="itemSubmit"><i class="fa-solid fa-check"></i> 确认发布</button>
       </div>
     </form>
-  </section>
-
-  <div id="marketList">
-    <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
   </div>
-
-</main>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
@@ -85,6 +95,10 @@
     });
   });
 
+  I.$('#openPublishBtn').addEventListener('click', function(){
+    I.$('#publishModal').classList.add('open');
+  });
+
   function loadMarket() {
     I.client.from('market_items')
       .select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url, role)')
@@ -94,34 +108,29 @@
         var wrap = I.$('#marketList');
         var list = res.data || [];
         if (!list.length) {
-          wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-store"></i><p>交易行暂无物品</p><small>发布第一件物品吧</small></div>';
+          wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-store"></i><p>交易行暂无物品</p></div>';
           return;
         }
         var html = '<div class="market-grid">';
         list.forEach(function (m) {
           var seller = m.seller || {};
-          var isMine = m.seller_id === profile.id;
           var isAdmin = m.is_admin_post || seller.role === 'admin';
-          var tag = isAdmin
-            ? '<span class="market-tag admin"><i class="fa-solid fa-crown"></i> 官方</span>'
-            : (isMine ? '<span class="market-tag"><i class="fa-solid fa-user"></i> 我的</span>' : '');
+          var tag = isAdmin ? '<span class="market-tag admin"><i class="fa-solid fa-crown"></i> 官方</span>' : '';
 
           html +=
-            '<article class="market-card glass">' +
+            '<article class="market-card glass" onclick="location.href=\'market-detail.html?id=' + m.id + '\'">' +
               '<div class="market-img">' +
-                (m.image_url
-                  ? '<img src="' + I.escapeHtml(m.image_url) + '" alt="">'
-                  : '<i class="fa-solid fa-box-open"></i>') +
+                (m.image_url ? '<img src="' + I.escapeHtml(m.image_url) + '" alt="">' : '<i class="fa-solid fa-box-open"></i>') +
               '</div>' +
               '<div class="market-body">' +
                 tag +
                 '<h4>' + I.escapeHtml(m.title) + '</h4>' +
                 '<p>' + I.escapeHtml(m.description || '（暂无描述）') + '</p>' +
                 '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽</span></div>' +
-                (isMine
-                  ? '<button class="btn btn-ghost btn-sm" onclick="removeItem(\'' + m.id + '\')"><i class="fa-solid fa-trash"></i> 下架</button>'
-                  : '<button class="btn btn-gold btn-sm" onclick="buyItem(\'' + m.id + '\',' + m.price + ',\'' + m.seller_id + '\')"><i class="fa-solid fa-cart-shopping"></i> 购买</button>'
-                ) +
+                '<div style="font-size:12px; color:var(--muted); margin-top:8px; display:flex; align-items:center; gap:6px;">' +
+                  '<img src="' + I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username)) + '" style="width:16px;height:12px;border-radius:2px;"> ' +
+                  I.escapeHtml(seller.username || '未知') +
+                '</div>' +
               '</div>' +
             '</article>';
         });
@@ -130,7 +139,6 @@
       });
   }
 
-  /* 发布 */
   I.$('#itemForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var btn = I.$('#itemSubmit');
@@ -148,18 +156,14 @@
 
     function insert(imgUrl) {
       return I.client.from('market_items').insert({
-        seller_id: profile.id,
-        title: title,
-        price: price,
-        description: desc || null,
-        image_url: imgUrl || null,
-        is_admin_post: profile.role === 'admin'
+        seller_id: profile.id, title: title, price: price, description: desc || null,
+        image_url: imgUrl || null, is_admin_post: profile.role === 'admin'
       }).then(function (r) {
         btn.disabled = false;
         if (r.error) { hint.textContent = r.error.message; return; }
         I.toast('发布成功', 'success');
         I.$('#itemForm').reset();
-        hint.textContent = '';
+        I.$('#publishModal').classList.remove('open');
         loadMarket();
       });
     }
@@ -176,46 +180,7 @@
       insert(null);
     }
   });
-
-  /* 购买 */
-  window.buyItem = function (itemId, price, sellerId) {
-    if (!confirm('确认花费 ' + I.fmtNumber(price) + ' ₽ 购买该物品吗？')) return;
-    if (profile.balance < price) { I.toast('国库余额不足', 'error'); return; }
-
-    /* 1. 扣款买方 */
-    I.client.from('profiles').update({ balance: profile.balance - price }).eq('id', profile.id).then(function (r1) {
-      if (r1.error) { I.toast(r1.error.message, 'error'); return; }
-
-      /* 2. 加款卖方 */
-      I.client.rpc('add_balance', { uid: sellerId, amount: price }).then(function () {
-        /* 无 rpc 也能工作，这里用两步 update 兜底 */
-      });
-
-      /* 3. 更新物品状态 */
-      I.client.from('market_items').update({
-        status: 'sold', buyer_id: profile.id, sold_at: new Date().toISOString()
-      }).eq('id', itemId).then(function () {
-        /* 4. 记录交易 */
-        I.client.from('transactions').insert({
-          buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: price
-        }).then(function () {
-          I.toast('购买成功', 'success');
-          setTimeout(function () { location.reload(); }, 600);
-        });
-      });
-    });
-  };
-
-  /* 下架 */
-  window.removeItem = function (itemId) {
-    if (!confirm('确认下架该物品吗？')) return;
-    I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
-      I.toast('已下架', 'success');
-      setTimeout(function () { location.reload(); }, 500);
-    });
-  };
 })();
 </script>
-
 </body>
 </html>

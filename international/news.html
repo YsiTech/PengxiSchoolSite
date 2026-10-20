@@ -6,6 +6,9 @@
 <title>新闻发布 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .news-card { cursor: pointer; }
+</style>
 </head>
 <body>
 
@@ -25,17 +28,27 @@
     <div class="iecp-breadcrumb">
       <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>新闻发布</span>
     </div>
-    <h1><i class="fa-solid fa-newspaper"></i> 新闻发布</h1>
-    <p>发布你的国家动态、外交声明与重大事件</p>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px">
+      <div>
+        <h1><i class="fa-solid fa-newspaper"></i> 新闻发布</h1>
+        <p>发布你的国家动态、外交声明与重大事件</p>
+      </div>
+      <button class="btn btn-gold" id="openPublishBtn"><i class="fa-solid fa-pen-nib"></i> 发布新闻</button>
+    </div>
   </div>
 </section>
 
 <main class="iecp-main">
+  <div id="newsList">
+    <div class="loading-state"><div class="spinner"></div><span>正在加载新闻…</span></div>
+  </div>
+</main>
 
-  <!-- 发布表单 -->
-  <section class="glass" style="padding:28px;margin-bottom:32px">
-    <h3 style="margin:0 0 20px;letter-spacing:1px;font-size:16px"><i class="fa-solid fa-pen-nib" style="color:var(--gold)"></i> 发布新闻</h3>
-    <form id="newsForm">
+<!-- 新闻发布弹窗 -->
+<div class="iecp-modal" id="publishModal">
+  <div class="iecp-modal-box glass-2" style="max-width:650px">
+    <h3><i class="fa-solid fa-pen-nib" style="color:var(--gold)"></i> 发布新闻</h3>
+    <form id="newsForm" style="margin-top:20px">
       <div class="field-group">
         <div class="field">
           <label>标题 <span class="req">*</span></label>
@@ -43,7 +56,7 @@
         </div>
         <div class="field">
           <label>正文 <span class="req">*</span></label>
-          <textarea id="nContent" placeholder="新闻正文内容……" style="min-height:130px"></textarea>
+          <textarea id="nContent" placeholder="新闻正文内容……" style="min-height:150px"></textarea>
         </div>
         <div class="field-group two">
           <div class="field">
@@ -63,17 +76,12 @@
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
         <span id="newsHint" style="font-size:13px;color:var(--muted);margin-right:auto;align-self:center"></span>
-        <button class="btn btn-gold" type="submit" id="newsSubmit"><i class="fa-solid fa-paper-plane"></i> 发布</button>
+        <button type="button" class="btn btn-ghost" onclick="document.getElementById('publishModal').classList.remove('open')">取消</button>
+        <button class="btn btn-gold" type="submit" id="newsSubmit"><i class="fa-solid fa-paper-plane"></i> 确认发布</button>
       </div>
     </form>
-  </section>
-
-  <!-- 新闻列表 -->
-  <div id="newsList">
-    <div class="loading-state"><div class="spinner"></div><span>正在加载新闻…</span></div>
   </div>
-
-</main>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
@@ -92,12 +100,16 @@
     });
   });
 
+  I.$('#openPublishBtn').addEventListener('click', function(){
+    I.$('#publishModal').classList.add('open');
+  });
+
   function loadNews() {
     I.client.from('news').select('*, profiles(id, username, flag_url)').order('created_at', { ascending: false }).limit(60).then(function (res) {
       var wrap = I.$('#newsList');
       var list = res.data || [];
       if (!list.length) {
-        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-newspaper"></i><p>还没有新闻</p><small>成为第一个发布新闻的国家</small></div>';
+        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-newspaper"></i><p>还没有新闻</p></div>';
         return;
       }
       var html = '<div class="news-grid">';
@@ -106,7 +118,7 @@
         if (n.media_url && n.media_type === 'image') {
           media = '<div class="news-media"><img src="' + I.escapeHtml(n.media_url) + '" alt=""><div class="media-badge"><i class="fa-solid fa-image"></i> 图片</div></div>';
         } else if (n.media_url && n.media_type === 'video') {
-          media = '<div class="news-media"><video src="' + I.escapeHtml(n.media_url) + '" controls></video><div class="media-badge"><i class="fa-solid fa-video"></i> 视频</div></div>';
+          media = '<div class="news-media"><video src="' + I.escapeHtml(n.media_url) + '"></video><div class="media-badge"><i class="fa-solid fa-video"></i> 视频</div></div>';
         } else if (n.media_url && n.media_type === 'audio') {
           media = '<div class="news-media"><audio src="' + I.escapeHtml(n.media_url) + '" controls></audio><div class="media-badge"><i class="fa-solid fa-headphones"></i> 音频</div></div>';
         }
@@ -115,7 +127,7 @@
         var avatar = author.flag_url || I.avatarFallback(author.username || '?');
 
         html +=
-          '<article class="news-card glass">' +
+          '<article class="news-card glass" onclick="location.href=\'news-detail.html?id=' + n.id + '\'">' +
             media +
             '<div class="news-body">' +
               '<h3>' + I.escapeHtml(n.title) + '</h3>' +
@@ -123,9 +135,7 @@
               '<div class="news-foot">' +
                 '<div class="news-author">' +
                   '<img src="' + I.escapeHtml(avatar) + '" alt="">' +
-                  '<a href="country.html?id=' + I.escapeHtml(author.id || '') + '" style="color:var(--ink-2)">' +
-                    I.escapeHtml(author.username || '未知') +
-                  '</a>' +
+                  '<span style="color:var(--ink-2)">' + I.escapeHtml(author.username || '未知') + '</span>' +
                 '</div>' +
                 '<span>' + I.relativeTime(n.created_at) + '</span>' +
               '</div>' +
@@ -155,17 +165,14 @@
 
     function doInsert(mediaUrl) {
       return I.client.from('news').insert({
-        author_id: profile.id,
-        title: title,
-        content: content,
-        media_url: mediaUrl || null,
-        media_type: mtype || null
+        author_id: profile.id, title: title, content: content,
+        media_url: mediaUrl || null, media_type: mtype || null
       }).then(function (r) {
         btn.disabled = false;
         if (r.error) { hint.textContent = r.error.message; return; }
         I.toast('新闻已发布', 'success');
         I.$('#newsForm').reset();
-        hint.textContent = '';
+        I.$('#publishModal').classList.remove('open');
         loadNews();
       });
     }
@@ -184,6 +191,5 @@
   });
 })();
 </script>
-
 </body>
 </html>

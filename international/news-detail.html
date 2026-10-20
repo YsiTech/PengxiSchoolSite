@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>新闻详情 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<main class="iecp-main" id="detailWrap" style="max-width:900px; margin:40px auto;">
+  <div class="loading-state"><div class="spinner"></div><span>正在加载新闻…</span></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var newsId = new URLSearchParams(location.search).get('id');
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('news');
+    if (!newsId) { location.replace('news.html'); return; }
+
+    I.client.from('news').select('*, profiles(id, username, flag_url, social_system)').eq('id', newsId).maybeSingle().then(function(res){
+      if (res.error || !res.data) {
+        I.$('#detailWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>新闻不存在或已被删除</p><a href="news.html" class="btn btn-ghost" style="margin-top:20px">返回新闻中心</a></div>`;
+        return;
+      }
+      renderNews(res.data);
+    });
+  });
+
+  function renderNews(n) {
+    var author = n.profiles || {};
+    var avatar = author.flag_url || I.avatarFallback(author.username || '?');
+    
+    var mediaHtml = '';
+    if (n.media_url) {
+      if (n.media_type === 'image') {
+        mediaHtml = `<div style="margin-bottom:24px; border-radius:12px; overflow:hidden;"><img src="${n.media_url}" style="width:100%; display:block;"></div>`;
+      } else if (n.media_type === 'video') {
+        mediaHtml = `<div style="margin-bottom:24px; border-radius:12px; overflow:hidden; background:#000;"><video src="${n.media_url}" controls style="width:100%; display:block;"></video></div>`;
+      } else if (n.media_type === 'audio') {
+        mediaHtml = `<div style="margin-bottom:24px; padding:20px; background:var(--glass); border-radius:12px;"><audio src="${n.media_url}" controls style="width:100%;"></audio></div>`;
+      }
+    }
+
+    I.$('#detailWrap').innerHTML = `
+      <div style="margin-bottom:20px;">
+        <a href="news.html" style="color:var(--muted); font-size:14px;"><i class="fa-solid fa-arrow-left"></i> 返回新闻列表</a>
+      </div>
+      
+      <div class="glass" style="padding:40px;">
+        <h1 style="font-size:28px; line-height:1.4; margin-bottom:20px; color:var(--ink);">${I.escapeHtml(n.title)}</h1>
+        
+        <div style="display:flex; align-items:center; gap:16px; padding-bottom:24px; border-bottom:1px solid var(--border); margin-bottom:30px;">
+          <img src="${I.escapeHtml(avatar)}" style="width:48px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--border-2);">
+          <div>
+            <div style="font-size:15px; font-weight:600;"><a href="country.html?id=${author.id}" style="color:var(--gold-2);">${I.escapeHtml(author.username || '未知')}</a></div>
+            <div style="font-size:12px; color:var(--muted); margin-top:2px;">${I.fmtDate(n.created_at)}</div>
+          </div>
+        </div>
+
+        ${mediaHtml}
+
+        <div style="font-size:16px; line-height:1.9; color:var(--ink-2); white-space:pre-wrap;">${I.escapeHtml(n.content)}</div>
+      </div>
+    `;
+  }
+})();
+</script>
+</body>
+</html>

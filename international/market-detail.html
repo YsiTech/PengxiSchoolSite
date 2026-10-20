@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>物品详情 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<main class="iecp-main" id="detailWrap" style="max-width:900px; margin:40px auto;">
+  <div class="loading-state"><div class="spinner"></div><span>正在加载物品信息…</span></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var itemId = new URLSearchParams(location.search).get('id');
+  var profile = null;
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('market');
+    if (!itemId) { location.replace('market.html'); return; }
+
+    I.getProfile(true).then(function(p) {
+      profile = p;
+      return I.client.from('market_items').select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url)').eq('id', itemId).maybeSingle();
+    }).then(function(res){
+      if (!res || res.error || !res.data) {
+        I.$('#detailWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>物品不存在或已下架</p><a href="market.html" class="btn btn-ghost" style="margin-top:20px">返回交易行</a></div>`;
+        return;
+      }
+      renderItem(res.data);
+    });
+  });
+
+  function renderItem(m) {
+    var seller = m.seller || {};
+    var isMine = m.seller_id === profile.id;
+    var isSold = m.status === 'sold';
+
+    var actionBtn = '';
+    if (isSold) {
+      actionBtn = `<button class="btn btn-ghost" disabled><i class="fa-solid fa-ban"></i> 已售出</button>`;
+    } else if (isMine) {
+      actionBtn = `<button class="btn btn-red" onclick="removeItem('${m.id}')"><i class="fa-solid fa-trash"></i> 下架物品</button>`;
+    } else {
+      actionBtn = `<button class="btn btn-gold" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}')"><i class="fa-solid fa-cart-shopping"></i> 花费 ${I.fmtNumber(m.price)} ₽ 购买</button>`;
+    }
+
+    var imgHtml = m.image_url 
+      ? `<img src="${m.image_url}" style="width:100%; border-radius:12px; margin-bottom:24px; border:1px solid var(--border-2);">` 
+      : `<div style="width:100%; aspect-ratio:16/9; background:var(--glass-2); border-radius:12px; margin-bottom:24px; display:grid; place-items:center; font-size:60px; color:var(--muted-2);"><i class="fa-solid fa-box-open"></i></div>`;
+
+    I.$('#detailWrap').innerHTML = `
+      <div style="margin-bottom:20px;">
+        <a href="market.html" style="color:var(--muted); font-size:14px;"><i class="fa-solid fa-arrow-left"></i> 返回交易行</a>
+      </div>
+      
+      <div class="glass" style="padding:40px; display:flex; gap:40px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:300px;">
+          ${imgHtml}
+        </div>
+        
+        <div style="flex:1; min-width:300px; display:flex; flex-direction:column;">
+          <h1 style="font-size:26px; margin-bottom:10px; color:var(--ink);">${I.escapeHtml(m.title)}</h1>
+          <div style="font-size:32px; font-family:var(--mono); color:var(--gold-2); font-weight:700; margin-bottom:20px;">
+            ${I.fmtNumber(m.price)} <span style="font-size:16px; color:var(--muted); font-weight:400;">₽</span>
+          </div>
+          
+          <div style="padding:16px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:24px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <img src="${I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username))}" style="width:36px; height:24px; border-radius:4px; object-fit:cover;">
+              <div>
+                <div style="font-size:12px; color:var(--muted);">卖家</div>
+                <a href="country.html?id=${seller.id}" style="font-size:14px; font-weight:600; color:var(--cyan);">${I.escapeHtml(seller.username || '未知')}</a>
+              </div>
+            </div>
+          </div>
+
+          <div style="font-size:14.5px; line-height:1.8; color:var(--ink-2); margin-bottom:30px; white-space:pre-wrap; flex:1;">
+            ${I.escapeHtml(m.description || '卖家很懒，没有留下描述。')}
+          </div>
+
+          <div>${actionBtn}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  window.buyItem = function (itemId, price, sellerId) {
+    if (!confirm('确认花费 ' + I.fmtNumber(price) + ' ₽ 购买该物品吗？')) return;
+    if (profile.balance < price) { I.toast('国库余额不足', 'error'); return; }
+
+    I.toast('正在处理交易...', 'success', 1000);
+
+    // 1. 扣款买方
+    I.client.from('profiles').update({ balance: profile.balance - price }).eq('id', profile.id).then(function (r1) {
+      if (r1.error) { I.toast(r1.error.message, 'error'); return; }
+
+      // 2. 加款卖方（如果有 RPC 函数最好，这里用直接 update 兜底）
+      I.client.rpc('add_balance', { uid: sellerId, amount: price }).then(function(){});
+
+      // 3. 更新物品状态
+      I.client.from('market_items').update({
+        status: 'sold', buyer_id: profile.id, sold_at: new Date().toISOString()
+      }).eq('id', itemId).then(function () {
+        // 4. 记录交易
+        I.client.from('transactions').insert({
+          buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: price
+        }).then(function () {
+          I.toast('购买成功！', 'success');
+          setTimeout(function () { location.reload(); }, 800);
+        });
+      });
+    });
+  };
+
+  window.removeItem = function (itemId) {
+    if (!confirm('确认下架该物品吗？')) return;
+    I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
+      I.toast('已下架', 'success');
+      setTimeout(function () { location.href = 'market.html'; }, 800);
+    });
+  };
+})();
+</script>
+</body>
+</html>

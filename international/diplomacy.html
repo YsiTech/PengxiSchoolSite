@@ -33,7 +33,6 @@
 <main class="iecp-main">
   <div class="comm-feed" id="feed">
 
-    <!-- 待处理外交请求 -->
     <section class="glass" style="padding:20px 22px;margin-bottom:8px">
       <h3 style="margin:0 0 16px;font-size:15px;letter-spacing:1px"><i class="fa-solid fa-inbox" style="color:var(--gold)"></i> 收到的新申请</h3>
       <div id="requestsWrap">
@@ -41,14 +40,12 @@
       </div>
     </section>
 
-    <!-- 发帖 -->
     <div class="comm-compose glass">
       <img class="comm-avatar" id="composeAvatar" src="" alt="">
       <textarea id="postContent" placeholder="向国际社会发表声明或问候……" maxlength="500"></textarea>
       <button class="btn btn-gold btn-sm" id="postBtn" style="align-self:flex-end"><i class="fa-solid fa-paper-plane"></i> 发表</button>
     </div>
 
-    <!-- 动态流 -->
     <div id="postsWrap">
       <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
     </div>
@@ -66,15 +63,19 @@
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('diplomacy');
+    
     I.getProfile(true).then(function (p) {
       profile = p;
+      if (!profile) {
+        I.$('#feed').innerHTML = `<div class="empty-state glass"><p style="color:var(--red)">无法获取你的国家档案，请重新登录</p></div>`;
+        return;
+      }
       I.$('#composeAvatar').src = p.flag_url || I.avatarFallback(p.username);
       loadRequests();
       loadPosts();
     });
   });
 
-  /* 处理收到的外交请求 */
   function loadRequests() {
     I.client.from('diplomacy_requests')
       .select('*, from:profiles!diplomacy_requests_from_country_fkey(id, username, flag_url)')
@@ -88,12 +89,14 @@
           wrap.innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0"><i class="fa-solid fa-check"></i> 暂无待处理申请</p>';
           return;
         }
+        
         var html = '';
         list.forEach(function (r) {
           var from = r.from || {};
           var typeLabel = r.request_type === 'ally' ? '建交' : '宣战';
           var typeIcon = r.request_type === 'ally' ? 'fa-handshake' : 'fa-shield-halved';
           var color = r.request_type === 'ally' ? 'var(--green)' : 'var(--red)';
+          
           html +=
             '<div style="display:flex;gap:14px;align-items:center;padding:12px 14px;background:var(--glass);border-radius:10px;border:1px solid var(--border);margin-bottom:10px;flex-wrap:wrap">' +
               '<img src="' + I.escapeHtml(from.flag_url || I.avatarFallback(from.username)) + '" style="width:40px;height:26px;object-fit:cover;border-radius:4px">' +
@@ -104,7 +107,7 @@
               '</div>' +
               '<div style="display:flex;gap:8px">' +
                 '<button class="btn btn-ghost btn-sm" onclick="respondRequest(\'' + r.id + '\',\'rejected\',\'' + r.request_type + '\')">拒绝</button>' +
-                '<button class="btn btn-gold btn-sm" onclick="respondRequest(\'' + r.id + '\',\'accepted\',\'' + r.request_type + '\')">接受</button>' +
+                '<button class="btn btn-gold btn-sm" onclick="respondRequest(\'' + r.id + '\',\'accepted\',\'' + r.request_type + '\', \'' + r.from_country + '\')">接受</button>' +
               '</div>' +
             '</div>';
         });
@@ -112,23 +115,34 @@
       });
   }
 
-  window.respondRequest = function (reqId, status, type) {
+  window.respondRequest = function (reqId, status, type, fromId) {
     I.client.from('diplomacy_requests').update({ status: status }).eq('id', reqId).then(function (r) {
       if (r.error) { I.toast(r.error.message, 'error'); return; }
 
       if (status === 'accepted') {
-        /* 建立关系 */
-        I.client.from('diplomacy_requests').select('*').eq('id', reqId).maybeSingle().then(function (req) {
-          if (!req.data) return;
-          var a = req.data.from_country < profile.id ? req.data.from_country : profile.id;
-          var b = req.data.from_country < profile.id ? profile.id : req.data.from_country;
-          I.client.from('relations').upsert({
-            country_a: a, country_b: b,
-            relation_type: type === 'ally' ? 'ally' : 'war'
-          }).then(function () {
-            I.toast(type === 'ally' ? '已建立友好关系' : '战争已开始', 'success');
+        var a = fromId < profile.id ? fromId : profile.id;
+        var b = fromId < profile.id ? profile.id : fromId;
+        
+        // 1. 更新 relations
+        I.client.from('relations').upsert({
+          country_a: a, country_b: b,
+          relation_type: type === 'ally' ? 'ally' : 'war'
+        }).then(function () {
+          
+          // 2. 如果是接受宣战，必须同步开启战争记录
+          if (type === 'war') {
+            I.client.from('wars').insert({
+              attacker_id: fromId,
+              defender_id: profile.id,
+              status: 'ongoing'
+            }).then(function () {
+              I.toast('已接受宣战，战争系统已启动！', 'success');
+              loadRequests();
+            });
+          } else {
+            I.toast('已建立友好关系', 'success');
             loadRequests();
-          });
+          }
         });
       } else {
         I.toast('已拒绝', 'success');
@@ -137,7 +151,6 @@
     });
   };
 
-  /* 发帖 */
   I.$('#postBtn').addEventListener('click', function () {
     var content = I.$('#postContent').value.trim();
     if (!content) { I.toast('请输入内容', 'error'); return; }

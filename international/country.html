@@ -57,12 +57,8 @@
     if (!ok) return;
     I.initTopbar('countries');
     
-    if (!targetId) { 
-      location.replace('countries.html'); 
-      return; 
-    }
+    if (!targetId) { location.replace('countries.html'); return; }
 
-    // 1. 先获取当前登录用户的档案
     I.getProfile(true).then(function (myProfile) {
       currentProfile = myProfile;
       
@@ -71,17 +67,13 @@
           <div class="empty-state glass" style="margin:40px auto;max-width:600px">
             <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i>
             <p style="font-size:18px;font-weight:bold;color:var(--ink)">无法获取你的国家档案</p>
-            <p style="color:var(--muted);margin:10px 0">你的账号可能未完成注册流程，或者数据库中没有你的信息。</p>
-            <div style="margin-top:20px">
-              <a href="register.html" class="btn btn-gold">重新建立国家</a>
-              <button class="btn btn-ghost" onclick="IECP.logout()">退出登录</button>
-            </div>
+            <p style="color:var(--muted);margin:10px 0">你的账号可能未完成注册流程。</p>
+            <a href="register.html" class="btn btn-gold">重新建立国家</a>
           </div>
         `;
         return;
       }
 
-      // 2. 获取目标国家档案
       return I.client.from('profiles').select('*').eq('id', targetId).maybeSingle().then(function (r) {
         if (r.error || !r.data) throw new Error('该国家不存在或已注销。');
         targetProfile = r.data;
@@ -92,9 +84,8 @@
       I.$('#countryWrap').innerHTML = `
         <div class="empty-state glass" style="margin:40px auto;max-width:600px">
           <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i>
-          <p style="font-size:18px;color:var(--ink)">读取失败</p>
           <p style="color:var(--red);margin:10px 0">${err.message || '网络异常'}</p>
-          <a href="countries.html" class="btn btn-ghost" style="margin-top:20px">返回国家列表</a>
+          <a href="countries.html" class="btn btn-ghost">返回国家列表</a>
         </div>
       `;
     });
@@ -105,6 +96,7 @@
     var c = targetProfile;
     var isSelf = currentProfile.id === c.id;
 
+    // 核心修复：只有不是自己时才显示外交行动
     wrap.innerHTML =
       '<section class="glass" style="padding:32px;margin-bottom:24px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">' +
         '<img src="' + I.escapeHtml(c.flag_url || I.avatarFallback(c.username)) + '" style="width:120px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-2)">' +
@@ -122,7 +114,6 @@
           '<div class="country-meta-row"><span>首都</span><b>' + I.escapeHtml(c.capital) + '</b></div>' +
           '<div class="country-meta-row"><span>官方语言</span><b>' + I.escapeHtml(c.official_language) + '</b></div>' +
           '<div class="country-meta-row"><span>国库余额</span><b style="color:var(--gold-2);font-family:var(--mono)">' + I.fmtNumber(c.balance) + ' ₽</b></div>' +
-          '<div class="country-meta-row"><span>加入时间</span><b>' + I.fmtDate(c.created_at) + '</b></div>' +
         '</div>' +
       '</section>' +
 
@@ -186,9 +177,11 @@
   }
 
   window.openAction = function (type) {
-    // 🚨 核心防御：如果当前用户没有登录或没有档案，直接拦截
-    if (!currentProfile) {
-      I.toast('请先登录并创建国家档案', 'error');
+    if (!currentProfile) { I.toast('请先登录', 'error'); return; }
+    
+    // 🚨 绝对防御：即使修改了 URL，也绝不能对自己发起行动
+    if (targetId === currentProfile.id) {
+      I.toast('不能对自己发起外交行动', 'error');
       return;
     }
     
@@ -208,7 +201,7 @@
   };
 
   I.$('#modalConfirm').addEventListener('click', function () {
-    if (!currentProfile) return; // 再次防御
+    if (!currentProfile || targetId === currentProfile.id) return;
     
     var btn = this;
     var msg = I.$('#modalMessage').value.trim();
@@ -223,10 +216,8 @@
     }).then(function (r) {
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
-      
       if (r.error) { I.toast(r.error.message, 'error'); return; }
 
-      // 如果是宣战，立即建立关系
       if (actionType === 'war') {
         var a = currentProfile.id < targetId ? currentProfile.id : targetId;
         var b = currentProfile.id < targetId ? targetId : currentProfile.id;
@@ -234,9 +225,28 @@
         I.client.from('relations').upsert({
           country_a: a, country_b: b, relation_type: 'war'
         }).then(function () {
-          I.toast('已宣战', 'success');
-          I.$('#actionModal').classList.remove('open');
-          loadRelations();
+          // 检查是否已经存在未结束的战争，防止重复创建
+          I.client.from('wars')
+            .select('id')
+            .eq('status', 'ongoing')
+            .or(`and(attacker_id.eq.${currentProfile.id},defender_id.eq.${targetId}),and(attacker_id.eq.${targetId},defender_id.eq.${currentProfile.id})`)
+            .then(function (wRes) {
+              if (wRes.data && wRes.data.length > 0) {
+                I.toast('战争已在进行中', 'success');
+                I.$('#actionModal').classList.remove('open');
+                return;
+              }
+              // 创建新的战争记录
+              I.client.from('wars').insert({
+                attacker_id: currentProfile.id,
+                defender_id: targetId,
+                status: 'ongoing'
+              }).then(function () {
+                I.toast('宣战成功，战役已开启', 'success');
+                I.$('#actionModal').classList.remove('open');
+                loadRelations();
+              });
+            });
         });
         return;
       }

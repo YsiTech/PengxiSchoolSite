@@ -1,6 +1,48 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
+  <style>
+  /* 强制覆盖国家名显示规则 */
+  .country-card-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 16px;
+    width: 100%;
+    min-width: 0; /* 允许子元素收缩 */
+  }
+  
+  .country-name {
+    flex: 1 1 0%;
+    min-width: 0; /* 必须要有，防止内容撑破卡片 */
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .country-name b {
+    display: inline-block; /* 只有 inline-block 才能应用 transform */
+    white-space: nowrap;
+    font-size: 16px;
+    color: var(--ink);
+    letter-spacing: .4px;
+    /* 默认单行省略号 */
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
+
+  /* hover 时取消省略号，启动跑马灯 */
+  .country-name:hover b {
+    text-overflow: clip;
+    animation: marquee-scroll 4s linear infinite alternate;
+  }
+
+  @keyframes marquee-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(calc(-100% + 140px)); } /* 140px 是大致的可视宽度，超出部分向左滑动 */
+  }
+</style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>国家列表 · IECP</title>
