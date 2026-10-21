@@ -1138,3 +1138,194 @@ button,input,select,textarea{font:inherit;color:inherit}
 .iecp-user {
   flex-shrink: 0 !important; 
 }
+/* ===================================================================
+   🚨 终极移动端适配 (Mobile Optimizations)
+   针对手机屏幕宽度 < 768px 的强制修复
+   =================================================================== */
+
+@media (max-width: 768px) {
+  /* 1. 彻底锁死横向溢出 */
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+  }
+  
+  /* 2. 容器内边距收窄，防撑破 */
+  .iecp-main, 
+  .iecp-hero-inner, 
+  .iecp-topbar-inner, 
+  .admin-container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 3. 顶栏重构：第一行 Logo + 用户，第二行 导航横滑 */
+  .iecp-topbar-inner {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+  .iecp-logo {
+    flex: 1 !important;
+  }
+  .iecp-logo img {
+    height: 32px !important;
+  }
+  .iecp-logo-text b {
+    font-size: 15px !important;
+  }
+  .iecp-logo-text span {
+    font-size: 9px !important;
+  }
+  
+  .iecp-user {
+    order: 2 !important;
+    margin-left: auto !important;
+  }
+  .iecp-user a[href="profile.html"] {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+
+  /* 导航栏单独占据一行，允许滑动 */
+  .iecp-nav {
+    order: 3 !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    justify-content: flex-start !important;
+    padding-bottom: 4px !important;
+    border-top: 1px solid rgba(255,255,255,0.05) !important;
+    padding-top: 8px !important;
+  }
+  .iecp-nav::-webkit-scrollbar {
+    display: none !important;
+  }
+  .iecp-nav a {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* 4. 首页 Hero 区缩小间距 */
+  .iecp-hero {
+    padding: 30px 0 20px !important;
+  }
+  .iecp-hero-tag {
+    font-size: 9.5px !important;
+    letter-spacing: 1px !important;
+    padding: 6px 12px !important;
+    margin-bottom: 16px !important;
+  }
+  .iecp-hero h1 {
+    font-size: 26px !important;
+    margin-bottom: 12px !important;
+  }
+  .iecp-hero-sub {
+    font-size: 13px !important;
+    line-height: 1.7 !important;
+    margin-bottom: 24px !important;
+  }
+  .iecp-hero-actions {
+    gap: 10px !important;
+    margin-bottom: 30px !important;
+  }
+  .iecp-hero-actions .btn {
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+  }
+
+  /* 5. 全局卡片防溢出截断 */
+  .iecp-feature,
+  .glass,
+  .glass-2,
+  .card,
+  .country-card,
+  .news-card,
+  .market-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* 6. 个人中心专用的移动端覆盖 (解决之前截图里的问题) */
+  .profile-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  .profile-side {
+    max-height: none !important;
+    overflow-y: visible !important;
+    padding-right: 0 !important;
+  }
+  .profile-card,
+  .balance-card,
+  .resource-card,
+  .inventory-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .profile-avatar-wrap,
+  .profile-avatar {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  .bc-amount {
+    font-size: 32px !important;
+  }
+
+  /* 7. 表格防撑破 */
+  .admin-table, 
+  .table-wrap table {
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+  }
+}
+/* ===================================================================
+   🚨 终极移动端单列布局补丁
+   =================================================================== */
+@media (max-width: 768px) {
+  /* 1. 彻底废除 Grid 布局，改为 100% 宽度的垂直 Block/Flex */
+  .iecp-main .profile-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 16px !important;
+  }
+
+  /* 2. 强制左右两列都占满屏幕宽度 */
+  .iecp-main .profile-side,
+  .iecp-main .profile-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important; /* 去除粘性定位 */
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* 3. 强制内部所有卡片撑满 */
+  .iecp-main .profile-card,
+  .iecp-main .balance-card,
+  .iecp-main .resource-card,
+  .iecp-main .inventory-card,
+  .iecp-main .profile-content .card {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 4. 修复个人信息卡片内部的溢出问题 */
+  .profile-side {
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+}
