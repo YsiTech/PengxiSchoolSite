@@ -3,17 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IECP · 最高控制台</title>
+<title>IECP · 最高系统控制台</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  /* 粒子背景 */
   #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #05070a; }
   
+  #lockScreen {
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(5,7,10,0.95); backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .lock-box {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+    padding: 40px; border-radius: 20px; text-align: center; width: 100%; max-width: 400px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .lock-box i { font-size: 50px; color: var(--red); margin-bottom: 20px; text-shadow: 0 0 20px rgba(239,68,68,0.5); }
+  .lock-box h2 { color: #fff; margin-bottom: 10px; letter-spacing: 2px; }
+  .lock-box p { color: var(--muted); font-size: 13px; margin-bottom: 30px; }
+  .lock-input {
+    width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
+    padding: 15px; border-radius: 10px; color: #fff; font-size: 18px; text-align: center;
+    letter-spacing: 5px; outline: none; margin-bottom: 20px; font-family: var(--mono); box-sizing: border-box;
+  }
+  .lock-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
+
   .admin-container { max-width: 1200px; margin: 40px auto; position: relative; z-index: 10; padding: 0 20px; }
-  
-  .admin-tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; }
-  .admin-tab { background: transparent; border: none; color: var(--muted); font-size: 16px; padding: 10px 20px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: bold; }
+  .admin-tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; overflow-x: auto; }
+  .admin-tab { background: transparent; border: none; color: var(--muted); font-size: 15px; padding: 10px 20px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: bold; white-space: nowrap; }
   .admin-tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
   .admin-tab.active { color: var(--gold); background: rgba(212,175,55,0.1); box-shadow: inset 0 0 0 1px rgba(212,175,55,0.3); }
 
@@ -22,99 +40,121 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
   .panel-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 30px; margin-bottom: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
-  .panel-card h3 { margin: 0 0 20px; font-size: 18px; color: #fff; border-left: 4px solid var(--gold); padding-left: 12px; }
+  .panel-card h3 { margin: 0 0 20px; font-size: 18px; color: #fff; border-left: 4px solid var(--gold); padding-left: 12px; display: flex; justify-content: space-between; align-items: center;}
+
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .stat-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; text-align: center; }
+  .stat-box b { display: block; font-size: 28px; color: var(--gold-2); font-family: var(--mono); margin-bottom: 6px; }
+  .stat-box span { font-size: 12.5px; color: var(--muted); letter-spacing: 1px; }
 
   .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
   .form-row > * { flex: 1; }
-  .input-control { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 12px 16px; color: #fff; outline: none; font-family: inherit; transition: 0.2s; }
+  .input-control { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 12px 16px; color: #fff; outline: none; font-family: inherit; transition: 0.2s; box-sizing: border-box; }
   .input-control:focus { border-color: var(--gold); }
   .input-control option { background: #111827; color: #fff; }
+
+  .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
+  .admin-table th { padding: 12px; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: normal; }
+  .admin-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+  .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+
+  /* 资产透视模态框 */
+  .asset-modal {
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .asset-modal.show { display: flex; }
+  .asset-box {
+    width: 100%; max-width: 600px; background: #0f172a; border: 1px solid var(--gold);
+    border-radius: 16px; overflow: hidden; box-shadow: 0 0 50px rgba(212,175,55,0.2);
+    display: flex; flex-direction: column; max-height: 85vh;
+  }
+  .asset-header { padding: 20px; background: rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .asset-header h3 { margin: 0; color: #fff; font-size: 18px; }
+  .asset-header button { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+  .asset-body { padding: 20px; overflow-y: auto; flex: 1; }
+  
+  .asset-section-title { font-size: 14px; color: var(--gold); margin-bottom: 12px; border-bottom: 1px dashed rgba(212,175,55,0.3); padding-bottom: 6px; }
+  .asset-res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .asset-res-item { background: rgba(255,255,255,0.03); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; font-size: 13.5px; }
+  .asset-res-item span:first-child { color: var(--muted); }
+  .asset-res-item span:last-child { color: var(--cyan); font-family: var(--mono); font-weight: bold; }
+
+  .asset-inv-list { display: flex; flex-direction: column; gap: 8px; }
+  .asset-inv-item { background: rgba(255,255,255,0.03); padding: 12px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; }
+  .asset-inv-item b { color: #fff; }
+  .asset-inv-item span { color: var(--muted); font-size: 12px; background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 4px; }
 </style>
 </head>
 <body>
 
 <canvas id="particle-canvas"></canvas>
 
-<header class="iecp-topbar" style="background:rgba(5,7,10,0.8);">
+<!-- 资产透视模态框 -->
+<div class="asset-modal" id="assetModal">
+  <div class="asset-box">
+    <div class="asset-header">
+      <h3 id="assetTitle">国家资产透视</h3>
+      <button onclick="document.getElementById('assetModal').classList.remove('show')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="asset-body" id="assetBody">
+      <!-- 动态渲染 -->
+    </div>
+  </div>
+</div>
+
+<div id="lockScreen">
+  <div class="lock-box">
+    <i class="fa-solid fa-shield-halved"></i>
+    <h2>IECP 核心控制台</h2>
+    <p>检测到高权限区域，请输入核心密钥</p>
+    <input type="password" id="secretKey" class="lock-input" placeholder="••••••••" autocomplete="off">
+    <button class="btn btn-red" style="width: 100%; padding: 14px;" onclick="verifyKey()">授权进入</button>
+    <div id="lockMsg" style="color: var(--red); font-size: 13px; margin-top: 15px; height: 20px;"></div>
+  </div>
+</div>
+
+<header class="iecp-topbar hide" id="adminHeader" style="background:rgba(5,7,10,0.8);">
   <div class="iecp-topbar-inner">
     <a class="iecp-logo" href="index.html">
       <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span style="color:var(--gold);">SYS_ADMIN</span></div>
+      <div class="iecp-logo-text"><b>IECP</b><span style="color:var(--red);">SYS_CORE</span></div>
     </a>
-    <div style="margin-left:auto; color:var(--gold); font-weight:bold; letter-spacing:2px;">
-      <i class="fa-solid fa-shield-halved"></i> 最高权限指挥中心
+    <div style="margin-left:auto; color:var(--red); font-weight:bold; letter-spacing:2px;">
+      <i class="fa-solid fa-satellite-dish fa-fade"></i> 最高权限指挥中心
     </div>
   </div>
 </header>
 
-<main class="admin-container" id="adminWrap">
-  <div class="loading-state"><div class="spinner"></div><span>正在验证最高权限…</span></div>
-</main>
+<main class="admin-container hide" id="adminWrap"></main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
-/* ============================================================
-   1. Canvas 粒子连线特效
-   ============================================================ */
+// 粒子特效 (略)
 (function initParticles() {
-  const canvas = document.getElementById('particle-canvas');
-  const ctx = canvas.getContext('2d');
-  let width, height;
-  let particles = [];
-  
-  function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  }
-  window.addEventListener('resize', resize);
-  resize();
-
+  const canvas = document.getElementById('particle-canvas'); const ctx = canvas.getContext('2d');
+  let width, height; let particles = [];
+  function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
   class Particle {
-    constructor() {
-      this.x = Math.random() * width;
-      this.y = Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 0.5;
-      this.vy = (Math.random() - 0.5) * 0.5;
-      this.radius = Math.random() * 1.5 + 0.5;
-    }
-    update() {
-      this.x += this.vx;
-      this.y += this.vy;
-      if (this.x < 0 || this.x > width) this.vx *= -1;
-      if (this.y < 0 || this.y > height) this.vy *= -1;
-    }
-    draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; // 暗金色粒子
-      ctx.fill();
-    }
+    constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5; this.radius = Math.random() * 1.5 + 0.5; }
+    update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
+    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.fill(); }
   }
-
   for (let i = 0; i < 100; i++) particles.push(new Particle());
-
   function animate() {
     ctx.clearRect(0, 0, width, height);
-    
     for (let i = 0; i < particles.length; i++) {
-      particles[i].update();
-      particles[i].draw();
-      
-      // 画连线
+      particles[i].update(); particles[i].draw();
       for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
+        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < 120) {
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 - dist / 800})`;
-          ctx.stroke();
-        }
+        if (dist < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 - dist / 800})`; ctx.stroke(); }
       }
     }
     requestAnimationFrame(animate);
@@ -122,231 +162,321 @@
   animate();
 })();
 
-/* ============================================================
-   2. 页面逻辑与数据交互
-   ============================================================ */
-(function () {
-  var I = IECP;
-  var profile = null;
-  var allUsers = [];
+const ADMIN_SECRET = "IECP-ROOT-2026";
+var I = IECP; var profile = null; 
+var allUsers = []; 
+var allResources = {}; // 缓存资源数据，用 userId 做 key
+var allInventory = {}; // 缓存仓库数据，用 userId 做 key
 
-  I.requireAuth().then(function (ok) {
+window.verifyKey = async function() {
+  var key = document.getElementById('secretKey').value.trim();
+  var msg = document.getElementById('lockMsg');
+  if (key !== ADMIN_SECRET) { msg.innerText = '密钥错误'; return; }
+  msg.style.color = 'var(--gold-2)'; msg.innerText = '密钥正确，正在验证...';
+  I.requireAuth().then(function(ok) {
     if (!ok) return;
-    
-    I.getProfile(true).then(function (p) {
-      if (!p || p.role !== 'admin') {
-        document.body.innerHTML = `<div style="height:100vh;display:flex;align-items:center;justify-content:center;color:var(--red);font-size:24px;flex-direction:column;gap:20px;"><i class="fa-solid fa-ban"></i> 访问被拒绝：你不是管理员</div>`;
-        return;
-      }
+    I.getProfile(true).then(function(p) {
+      if (!p || p.role !== 'admin') { msg.style.color = 'var(--red)'; msg.innerText = '拒绝访问：你的账号不是管理员！'; return; }
       profile = p;
-      renderLayout();
-      loadData();
+      document.getElementById('lockScreen').classList.add('hide');
+      document.getElementById('adminHeader').classList.remove('hide');
+      document.getElementById('adminWrap').classList.remove('hide');
+      renderLayout(); loadData();
     });
   });
+};
 
-  function renderLayout() {
-    I.$('#adminWrap').innerHTML = `
-      <div class="admin-tabs">
-        <button class="admin-tab active" onclick="switchTab(this, 'tab-users')">国家与银行</button>
-        <button class="admin-tab" onclick="switchTab(this, 'tab-broadcast')">全服发放</button>
-        <button class="admin-tab" onclick="switchTab(this, 'tab-banks')">银行管理</button>
-      </div>
+function renderLayout() {
+  I.$('#adminWrap').innerHTML = `
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchTab(this, 'tab-dash')"><i class="fa-solid fa-chart-pie"></i> 系统总览</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-users')"><i class="fa-solid fa-users-gear"></i> 国家管理</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-broadcast')"><i class="fa-solid fa-rocket"></i> 全服空投</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-banks')"><i class="fa-solid fa-building-columns"></i> 银行管理</button>
+    </div>
 
-      <!-- Tab 1: 国家与银行 (含发放道具) -->
-      <div id="tab-users" class="admin-panel active">
-        <div class="panel-card">
-          <h3>国家列表与物品发放</h3>
-          <div style="max-height: 500px; overflow-y: auto;">
-            <table style="width:100%; border-collapse:collapse; text-align:left;">
-              <thead>
-                <tr style="color:var(--muted); border-bottom:1px solid rgba(255,255,255,0.1);">
-                  <th style="padding:12px;">国家</th>
-                  <th style="padding:12px;">国库余额</th>
-                  <th style="padding:12px;">银行 / 卡号</th>
-                  <th style="padding:12px; text-align:right;">操作</th>
-                </tr>
-              </thead>
-              <tbody id="userTableBody"></tbody>
-            </table>
-          </div>
+    <div id="tab-dash" class="admin-panel active">
+      <div class="panel-card">
+        <h3><i class="fa-solid fa-chart-line" style="color:var(--cyan); margin-right:10px;"></i> 全服实时数据</h3>
+        <div class="stats-grid">
+          <div class="stat-box"><b id="statTotalUsers">-</b><span>注册国家总数</span></div>
+          <div class="stat-box"><b id="statTotalMoney">-</b><span>全服资金总额 (₽)</span></div>
+          <div class="stat-box"><b id="statTotalWars">-</b><span>进行中的战争</span></div>
+          <div class="stat-box"><b id="statTotalTransfers">-</b><span>累计跨国转账</span></div>
         </div>
       </div>
+      <div class="panel-card">
+        <h3><i class="fa-solid fa-crown" style="color:var(--gold); margin-right:10px;"></i> 全服财富榜 (Top 3)</h3>
+        <ul id="topRichList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;"></ul>
+      </div>
+      <div class="panel-card" style="border-color: rgba(239,68,68,0.3);">
+        <h3 style="color:var(--red); border-left-color:var(--red);"><i class="fa-solid fa-triangle-exclamation" style="margin-right:10px;"></i> 紧急干预</h3>
+        <p style="color:var(--muted); font-size:13px; margin-bottom:16px;">强制结束所有战役，并重置所有交战关系为中立。</p>
+        <button class="btn btn-red" onclick="forcePeace()"><i class="fa-solid fa-dove"></i> 一键强制全服停战</button>
+      </div>
+    </div>
 
-      <!-- Tab 2: 全服发放 -->
-      <div id="tab-broadcast" class="admin-panel">
-        <div class="panel-card">
-          <h3>全服物资空投</h3>
-          <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">给所有注册国家发放福利。请谨慎操作，数据不可撤销。</p>
-          
-          <div class="form-row">
-            <div>
-              <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">发放亚斯卢布 (₽)</label>
-              <input type="number" id="bcMoney" class="input-control" placeholder="如：10000 (填0不发)">
+    <div id="tab-users" class="admin-panel">
+      <div class="panel-card">
+        <h3>国家列表与直接操作</h3>
+        <div style="max-height: 600px; overflow-y: auto;">
+          <table class="admin-table">
+            <thead><tr><th>国家</th><th>国库余额</th><th>身份</th><th style="text-align:right;">管理操作</th></tr></thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-broadcast" class="admin-panel">
+      <div class="panel-card">
+        <h3>全服物资空投</h3>
+        <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">给所有注册国家发放福利。如果不发某一项，请留空。</p>
+        <div class="form-row">
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">发放亚斯卢布 (₽)</label>
+            <input type="number" id="bcMoney" class="input-control" placeholder="如：10000">
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">发放战略资源</label>
+            <div style="display:flex; gap:10px;">
+              <select id="bcResType" class="input-control" style="flex:1;">
+                <option value="">-- 不发资源 --</option>
+                <option value="oil">原油 (万吨)</option>
+                <option value="gas">天然气 (亿m³)</option>
+                <option value="iron_ore">铁矿石 (万吨)</option>
+                <option value="rare_metal">稀有金属 (吨)</option>
+                <option value="food">粮食 (万吨)</option>
+              </select>
+              <input type="number" id="bcResAmount" class="input-control" placeholder="数量" style="flex:1;">
             </div>
-            <div>
-              <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">发放战略资源 (若选则必填)</label>
-              <div style="display:flex; gap:10px;">
-                <select id="bcResType" class="input-control" style="flex:1;">
-                  <option value="">-- 不发资源 --</option>
-                  <option value="oil">原油 (万吨)</option>
-                  <option value="gas">天然气 (亿m³)</option>
-                  <option value="iron_ore">铁矿石 (万吨)</option>
-                  <option value="rare_metal">稀有金属 (吨)</option>
-                  <option value="food">粮食 (万吨)</option>
-                </select>
-                <input type="number" id="bcResAmount" class="input-control" placeholder="数量" style="flex:1;">
-              </div>
-            </div>
           </div>
-          <button class="btn btn-gold" style="margin-top:15px; padding:12px 30px;" onclick="doBroadcast()"><i class="fa-solid fa-rocket"></i> 执行全服空投</button>
+        </div>
+        <div class="form-row">
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">发放全服道具</label>
+            <input type="text" id="bcItemName" class="input-control" placeholder="如：全服补偿礼包">
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">道具数量</label>
+            <input type="number" id="bcItemQty" class="input-control" placeholder="如：1" min="1">
+          </div>
+        </div>
+        <button class="btn btn-gold" style="margin-top:15px; padding:12px 30px;" onclick="doBroadcast()"><i class="fa-solid fa-rocket"></i> 执行全服空投</button>
+      </div>
+    </div>
+
+    <div id="tab-banks" class="admin-panel">
+      <div class="panel-card">
+        <h3>添加新银行</h3>
+        <div class="form-row">
+          <input type="text" id="newBankName" class="input-control" placeholder="输入银行名称">
+          <button class="btn btn-gold" style="flex:0 0 120px;" onclick="addBank()">添加</button>
         </div>
       </div>
-
-      <!-- Tab 3: 银行管理 -->
-      <div id="tab-banks" class="admin-panel">
-        <div class="panel-card">
-          <h3>添加新银行</h3>
-          <div class="form-row">
-            <input type="text" id="newBankName" class="input-control" placeholder="输入银行名称，如：亚斯开发银行">
-            <button class="btn btn-gold" style="flex:0 0 120px;" onclick="addBank()">添加</button>
-          </div>
-        </div>
-        <div class="panel-card">
-          <h3>现有银行列表</h3>
-          <ul id="bankList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;"></ul>
-        </div>
+      <div class="panel-card">
+        <h3>现有银行列表</h3>
+        <ul id="bankList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;"></ul>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
-  window.switchTab = function(btn, tabId) {
-    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(tabId).classList.add('active');
-    
-    if (tabId === 'tab-banks') loadBanks();
-  };
+window.switchTab = function(btn, tabId) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+  if (tabId === 'tab-banks') loadBanks();
+  if (tabId === 'tab-dash') loadData();
+};
 
-  async function loadData() {
-    // 加载所有用户
-    var { data: users } = await I.client.from('profiles').select('*').order('created_at', { ascending: false });
-    allUsers = users || [];
+async function loadData() {
+  // 并发拉取用户、资源、仓库数据
+  const [usersRes, resourcesRes, inventoryRes, warsRes, txRes] = await Promise.all([
+    I.client.from('profiles').select('*').order('created_at', { ascending: false }),
+    I.client.from('country_resources').select('*'),
+    I.client.from('market_items').select('*').eq('status', 'sold'), // 只拉已入库的
+    I.client.from('wars').select('*', { count: 'exact', head: true }).eq('status', 'ongoing'),
+    I.client.from('transfers').select('*', { count: 'exact', head: true })
+  ]);
 
-    var tbody = I.$('#userTableBody');
-    tbody.innerHTML = allUsers.map(u => `
-      <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
-        <td style="padding:12px;">
-          <div style="display:flex; align-items:center; gap:10px;">
-            <img src="${u.flag_url || I.avatarFallback(u.username)}" style="width:30px; height:20px; object-fit:cover; border-radius:3px;">
-            <span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span>
+  allUsers = usersRes.data || [];
+  
+  // 建立资源字典
+  allResources = {};
+  (resourcesRes.data || []).forEach(r => { allResources[r.country_id] = r; });
+
+  // 建立仓库字典 (按 buyer_id 分组)
+  allInventory = {};
+  (inventoryRes.data || []).forEach(item => {
+    if (!allInventory[item.buyer_id]) allInventory[item.buyer_id] = [];
+    allInventory[item.buyer_id].push(item);
+  });
+
+  // 更新看板
+  var totalMoney = 0;
+  allUsers.forEach(u => totalMoney += (u.balance || 0));
+  I.$('#statTotalUsers').innerText = allUsers.length;
+  I.$('#statTotalMoney').innerText = I.fmtNumber(totalMoney);
+  I.$('#statTotalWars').innerText = warsRes.count || 0;
+  I.$('#statTotalTransfers').innerText = txRes.count || 0;
+
+  // 渲染富豪榜
+  const topUsers = [...allUsers].sort((a,b) => (b.balance||0) - (a.balance||0)).slice(0, 3);
+  I.$('#topRichList').innerHTML = topUsers.map((u, i) => `
+    <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px 16px; border-radius:8px; border-left:3px solid ${i===0?'var(--gold)':i===1?'silver':i===2?'#cd7f32':'#fff'};">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span style="font-size:18px; font-weight:bold; color:var(--muted);">${i+1}</span>
+        <img src="${u.flag_url || I.avatarFallback(u.username)}" style="width:30px; height:20px; object-fit:cover; border-radius:3px;">
+        <span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span>
+      </div>
+      <span style="color:var(--gold-2); font-family:var(--mono); font-size:16px;">${I.fmtNumber(u.balance)} ₽</span>
+    </li>
+  `).join('');
+
+  // 渲染用户表格
+  var tbody = I.$('#userTableBody');
+  tbody.innerHTML = allUsers.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="${u.flag_url || I.avatarFallback(u.username)}" style="width:30px; height:20px; object-fit:cover; border-radius:3px;">
+          <span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span>
+        </div>
+      </td>
+      <td style="color:var(--gold-2); font-family:var(--mono);">${I.fmtNumber(u.balance)} ₽</td>
+      <td>${u.role === 'admin' ? '<span class="market-tag admin" style="margin:0;">管理员</span>' : '<span class="market-tag" style="margin:0;">普通</span>'}</td>
+      <td style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
+        <button class="btn btn-cyan btn-sm" onclick="viewUserAssets('${u.id}', '${I.escapeHtml(u.username)}')"><i class="fa-solid fa-eye"></i> 透视资产</button>
+        <button class="btn btn-gold btn-sm" onclick="promptEditMoney('${u.id}', '${I.escapeHtml(u.username)}', ${u.balance})"><i class="fa-solid fa-coins"></i> 改钱</button>
+        <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}', '${I.escapeHtml(u.username)}')"><i class="fa-solid fa-trash"></i> 抹除</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// 🚨 核心功能：透视任意国家的详细资产
+window.viewUserAssets = function(userId, username) {
+  var res = allResources[userId] || { oil: 0, gas: 0, iron_ore: 0, rare_metal: 0, food: 0 };
+  var inv = allInventory[userId] || [];
+
+  I.$('#assetTitle').innerText = `资产透视 · ${username}`;
+
+  var resHtml = `
+    <div class="asset-section-title"><i class="fa-solid fa-cubes"></i> 战略资源</div>
+    <div class="asset-res-grid">
+      <div class="asset-res-item"><span>原油储备</span><span>${I.fmtNumber(res.oil)} 万吨</span></div>
+      <div class="asset-res-item"><span>天然气</span><span>${I.fmtNumber(res.gas)} 亿m³</span></div>
+      <div class="asset-res-item"><span>铁矿石</span><span>${I.fmtNumber(res.iron_ore)} 万吨</span></div>
+      <div class="asset-res-item"><span>稀有金属</span><span>${I.fmtNumber(res.rare_metal)} 吨</span></div>
+      <div class="asset-res-item"><span>粮食储备</span><span>${I.fmtNumber(res.food)} 万吨</span></div>
+    </div>
+  `;
+
+  var invHtml = `<div class="asset-section-title"><i class="fa-solid fa-boxes-stacked"></i> 国家仓库 (${inv.length} 件)</div>`;
+  if (inv.length === 0) {
+    invHtml += `<div style="color:var(--muted); font-size:13px; text-align:center; padding:20px;">仓库空空如也</div>`;
+  } else {
+    invHtml += `<div class="asset-inv-list">`;
+    inv.forEach(item => {
+      invHtml += `
+        <div class="asset-inv-item">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <b>${I.escapeHtml(item.title)}</b>
+            <span style="font-size:11px; color:var(--muted-2); background:none; padding:0;">${I.fmtDate(item.sold_at).split(' ')[0]} 获得</span>
           </div>
-        </td>
-        <td style="padding:12px; color:var(--gold-2); font-family:var(--mono);">${I.fmtNumber(u.balance)} ₽</td>
-        <td style="padding:12px; font-size:12px; color:var(--muted);">
-          ${u.bank_name ? u.bank_name : '<span style="color:var(--red)">未开户</span>'}<br>
-          <span style="font-family:var(--mono); letter-spacing:1px;">${u.bank_card || '—'}</span>
-        </td>
-        <td style="padding:12px; text-align:right;">
-          <button class="btn btn-ghost btn-sm" onclick="openSendItem('${u.id}', '${I.escapeHtml(u.username)}')">
-            <i class="fa-solid fa-gift"></i> 发道具
-          </button>
-        </td>
-      </tr>
-    `).join('');
+          <span>× ${item.quantity}</span>
+        </div>
+      `;
+    });
+    invHtml += `</div>`;
   }
 
-  window.openSendItem = function(userId, username) {
-    var itemName = prompt(`向【${username}】的仓库发放道具。\n请输入道具名称（如：间谍卫星、绝版航母模型）：`);
-    if (!itemName) return;
-    var qty = parseInt(prompt("请输入数量：", "1"), 10);
-    if (!qty || qty < 1) return;
-    var desc = prompt("请输入道具描述（可选）：", "由系统管理员发放的特殊道具");
+  I.$('#assetBody').innerHTML = resHtml + invHtml;
+  I.$('#assetModal').classList.add('show');
+};
 
-    // 直接向交易行表插入一条“已售出且买家是他”的记录，这样就会在他的仓库里显示
-    I.client.from('market_items').insert({
-      seller_id: profile.id, // 系统作为卖家
-      buyer_id: userId,
-      title: itemName,
-      description: desc,
-      price: 0,
-      quantity: qty,
-      status: 'sold',
-      sold_at: new Date().toISOString(),
-      is_admin_post: true,
-      item_type: 'other'
-    }).then(function(res) {
-      if (res.error) alert('发放失败：' + res.error.message);
-      else I.toast('道具已送达用户仓库', 'success');
-    });
-  };
+window.promptEditMoney = async function(userId, username, currentBalance) {
+  var input = prompt(`修改【${username}】的国库余额。\n当前余额：${currentBalance} ₽\n请输入新余额：`, currentBalance);
+  if (input === null) return;
+  var newBal = parseInt(input, 10);
+  if (isNaN(newBal) || newBal < 0) return I.toast('请输入正确的数字', 'error');
 
-  window.doBroadcast = async function() {
-    var money = parseInt(I.$('#bcMoney').value, 10) || 0;
-    var resType = I.$('#bcResType').value;
-    var resAmount = parseInt(I.$('#bcResAmount').value, 10) || 0;
+  var { error } = await I.client.from('profiles').update({ balance: newBal }).eq('id', userId);
+  if (error) return I.toast('修改失败：' + error.message, 'error', 4000);
+  
+  I.toast(`余额已修改`, 'success');
+  loadData();
+};
 
-    if (money <= 0 && (!resType || resAmount <= 0)) {
-      return I.toast('请至少填写一项要发放的物资', 'error');
-    }
-    if (resType && resAmount <= 0) {
-      return I.toast('发放资源数量必须大于0', 'error');
-    }
+window.deleteUser = async function(userId, username) {
+  if (profile.id === userId) return I.toast('不能删除自己', 'error');
+  if (!confirm(`⚠️ 确定要彻底删除国家【${username}】吗？`)) return;
+  var { error } = await I.client.from('profiles').delete().eq('id', userId);
+  if (error) return I.toast('删除失败：' + error.message, 'error');
+  I.toast('国家已抹除', 'success');
+  loadData();
+};
 
-    if (!confirm('⚠️ 警告：你正在向全服所有国家发放资源，此操作不可逆！确认执行？')) return;
+window.forcePeace = async function() {
+  if (!confirm('⚠️ 强制结束全服所有正在进行的战争？')) return;
+  I.toast('正在执行强制停战...', 'success');
+  var { error } = await I.client.rpc('admin_force_peace');
+  if (error) return I.toast('执行失败：' + error.message, 'error');
+  I.toast('全服已恢复和平！', 'success');
+  loadData();
+};
 
-    I.toast('正在执行全服空投...', 'success', 2000);
+window.doBroadcast = async function() {
+  var money = parseInt(I.$('#bcMoney').value, 10) || 0;
+  var resType = I.$('#bcResType').value;
+  var resAmount = parseInt(I.$('#bcResAmount').value, 10) || 0;
+  var itemName = I.$('#bcItemName').value.trim();
+  var itemQty = parseInt(I.$('#bcItemQty').value, 10) || 0;
 
-    var { error } = await I.client.rpc('admin_give_all', {
-      money_amount: money,
-      res_type: resType || null,
-      res_amount: resAmount
-    });
-
-    if (error) {
-      I.toast('空投失败：' + error.message, 'error', 4000);
-    } else {
-      I.toast('全服空投圆满成功！', 'success', 3000);
-      loadData(); // 刷新余额
-    }
-  };
-
-  async function loadBanks() {
-    var { data } = await I.client.from('banks').select('*').order('created_at', { ascending: true });
-    var ul = I.$('#bankList');
-    if (!data || !data.length) {
-      ul.innerHTML = '<li style="color:var(--muted);">暂无银行</li>';
-      return;
-    }
-    ul.innerHTML = data.map(b => `
-      <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px 16px; border-radius:8px;">
-        <span style="color:#fff; font-weight:600;">${I.escapeHtml(b.name)}</span>
-        <button class="btn btn-red btn-sm" onclick="deleteBank('${b.id}')" style="padding:4px 10px; font-size:12px;"><i class="fa-solid fa-trash"></i> 删除</button>
-      </li>
-    `).join('');
+  if (money <= 0 && (!resType || resAmount <= 0) && (!itemName || itemQty <= 0)) {
+    return I.toast('请至少填写一项要发放的物资', 'error');
   }
 
-  window.addBank = async function() {
-    var name = I.$('#newBankName').value.trim();
-    if (!name) return I.toast('请输入银行名称', 'error');
-    
-    var { error } = await I.client.from('banks').insert({ name: name });
-    if (error) return I.toast('添加失败：' + error.message, 'error');
-    
-    I.$('#newBankName').value = '';
-    I.toast('银行添加成功', 'success');
-    loadBanks();
-  };
+  if (!confirm('⚠️ 警告：你正在向全服所有国家发放物资，确认执行？')) return;
 
-  window.deleteBank = async function(id) {
-    if (!confirm('确定删除该银行吗？已经分配到该银行的用户不受影响，但新用户将不会再被分配到该银行。')) return;
-    var { error } = await I.client.from('banks').delete().eq('id', id);
-    if (error) return I.toast('删除失败', 'error');
-    I.toast('银行已删除', 'success');
-    loadBanks();
-  };
+  I.toast('正在执行空投...', 'success', 2000);
+  var { error } = await I.client.rpc('admin_give_all', {
+    money_amount: money, res_type: resType || null, res_amount: resAmount,
+    item_name: itemName || null, item_qty: itemQty
+  });
 
-})();
+  if (error) I.toast('空投失败：' + error.message, 'error', 4000);
+  else { I.toast('全服空投成功！', 'success', 3000); loadData(); }
+};
+
+async function loadBanks() {
+  var { data } = await I.client.from('banks').select('*').order('created_at', { ascending: true });
+  var ul = I.$('#bankList');
+  if (!data || !data.length) { ul.innerHTML = '<li style="color:var(--muted);">暂无银行</li>'; return; }
+  ul.innerHTML = data.map(b => `
+    <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px 16px; border-radius:8px;">
+      <span style="color:#fff; font-weight:600;">${I.escapeHtml(b.name)}</span>
+      <button class="btn btn-red btn-sm" onclick="deleteBank('${b.id}')"><i class="fa-solid fa-trash"></i> 删除</button>
+    </li>
+  `).join('');
+}
+
+window.addBank = async function() {
+  var name = I.$('#newBankName').value.trim();
+  if (!name) return I.toast('请输入银行名称', 'error');
+  var { error } = await I.client.from('banks').insert({ name: name });
+  if (error) return I.toast('添加失败：' + error.message, 'error');
+  I.$('#newBankName').value = ''; I.toast('银行添加成功', 'success'); loadBanks();
+};
+
+window.deleteBank = async function(id) {
+  if (!confirm('确定删除该银行吗？')) return;
+  var { error } = await I.client.from('banks').delete().eq('id', id);
+  if (error) return I.toast('删除失败', 'error');
+  I.toast('银行已删除', 'success'); loadBanks();
+};
 </script>
 </body>
 </html>

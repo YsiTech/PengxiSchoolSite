@@ -19,7 +19,6 @@
     display: flex; flex-direction: column; justify-content: space-between;
     overflow: hidden; color: #fff;
   }
-  /* 卡片上的镭射光效 */
   .bank-card-ui::before {
     content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
     background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
@@ -36,8 +35,9 @@
   .transfer-form { background: var(--glass); padding: 30px; border-radius: var(--r); border: 1px solid var(--border); }
   .input-wrap { position: relative; margin-bottom: 20px; }
   .input-wrap i { position: absolute; left: 15px; top: 16px; color: var(--muted); }
-  .input-wrap input { width: 100%; padding: 15px 15px 15px 45px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-2); border-radius: 10px; color: #fff; font-size: 15px; outline: none; box-sizing: border-box; transition: 0.3s; }
-  .input-wrap input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+  .input-wrap input, .input-wrap select { width: 100%; padding: 15px 15px 15px 45px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-2); border-radius: 10px; color: #fff; font-size: 15px; outline: none; box-sizing: border-box; transition: 0.3s; }
+  .input-wrap select option { background: #111827; color: #fff; }
+  .input-wrap input:focus, .input-wrap select:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
 </style>
 </head>
 <body>
@@ -59,7 +59,7 @@
   </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -77,7 +77,7 @@
     });
   });
 
-  function render() {
+  async function render() {
     var wrap = I.$('#transferWrap');
     
     // 🚨 防御：如果用户还没有卡号，显示开户界面
@@ -85,13 +85,34 @@
       wrap.innerHTML = `
         <div class="glass" style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; max-width: 600px; margin: 0 auto;">
           <i class="fa-solid fa-building-columns" style="font-size: 60px; color: var(--gold); margin-bottom: 20px;"></i>
-          <h2 style="color: #fff; margin-bottom: 10px;">你还没有国际银行账户</h2>
-          <p style="color: var(--muted); margin-bottom: 30px;">开通账户即可获得由系统分配的专属 16 位银行卡号，用于接收其他国家的汇款。</p>
-          <button class="btn btn-gold" style="padding: 15px 40px; font-size: 16px;" onclick="initBankAccount(this)">
-            <i class="fa-solid fa-id-card"></i> 立即开通账户
-          </button>
+          <h2 style="color: #fff; margin-bottom: 10px;">开设国际银行账户</h2>
+          <p style="color: var(--muted); margin-bottom: 30px;">请选择一家你心仪的银行开户，系统将为你分配专属的 16 位银行卡号。</p>
+          
+          <div style="display: flex; gap: 10px; max-width: 400px; margin: 0 auto;">
+            <select id="bankSelect" style="flex: 1; padding: 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-2); border-radius: 10px; color: #fff; font-size: 15px; outline: none;">
+              <option value="">正在获取银行列表...</option>
+            </select>
+            <button class="btn btn-gold" style="padding: 0 30px; border-radius: 10px; font-size: 15px;" onclick="initBankAccount(this)">
+              开通
+            </button>
+          </div>
+          <div id="openAccountMsg" style="color: var(--red); font-size: 13px; margin-top: 15px;"></div>
         </div>
       `;
+
+      // 异步加载银行列表
+      var { data: banks, error } = await I.client.from('banks').select('name');
+      var select = I.$('#bankSelect');
+      
+      if (error || !banks || !banks.length) {
+        select.innerHTML = '<option value="">无法获取银行列表</option>';
+        I.$('#openAccountMsg').innerText = '系统错误：无法读取银行数据，请联系管理员检查数据库';
+        return;
+      }
+
+      select.innerHTML = '<option value="">-- 请选择开户银行 --</option>' + 
+        banks.map(b => `<option value="${b.name}">${b.name}</option>`).join('');
+
       return;
     }
 
@@ -150,43 +171,43 @@
     `;
   }
 
-  // 🚨 开户逻辑
+  // 🚨 开户逻辑：获取用户选择的银行
   window.initBankAccount = async function(btn) {
+    var selectedBank = I.$('#bankSelect').value;
+    var msg = I.$('#openAccountMsg');
+
+    if (!selectedBank) {
+      msg.innerText = '请先选择一家银行';
+      return;
+    }
+
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在向央行申请开户...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    msg.innerText = '';
 
     try {
-      // 1. 随机获取一个银行
-      var { data: banks, error: bankErr } = await I.client.from('banks').select('name');
-      
-      if (bankErr || !banks || !banks.length) {
-        throw new Error('无法获取银行列表，请确认数据库 banks 表是否已建好');
-      }
-
-      var randomBank = banks[Math.floor(Math.random() * banks.length)].name;
-      
-      // 2. 生成 16 位卡号 (6222 开头)
+      // 生成 16 位卡号 (6222 开头)
       var cardNo = '6222' + Math.floor(100000000000 + Math.random() * 900000000000);
       
-      // 3. 写入数据库
+      // 写入数据库
       var { error: updateErr } = await I.client.from('profiles').update({
-        bank_name: randomBank,
+        bank_name: selectedBank,
         bank_card: cardNo
       }).eq('id', profile.id);
 
       if (updateErr) throw new Error(updateErr.message);
       
-      // 4. 更新本地缓存并重新渲染
-      profile.bank_name = randomBank;
+      // 更新本地缓存并重新渲染
+      profile.bank_name = selectedBank;
       profile.bank_card = cardNo;
       I.clearProfileCache();
       I.toast('账户开通成功', 'success');
       render();
 
     } catch (err) {
-      I.toast(err.message, 'error', 4000);
+      msg.innerText = '开户失败：' + err.message;
       btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-id-card"></i> 立即开通账户';
+      btn.innerHTML = '开通';
     }
   };
 
