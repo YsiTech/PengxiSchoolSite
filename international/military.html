@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>军工厂 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .mil-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 30px; }
+  .unit-card {
+    background: linear-gradient(150deg, #1a2b4c 0%, #0f1f3d 100%);
+    border: 1px solid rgba(212,175,55,0.25);
+    border-radius: var(--r); padding: 24px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .unit-header { display: flex; align-items: center; gap: 16px; }
+  .unit-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: rgba(212,175,55,0.15); color: var(--gold);
+    display: grid; place-items: center; font-size: 24px;
+  }
+  .unit-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .unit-count { font-size: 13px; color: var(--cyan); }
+  
+  .unit-cost { display: flex; flex-wrap: wrap; gap: 10px; font-size: 12px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; }
+  .cost-item { display: flex; align-items: center; gap: 4px; color: var(--muted); }
+  .cost-item i { color: var(--gold-2); }
+  
+  .build-row { display: flex; gap: 10px; }
+  .build-row input { width: 80px; text-align: center; padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; font-weight: bold; }
+
+  /* 全服播报滚动条样式 */
+  .broadcast-bar {
+    background: linear-gradient(90deg, rgba(212,175,55,0.15), rgba(0,0,0,0));
+    border-left: 4px solid var(--gold);
+    padding: 12px 20px; border-radius: 8px; margin-bottom: 24px;
+    color: var(--gold-2); font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+    white-space: nowrap; overflow: hidden;
+  }
+  .broadcast-text { animation: slideIn 0.3s ease; }
+  @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+</style>
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb">
+      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>军工厂</span>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px">
+      <div>
+        <h1><i class="fa-solid fa-industry"></i> 军工与征兵</h1>
+        <p>消耗战略资源，扩充你的国家武装力量</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="iecp-main">
+  <!-- 实时广播栏 -->
+  <div class="broadcast-bar" id="broadcastBar" style="display:none;">
+    <i class="fa-solid fa-tower-broadcast fa-fade"></i>
+    <span class="broadcast-text" id="broadcastText"></span>
+  </div>
+
+  <div id="resTop" class="glass" style="padding:20px; margin-bottom:24px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:20px;">
+    <div class="loading-state"><div class="spinner"></div><span>正在读取资源...</span></div>
+  </div>
+
+  <div class="mil-grid" id="unitList">
+    <!-- 动态渲染 -->
+  </div>
+</main>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+  var myRes = null;
+  var myMil = null;
+  var ws = null;
+
+  var UNITS = [
+    { type: 'infantry', name: '机械化步兵', icon: 'fa-person-rifle', cost: { food: 10, iron_ore: 5 }, desc: '基础作战单位，消耗粮食与钢铁。' },
+    { type: 'tanks', name: '主战坦克', icon: 'fa-truck-monster', cost: { oil: 20, iron_ore: 30 }, desc: '钢铁洪流，消耗大量原油与钢铁。' },
+    { type: 'fighters', name: '第五代战机', icon: 'fa-jet-fighter', cost: { oil: 50, rare_metal: 15 }, desc: '制空权，需要稀有金属打造。' }
+  ];
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    // 🚨 这里改成了 'military'，导航栏会高亮“军工厂”
+    I.initTopbar('military'); 
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      connectWebSocket();
+      loadData();
+    });
+  });
+
+  // 连接服务器
+  function connectWebSocket() {
+    ws = new WebSocket('ws://47.109.88.206:3000'); 
+    
+    ws.onmessage = function(event) {
+      var bar = I.$('#broadcastBar');
+      var txt = I.$('#broadcastText');
+      txt.textContent = event.data;
+      bar.style.display = 'flex';
+      
+      txt.style.animation = 'none';
+      txt.offsetHeight; 
+      txt.style.animation = 'slideIn 0.3s ease';
+
+      clearTimeout(window.bcTimer);
+      window.bcTimer = setTimeout(function(){ bar.style.display = 'none'; }, 5000);
+    };
+  }
+
+  function loadData() {
+    Promise.all([
+      I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle(),
+      I.client.from('military').select('*').eq('country_id', profile.id).maybeSingle()
+    ]).then(function(results) {
+      myRes = results[0].data;
+      myMil = results[1].data;
+      
+      if (!myMil) {
+         I.client.from('military').insert({country_id: profile.id}).then(function(){ location.reload(); });
+         return;
+      }
+      renderRes();
+      renderUnits();
+    });
+  }
+
+  function renderRes() {
+    var r = myRes;
+    var html = `
+      <div class="cost-item"><i class="fa-solid fa-wheat-awn"></i> 粮食: <b>${I.fmtNumber(r.food)}</b></div>
+      <div class="cost-item"><i class="fa-solid fa-mountain"></i> 铁矿: <b>${I.fmtNumber(r.iron_ore)}</b></div>
+      <div class="cost-item"><i class="fa-solid fa-oil-well"></i> 原油: <b>${I.fmtNumber(r.oil)}</b></div>
+      <div class="cost-item"><i class="fa-solid fa-atom"></i> 稀有金属: <b>${I.fmtNumber(r.rare_metal)}</b></div>
+    `;
+    I.$('#resTop').innerHTML = html;
+  }
+
+  function renderUnits() {
+    var html = '';
+    UNITS.forEach(function(u) {
+      var owned = myMil[u.type] || 0;
+      var costHtml = '';
+      for (var key in u.cost) {
+        var resName = { food:'粮食', iron_ore:'铁矿', oil:'原油', rare_metal:'稀有金属' }[key];
+        costHtml += `<div class="cost-item"><i class="fa-solid fa-caret-right" style="font-size:10px;color:var(--muted)"></i> ${resName} ${u.cost[key]}/个</div>`;
+      }
+
+      html += `
+        <div class="unit-card">
+          <div class="unit-header">
+            <div class="unit-icon"><i class="fa-solid ${u.icon}"></i></div>
+            <div>
+              <div class="unit-title">${u.name}</div>
+              <div class="unit-count">当前拥有: ${I.fmtNumber(owned)}</div>
+            </div>
+          </div>
+          <p style="font-size:12px; color:var(--muted); margin:0;">${u.desc}</p>
+          <div class="unit-cost">${costHtml}</div>
+          <div class="build-row">
+            <input type="number" id="qty_${u.type}" value="1" min="1">
+            <button class="btn btn-gold" onclick="build('${u.type}')" style="flex:1"><i class="fa-solid fa-hammer"></i> 制造</button>
+          </div>
+        </div>
+      `;
+    });
+    I.$('#unitList').innerHTML = html;
+  }
+
+  window.build = function(type) {
+    var qty = parseInt(I.$('#qty_' + type).value, 10);
+    if (!qty || qty < 1) { I.toast('请输入正确数量', 'error'); return; }
+
+    I.toast('正在制造...', 'success', 1000);
+    
+    I.client.rpc('train_units', { c_id: profile.id, u_type: type, u_amount: qty }).then(function(res) {
+      if (res.error) {
+        I.toast('制造失败：' + res.error.message, 'error');
+        return;
+      }
+      
+      var result = res.data;
+      if (!result.ok) {
+        I.toast(result.msg, 'error');
+      } else {
+        I.toast('制造成功！部队已入列', 'success');
+        
+        if (ws && ws.readyState === WebSocket.OPEN) {
+           var unitName = UNITS.find(u => u.type === type).name;
+           var msg = `📢 ${profile.username} 刚刚出厂了 ${qty} 个 ${unitName}！`;
+           ws.send(msg);
+        }
+        
+        loadData(); 
+      }
+    });
+  };
+
+})();
+</script>
+</body>
+</html>

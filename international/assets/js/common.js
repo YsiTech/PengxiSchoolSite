@@ -49,7 +49,7 @@
   };
 
   /* ============================================================
-     🚨 国库隐私控制中心 (绝对保密模式)
+     国库隐私控制中心 (绝对保密模式)
      ============================================================ */
   w.IECP.canViewBalance = function (targetId) {
     return false; // 默认在公共页面全部隐藏
@@ -140,7 +140,6 @@
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   };
 
-  // 🚨 核心改动：在这里加入了“跨国汇款”的导航项
   w.IECP.renderNav = function (activeId) {
     var host = document.getElementById('iecp-nav');
     if (!host) return;
@@ -152,6 +151,8 @@
       { id:'diplomacy',  icon:'fa-handshake',      text:'交流中心', href:'diplomacy.html' },
       { id:'market',     icon:'fa-store',          text:'交易行',   href:'market.html' },
       { id:'transfer',   icon:'fa-money-bill-transfer', text:'跨国汇款', href:'transfer.html' },
+      // 🚨 新增：军工厂入口
+      { id:'military',   icon:'fa-industry',       text:'军工厂',   href:'military.html' },
       { id:'wars',       icon:'fa-shield-halved',  text:'战争系统', href:'wars.html' },
       { id:'profile',    icon:'fa-user',           text:'用户中心', href:'profile.html' }
     ];

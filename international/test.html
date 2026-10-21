@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>红警联机测试</title>
+<style>
+  body { background: #111; color: white; font-family: sans-serif; padding: 50px; text-align: center; }
+  button { padding: 15px 30px; font-size: 20px; background: #d4af37; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px;}
+  #log { width: 500px; height: 300px; background: #000; border: 1px solid #333; margin: 0 auto; padding: 20px; text-align: left; overflow-y: auto; font-family: monospace; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+  <h1>🚀 联机测试大厅</h1>
+  <button onclick="sendCommand()">造一辆天启坦克</button>
+  <div id="log">等待连接服务器...</div>
+
+<script>
+  // 这里的 IP 已经换成你服务器的公网 IP 了
+  const ws = new WebSocket('ws://47.109.88.206:3000'); 
+  const log = document.getElementById('log');
+
+  ws.onopen = function() {
+    log.innerHTML = '✅ 成功连接到服务器！<br>';
+  };
+
+  ws.onmessage = function(event) {
+    log.innerHTML += '📩 收到广播: ' + event.data + '<br>';
+    log.scrollTop = log.scrollHeight;
+  };
+
+  function sendCommand() {
+    const msg = '玩家A 制造了一辆天启坦克！(时间: ' + new Date().toLocaleTimeString() + ')';
+    ws.send(msg);
+  }
+</script>
+</body>
+</html>
