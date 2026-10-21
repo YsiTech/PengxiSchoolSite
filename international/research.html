@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>国家研究所 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .tech-card { background: var(--glass-2); border: 1px solid var(--border); border-radius: var(--r); padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden;}
+  .tech-card:hover { border-color: var(--cyan); }
+  
+  .tech-header { display: flex; align-items: center; gap: 16px; }
+  .tech-icon { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; font-size: 24px; background: rgba(79,195,247,0.1); color: var(--cyan); }
+  .tech-title { font-size: 18px; font-weight: 700; color: #fff; }
+  .tech-desc { font-size: 12px; color: var(--muted); }
+  
+  .tech-progress { display: flex; gap: 4px; margin: 10px 0; }
+  .tech-bar { flex: 1; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; }
+  .tech-bar.active { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+  
+  .tech-cost { font-size: 12px; color: var(--gold-2); background: rgba(212,175,55,0.1); padding: 12px; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; }
+</style>
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb">
+      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>国家研究所</span>
+    </div>
+    <div>
+      <h1><i class="fa-solid fa-flask"></i> 国家研究所</h1>
+      <p>研发尖端科技，打造无敌之师</p>
+    </div>
+  </div>
+</section>
+
+<main class="iecp-main">
+  <div id="resTop" class="glass" style="padding:20px; margin-bottom:24px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:20px;">
+    <div class="loading-state"><div class="spinner"></div><span>正在读取资源...</span></div>
+  </div>
+
+  <div class="tech-grid" id="techList"></div>
+</main>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+  var myRes = null;
+  var myTech = null;
+
+  var TECHS = [
+    { type: 'inf_tech', name: '单兵作战系统', icon: 'fa-person-rifle', desc: '每级提升 10% 步兵战力' },
+    { type: 'armor_tech', name: '复合装甲技术', icon: 'fa-truck-monster', desc: '每级提升 10% 坦克战力' },
+    { type: 'air_tech', name: '航空动力学', icon: 'fa-jet-fighter', desc: '每级提升 10% 战机战力' },
+    { type: 'defense_tech', name: '要塞工程学', icon: 'fa-shield-halved', desc: '每级提升 20% 防御建筑战力' }
+  ];
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('research'); 
+    // 🚨 已经删掉了 I.initChat() 的调用
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      loadData();
+    });
+  });
+
+  function loadData() {
+    Promise.all([
+      I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle(),
+      I.client.from('research').select('*').eq('country_id', profile.id).maybeSingle()
+    ]).then(function(results) {
+      myRes = results[0].data;
+      myTech = results[1].data;
+      renderRes();
+      renderTech();
+    });
+  }
+
+  function renderRes() {
+    var r = myRes;
+    I.$('#resTop').innerHTML = `
+      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-mountain" style="color:var(--gold-2)"></i> 铁矿: <b>${I.fmtNumber(r.iron_ore)}</b></div>
+      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-oil-well" style="color:var(--gold-2)"></i> 原油: <b>${I.fmtNumber(r.oil)}</b></div>
+      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-atom" style="color:var(--gold-2)"></i> 稀有金属: <b>${I.fmtNumber(r.rare_metal)}</b></div>
+    `;
+  }
+
+  function renderTech() {
+    var html = '';
+    TECHS.forEach(function(t) {
+      var lvl = myTech[t.type] || 0;
+      var isMax = lvl >= 10;
+      
+      var costIron = 200 + (lvl * 100);
+      var costOil = 100 + (lvl * 50);
+      var costRare = (t.type === 'air_tech' || t.type === 'defense_tech') ? (20 + lvl * 10) : 0;
+
+      var barsHtml = '';
+      for(var i=0; i<10; i++) {
+        barsHtml += `<div class="tech-bar ${i < lvl ? 'active' : ''}"></div>`;
+      }
+
+      html += `
+        <div class="tech-card">
+          <div class="tech-header">
+            <div class="tech-icon"><i class="fa-solid ${t.icon}"></i></div>
+            <div>
+              <div class="tech-title">${t.name} <span style="font-size:14px; color:var(--gold-2);">Lv.${lvl}</span></div>
+              <div class="tech-desc">${t.desc}</div>
+            </div>
+          </div>
+          
+          <div class="tech-progress">${barsHtml}</div>
+
+          ${isMax ? `<div style="text-align:center; padding:10px; color:var(--gold); font-weight:bold;">已达到最高科技等级</div>` : `
+            <div class="tech-cost">
+              <span><i class="fa-solid fa-mountain"></i> ${costIron}</span>
+              <span><i class="fa-solid fa-oil-well"></i> ${costOil}</span>
+              ${costRare > 0 ? `<span><i class="fa-solid fa-atom"></i> ${costRare}</span>` : ''}
+            </div>
+            <button class="btn btn-cyan" style="width:100%;" onclick="upgrade('${t.type}')"><i class="fa-solid fa-microchip"></i> 研发升级</button>
+          `}
+        </div>
+      `;
+    });
+    I.$('#techList').innerHTML = html;
+  }
+
+  window.upgrade = function(type) {
+    if (!confirm('确认消耗资源研发该项科技吗？')) return;
+    
+    I.toast('正在研发...', 'success', 1000);
+    I.client.rpc('upgrade_tech', { c_id: profile.id, t_type: type }).then(function(res) {
+      if (res.error) { I.toast('研发失败: ' + res.error.message, 'error'); return; }
+      
+      var result = res.data;
+      if (!result.ok) {
+        I.toast(result.msg, 'error');
+      } else {
+        I.toast('科技研发成功！战力已提升', 'success');
+        loadData(); 
+      }
+    });
+  };
+
+})();
+</script>
+</body>
+</html>

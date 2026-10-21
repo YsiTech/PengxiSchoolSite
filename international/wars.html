@@ -11,59 +11,28 @@
   .enemy-card { background: var(--glass-2); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--r); padding: 20px; }
   .enemy-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
   .enemy-avatar { width: 48px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid #ef4444; }
-  
   .attack-panel { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; }
   .input-row { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--ink-2); }
   .input-row input { width: 80px; padding: 6px; border-radius: 4px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; text-align: center; }
-  
-  /* 全服战报播报栏 */
-  .broadcast-bar {
-    background: linear-gradient(90deg, rgba(239,68,68,0.2), rgba(0,0,0,0));
-    border-left: 4px solid #ef4444;
-    padding: 14px 20px; border-radius: 8px; margin-bottom: 24px;
-    color: #fca5a5; font-size: 15px; font-weight: 600;
-    display: none; align-items: center; gap: 10px;
-    box-shadow: 0 0 20px rgba(239,68,68,0.2);
-  }
 </style>
 </head>
 <body>
-
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
 </header>
-
 <section class="iecp-page-head">
   <div class="iecp-page-head-inner">
-    <div class="iecp-breadcrumb">
-      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>战争系统</span>
-    </div>
-    <div>
-      <h1><i class="fa-solid fa-shield-halved"></i> 战争大厅</h1>
-      <p>指挥你的军队，掠夺敌国的财富！</p>
-    </div>
+    <div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>战争系统</span></div>
+    <div><h1><i class="fa-solid fa-shield-halved"></i> 战争大厅</h1><p>指挥你的军队，掠夺敌国的财富！</p></div>
   </div>
 </section>
-
 <main class="iecp-main">
-  <!-- 实时播报 -->
-  <div class="broadcast-bar" id="broadcastBar">
-    <i class="fa-solid fa-tower-broadcast fa-fade"></i>
-    <span id="broadcastText"></span>
-  </div>
-
-  <div id="warListWrap">
-    <div class="loading-state"><div class="spinner"></div><span>正在侦察敌情...</span></div>
-  </div>
+  <div id="warListWrap"><div class="loading-state"><div class="spinner"></div><span>正在侦察敌情...</span></div></div>
 </main>
-
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
@@ -73,63 +42,28 @@
   var profile = null;
   var myMil = null;
   var enemies = [];
-  var ws = null;
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('wars');
-    // 🚨 初始化右下角聊天室
-    I.initChat(); 
     I.getProfile(true).then(function (p) {
       profile = p;
-      connectWebSocket();
       loadData();
     });
   });
-
-  function connectWebSocket() {
-    // 🚨 修改为安全的 wss 地址
-    ws = new WebSocket('wss://iecp-api.ponxigrad.tech/ws/'); 
-    ws.onmessage = function(event) {
-      try {
-        var data = JSON.parse(event.data);
-        if (data.type === 'system') {
-          var bar = I.$('#broadcastBar');
-          var txt = I.$('#broadcastText');
-          txt.textContent = data.msg;
-          bar.style.display = 'flex';
-          
-          clearTimeout(window.warBcTimer);
-          window.warBcTimer = setTimeout(function(){ bar.style.display = 'none'; }, 8000);
-        }
-      } catch (e) {}
-    };
-  }
 
   function loadData() {
     I.client.from('military').select('*').eq('country_id', profile.id).maybeSingle().then(function(milRes) {
       myMil = milRes.data || { infantry:0, tanks:0, fighters:0 };
       return I.client.from('relations').select('*').eq('relation_type', 'war');
     }).then(function(relRes) {
-      if (relRes.error) {
-        I.toast('读取关系表失败：' + relRes.error.message, 'error');
-        return;
-      }
-
       var allWars = relRes.data || [];
-      var myWars = allWars.filter(function(r) {
-        return r.country_a === profile.id || r.country_b === profile.id;
-      });
-
+      var myWars = allWars.filter(function(r) { return r.country_a === profile.id || r.country_b === profile.id; });
       if (myWars.length === 0) {
-        I.$('#warListWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-dove" style="color:var(--cyan);font-size:40px;margin-bottom:12px;"></i><p>目前世界和平，没有敌对国家。你可以去国家主页发起宣战。</p></div>`;
+        I.$('#warListWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-dove" style="color:var(--cyan);font-size:40px;margin-bottom:12px;"></i><p>目前世界和平，没有敌对国家。</p></div>`;
         return;
       }
-
-      var enemyIds = myWars.map(function(r) {
-        return r.country_a === profile.id ? r.country_b : r.country_a;
-      });
-
+      var enemyIds = myWars.map(function(r) { return r.country_a === profile.id ? r.country_b : r.country_a; });
       I.client.from('profiles').select('id, username, flag_url').in('id', enemyIds).then(function(res) {
         enemies = res.data || [];
         renderEnemies();
@@ -145,18 +79,13 @@
         <div class="enemy-card">
           <div class="enemy-header">
             <img src="${I.escapeHtml(avatar)}" class="enemy-avatar">
-            <div>
-              <div style="font-size:16px;font-weight:700;color:#fff;">${I.escapeHtml(e.username)}</div>
-              <div style="font-size:12px;color:#ef4444;"><i class="fa-solid fa-crosshairs"></i> 交战中</div>
-            </div>
+            <div><div style="font-size:16px;font-weight:700;color:#fff;">${I.escapeHtml(e.username)}</div><div style="font-size:12px;color:#ef4444;"><i class="fa-solid fa-crosshairs"></i> 交战中</div></div>
           </div>
-          
           <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">我的后备兵力：步兵 ${myMil.infantry} | 坦克 ${myMil.tanks} | 战机 ${myMil.fighters}</div>
-
           <div class="attack-panel">
-            <div class="input-row"><span><i class="fa-solid fa-person-rifle"></i> 派出步兵</span><input type="number" id="atk_inf_${e.id}" value="0" min="0"></div>
-            <div class="input-row"><span><i class="fa-solid fa-truck-monster"></i> 派出坦克</span><input type="number" id="atk_tank_${e.id}" value="0" min="0"></div>
-            <div class="input-row"><span><i class="fa-solid fa-jet-fighter"></i> 派出战机</span><input type="number" id="atk_fight_${e.id}" value="0" min="0"></div>
+            <div class="input-row"><span>派出步兵</span><input type="number" id="atk_inf_${e.id}" value="0" min="0"></div>
+            <div class="input-row"><span>派出坦克</span><input type="number" id="atk_tank_${e.id}" value="0" min="0"></div>
+            <div class="input-row"><span>派出战机</span><input type="number" id="atk_fight_${e.id}" value="0" min="0"></div>
             <button class="btn btn-red" style="margin-top:10px;width:100%;" onclick="attack('${e.id}', '${I.escapeHtml(e.username)}')"><i class="fa-solid fa-bomb"></i> 发动突袭</button>
           </div>
         </div>
@@ -170,43 +99,22 @@
     var inf = parseInt(I.$('#atk_inf_' + defenderId).value) || 0;
     var tank = parseInt(I.$('#atk_tank_' + defenderId).value) || 0;
     var fight = parseInt(I.$('#atk_fight_' + defenderId).value) || 0;
-
     if (inf === 0 && tank === 0 && fight === 0) { I.toast('请至少派出一名士兵', 'error'); return; }
-    
-    if (!confirm(`确认向【${defenderName}】发动突袭吗？\n派兵：步兵${inf} 坦克${tank} 战机${fight}`)) return;
+    if (!confirm(`确认向【${defenderName}】发动突袭吗？`)) return;
 
     I.toast('战争机器启动，正在交火...', 'success', 1500);
-
     I.client.rpc('attack_country', {
-      p_attacker_id: profile.id,
-      p_defender_id: defenderId,
-      p_infantry: inf,
-      p_tanks: tank,
-      p_fighters: fight
+      p_attacker_id: profile.id, p_defender_id: defenderId, p_infantry: inf, p_tanks: tank, p_fighters: fight
     }).then(function(res) {
       if (res.error) { I.toast('指挥系统出错：' + res.error.message, 'error'); return; }
-      
       var r = res.data;
       if (!r.ok) { I.toast(r.msg, 'error'); return; }
-
-      var broadcastMsg = '';
-      if (r.win) {
-        broadcastMsg = `【胜】战报：${profile.username} 对 ${defenderName} 发动了突袭并大获全胜！掠夺了 ${I.fmtNumber(r.loot)} ₽ 资金！(战力: ${r.a_power} vs ${r.d_power})`;
-        I.toast(`大获全胜！掠夺了 ${I.fmtNumber(r.loot)} ₽`, 'success');
-      } else {
-        broadcastMsg = `【败】战报：${profile.username} 对 ${defenderName} 发动了突袭，但遭遇顽强抵抗，全军覆没！(战力: ${r.a_power} vs ${r.d_power})`;
-        I.toast('进攻失败，我军损失惨重', 'error');
-      }
-
-      if (ws && ws.readyState === WebSocket.OPEN) {
-         // 🚨 发送 JSON 格式的系统消息
-         ws.send(JSON.stringify({ type: 'system', msg: broadcastMsg }));
-      }
       
+      if (r.win) { I.toast(`大获全胜！掠夺了 ${I.fmtNumber(r.loot)} ₽`, 'success'); } 
+      else { I.toast('进攻失败，我军损失惨重', 'error'); }
       loadData();
     });
   };
-
 })();
 </script>
 </body>
