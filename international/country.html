@@ -6,6 +6,11 @@
 <title>国家详情 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<style>
+  /* 修复下拉框白底白字 */
+  select, select option { background-color: #111827 !important; color: #fff !important; }
+  .desc-box { font-size: 14.5px; line-height: 1.8; color: var(--ink-2); white-space: pre-wrap; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
+</style>
 </head>
 <body>
 
@@ -42,7 +47,30 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 自己的国家：修改资料弹窗 -->
+<div class="iecp-modal" id="editModal">
+  <div class="iecp-modal-box glass-2" style="max-width:600px">
+    <h3><i class="fa-solid fa-pen" style="color:var(--gold)"></i> 修改国家档案</h3>
+    <div class="field-group">
+      <div class="field"><label>国家名</label><input id="eUsername" type="text" maxlength="30"></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="field"><label>社会性质</label><input id="eSocial" type="text" maxlength="40"></div>
+        <div class="field"><label>首都</label><input id="eCapital" type="text" maxlength="40"></div>
+      </div>
+      <div class="field"><label>官方语言</label><input id="eLanguage" type="text" maxlength="80"></div>
+      <div class="field">
+        <label>国家介绍</label>
+        <textarea id="eDescription" placeholder="向世界介绍你的国家..." style="min-height:120px; resize:vertical;"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+      <button class="btn btn-ghost" onclick="document.getElementById('editModal').classList.remove('open')">取消</button>
+      <button class="btn btn-gold" id="editSaveBtn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -57,44 +85,21 @@
     if (!ok) return;
     I.initTopbar('countries');
     
-    if (!targetId) { 
-      location.replace('countries.html'); 
-      return; 
-    }
+    if (!targetId) { location.replace('countries.html'); return; }
 
     I.getProfile(true).then(function (myProfile) {
       currentProfile = myProfile;
-      
       if (!currentProfile) {
-        I.$('#countryWrap').innerHTML = `
-          <div class="empty-state glass" style="margin:40px auto;max-width:600px">
-            <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i>
-            <p style="font-size:18px;font-weight:bold;color:var(--ink)">无法获取你的国家档案</p>
-            <p style="color:var(--muted);margin:10px 0">你的账号可能未完成注册流程，或者数据库中没有你的信息。</p>
-            <div style="margin-top:20px">
-              <a href="register.html" class="btn btn-gold">重新建立国家</a>
-              <button class="btn btn-ghost" onclick="IECP.logout()">退出登录</button>
-            </div>
-          </div>
-        `;
+        I.$('#countryWrap').innerHTML = `<div class="empty-state glass"><p>无法获取你的国家档案</p></div>`;
         return;
       }
-
       return I.client.from('profiles').select('*').eq('id', targetId).maybeSingle().then(function (r) {
         if (r.error || !r.data) throw new Error('该国家不存在或已注销。');
         targetProfile = r.data;
         render();
       });
     }).catch(function (err) {
-      console.error('[IECP] 加载失败:', err);
-      I.$('#countryWrap').innerHTML = `
-        <div class="empty-state glass" style="margin:40px auto;max-width:600px">
-          <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i>
-          <p style="font-size:18px;color:var(--ink)">读取失败</p>
-          <p style="color:var(--red);margin:10px 0">${err.message || '网络异常'}</p>
-          <a href="countries.html" class="btn btn-ghost" style="margin-top:20px">返回国家列表</a>
-        </div>
-      `;
+      I.$('#countryWrap').innerHTML = `<div class="empty-state glass"><p style="color:var(--red)">${err.message}</p></div>`;
     });
   });
 
@@ -103,45 +108,84 @@
     var c = targetProfile;
     var isSelf = currentProfile.id === c.id;
 
-    wrap.innerHTML =
-      '<section class="glass" style="padding:32px;margin-bottom:24px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">' +
-        '<img src="' + I.escapeHtml(c.flag_url || I.avatarFallback(c.username)) + '" style="width:120px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-2)">' +
-        '<div style="flex:1;min-width:200px">' +
-          '<h1 style="font-size:28px;letter-spacing:2px;margin:0 0 8px">' + I.escapeHtml(c.username) + '</h1>' +
-          '<p style="color:var(--muted);margin:0">' + I.escapeHtml(c.social_system) + '</p>' +
-        '</div>' +
-        (c.emblem_url ? '<img src="' + I.escapeHtml(c.emblem_url) + '" style="width:70px;height:70px;object-fit:contain;opacity:.9">' : '') +
-      '</section>' +
+    wrap.innerHTML = `
+      <section class="glass" style="padding:32px;margin-bottom:24px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">
+        <img src="${I.escapeHtml(c.flag_url || I.avatarFallback(c.username))}" style="width:120px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-2)">
+        <div style="flex:1;min-width:200px">
+          <h1 style="font-size:28px;letter-spacing:2px;margin:0 0 8px">${I.escapeHtml(c.username)}</h1>
+          <p style="color:var(--muted);margin:0">${I.escapeHtml(c.social_system)}</p>
+        </div>
+        ${c.emblem_url ? `<img src="${I.escapeHtml(c.emblem_url)}" style="width:70px;height:70px;object-fit:contain;opacity:.9">` : ''}
+      </section>
 
-      '<section class="glass" style="padding:28px;margin-bottom:24px">' +
-        '<h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-circle-info" style="color:var(--gold)"></i> 国家档案</h3>' +
-        '<div class="country-meta" style="gap:14px;font-size:14px">' +
-          '<div class="country-meta-row"><span>社会性质</span><b>' + I.escapeHtml(c.social_system) + '</b></div>' +
-          '<div class="country-meta-row"><span>首都</span><b>' + I.escapeHtml(c.capital) + '</b></div>' +
-          '<div class="country-meta-row"><span>官方语言</span><b>' + I.escapeHtml(c.official_language) + '</b></div>' +
-          // 🚨 核心：彻底隐藏余额
-          '<div class="country-meta-row"><span>国库余额</span><b>' + I.formatBalance(c.balance, c.id) + '</b></div>' +
-          '<div class="country-meta-row"><span>加入时间</span><b>' + I.fmtDate(c.created_at) + '</b></div>' +
-        '</div>' +
-      '</section>' +
+      <!-- 国家介绍区域 -->
+      <section class="glass" style="padding:28px;margin-bottom:24px">
+        <h3 style="font-size:16px;margin:0 0 10px;letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;">
+          <span><i class="fa-solid fa-scroll" style="color:var(--gold)"></i> 国家介绍</span>
+          ${isSelf ? `<button class="btn btn-ghost btn-sm" onclick="openEditModal()" style="font-size:12px; padding:4px 12px;"><i class="fa-solid fa-pen"></i> 修改档案</button>` : ''}
+        </h3>
+        <div class="desc-box">${I.escapeHtml(c.description || '该国暂未编写国家介绍。')}</div>
+      </section>
 
-      '<section class="glass" style="padding:28px;margin-bottom:24px">' +
-        '<h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-link" style="color:var(--gold)"></i> 外交关系</h3>' +
-        '<div id="relationsWrap"><div class="loading-state" style="padding:30px 0"><div class="spinner"></div></div></div>' +
-      '</section>' +
+      <section class="glass" style="padding:28px;margin-bottom:24px">
+        <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-circle-info" style="color:var(--gold)"></i> 基本档案</h3>
+        <div class="country-meta" style="gap:14px;font-size:14px">
+          <div class="country-meta-row"><span>社会性质</span><b>${I.escapeHtml(c.social_system)}</b></div>
+          <div class="country-meta-row"><span>首都</span><b>${I.escapeHtml(c.capital)}</b></div>
+          <div class="country-meta-row"><span>官方语言</span><b>${I.escapeHtml(c.official_language)}</b></div>
+          <div class="country-meta-row"><span>国库余额</span><b>${I.formatBalance(c.balance, c.id)}</b></div>
+          <div class="country-meta-row"><span>加入时间</span><b>${I.fmtDate(c.created_at)}</b></div>
+        </div>
+      </section>
 
-      (isSelf ? '' :
-        '<section class="glass" style="padding:28px">' +
-          '<h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-bolt" style="color:var(--gold)"></i> 外交行动</h3>' +
-          '<div style="display:flex;gap:12px;flex-wrap:wrap">' +
-            '<button class="btn btn-gold" onclick="openAction(\'ally\')"><i class="fa-solid fa-handshake"></i> 申请建交</button>' +
-            '<button class="btn btn-red" onclick="openAction(\'war\')"><i class="fa-solid fa-shield-halved"></i> 宣战</button>' +
-          '</div>' +
-        '</section>'
-      );
+      <section class="glass" style="padding:28px;margin-bottom:24px">
+        <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-link" style="color:var(--gold)"></i> 外交关系</h3>
+        <div id="relationsWrap"><div class="loading-state" style="padding:30px 0"><div class="spinner"></div></div></div>
+      </section>
+
+      ${isSelf ? '' : `
+        <section class="glass" style="padding:28px">
+          <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-bolt" style="color:var(--gold)"></i> 外交行动</h3>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-gold" onclick="openAction('ally')"><i class="fa-solid fa-handshake"></i> 申请建交</button>
+            <button class="btn btn-red" onclick="openAction('war')"><i class="fa-solid fa-shield-halved"></i> 宣战</button>
+          </div>
+        </section>
+      `}
+    `;
 
     loadRelations();
   }
+
+  // 打开自己的编辑弹窗
+  window.openEditModal = function() {
+    I.$('#eUsername').value = targetProfile.username;
+    I.$('#eSocial').value = targetProfile.social_system;
+    I.$('#eCapital').value = targetProfile.capital;
+    I.$('#eLanguage').value = targetProfile.official_language;
+    I.$('#eDescription').value = targetProfile.description || '';
+    I.$('#editModal').classList.add('open');
+  };
+
+  // 保存自己的资料
+  I.$('#editSaveBtn').addEventListener('click', function() {
+    var btn = this; btn.disabled = true;
+    var data = {
+      username: I.$('#eUsername').value.trim(),
+      social_system: I.$('#eSocial').value.trim(),
+      capital: I.$('#eCapital').value.trim(),
+      official_language: I.$('#eLanguage').value.trim(),
+      description: I.$('#eDescription').value.trim()
+    };
+
+    I.client.from('profiles').update(data).eq('id', targetProfile.id).then(function(r) {
+      btn.disabled = false;
+      if (r.error) { I.toast(r.error.message, 'error'); return; }
+      I.toast('资料修改成功', 'success');
+      I.clearProfileCache();
+      setTimeout(() => location.reload(), 800);
+    });
+  });
 
   function loadRelations() {
     I.client.from('relations')
@@ -154,29 +198,24 @@
           wrap.innerHTML = '<div class="empty-state" style="padding:30px 0"><i class="fa-solid fa-circle-nodes" style="font-size:32px"></i><p>暂无外交关系</p></div>';
           return;
         }
-        
-        var otherIds = list.map(function (r) {
-          return r.country_a === targetId ? r.country_b : r.country_a;
-        });
-        
+        var otherIds = list.map(r => r.country_a === targetId ? r.country_b : r.country_a);
         I.client.from('profiles').select('id, username, flag_url').in('id', otherIds).then(function (r2) {
           var map = {};
-          (r2.data || []).forEach(function (p) { map[p.id] = p; });
+          (r2.data || []).forEach(p => { map[p.id] = p; });
           var html = '<div style="display:flex;flex-direction:column;gap:12px">';
-          
           list.forEach(function (r) {
             var otherId = r.country_a === targetId ? r.country_b : r.country_a;
             var o = map[otherId];
             if (!o) return;
             var tag = r.relation_type === 'ally' ? '友好' : r.relation_type === 'war' ? '战争' : '中立';
             var tagColor = r.relation_type === 'ally' ? 'var(--green)' : r.relation_type === 'war' ? 'var(--red)' : 'var(--muted)';
-            
-            html +=
-              '<div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--glass);border-radius:10px;border:1px solid var(--border)">' +
-                '<img src="' + I.escapeHtml(o.flag_url || I.avatarFallback(o.username)) + '" style="width:36px;height:24px;object-fit:cover;border-radius:4px">' +
-                '<a href="country.html?id=' + o.id + '" style="flex:1;color:var(--ink)">' + I.escapeHtml(o.username) + '</a>' +
-                '<span style="color:' + tagColor + ';font-size:12px;letter-spacing:1px;padding:3px 12px;border-radius:99px;background:var(--glass-2);border:1px solid var(--border)">' + tag + '</span>' +
-              '</div>';
+            html += `
+              <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--glass);border-radius:10px;border:1px solid var(--border)">
+                <img src="${I.escapeHtml(o.flag_url || I.avatarFallback(o.username))}" style="width:36px;height:24px;object-fit:cover;border-radius:4px">
+                <a href="country.html?id=${o.id}" style="flex:1;color:var(--ink)">${I.escapeHtml(o.username)}</a>
+                <span style="color:${tagColor};font-size:12px;letter-spacing:1px;padding:3px 12px;border-radius:99px;background:var(--glass-2);border:1px solid var(--border)">${tag}</span>
+              </div>
+            `;
           });
           html += '</div>';
           wrap.innerHTML = html;
@@ -185,15 +224,8 @@
   }
 
   window.openAction = function (type) {
-    if (!currentProfile) {
-      I.toast('请先登录并创建国家档案', 'error');
-      return;
-    }
-    
-    if (targetId === currentProfile.id) {
-      I.toast('不能对自己发起外交行动', 'error');
-      return;
-    }
+    if (!currentProfile) { I.toast('请先登录并创建国家档案', 'error'); return; }
+    if (targetId === currentProfile.id) { I.toast('不能对自己发起外交行动', 'error'); return; }
     
     actionType = type;
     var t = I.$('#modalTitle');
@@ -212,60 +244,40 @@
 
   I.$('#modalConfirm').addEventListener('click', function () {
     if (!currentProfile || targetId === currentProfile.id) return;
-    
-    var btn = this;
-    var msg = I.$('#modalMessage').value.trim();
-    btn.disabled = true;
-    btn.textContent = '发送中…';
+    var btn = this; var msg = I.$('#modalMessage').value.trim();
+    btn.disabled = true; btn.textContent = '发送中…';
 
     I.client.from('diplomacy_requests').insert({
-      from_country: currentProfile.id,
-      to_country: targetId,
-      request_type: actionType,
-      message: msg || null
+      from_country: currentProfile.id, to_country: targetId,
+      request_type: actionType, message: msg || null
     }).then(function (r) {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
-      
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
       if (r.error) { I.toast(r.error.message, 'error'); return; }
 
       if (actionType === 'war') {
         var a = currentProfile.id < targetId ? currentProfile.id : targetId;
         var b = currentProfile.id < targetId ? targetId : currentProfile.id;
-        
-        I.client.from('relations').upsert({
-          country_a: a, country_b: b, relation_type: 'war'
-        }).then(function () {
-          I.client.from('wars')
-            .select('id')
-            .eq('status', 'ongoing')
+        I.client.from('relations').upsert({ country_a: a, country_b: b, relation_type: 'war' }).then(function () {
+          I.client.from('wars').select('id').eq('status', 'ongoing')
             .or(`and(attacker_id.eq.${currentProfile.id},defender_id.eq.${targetId}),and(attacker_id.eq.${targetId},defender_id.eq.${currentProfile.id})`)
             .then(function (wRes) {
               if (wRes.data && wRes.data.length > 0) {
                 I.toast('战争已在进行中', 'success');
-                I.$('#actionModal').classList.remove('open');
-                return;
+                I.$('#actionModal').classList.remove('open'); return;
               }
-              I.client.from('wars').insert({
-                attacker_id: currentProfile.id,
-                defender_id: targetId,
-                status: 'ongoing'
-              }).then(function () {
+              I.client.from('wars').insert({ attacker_id: currentProfile.id, defender_id: targetId, status: 'ongoing' }).then(function () {
                 I.toast('宣战成功，战役已开启', 'success');
-                I.$('#actionModal').classList.remove('open');
-                loadRelations();
+                I.$('#actionModal').classList.remove('open'); loadRelations();
               });
             });
         });
         return;
       }
-
       I.toast('建交申请已发送', 'success');
       I.$('#actionModal').classList.remove('open');
     });
   });
 })();
 </script>
-
 </body>
 </html>
