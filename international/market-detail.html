@@ -133,10 +133,7 @@
     I.toast('正在处理交易...', 'success', 1000);
     var itemTitle = currentItem.title || '商品';
 
-    // 正确计算单件对应的基础量
-    var unitBase = (currentItem.base_quantity || 0) / (currentItem.quantity || 1);
-    var actualBaseQty = parseFloat((unitBase * qty).toFixed(4)); 
-
+    // 1. 扣买家钱
     I.client.rpc('add_balance', { 
       uid: profile.id, 
       amount: -totalCost, 
@@ -145,19 +142,14 @@
       if (r1.error) { I.toast('扣款失败：' + r1.error.message, 'error'); return; }
 
       var newQty = maxQty - qty;
-      var newBase = parseFloat((currentItem.base_quantity - actualBaseQty).toFixed(4));
-
-      var updateData = { 
-        quantity: newQty,
-        base_quantity: newBase
-      };
-      
+      var updateData = { quantity: newQty };
       if (newQty === 0) {
         updateData.status = 'sold';
         updateData.buyer_id = profile.id; 
         updateData.sold_at = new Date().toISOString();
       }
 
+      // 2. 更新库存
       I.client.from('market_items').update(updateData).eq('id', itemId).then(function (r2) {
         if (r2.error) {
           I.toast('交易失败：' + r2.error.message, 'error');
@@ -165,13 +157,38 @@
           return;
         }
 
+        // 3. 给卖家加钱
         I.client.rpc('add_balance', { 
           uid: sellerId, 
           amount: totalCost,
           note: '交易行售出 · ' + itemTitle
-        }).then(function(){
-          
+        }).then(function(r3){
+          if(r3.error) { I.toast('卖家加款失败', 'error'); return; }
+
+          // 🚨 4. 发送通知（使用 insert 强写，失败会弹红字）
+          I.client.from('notifications').insert({
+            user_id: sellerId, type: 'trade', title: '资产售出',
+            content: `你的【${itemTitle}】被 ${profile.username} 买走，入账 ${I.fmtNumber(totalCost)} ₽。`
+          }).then(function(notifRes) {
+            if (notifRes.error) {
+              console.error("通知卖家失败:", notifRes.error);
+              I.toast('通知卖家失败: ' + notifRes.error.message, 'error', 5000);
+            }
+          });
+
+          I.client.from('notifications').insert({
+            user_id: profile.id, type: 'trade', title: '购买成功',
+            content: `你花费 ${I.fmtNumber(totalCost)} ₽ 购入了【${itemTitle}】。`
+          }).then(function(notifRes) {
+            if (notifRes.error) {
+              console.error("通知买家失败:", notifRes.error);
+              I.toast('通知买家失败: ' + notifRes.error.message, 'error', 5000);
+            }
+          });
+
+          // 5. 移交资源/物品
           if (currentItem.item_type === 'resource' && currentItem.resource_type) {
+            var actualBaseQty = (currentItem.base_quantity || 0) * qty; 
             I.client.from('country_resources').select(currentItem.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
               if (resRes.data) {
                 var myCurrent = parseFloat(resRes.data[currentItem.resource_type]) || 0;
@@ -203,7 +220,7 @@
   };
 
   window.removeItem = function (itemId) {
-    if (!confirm('确认下架该商品吗？剩余资源将全额退回你的国家仓库。')) return;
+    if (!confirm('确认下架该商品吗？如果是资源，将退回你的国家仓库。')) return;
     
     I.client.from('market_items').select('*').eq('id', itemId).maybeSingle().then(function(r){
       var item = r.data;
@@ -212,9 +229,7 @@
       I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
         
         if (item.item_type === 'resource' && item.resource_type) {
-          // 🚨 修复核心：base_quantity 本身就是当前剩余的总底量，直接退还！不要乘数量！
-          var backBaseQty = parseFloat(item.base_quantity) || 0;
-          
+          var backBaseQty = (item.base_quantity || 0) * item.quantity; 
           I.client.from('country_resources').select(item.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
             if (resRes.data) {
               var currentBase = parseFloat(resRes.data[item.resource_type]) || 0;

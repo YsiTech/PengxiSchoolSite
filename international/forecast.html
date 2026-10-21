@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>灾害预报 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange</span></div></a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<main class="iecp-main">
+  <h1 style="color:#fff;margin-bottom:10px;"><i class="fa-solid fa-cloud-bolt" style="color:var(--gold);"></i> 灾害预报中心</h1>
+  <p style="color:var(--muted);margin-bottom:30px;">升级不同灾害的预报系统，降低灾害发生时造成的资源损失。</p>
+
+  <div id="resTop" class="glass" style="padding:16px;margin-bottom:24px;display:flex;gap:20px;flex-wrap:wrap;font-size:14px;"></div>
+
+  <div class="forecast-grid" id="forecastList"></div>
+</main>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null, myForecast = null, myRes = null;
+
+  var TYPES = [
+    { id: 'fire', name: '火灾预警系统', icon: 'fa-fire', desc: '减少原油损失', res: 'oil' },
+    { id: 'flood', name: '洪水预警系统', icon: 'fa-water', desc: '减少稀有金属损失', res: 'rare_metal' },
+    { id: 'earthquake', name: '地震预警系统', icon: 'fa-house-crack', desc: '减少铁矿石损失', res: 'iron_ore' },
+    { id: 'drought', name: '旱灾预警系统', icon: 'fa-sun', desc: '减少粮食损失', res: 'food' }
+  ];
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('forecast');
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      loadData();
+    });
+  });
+
+  function loadData() {
+    Promise.all([
+      I.client.from('forecasts').select('*').eq('country_id', profile.id).maybeSingle(),
+      I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle()
+    ]).then(function(res) {
+      myForecast = res[0].data || {};
+      myRes = res[1].data || {};
+      render();
+    });
+  }
+
+  function render() {
+    I.$('#resTop').innerHTML = `
+      <span style="color:var(--ink-2);"><i class="fa-solid fa-mountain"></i> 铁矿: <b>${I.fmtNumber(myRes.iron_ore)}</b></span>
+      <span style="color:var(--ink-2);"><i class="fa-solid fa-oil-well"></i> 原油: <b>${I.fmtNumber(myRes.oil)}</b></span>
+    `;
+
+    var html = '';
+    TYPES.forEach(function(t) {
+      var lvl = myForecast[t.id + '_lvl'] || 0;
+      var isMax = lvl >= 5;
+      var costIron = 1000 + (lvl * 500);
+      var costOil = 500 + (lvl * 200);
+
+      html += `
+        <div class="f-card">
+          <div class="f-header">
+            <div class="f-icon ${t.id}"><i class="fa-solid ${t.icon}"></i></div>
+            <div>
+              <div class="f-title">${t.name} <span style="color:var(--gold-2);">Lv.${lvl}</span></div>
+              <div class="f-desc">${t.desc} (当前减伤: ${lvl * 10}%)</div>
+            </div>
+          </div>
+          ${isMax ? `<div style="text-align:center;color:var(--green);font-weight:bold;padding:10px;">已达到最高级</div>` : `
+            <div class="f-cost">
+              <div>升级消耗：</div>
+              <div style="margin-top:4px;"><i class="fa-solid fa-mountain"></i> 铁矿 ${costIron} &nbsp;|&nbsp; <i class="fa-solid fa-oil-well"></i> 原油 ${costOil}</div>
+            </div>
+            <button class="btn btn-cyan" style="width:100%;" onclick="upgrade('${t.id}')"><i class="fa-solid fa-arrow-up"></i> 升级系统</button>
+          `}
+        </div>
+      `;
+    });
+    I.$('#forecastList').innerHTML = html;
+  }
+
+  window.upgrade = function(type) {
+    if (!confirm('确认消耗资源升级该预警系统吗？')) return;
+    I.client.rpc('upgrade_forecast', { p_country_id: profile.id, p_type: type }).then(function(res) {
+      if (res.error) return I.toast(res.error.message, 'error');
+      if (!res.data.ok) return I.toast(res.data.msg, 'error');
+      I.toast('升级成功！抗灾能力提升', 'success');
+      loadData();
+    });
+  };
+})();
+</script>
+</body>
+</html>
