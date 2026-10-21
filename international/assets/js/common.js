@@ -35,13 +35,7 @@
     return w.IECP.fmtDate(iso);
   };
 
-  /* ============================================================
-     🚨 补全：国库隐私控制中心
-     ============================================================ */
-  w.IECP.canViewBalance = function (targetId) {
-    return false; 
-  };
-
+  w.IECP.canViewBalance = function (targetId) { return false; };
   w.IECP.formatBalance = function (balance, targetId) {
     if (w.IECP.canViewBalance(targetId)) {
       return w.IECP.fmtNumber(balance) + ' ₽';
@@ -100,6 +94,8 @@
 
   w.IECP.renderNav = function (activeId) {
     var host = document.getElementById('iecp-nav'); if (!host) return;
+    
+    // 🚨 删除了“用户中心”，释放空间
     var items = [
       { id:'index', icon:'fa-globe', text:'首页', href:'index.html' },
       { id:'countries', icon:'fa-flag', text:'国家列表', href:'countries.html' },
@@ -109,9 +105,9 @@
       { id:'transfer', icon:'fa-money-bill-transfer', text:'跨国汇款', href:'transfer.html' },
       { id:'military', icon:'fa-industry', text:'军工厂', href:'military.html' },
       { id:'research', icon:'fa-flask', text:'研究所', href:'research.html' },
-      { id:'wars', icon:'fa-shield-halved', text:'战争系统', href:'wars.html' },
-      { id:'profile', icon:'fa-user', text:'用户中心', href:'profile.html' }
+      { id:'wars', icon:'fa-shield-halved', text:'战争系统', href:'wars.html' }
     ];
+    
     host.innerHTML = items.map(function (it) {
       return '<a' + (it.id === activeId ? ' class="active"' : '') + ' href="' + it.href + '"><i class="fa-solid ' + it.icon + '"></i>' + it.text + '</a>';
     }).join('');
@@ -120,8 +116,17 @@
   w.IECP.renderUserBadge = function () {
     var host = document.getElementById('iecp-user'); if (!host) return;
     w.IECP.getProfile().then(function (p) {
-      host.innerHTML = '<a href="profile.html" style="display:flex;align-items:center;gap:10px"><img class="iecp-user-avatar" src="' + w.IECP.escapeHtml(p.flag_url || w.IECP.avatarFallback(p.username)) + '"><span class="iecp-user-name">' + w.IECP.escapeHtml(p.username) + '</span></a>';
-    }).catch(function(){ host.innerHTML = '<a class="btn btn-ghost btn-sm" href="login.html">登录</a>'; });
+      var flag = p.flag_url || w.IECP.avatarFallback(p.username);
+      // 🚨 右侧极简重新排版：左侧国旗，中间名字，右侧带个国库图标，点击直接跳转个人中心
+      host.innerHTML = 
+        '<a href="profile.html" class="user-badge-link">' +
+          '<img class="iecp-user-avatar" src="' + w.IECP.escapeHtml(flag) + '">' +
+          '<span class="iecp-user-name">' + w.IECP.escapeHtml(p.username) + '</span>' +
+          '<i class="fa-solid fa-wallet user-wallet-icon"></i>' +
+        '</a>';
+    }).catch(function(){ 
+      host.innerHTML = '<a class="btn btn-ghost btn-sm" href="login.html">登录</a>'; 
+    });
   };
 
   w.IECP.initTopbar = function (activeId) { w.IECP.renderNav(activeId); w.IECP.renderUserBadge(); };

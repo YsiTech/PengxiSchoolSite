@@ -1329,3 +1329,392 @@ button,input,select,textarea{font:inherit;color:inherit}
     overflow-y: visible !important;
   }
 }
+/* ============================================================
+   🚨 顶部导航栏整体布局修复
+   ============================================================ */
+.iecp-topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px; /* Logo、导航、用户区之间的间距 */
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* 导航菜单容器 */
+.iecp-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap; /* 允许在屏幕较小时自动换行 */
+  gap: 8px 16px; /* 导航项之间的上下、左右间距 */
+  flex: 1;
+}
+
+/* 导航项文字防截断 */
+.iecp-nav a {
+  white-space: nowrap; 
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 右侧用户信息区 */
+.iecp-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+/* 用户头像与名字 */
+.iecp-user a:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iecp-user img.iecp-user-avatar {
+  width: 28px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.iecp-user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+/* ============================================================
+   🚨 全新设计的顶部导航栏 (PC单排 / 手机双排)
+   ============================================================ */
+
+/* 顶部外壳 */
+.iecp-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(10, 14, 26, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* PC端内容区：居中对齐 */
+.iecp-topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  gap: 24px;
+}
+
+/* 1. 左侧 Logo */
+.iecp-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.iecp-logo img { height: 36px; }
+.iecp-logo-text b { 
+  font-size: 16px; color: var(--gold); letter-spacing: 2px; font-family: var(--mono); 
+}
+.iecp-logo-text span { display: none; } /* 隐藏多余的副标题，保持干净 */
+
+/* 2. 中间导航 */
+.iecp-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none; /* 隐藏滚动条 */
+  padding: 0 10px;
+}
+.iecp-nav::-webkit-scrollbar { display: none; }
+
+.iecp-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 13.5px;
+  color: var(--muted);
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+.iecp-nav a:hover {
+  background: var(--glass-2);
+  color: var(--ink);
+}
+.iecp-nav a.active {
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--gold);
+  border-color: rgba(212, 175, 55, 0.3);
+  font-weight: 600;
+}
+
+/* 3. 右侧用户区 */
+.iecp-user {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.user-badge-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--glass-2);
+  border: 1px solid var(--border-2);
+  border-radius: 99px;
+  text-decoration: none;
+  transition: all 0.2s;
+  color: var(--ink);
+}
+.user-badge-link:hover {
+  border-color: var(--gold);
+  background: var(--glass-3);
+  color: var(--ink);
+}
+.iecp-user-avatar {
+  width: 24px;
+  height: 16px;
+  border-radius: 3px;
+  object-fit: cover;
+}
+.iecp-user-name {
+  font-size: 13px;
+  font-weight: 500;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.user-wallet-icon {
+  color: var(--gold-2);
+  font-size: 13px;
+  margin-left: 2px;
+}
+
+/* ============================================================
+   移动端自适应 (屏幕 < 900px)
+   ============================================================ */
+@media (max-width: 900px) {
+  .iecp-topbar-inner {
+    flex-wrap: wrap; /* 允许换行 */
+    height: auto;    /* 取消固定高度 */
+    padding: 10px 16px;
+    gap: 10px;
+  }
+  
+  /* 第一排：Logo 居左，用户区 居右 */
+  .iecp-logo { order: 1; }
+  .iecp-user { order: 2; margin-left: auto; }
+  
+  /* 第二排：导航占满整行，允许左右滑动 */
+  .iecp-nav {
+    order: 3;
+    width: 100%;
+    padding: 0;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .iecp-nav a {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+  /* 移动端隐藏文字，只留图标，或者显示简单文字 */
+  .iecp-user-name { display: none; } 
+}
+/* ============================================================
+   🚨 终极移动端深度优化 (针对 < 768px)
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* 1. 全局防撑破 */
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+  }
+
+  /* 2. 导航栏重构：第一行Logo+用户，第二行滑动菜单 */
+  .iecp-topbar-inner {
+    flex-wrap: wrap !important;
+    padding: 10px 16px !important;
+    gap: 10px !important;
+    height: auto !important;
+  }
+  .iecp-logo { order: 1; }
+  .iecp-user { order: 2; margin-left: auto; }
+  
+  .iecp-nav {
+    order: 3;
+    width: 100%;
+    padding-top: 10px !important;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    overflow-x: auto !important; /* 允许手指滑动 */
+    flex-wrap: nowrap !important;
+  }
+  .iecp-nav::-webkit-scrollbar { display: none; }
+  
+  .iecp-nav a {
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  /* 隐藏用户名字，只留国旗和钱包图标，省空间 */
+  .iecp-user-name { display: none !important; }
+  .user-badge-link {
+    padding: 6px 12px !important;
+    border-radius: 20px !important;
+  }
+  .iecp-user-avatar { width: 20px !important; height: 14px !important; }
+
+  /* 3. 容器间距收窄，释放屏幕空间 */
+  .iecp-main, .iecp-hero-inner, .iecp-page-head-inner {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .iecp-main { padding-top: 20px !important; }
+
+  /* 4. 核心：所有网格布局强制变单列 */
+  .news-grid, 
+  .countries-grid, 
+  .market-grid, 
+  .profile-grid,
+  .mil-grid,
+  .tech-grid,
+  .war-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+
+  /* 5. 卡片防溢出，防止内部文字撑破屏幕 */
+  .glass, .glass-2, .card, .country-card, .news-card, .market-card, .unit-card, .tech-card, .enemy-card, .profile-side, .profile-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* 6. 个人中心特殊处理 */
+  .profile-side {
+    position: static !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+  }
+  .bc-amount { font-size: 32px !important; }
+  .profile-content .card { padding: 16px !important; }
+  .form-grid.two { grid-template-columns: 1fr !important; }
+
+  /* 7. 表单与按钮全宽，方便手指点击 */
+  .field-group.two { grid-template-columns: 1fr !important; }
+  .btn, .btn-submit { 
+    width: 100% !important; 
+    padding: 12px !important; 
+    justify-content: center !important;
+  }
+  .btn-sm { width: auto !important; } /* 小按钮除外 */
+
+  /* 8. 交易行/军工厂等内部按钮行的适配 */
+  .build-row {
+    flex-direction: column !important;
+  }
+  .build-row input {
+    width: 100% !important;
+  }
+  
+  /* 9. 战争系统行军面板适配 */
+  .attack-panel .input-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px;
+  }
+  .attack-panel input {
+    width: 100% !important;
+  }
+
+  /* 10. 聊天框/弹窗防超出 */
+  .iecp-modal-box {
+    padding: 20px !important;
+    margin: 10px !important;
+  }
+}
+/* ============================================================
+   🚨 终极移动端排版：Grid 网格两行分离 (屏幕 < 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  
+  /* 1. 顶部容器采用 Grid 布局：第一行分左右，第二行占满 */
+  .iecp-topbar-inner {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important; /* 左边自适应，右边靠右 */
+    grid-template-areas: 
+      "logo user"
+      "nav  nav" !important;
+    padding: 0 16px !important; /* 这里留好左右内边距 */
+    gap: 0 !important;
+    height: auto !important;
+  }
+
+  /* 2. 第一行左侧：Logo */
+  .iecp-logo {
+    grid-area: logo !important;
+    padding: 12px 0 !important;
+    flex: none !important;
+  }
+
+  /* 3. 第一行右侧：国旗 */
+  .iecp-user {
+    grid-area: user !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  /* 去掉那个胶囊框，只留纯粹的国旗 */
+  .user-badge-link {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    gap: 6px !important;
+  }
+  .iecp-user-avatar {
+    width: 26px !important;
+    height: 18px !important;
+    border-radius: 3px !important;
+  }
+  /* 隐藏名字和钱包图标 */
+  .iecp-user-name, .user-wallet-icon { display: none !important; }
+
+  /* 4. 第二行：导航栏独占 */
+  .iecp-nav {
+    grid-area: nav !important;
+    width: auto !important;
+    margin: 0 -16px !important; /* 利用负边距让分割线贯穿全屏 */
+    padding: 8px 16px !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+    overflow-x: auto !important;
+    display: flex !important;
+    justify-content: flex-start !important;
+  }
+  
+  .iecp-nav::-webkit-scrollbar { display: none; }
+}
