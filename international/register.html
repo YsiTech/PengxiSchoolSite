@@ -7,14 +7,30 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/auth.css">
+<style>
+  /* 修复上传框样式 */
+  .custom-upload {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 100%; min-height: 80px; padding: 16px;
+    background: rgba(0,0,0,0.2); border: 1.5px dashed rgba(255,255,255,0.2);
+    border-radius: 10px; cursor: pointer; transition: 0.2s;
+    text-align: center; position: relative; overflow: hidden; box-sizing: border-box;
+  }
+  .custom-upload:hover { border-color: #d4af37; background: rgba(255,255,255,0.05); }
+  .custom-upload i { font-size: 24px; color: #d4af37; margin-bottom: 6px; }
+  .custom-upload span { font-size: 12px; color: #a0aec0; }
+  .custom-upload .file-preview { display: none; align-items: center; gap: 10px; z-index: 2; }
+  .custom-upload .file-preview i { font-size: 18px; margin: 0; color: #4fc3f7; }
+  .custom-upload .file-preview span { color: #fff; font-weight: 600; max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .custom-upload.has-file { border-style: solid; border-color: #4fc3f7; background: rgba(79,195,247,0.05); }
+  .custom-upload.has-file > i, .custom-upload.has-file > span.placeholder { display: none; }
+  .custom-upload.has-file .file-preview { display: flex; }
+</style>
 </head>
 <body>
 
-<div class="auth-page">
-  <!-- 粒子背景 -->
-  <canvas id="particleCanvas"></canvas>
-
-  <div class="auth-form-container" style="width: 100%; max-width: 760px; border-left: none; border-radius: 20px; padding: 40px; margin: 40px auto; background: rgba(17, 24, 39, 0.7); box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+<div class="auth-page" style="justify-content: center; align-items: flex-start; padding-top: 5vh; overflow-y: auto;">
+  <div class="auth-form-container" style="width: 100%; max-width: 720px; border-left: none; border-radius: 20px; padding: 40px; background: rgba(17, 24, 39, 0.7);">
     <div class="auth-box" style="max-width: 100%;">
       
       <div class="auth-header">
@@ -29,7 +45,7 @@
           <div class="auth-input-group">
             <label>登录邮箱 <span style="color:#f56565">*</span></label>
             <i class="fa-regular fa-envelope icon"></i>
-            <input type="email" id="regEmail" placeholder="用于登录和找回密码" required>
+            <input type="email" id="regEmail" placeholder="用于登录" required>
           </div>
           <div class="auth-input-group">
             <label>国家名 <span style="color:#f56565">*</span></label>
@@ -70,31 +86,39 @@
           <input type="text" id="regLanguage" placeholder="如：亚斯语、俄语" required>
         </div>
 
-        <!-- 🚨 高颜值图片上传 -->
+        <!-- 🚨 图片上传：恢复为漂亮的自定义虚线框 -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
           <div class="auth-input-group">
             <label>上传国旗 <span style="color:#f56565">*</span></label>
-            <label class="upload-box" id="flagBox">
+            <label class="custom-upload" for="regFlag">
               <i class="fa-regular fa-image"></i>
-              <span>点击上传国旗</span>
+              <span class="placeholder">点击上传国旗</span>
+              <div class="file-preview">
+                <i class="fa-solid fa-flag"></i>
+                <span id="flagName">已选择</span>
+              </div>
               <input type="file" id="regFlag" accept="image/*" required style="display:none;">
             </label>
           </div>
           <div class="auth-input-group">
             <label>上传国徽 <span style="color:#f56565">*</span></label>
-            <label class="upload-box" id="emblemBox">
-              <i class="fa-solid fa-shield-halved"></i>
-              <span>点击上传国徽</span>
+            <label class="custom-upload" for="regEmblem">
+              <i class="fa-regular fa-image"></i>
+              <span class="placeholder">点击上传国徽</span>
+              <div class="file-preview">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span id="emblemName">已选择</span>
+              </div>
               <input type="file" id="regEmblem" accept="image/*" required style="display:none;">
             </label>
           </div>
         </div>
 
-        <div class="auth-msg" id="msgReg"></div>
+        <div class="auth-msg" id="msgReg" style="color: #f56565; font-weight: bold; margin-top: 15px; text-align: center;"></div>
         <button type="submit" class="btn-auth" id="btnRegister" style="margin-top: 20px;">立即建国</button>
         
-        <div class="auth-links" style="justify-content: center;">
-          <a href="login.html">已有账号？返回登录</a>
+        <div class="auth-links" style="justify-content: center; margin-top: 20px;">
+          <a href="login.html" style="color: #a0aec0; text-decoration: none;">已有账号？返回登录</a>
         </div>
       </form>
 
@@ -102,48 +126,39 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 🚨 确保用本地或稳定的 CDN 引入 -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
-// ==========================================
-// 1. 处理图片预览
-// ==========================================
-function setupUploadPreview(inputId, boxId) {
-  const input = document.getElementById(inputId);
-  const box = document.getElementById(boxId);
-  
-  box.addEventListener('click', () => input.click());
-  
-  input.addEventListener('change', function() {
-    const file = this.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        // 清除原有内容并展示预览图
-        box.innerHTML = `<img src="${e.target.result}" class="preview">`;
-        box.appendChild(input); // 保留 input 防止丢失
-        box.classList.add('has-file');
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-}
+// 监听文件选择，更新 UI
+document.getElementById('regFlag').addEventListener('change', function() {
+  if (this.files.length > 0) {
+    this.parentNode.classList.add('has-file');
+    document.getElementById('flagName').innerText = this.files[0].name;
+  }
+});
+document.getElementById('regEmblem').addEventListener('change', function() {
+  if (this.files.length > 0) {
+    this.parentNode.classList.add('has-file');
+    document.getElementById('emblemName').innerText = this.files[0].name;
+  }
+});
 
-setupUploadPreview('regFlag', 'flagBox');
-setupUploadPreview('regEmblem', 'emblemBox');
-
-// ==========================================
-// 2. 注册逻辑
-// ==========================================
 function setMsg(id, text, type) {
   const el = document.getElementById(id);
   el.innerText = text;
-  el.className = 'auth-msg ' + type;
+  el.style.color = type === 'error' ? '#f56565' : '#48bb78';
 }
 
 async function handleRegister(e) {
   e.preventDefault();
+  
+  // 🚨 核心防御：如果 SDK 没加载，直接拦截
+  if (!window.IECP || !IECP.client) {
+    return setMsg('msgReg', '系统核心组件未加载，请检查网络并强制刷新页面（Ctrl+F5）', 'error');
+  }
+
   const email = document.getElementById('regEmail').value.trim();
   const username = document.getElementById('regUsername').value.trim();
   const pwd = document.getElementById('regPassword').value;
@@ -156,13 +171,14 @@ async function handleRegister(e) {
 
   if (pwd !== pwd2) return setMsg('msgReg', '两次输入的密码不一致', 'error');
   if (pwd.length < 6) return setMsg('msgReg', '密码至少 6 位', 'error');
-  if (!flagFile || !emblemFile) return setMsg('msgReg', '请完整上传国旗和国徽', 'error');
+  if (!flagFile || !emblemFile) return setMsg('msgReg', '请上传国旗和国徽', 'error');
 
   const btn = document.getElementById('btnRegister');
   btn.disabled = true; btn.innerText = '正在建立国家...';
   setMsg('msgReg', '', '');
 
   try {
+    // 1. 注册账号
     const { data: authData, error: authErr } = await IECP.client.auth.signUp({
       email: email,
       password: pwd,
@@ -171,10 +187,14 @@ async function handleRegister(e) {
 
     if (authErr) throw new Error(authErr.message);
     if (!authData.user) throw new Error('注册失败，请重试');
-    if (!authData.session) throw new Error('后台未关闭邮箱验证，请联系管理员');
+
+    if (!authData.session) {
+      throw new Error('注册成功，但需要在邮箱点击验证链接后才能登录。请联系管理员关闭邮件验证。');
+    }
 
     const userId = authData.user.id;
 
+    // 2. 上传图片
     const uploadFile = async (bucket, file, prefix) => {
       const ext = file.name.split('.').pop();
       const path = `${userId}/${prefix}-${Date.now()}.${ext}`;
@@ -186,7 +206,8 @@ async function handleRegister(e) {
     const flagUrl = await uploadFile('flags', flagFile, 'flag');
     const emblemUrl = await uploadFile('emblems', emblemFile, 'emblem');
 
-    const { error: dbErr } = await IECP.client.profiles.insert({
+    // 3. 写入数据库
+    const { error: dbErr } = await IECP.client.from('profiles').insert({
       id: userId,
       username: username,
       social_system: social,
@@ -206,76 +227,6 @@ async function handleRegister(e) {
     btn.disabled = false; btn.innerText = '立即建国';
   }
 }
-
-// ==========================================
-// 3. 粒子星链特效
-// ==========================================
-const canvas = document.getElementById('particleCanvas');
-const ctx = canvas.getContext('2d');
-let width, height;
-let particles = [];
-
-function initCanvas() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-}
-
-window.addEventListener('resize', initCanvas);
-initCanvas();
-
-class Particle {
-  constructor() {
-    this.x = Math.random() * width;
-    this.y = Math.random() * height;
-    this.vx = (Math.random() - 0.5) * 0.5;
-    this.vy = (Math.random() - 0.5) * 0.5;
-    this.radius = Math.random() * 1.5 + 0.5;
-  }
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    if (this.x < 0 || this.x > width) this.vx *= -1;
-    if (this.y < 0 || this.y > height) this.vy *= -1;
-  }
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(79, 195, 247, 0.6)'; // 蓝色粒子
-    ctx.fill();
-  }
-}
-
-for (let i = 0; i < 80; i++) {
-  particles.push(new Particle());
-}
-
-function animate() {
-  ctx.clearRect(0, 0, width, height);
-  
-  for (let i = 0; i < particles.length; i++) {
-    particles[i].update();
-    particles[i].draw();
-    
-    // 连线
-    for (let j = i + 1; j < particles.length; j++) {
-      const dx = particles[i].x - particles[j].x;
-      const dy = particles[i].y - particles[j].y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      if (dist < 120) {
-        ctx.beginPath();
-        ctx.moveTo(particles[i].x, particles[i].y);
-        ctx.lineTo(particles[j].x, particles[j].y);
-        // 连线透明度随距离变化
-        ctx.strokeStyle = `rgba(79, 195, 247, ${0.15 - dist/800})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
-  }
-  requestAnimationFrame(animate);
-}
-animate();
 </script>
 </body>
 </html>

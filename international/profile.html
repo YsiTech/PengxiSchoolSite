@@ -98,7 +98,7 @@
       if (!p) throw new Error('未找到国家档案。');
       profile = p;
       render();
-      loadResources(); // 加载真实资源数据
+      loadResources();
     }).catch(function (err) {
       console.error('[IECP] 加载失败:', err);
       I.$('#profileWrap').innerHTML = `
@@ -178,7 +178,22 @@
             <div class="bc-shine"></div>
           </div>
 
-          <!-- 3. 国家战略资源卡片 (动态渲染) -->
+          <!-- 🚨 3. 新增：跨国汇款入口 -->
+          <div class="inventory-card" onclick="location.href='transfer.html'" style="background: linear-gradient(150deg, #2d1810 0%, #1a2b4c 100%); border-color: rgba(212,175,55,0.3);">
+            <div class="ic-top">
+              <div class="ic-emblem" style="background: linear-gradient(135deg, #d4af37, #9d0c24); color: #fff;"><i class="fa-solid fa-money-bill-transfer"></i></div>
+              <div class="ic-title-group">
+                <div class="ic-title" style="color:var(--gold-2)">跨国汇款</div>
+                <div class="ic-subtitle">Global Transfer</div>
+              </div>
+            </div>
+            <div class="ic-content">
+              <span>通过银行卡号向其他国家转账</span>
+              <i class="fa-solid fa-arrow-right ic-arrow" style="color:var(--gold-2)"></i>
+            </div>
+          </div>
+
+          <!-- 4. 国家战略资源卡片 (动态渲染) -->
           <div class="resource-card" id="resourceCard">
             <div class="res-header">
               <div class="res-title"><i class="fa-solid fa-cubes-stacked" style="color:var(--gold);"></i> 战略资源</div>
@@ -192,7 +207,7 @@
             </div>
           </div>
 
-          <!-- 4. 国家仓库入口 -->
+          <!-- 5. 国家仓库入口 -->
           <div class="inventory-card" onclick="location.href='inventory.html'">
             <div class="ic-top">
               <div class="ic-emblem"><i class="fa-solid fa-boxes-stacked"></i></div>
@@ -234,7 +249,6 @@
                 <input id="pLanguage" type="text" value="${I.escapeHtml(profile.official_language)}" maxlength="80">
               </div>
               
-              <!-- 更换国徽组件 -->
               <div class="field full">
                 <label>更换国徽</label>
                 <div class="emblem-upload-wrap" id="emblemBtn" title="点击上传新国徽">
@@ -380,7 +394,6 @@
     });
   }
 
-  // 🚨 新增：从数据库拉取资源并渲染
   function loadResources() {
     I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle().then(function(res) {
       var grid = I.$('#resGrid');
@@ -390,7 +403,6 @@
       }
       
       var r = res.data;
-      // 计算综合评估 (极简算法：根据资源总量定级)
       var total = (r.oil || 0) + (r.gas || 0) + (r.iron_ore || 0) + (r.rare_metal || 0) + (r.food || 0);
       var evalGrade = "C";
       if (total > 50000) evalGrade = "S";
@@ -398,7 +410,6 @@
       else if (total > 15000) evalGrade = "B";
       I.$('#resTotalEval').innerText = '综合评估：' + evalGrade;
 
-      // 格式化数据
       var resData = [
         { name: '原油储备', val: r.oil, unit: '万吨', max: 10000, icon: 'fa-oil-well', cls: 'oil' },
         { name: '天然气', val: r.gas, unit: '亿m³', max: 15000, icon: 'fa-fire-flame-simple', cls: 'gas' },
@@ -410,7 +421,6 @@
       var html = '';
       resData.forEach(function(item) {
         var valFormatted = I.fmtNumber(item.val);
-        // 进度条百分比计算，最大 100%
         var pct = Math.min(100, Math.round((item.val / item.max) * 100));
         
         html += `

@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>国家转账 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .transfer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 900px; margin: 40px auto; }
+  @media (max-width: 768px) { .transfer-grid { grid-template-columns: 1fr; } }
+
+  /* 实体银行卡特效 */
+  .bank-card-ui {
+    position: relative; width: 100%; aspect-ratio: 1.6;
+    background: linear-gradient(135deg, #1e3a5f 0%, #0d1b2a 100%);
+    border-radius: 20px; padding: 30px; box-sizing: border-box;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+    display: flex; flex-direction: column; justify-content: space-between;
+    overflow: hidden; color: #fff;
+  }
+  /* 卡片上的镭射光效 */
+  .bank-card-ui::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    transform: rotate(30deg); pointer-events: none;
+  }
+  .bc-chip { width: 50px; height: 40px; background: linear-gradient(135deg, #f0d98a, #d4af37); border-radius: 8px; position: relative; }
+  .bc-chip::after { content: ''; position: absolute; inset: 8px; border: 1px solid rgba(0,0,0,0.2); border-radius: 4px; }
+  
+  .bc-number { font-family: var(--mono); font-size: 26px; letter-spacing: 3px; margin: 20px 0 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  .bc-info { display: flex; justify-content: space-between; align-items: flex-end; }
+  .bc-bank { font-size: 16px; font-weight: bold; letter-spacing: 1px; }
+  .bc-owner { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+
+  .transfer-form { background: var(--glass); padding: 30px; border-radius: var(--r); border: 1px solid var(--border); }
+  .input-wrap { position: relative; margin-bottom: 20px; }
+  .input-wrap i { position: absolute; left: 15px; top: 16px; color: var(--muted); }
+  .input-wrap input { width: 100%; padding: 15px 15px 15px 45px; background: rgba(0,0,0,0.2); border: 1px solid var(--border-2); border-radius: 10px; color: #fff; font-size: 15px; outline: none; box-sizing: border-box; transition: 0.3s; }
+  .input-wrap input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+</style>
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html">
+      <img src="photo/un.png" alt="IECP">
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
+    </a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<main class="iecp-main">
+  <div class="transfer-grid" id="transferWrap">
+    <div class="loading-state"><div class="spinner"></div><span>正在接入国际金融专线…</span></div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar(''); 
+    
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      render();
+    });
+  });
+
+  function render() {
+    var wrap = I.$('#transferWrap');
+    
+    // 🚨 防御：如果用户还没有卡号，显示开户界面
+    if (!profile.bank_card) {
+      wrap.innerHTML = `
+        <div class="glass" style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; max-width: 600px; margin: 0 auto;">
+          <i class="fa-solid fa-building-columns" style="font-size: 60px; color: var(--gold); margin-bottom: 20px;"></i>
+          <h2 style="color: #fff; margin-bottom: 10px;">你还没有国际银行账户</h2>
+          <p style="color: var(--muted); margin-bottom: 30px;">开通账户即可获得由系统分配的专属 16 位银行卡号，用于接收其他国家的汇款。</p>
+          <button class="btn btn-gold" style="padding: 15px 40px; font-size: 16px;" onclick="initBankAccount(this)">
+            <i class="fa-solid fa-id-card"></i> 立即开通账户
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    // 如果有卡号，正常显示转账界面
+    var formattedCard = profile.bank_card.replace(/(\d{4})(?=\d)/g, '$1 ');
+
+    wrap.innerHTML = `
+      <!-- 左侧：我的银行卡 -->
+      <div>
+        <div class="bank-card-ui">
+          <div class="bc-chip"></div>
+          <div>
+            <div class="bc-number">${formattedCard}</div>
+            <div class="bc-info">
+              <div>
+                <div class="bc-bank">${profile.bank_name}</div>
+                <div style="font-size:12px; opacity:0.6; margin-top:4px;">ISSUER</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="bc-owner">${profile.username}</div>
+                <div style="font-size:12px; opacity:0.6; margin-top:4px;">CARD HOLDER</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:20px; padding:16px; background:rgba(255,255,255,0.05); border-radius:12px; font-size:13px; color:var(--muted); line-height:1.8;">
+          <i class="fa-solid fa-circle-info" style="color:var(--gold);"></i> 
+          你可以将卡号复制发给其他国家进行收款。资金转账将实时到账。
+        </div>
+      </div>
+
+      <!-- 右侧：转账表单 -->
+      <div class="transfer-form">
+        <h3 style="margin:0 0 20px; font-size:18px; color:var(--ink);"><i class="fa-solid fa-money-bill-transfer" style="color:var(--gold);"></i> 发起跨国汇款</h3>
+        
+        <div class="input-wrap">
+          <i class="fa-regular fa-credit-card"></i>
+          <input type="text" id="toCard" placeholder="输入对方 16 位银行卡号" maxlength="19">
+        </div>
+        
+        <div class="input-wrap">
+          <i class="fa-solid fa-coins"></i>
+          <input type="number" id="amount" placeholder="输入转账金额 (₽)" min="1">
+        </div>
+
+        <div style="font-size:13px; color:var(--muted); margin-bottom:20px;">
+          当前国库可用余额：<b style="color:var(--cyan); font-size:15px;">${I.fmtNumber(profile.balance)} ₽</b>
+        </div>
+
+        <div id="transferMsg" style="font-size:13px; color:var(--red); margin-bottom:15px; min-height:20px; font-weight:bold;"></div>
+
+        <button class="btn btn-gold" style="width:100%; padding:15px; font-size:15px;" id="btnSubmit" onclick="doTransfer()">
+          确认汇款
+        </button>
+      </div>
+    `;
+  }
+
+  // 🚨 开户逻辑
+  window.initBankAccount = async function(btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在向央行申请开户...';
+
+    try {
+      // 1. 随机获取一个银行
+      var { data: banks, error: bankErr } = await I.client.from('banks').select('name');
+      
+      if (bankErr || !banks || !banks.length) {
+        throw new Error('无法获取银行列表，请确认数据库 banks 表是否已建好');
+      }
+
+      var randomBank = banks[Math.floor(Math.random() * banks.length)].name;
+      
+      // 2. 生成 16 位卡号 (6222 开头)
+      var cardNo = '6222' + Math.floor(100000000000 + Math.random() * 900000000000);
+      
+      // 3. 写入数据库
+      var { error: updateErr } = await I.client.from('profiles').update({
+        bank_name: randomBank,
+        bank_card: cardNo
+      }).eq('id', profile.id);
+
+      if (updateErr) throw new Error(updateErr.message);
+      
+      // 4. 更新本地缓存并重新渲染
+      profile.bank_name = randomBank;
+      profile.bank_card = cardNo;
+      I.clearProfileCache();
+      I.toast('账户开通成功', 'success');
+      render();
+
+    } catch (err) {
+      I.toast(err.message, 'error', 4000);
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-id-card"></i> 立即开通账户';
+    }
+  };
+
+  window.doTransfer = async function() {
+    var toCard = I.$('#toCard').value.replace(/\s/g, ''); // 去掉空格
+    var amount = parseInt(I.$('#amount').value, 10);
+    var msgEl = I.$('#transferMsg');
+    var btn = I.$('#btnSubmit');
+
+    if (!toCard || toCard.length !== 16) return msgEl.innerText = '请输入正确的 16 位卡号';
+    if (!amount || amount < 1) return msgEl.innerText = '转账金额必须大于 0';
+    if (amount > profile.balance) return msgEl.innerText = '国库余额不足';
+
+    btn.disabled = true; btn.innerText = '正在通过卫星链路汇款...';
+    msgEl.innerText = '';
+
+    // 调用 PostgreSQL 安全转账函数
+    var { data, error } = await I.client.rpc('transfer_money', {
+      sender_id: profile.id,
+      receiver_card: toCard,
+      amount: amount
+    });
+
+    if (error) {
+      msgEl.style.color = 'var(--red)';
+      msgEl.innerText = '系统故障：' + error.message;
+      btn.disabled = false; btn.innerText = '确认汇款';
+      return;
+    }
+
+    if (!data.ok) {
+      msgEl.style.color = 'var(--red)';
+      msgEl.innerText = data.msg;
+      btn.disabled = false; btn.innerText = '确认汇款';
+      return;
+    }
+
+    msgEl.style.color = 'var(--green)';
+    msgEl.innerText = '转账成功！';
+    I.toast('汇款已送达', 'success');
+    
+    setTimeout(() => {
+      location.reload();
+    }, 1000);
+  };
+})();
+</script>
+</body>
+</html>

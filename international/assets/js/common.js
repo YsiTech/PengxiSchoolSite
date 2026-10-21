@@ -51,20 +51,10 @@
   /* ============================================================
      🚨 国库隐私控制中心 (绝对保密模式)
      ============================================================ */
-  
-  // 判断是否有权限查看该国库
   w.IECP.canViewBalance = function (targetId) {
-    // 🚨 终极保密：公共页面（列表、详情、顶栏）任何人都不显示真实数字
-    // 以后上架间谍卫星后，在此处加入权限判断即可解锁
-    
-    // var myProfile = w.IECP._currentProfileCache;
-    // if (myProfile && myProfile.role === 'admin') return true; // 管理员可见
-    // if (hasSpySatellite(targetId)) return true; // 拥有间谍卫星可见
-
     return false; // 默认在公共页面全部隐藏
   };
 
-  // 格式化余额显示
   w.IECP.formatBalance = function (balance, targetId) {
     if (w.IECP.canViewBalance(targetId)) {
       return w.IECP.fmtNumber(balance) + ' ₽';
@@ -150,6 +140,7 @@
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   };
 
+  // 🚨 核心改动：在这里加入了“跨国汇款”的导航项
   w.IECP.renderNav = function (activeId) {
     var host = document.getElementById('iecp-nav');
     if (!host) return;
@@ -160,6 +151,7 @@
       { id:'news',       icon:'fa-newspaper',      text:'新闻发布', href:'news.html' },
       { id:'diplomacy',  icon:'fa-handshake',      text:'交流中心', href:'diplomacy.html' },
       { id:'market',     icon:'fa-store',          text:'交易行',   href:'market.html' },
+      { id:'transfer',   icon:'fa-money-bill-transfer', text:'跨国汇款', href:'transfer.html' },
       { id:'wars',       icon:'fa-shield-halved',  text:'战争系统', href:'wars.html' },
       { id:'profile',    icon:'fa-user',           text:'用户中心', href:'profile.html' }
     ];
@@ -171,7 +163,6 @@
     }).join('');
   };
 
-  // 🚨 移除了顶栏的余额显示，彻底防偷窥
   w.IECP.renderUserBadge = function () {
     var host = document.getElementById('iecp-user');
     if (!host) return;
