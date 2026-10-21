@@ -1105,3 +1105,36 @@ button,input,select,textarea{font:inherit;color:inherit}
   .iecp-logo-text span{display:none}
   .iecp-user-balance{font-size:11.5px}
 }
+/* ===================================================================
+   🚨 修复导航栏拥挤换行问题
+   =================================================================== */
+
+/* 1. 强制导航条不换行，且允许横向滚动 */
+.iecp-topbar-inner {
+  flex-wrap: nowrap !important;
+  gap: 12px !important;
+}
+
+/* 2. 导航区域：单行显示，隐藏默认滚动条 */
+.iecp-nav {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  gap: 2px !important;
+  scrollbar-width: none; /* Firefox 隐藏滚动条 */
+}
+.iecp-nav::-webkit-scrollbar {
+  display: none; /* Chrome/Safari 隐藏滚动条 */
+}
+
+/* 3. 强制每个导航项的文字绝不换行 */
+.iecp-nav a {
+  white-space: nowrap !important;
+  padding: 8px 12px !important; /* 稍微缩小左右间距，腾出空间 */
+  font-size: 13.5px !important; /* 稍微缩小字体 */
+}
+
+/* 4. 右侧用户信息区：防止被左边挤压变形 */
+.iecp-user {
+  flex-shrink: 0 !important; 
+}
