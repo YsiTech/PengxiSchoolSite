@@ -6,59 +6,248 @@
 <title>登录 · IECP 国际交流与合作平台</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body>
 
-<div class="iecp-auth-wrap">
-  <div class="iecp-auth-card glass-2">
+<div class="auth-page">
+  <!-- 粒子背景 -->
+  <canvas id="particleCanvas"></canvas>
 
-    <div class="auth-logo">
-      <img src="photo/un.png" alt="IECP">
-      <b>IECP</b>
-      <span>International Exchange &amp; Cooperation Platform</span>
+  <!-- 左侧视觉区 -->
+  <div class="auth-visual">
+    <div class="auth-visual-content">
+      <h1>联结文明<br>共享未来</h1>
+      <p>IECP 国际交流与合作平台，在这里建立你的国家，参与全球外交、贸易与战略博弈。</p>
     </div>
+  </div>
 
-    <h2>登录你的国家账号</h2>
-    <p class="auth-sub">联结文明 · 共享未来</p>
-
-    <form id="loginForm">
-      <div class="field-group">
-        <div class="field">
-          <label for="loginEmail"><i class="fa-regular fa-envelope"></i> 邮箱</label>
-          <input id="loginEmail" type="email" placeholder="请输入注册邮箱" autocomplete="email">
-        </div>
-        <div class="field">
-          <label for="loginPassword"><i class="fa-solid fa-lock"></i> 密码</label>
-          <input id="loginPassword" type="password" placeholder="请输入密码" autocomplete="current-password">
-        </div>
+  <!-- 右侧表单区 -->
+  <div class="auth-form-container">
+    <div class="auth-box">
+      <div class="auth-header">
+        <img src="photo/un.png" alt="IECP">
+        <h2>欢迎回来</h2>
+        <p>登录以继续管理你的国家</p>
       </div>
 
-      <!-- 新增：忘记密码入口 -->
-      <div style="display: flex; justify-content: flex-end; margin-top: -6px; margin-bottom: 18px;">
-        <a href="forgot-password.html" style="font-size: 13px; color: var(--gold-2); transition: opacity 0.2s;" onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
-          忘记密码？
-        </a>
+      <!-- Tab 切换 -->
+      <div class="auth-tabs">
+        <div class="auth-tab-bg" id="tabBg"></div>
+        <div class="auth-tab active" onclick="switchTab('password')">密码登录</div>
+        <div class="auth-tab" onclick="switchTab('otp')">验证码登录</div>
       </div>
 
-      <div class="auth-hint" id="loginHint"></div>
+      <!-- 密码登录表单 -->
+      <form id="formPassword" onsubmit="handlePasswordLogin(event)">
+        <div class="auth-input-group">
+          <label>邮箱</label>
+          <i class="fa-regular fa-envelope icon"></i>
+          <input type="email" id="loginEmail" placeholder="请输入注册邮箱" required>
+        </div>
+        <div class="auth-input-group">
+          <label>密码</label>
+          <i class="fa-solid fa-lock icon"></i>
+          <input type="password" id="loginPassword" placeholder="请输入密码" required>
+        </div>
+        <div class="auth-msg" id="msgPassword"></div>
+        <button type="submit" class="btn-auth" id="btnLoginPwd">登 录</button>
+      </form>
 
-      <button class="btn-submit" type="submit">
-        <i class="fa-solid fa-arrow-right-to-bracket"></i> 登 录
-      </button>
-    </form>
+      <!-- 验证码登录表单 -->
+      <form id="formOtp" class="hide" onsubmit="handleOtpLogin(event)">
+        <div class="auth-input-group">
+          <label>邮箱</label>
+          <i class="fa-regular fa-envelope icon"></i>
+          <input type="email" id="otpEmail" placeholder="请输入注册邮箱" required>
+        </div>
+        <div class="auth-input-group">
+          <label>验证码</label>
+          <i class="fa-solid fa-shield-halved icon"></i>
+          <div class="auth-code-row">
+            <input type="text" id="otpCode" placeholder="6位验证码" maxlength="6" required>
+            <button type="button" class="btn-code" id="btnSendOtp" onclick="sendLoginOtp()">获取验证码</button>
+          </div>
+        </div>
+        <div class="auth-msg" id="msgOtp"></div>
+        <button type="submit" class="btn-auth" id="btnLoginOtp">登 录</button>
+      </form>
 
-    <div class="auth-bottom">
-      还没有国家账号？<a href="register.html">立即注册</a>
+      <div class="auth-links">
+        <a href="forgot-password.html">忘记密码？</a>
+        <a href="register.html" style="color: var(--gold-2);">注册新国家 <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
     </div>
-
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
-<script src="assets/js/auth.js"></script>
-<script>IECP.initLogin();</script>
+<script>
+// ==========================================
+// 1. 登录核心逻辑
+// ==========================================
+(function() {
+  IECP.client.auth.getSession().then(function(res) {
+    if (res.data && res.data.session) location.replace('index.html');
+  });
+  if (new URLSearchParams(location.search).get('mode') === 'otp') switchTab('otp');
+})();
 
+function switchTab(type) {
+  const tabs = document.querySelectorAll('.auth-tab');
+  const tabBg = document.getElementById('tabBg');
+  const formPassword = document.getElementById('formPassword');
+  const formOtp = document.getElementById('formOtp');
+
+  if (type === 'password') {
+    tabs[0].classList.add('active'); tabs[1].classList.remove('active');
+    tabBg.style.transform = 'translateX(0)';
+    formPassword.classList.remove('hide'); formOtp.classList.add('hide');
+  } else {
+    tabs[1].classList.add('active'); tabs[0].classList.remove('active');
+    tabBg.style.transform = 'translateX(100%)';
+    formOtp.classList.remove('hide'); formPassword.classList.add('hide');
+  }
+}
+
+function setMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.innerText = text;
+  el.className = 'auth-msg ' + type;
+}
+
+async function handlePasswordLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const pwd = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('btnLoginPwd');
+
+  btn.disabled = true; btn.innerText = '登录中...';
+  setMsg('msgPassword', '', '');
+
+  const { error } = await IECP.client.auth.signInWithPassword({ email, password: pwd });
+
+  if (error) {
+    setMsg('msgPassword', error.message === 'Invalid login credentials' ? '邮箱或密码错误' : error.message, 'error');
+    btn.disabled = false; btn.innerText = '登 录';
+    return;
+  }
+  location.replace('index.html');
+}
+
+let countdown = 0;
+async function sendLoginOtp() {
+  const email = document.getElementById('otpEmail').value.trim();
+  if (!email) return setMsg('msgOtp', '请先输入邮箱', 'error');
+
+  const btn = document.getElementById('btnSendOtp');
+  btn.disabled = true; btn.innerText = '发送中...';
+  setMsg('msgOtp', '', '');
+
+  const { error } = await IECP.client.auth.signInWithOtp({
+    email: email, options: { shouldCreateUser: false }
+  });
+
+  if (error) {
+    setMsg('msgOtp', '发送失败：' + error.message, 'error');
+    btn.disabled = false; btn.innerText = '获取验证码';
+    return;
+  }
+
+  setMsg('msgOtp', '验证码已发送至邮箱', 'success');
+  countdown = 60; btn.innerText = `${countdown}s 后重试`;
+  const timer = setInterval(() => {
+    countdown--; btn.innerText = `${countdown}s 后重试`;
+    if (countdown <= 0) {
+      clearInterval(timer); btn.disabled = false; btn.innerText = '获取验证码';
+    }
+  }, 1000);
+}
+
+async function handleOtpLogin(e) {
+  e.preventDefault();
+  const email = document.getElementById('otpEmail').value.trim();
+  const code = document.getElementById('otpCode').value.trim();
+  const btn = document.getElementById('btnLoginOtp');
+
+  btn.disabled = true; btn.innerText = '验证中...';
+  setMsg('msgOtp', '', '');
+
+  const { error } = await IECP.client.auth.verifyOtp({
+    email: email, token: code, type: 'email'
+  });
+
+  if (error) {
+    setMsg('msgOtp', '验证码错误或已过期', 'error');
+    btn.disabled = false; btn.innerText = '登 录';
+    return;
+  }
+  location.replace('index.html');
+}
+
+// ==========================================
+// 2. 粒子星链特效
+// ==========================================
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let width, height;
+let particles = [];
+
+function initCanvas() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', initCanvas);
+initCanvas();
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * width;
+    this.y = Math.random() * height;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.radius = Math.random() * 1.5 + 0.5;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > width) this.vx *= -1;
+    if (this.y < 0 || this.y > height) this.vy *= -1;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(79, 195, 247, 0.6)';
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) particles.push(new Particle());
+
+function animate() {
+  ctx.clearRect(0, 0, width, height);
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].update();
+    particles[i].draw();
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 120) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        ctx.strokeStyle = `rgba(79, 195, 247, ${0.15 - dist/800})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
 </body>
 </html>

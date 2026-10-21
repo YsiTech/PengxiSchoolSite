@@ -6,116 +6,276 @@
 <title>注册 · IECP 国际交流与合作平台</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="assets/css/auth.css">
 </head>
 <body>
 
-<div class="iecp-auth-wrap">
-  <div class="iecp-auth-card glass-2" style="max-width:680px">
+<div class="auth-page">
+  <!-- 粒子背景 -->
+  <canvas id="particleCanvas"></canvas>
 
-    <div class="auth-logo">
-      <img src="photo/un.png" alt="IECP">
-      <b>IECP</b>
-      <span>International Exchange &amp; Cooperation Platform</span>
+  <div class="auth-form-container" style="width: 100%; max-width: 760px; border-left: none; border-radius: 20px; padding: 40px; margin: 40px auto; background: rgba(17, 24, 39, 0.7); box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+    <div class="auth-box" style="max-width: 100%;">
+      
+      <div class="auth-header">
+        <img src="photo/un.png" alt="IECP">
+        <h2>建立你的国家</h2>
+        <p>填写国家信息，开启你的国际博弈之旅</p>
+      </div>
+
+      <form id="formRegister" onsubmit="handleRegister(event)">
+        <!-- 账号信息 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="auth-input-group">
+            <label>登录邮箱 <span style="color:#f56565">*</span></label>
+            <i class="fa-regular fa-envelope icon"></i>
+            <input type="email" id="regEmail" placeholder="用于登录和找回密码" required>
+          </div>
+          <div class="auth-input-group">
+            <label>国家名 <span style="color:#f56565">*</span></label>
+            <i class="fa-solid fa-landmark-flag icon"></i>
+            <input type="text" id="regUsername" placeholder="如：亚斯共和国" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="auth-input-group">
+            <label>密码 <span style="color:#f56565">*</span></label>
+            <i class="fa-solid fa-lock icon"></i>
+            <input type="password" id="regPassword" placeholder="至少6位" required>
+          </div>
+          <div class="auth-input-group">
+            <label>确认密码 <span style="color:#f56565">*</span></label>
+            <i class="fa-solid fa-lock icon"></i>
+            <input type="password" id="regPassword2" placeholder="再次输入" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="auth-input-group">
+            <label>社会性质 <span style="color:#f56565">*</span></label>
+            <i class="fa-solid fa-scale-balanced icon"></i>
+            <input type="text" id="regSocial" placeholder="如：社会主义共和国" required>
+          </div>
+          <div class="auth-input-group">
+            <label>首都 <span style="color:#f56565">*</span></label>
+            <i class="fa-solid fa-city icon"></i>
+            <input type="text" id="regCapital" placeholder="如：蓬溪格勒" required>
+          </div>
+        </div>
+
+        <div class="auth-input-group">
+          <label>官方语言 <span style="color:#f56565">*</span></label>
+          <i class="fa-solid fa-language icon"></i>
+          <input type="text" id="regLanguage" placeholder="如：亚斯语、俄语" required>
+        </div>
+
+        <!-- 🚨 高颜值图片上传 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 10px;">
+          <div class="auth-input-group">
+            <label>上传国旗 <span style="color:#f56565">*</span></label>
+            <label class="upload-box" id="flagBox">
+              <i class="fa-regular fa-image"></i>
+              <span>点击上传国旗</span>
+              <input type="file" id="regFlag" accept="image/*" required style="display:none;">
+            </label>
+          </div>
+          <div class="auth-input-group">
+            <label>上传国徽 <span style="color:#f56565">*</span></label>
+            <label class="upload-box" id="emblemBox">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>点击上传国徽</span>
+              <input type="file" id="regEmblem" accept="image/*" required style="display:none;">
+            </label>
+          </div>
+        </div>
+
+        <div class="auth-msg" id="msgReg"></div>
+        <button type="submit" class="btn-auth" id="btnRegister" style="margin-top: 20px;">立即建国</button>
+        
+        <div class="auth-links" style="justify-content: center;">
+          <a href="login.html">已有账号？返回登录</a>
+        </div>
+      </form>
+
     </div>
-
-    <h2>建立你的国家账号</h2>
-    <p class="auth-sub">验证邮箱并填写信息，即可加入国际交流与合作平台</p>
-
-    <form id="registerForm">
-
-      <!-- 邮箱与验证码 -->
-      <div class="field-group two" style="grid-template-columns: 2fr 1fr; align-items:start;">
-        <div class="field">
-          <label for="regEmail"><i class="fa-regular fa-envelope"></i> 邮箱 <span class="req">*</span></label>
-          <input id="regEmail" type="email" placeholder="用于接收验证码" autocomplete="email">
-        </div>
-        <div class="field">
-          <label style="opacity:0">操作</label>
-          <button type="button" class="btn btn-ghost" id="sendCodeBtn" style="width:100%; padding:12px 0;">获取验证码</button>
-        </div>
-      </div>
-
-      <div class="field-group">
-        <div class="field">
-          <label for="regCode"><i class="fa-solid fa-shield-halved"></i> 邮箱验证码 <span class="req">*</span></label>
-          <input id="regCode" type="text" placeholder="请输入 6 位验证码" maxlength="6">
-        </div>
-      </div>
-
-      <div class="field-group two">
-        <div class="field">
-          <label for="regPassword"><i class="fa-solid fa-lock"></i> 密码 <span class="req">*</span></label>
-          <input id="regPassword" type="password" placeholder="至少 6 位">
-        </div>
-        <div class="field">
-          <label for="regPassword2"><i class="fa-solid fa-lock"></i> 确认密码 <span class="req">*</span></label>
-          <input id="regPassword2" type="password" placeholder="再次输入密码">
-        </div>
-      </div>
-
-      <div class="field-group two">
-        <div class="field">
-          <label for="regUsername"><i class="fa-solid fa-landmark-flag"></i> 国家名 <span class="req">*</span></label>
-          <input id="regUsername" type="text" placeholder="如：亚斯共和国" maxlength="30">
-        </div>
-        <div class="field">
-          <label for="regSocial"><i class="fa-solid fa-scale-balanced"></i> 社会性质 <span class="req">*</span></label>
-          <input id="regSocial" type="text" placeholder="如：社会主义共和国" maxlength="40">
-        </div>
-      </div>
-
-      <div class="field-group two">
-        <div class="field">
-          <label for="regCapital"><i class="fa-solid fa-city"></i> 首都 <span class="req">*</span></label>
-          <input id="regCapital" type="text" placeholder="如：蓬溪格勒" maxlength="40">
-        </div>
-        <div class="field">
-          <label for="regLanguage"><i class="fa-solid fa-language"></i> 官方语言 <span class="req">*</span></label>
-          <input id="regLanguage" type="text" placeholder="如：亚斯语、俄语" maxlength="80">
-        </div>
-      </div>
-
-      <div class="field-group two">
-        <div class="field">
-          <label><i class="fa-solid fa-flag"></i> 国旗 <span class="req">*</span></label>
-          <label class="upload-box" for="flagFile">
-            <i class="fa-regular fa-image"></i>
-            <span>点击上传国旗</span>
-            <span style="font-size:11px;opacity:.7">JPG / PNG · 2MB 以内</span>
-            <input id="flagFile" type="file" accept="image/*">
-          </label>
-        </div>
-        <div class="field">
-          <label><i class="fa-solid fa-shield-halved"></i> 国徽 <span class="req">*</span></label>
-          <label class="upload-box" for="emblemFile">
-            <i class="fa-regular fa-image"></i>
-            <span>点击上传国徽</span>
-            <span style="font-size:11px;opacity:.7">JPG / PNG · 2MB 以内</span>
-            <input id="emblemFile" type="file" accept="image/*">
-          </label>
-        </div>
-      </div>
-
-      <div class="auth-hint" id="registerHint"></div>
-
-      <button class="btn-submit" type="submit" id="regSubmitBtn">
-        <i class="fa-solid fa-plus"></i> 验证并建立国家
-      </button>
-
-    </form>
-
-    <div class="auth-bottom">
-      已有账号？<a href="login.html">返回登录</a>
-    </div>
-
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
-<script src="assets/js/auth.js"></script>
-<script>IECP.initRegister();</script>
+<script>
+// ==========================================
+// 1. 处理图片预览
+// ==========================================
+function setupUploadPreview(inputId, boxId) {
+  const input = document.getElementById(inputId);
+  const box = document.getElementById(boxId);
+  
+  box.addEventListener('click', () => input.click());
+  
+  input.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        // 清除原有内容并展示预览图
+        box.innerHTML = `<img src="${e.target.result}" class="preview">`;
+        box.appendChild(input); // 保留 input 防止丢失
+        box.classList.add('has-file');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
 
+setupUploadPreview('regFlag', 'flagBox');
+setupUploadPreview('regEmblem', 'emblemBox');
+
+// ==========================================
+// 2. 注册逻辑
+// ==========================================
+function setMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.innerText = text;
+  el.className = 'auth-msg ' + type;
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  const email = document.getElementById('regEmail').value.trim();
+  const username = document.getElementById('regUsername').value.trim();
+  const pwd = document.getElementById('regPassword').value;
+  const pwd2 = document.getElementById('regPassword2').value;
+  const social = document.getElementById('regSocial').value.trim();
+  const capital = document.getElementById('regCapital').value.trim();
+  const lang = document.getElementById('regLanguage').value.trim();
+  const flagFile = document.getElementById('regFlag').files[0];
+  const emblemFile = document.getElementById('regEmblem').files[0];
+
+  if (pwd !== pwd2) return setMsg('msgReg', '两次输入的密码不一致', 'error');
+  if (pwd.length < 6) return setMsg('msgReg', '密码至少 6 位', 'error');
+  if (!flagFile || !emblemFile) return setMsg('msgReg', '请完整上传国旗和国徽', 'error');
+
+  const btn = document.getElementById('btnRegister');
+  btn.disabled = true; btn.innerText = '正在建立国家...';
+  setMsg('msgReg', '', '');
+
+  try {
+    const { data: authData, error: authErr } = await IECP.client.auth.signUp({
+      email: email,
+      password: pwd,
+      options: { data: { nickname: username } }
+    });
+
+    if (authErr) throw new Error(authErr.message);
+    if (!authData.user) throw new Error('注册失败，请重试');
+    if (!authData.session) throw new Error('后台未关闭邮箱验证，请联系管理员');
+
+    const userId = authData.user.id;
+
+    const uploadFile = async (bucket, file, prefix) => {
+      const ext = file.name.split('.').pop();
+      const path = `${userId}/${prefix}-${Date.now()}.${ext}`;
+      const { error } = await IECP.client.storage.from(bucket).upload(path, file);
+      if (error) throw new Error('图片上传失败：' + error.message);
+      return IECP.client.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+    };
+
+    const flagUrl = await uploadFile('flags', flagFile, 'flag');
+    const emblemUrl = await uploadFile('emblems', emblemFile, 'emblem');
+
+    const { error: dbErr } = await IECP.client.profiles.insert({
+      id: userId,
+      username: username,
+      social_system: social,
+      capital: capital,
+      official_language: lang,
+      flag_url: flagUrl,
+      emblem_url: emblemUrl
+    });
+
+    if (dbErr) throw new Error('写入档案失败：' + dbErr.message);
+
+    setMsg('msgReg', '建立成功！正在跳转...', 'success');
+    setTimeout(() => location.replace('index.html'), 1000);
+
+  } catch (err) {
+    setMsg('msgReg', err.message, 'error');
+    btn.disabled = false; btn.innerText = '立即建国';
+  }
+}
+
+// ==========================================
+// 3. 粒子星链特效
+// ==========================================
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+let width, height;
+let particles = [];
+
+function initCanvas() {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+}
+
+window.addEventListener('resize', initCanvas);
+initCanvas();
+
+class Particle {
+  constructor() {
+    this.x = Math.random() * width;
+    this.y = Math.random() * height;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
+    this.radius = Math.random() * 1.5 + 0.5;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > width) this.vx *= -1;
+    if (this.y < 0 || this.y > height) this.vy *= -1;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(79, 195, 247, 0.6)'; // 蓝色粒子
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 80; i++) {
+  particles.push(new Particle());
+}
+
+function animate() {
+  ctx.clearRect(0, 0, width, height);
+  
+  for (let i = 0; i < particles.length; i++) {
+    particles[i].update();
+    particles[i].draw();
+    
+    // 连线
+    for (let j = i + 1; j < particles.length; j++) {
+      const dx = particles[i].x - particles[j].x;
+      const dy = particles[i].y - particles[j].y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      if (dist < 120) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(particles[j].x, particles[j].y);
+        // 连线透明度随距离变化
+        ctx.strokeStyle = `rgba(79, 195, 247, ${0.15 - dist/800})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
 </body>
 </html>
