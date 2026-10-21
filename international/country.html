@@ -157,7 +157,6 @@
     loadRelations();
   }
 
-  // 打开自己的编辑弹窗
   window.openEditModal = function() {
     I.$('#eUsername').value = targetProfile.username;
     I.$('#eSocial').value = targetProfile.social_system;
@@ -167,7 +166,6 @@
     I.$('#editModal').classList.add('open');
   };
 
-  // 保存自己的资料
   I.$('#editSaveBtn').addEventListener('click', function() {
     var btn = this; btn.disabled = true;
     var data = {
@@ -245,36 +243,51 @@
   I.$('#modalConfirm').addEventListener('click', function () {
     if (!currentProfile || targetId === currentProfile.id) return;
     var btn = this; var msg = I.$('#modalMessage').value.trim();
-    btn.disabled = true; btn.textContent = '发送中…';
+    btn.disabled = true; btn.textContent = '处理中…';
 
+    // 1. 写入外交请求记录（用于给对方看，或做系统记录）
     I.client.from('diplomacy_requests').insert({
       from_country: currentProfile.id, to_country: targetId,
       request_type: actionType, message: msg || null
     }).then(function (r) {
-      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
-      if (r.error) { I.toast(r.error.message, 'error'); return; }
+      // 无论请求表插入是否成功，直接处理关系表
+      
+      var a = currentProfile.id < targetId ? currentProfile.id : targetId;
+      var b = currentProfile.id < targetId ? targetId : currentProfile.id;
 
-      if (actionType === 'war') {
-        var a = currentProfile.id < targetId ? currentProfile.id : targetId;
-        var b = currentProfile.id < targetId ? targetId : currentProfile.id;
-        I.client.from('relations').upsert({ country_a: a, country_b: b, relation_type: 'war' }).then(function () {
-          I.client.from('wars').select('id').eq('status', 'ongoing')
-            .or(`and(attacker_id.eq.${currentProfile.id},defender_id.eq.${targetId}),and(attacker_id.eq.${targetId},defender_id.eq.${currentProfile.id})`)
-            .then(function (wRes) {
-              if (wRes.data && wRes.data.length > 0) {
-                I.toast('战争已在进行中', 'success');
-                I.$('#actionModal').classList.remove('open'); return;
-              }
-              I.client.from('wars').insert({ attacker_id: currentProfile.id, defender_id: targetId, status: 'ongoing' }).then(function () {
-                I.toast('宣战成功，战役已开启', 'success');
-                I.$('#actionModal').classList.remove('open'); loadRelations();
-              });
+      // 🚨 核心修复：先删除可能存在的旧关系，再插入新关系！
+      I.client.from('relations').delete().match({ country_a: a, country_b: b }).then(function() {
+        
+        if (actionType === 'war') {
+          // 写入战争关系
+          I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: 'war' }).then(function(rWar) {
+            if (rWar.error) {
+              I.toast('建立战争失败：' + rWar.error.message, 'error');
+              btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
+              return;
+            }
+            // 顺便创建战争表记录
+            I.client.from('wars').insert({ attacker_id: currentProfile.id, defender_id: targetId, status: 'ongoing' }).then(function() {
+              I.toast('宣战成功，战役已开启', 'success');
+              I.$('#actionModal').classList.remove('open'); 
+              btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
+              loadRelations(); // 刷新关系显示
             });
-        });
-        return;
-      }
-      I.toast('建交申请已发送', 'success');
-      I.$('#actionModal').classList.remove('open');
+          });
+        } else {
+          // 写入建交关系
+          I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: 'ally' }).then(function(rAlly) {
+            if (rAlly.error) {
+               I.toast('建交失败：' + rAlly.error.message, 'error');
+            } else {
+               I.toast('建交成功', 'success');
+            }
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
+            I.$('#actionModal').classList.remove('open');
+            loadRelations();
+          });
+        }
+      });
     });
   });
 })();
