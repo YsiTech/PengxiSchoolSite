@@ -24,7 +24,7 @@
   <div class="loading-state"><div class="spinner"></div><span>正在加载商品信息…</span></div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -131,12 +131,27 @@
     if (!confirm(`确认花费 ${I.fmtNumber(totalCost)} ₽ 购买 ${qty}${currentItem.custom_unit || ''}该物品吗？`)) return;
 
     I.toast('正在处理交易...', 'success', 1000);
+    var itemTitle = currentItem.title || '商品';
 
-    I.client.from('profiles').update({ balance: profile.balance - totalCost }).eq('id', profile.id).then(function (r1) {
+    // 正确计算单件对应的基础量
+    var unitBase = (currentItem.base_quantity || 0) / (currentItem.quantity || 1);
+    var actualBaseQty = parseFloat((unitBase * qty).toFixed(4)); 
+
+    I.client.rpc('add_balance', { 
+      uid: profile.id, 
+      amount: -totalCost, 
+      note: '交易行购买 · ' + itemTitle 
+    }).then(function (r1) {
       if (r1.error) { I.toast('扣款失败：' + r1.error.message, 'error'); return; }
 
       var newQty = maxQty - qty;
-      var updateData = { quantity: newQty };
+      var newBase = parseFloat((currentItem.base_quantity - actualBaseQty).toFixed(4));
+
+      var updateData = { 
+        quantity: newQty,
+        base_quantity: newBase
+      };
+      
       if (newQty === 0) {
         updateData.status = 'sold';
         updateData.buyer_id = profile.id; 
@@ -146,15 +161,17 @@
       I.client.from('market_items').update(updateData).eq('id', itemId).then(function (r2) {
         if (r2.error) {
           I.toast('交易失败：' + r2.error.message, 'error');
-          I.client.from('profiles').update({ balance: profile.balance }).eq('id', profile.id); // 退还
+          I.client.rpc('add_balance', { uid: profile.id, amount: totalCost, note: '交易行购买失败退款 · ' + itemTitle });
           return;
         }
 
-        I.client.rpc('add_balance', { uid: sellerId, amount: totalCost }).then(function(){
+        I.client.rpc('add_balance', { 
+          uid: sellerId, 
+          amount: totalCost,
+          note: '交易行售出 · ' + itemTitle
+        }).then(function(){
           
-          // 🚨 给买方增加资源，直接加底层基础量
           if (currentItem.item_type === 'resource' && currentItem.resource_type) {
-            var actualBaseQty = (currentItem.base_quantity || 0) * qty; // 真实给买家的基础量
             I.client.from('country_resources').select(currentItem.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
               if (resRes.data) {
                 var myCurrent = parseFloat(resRes.data[currentItem.resource_type]) || 0;
@@ -186,7 +203,7 @@
   };
 
   window.removeItem = function (itemId) {
-    if (!confirm('确认下架该商品吗？如果是资源，将退回你的国家仓库。')) return;
+    if (!confirm('确认下架该商品吗？剩余资源将全额退回你的国家仓库。')) return;
     
     I.client.from('market_items').select('*').eq('id', itemId).maybeSingle().then(function(r){
       var item = r.data;
@@ -195,7 +212,9 @@
       I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
         
         if (item.item_type === 'resource' && item.resource_type) {
-          var backBaseQty = (item.base_quantity || 0) * item.quantity; // 退回全部基础量
+          // 🚨 修复核心：base_quantity 本身就是当前剩余的总底量，直接退还！不要乘数量！
+          var backBaseQty = parseFloat(item.base_quantity) || 0;
+          
           I.client.from('country_resources').select(item.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
             if (resRes.data) {
               var currentBase = parseFloat(resRes.data[item.resource_type]) || 0;

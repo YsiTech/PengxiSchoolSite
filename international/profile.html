@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/profile.css">
 <style>
-  /* 更换国徽组件的专属样式 */
   .emblem-upload-wrap {
     position: relative; width: 100px; height: 100px; margin-top: 8px;
     border-radius: 50%; border: 2px dashed var(--border-2); background: var(--glass-2);
@@ -40,6 +39,28 @@
   <div class="loading-state"><div class="spinner"></div><span>正在读取国家档案…</span></div>
 </main>
 
+<!-- ==================== 资金明细弹窗 ==================== -->
+<div class="funds-modal" id="fundsModal" aria-hidden="true">
+  <div class="funds-modal-mask" data-close></div>
+  <div class="funds-modal-panel">
+    <div class="funds-modal-head">
+      <div>
+        <h3><i class="fa-solid fa-file-invoice-dollar"></i> 资金明细</h3>
+        <p>National Treasury · 收支流水</p>
+      </div>
+      <button class="funds-close" id="fundsClose" aria-label="关闭">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="funds-modal-body" id="fundsBody">
+      <div class="funds-loading"><div class="spinner"></div><span>正在调取国库账本…</span></div>
+    </div>
+    <div class="funds-modal-foot">
+      <button class="btn btn-ghost" id="fundsLoadMore" style="display:none">加载更多</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
@@ -47,6 +68,97 @@
 (function () {
   var I = IECP;
   var profile = null;
+
+  /* ==================== 资金明细核心逻辑 ==================== */
+  var fundsState = { page: 0, pageSize: 20, loading: false, done: false };
+
+  function openFunds() {
+    var m = I.$('#fundsModal');
+    if (!m) return;
+    m.classList.add('open');
+    m.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    if (fundsState.page === 0) loadFunds(true);
+  }
+
+  function closeFunds() {
+    var m = I.$('#fundsModal');
+    if (!m) return;
+    m.classList.remove('open');
+    m.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function loadFunds(reset) {
+    if (fundsState.loading) return;
+    if (!reset && fundsState.done) return;
+
+    if (reset) {
+      fundsState.page = 0;
+      fundsState.done = false;
+      I.$('#fundsBody').innerHTML = '<div class="funds-loading"><div class="spinner"></div><span>正在调取国库账本…</span></div>';
+      I.$('#fundsLoadMore').style.display = 'none';
+    }
+
+    fundsState.loading = true;
+    var from = fundsState.page * fundsState.pageSize;
+    var to = from + fundsState.pageSize - 1;
+
+    I.client.from('balance_logs')
+      .select('*')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .range(from, to)
+      .then(function (r) {
+        fundsState.loading = false;
+        var body = I.$('#fundsBody');
+
+        if (r.error) {
+          if (reset) body.innerHTML = '<div class="funds-empty"><i class="fa-solid fa-triangle-exclamation"></i>加载失败：' + I.escapeHtml(r.error.message) + '</div>';
+          return;
+        }
+
+        var rows = r.data || [];
+        if (rows.length < fundsState.pageSize) fundsState.done = true;
+        fundsState.page++;
+
+        if (reset) body.innerHTML = '';
+
+        if (reset && rows.length === 0) {
+          body.innerHTML = '<div class="funds-empty"><i class="fa-solid fa-receipt"></i>暂无资金流水记录</div>';
+          return;
+        }
+
+        var html = '';
+        rows.forEach(function (log) {
+          var delta = Number(log.delta) || 0;
+          var isIn = delta > 0;
+          var cls = isIn ? 'in' : 'out';
+          var icon = isIn ? 'fa-arrow-down-long' : 'fa-arrow-up-long';
+          var sign = isIn ? '+' : '−';
+          var note = log.note ? I.escapeHtml(log.note) : (isIn ? '资金收入' : '资金支出');
+
+          html += '<div class="funds-item">' +
+            '<div class="funds-icon ' + cls + '"><i class="fa-solid ' + icon + '"></i></div>' +
+            '<div class="funds-info">' +
+              '<div class="funds-title">' + note + '</div>' +
+              '<div class="funds-meta">' + I.fmtDate(log.created_at) + '</div>' +
+            '</div>' +
+            '<div class="funds-amt ' + cls + '">' + sign + I.fmtNumber(Math.abs(delta)) + ' ₽' +
+              '<span class="funds-after">余额 ' + I.fmtNumber(log.balance_after) + '</span>' +
+            '</div>' +
+          '</div>';
+        });
+        body.insertAdjacentHTML('beforeend', html);
+
+        I.$('#fundsLoadMore').style.display = fundsState.done ? 'none' : 'inline-flex';
+      })
+      .catch(function (err) {
+        fundsState.loading = false;
+        if (reset) I.$('#fundsBody').innerHTML = '<div class="funds-empty"><i class="fa-solid fa-triangle-exclamation"></i>网络异常：' + I.escapeHtml(err.message || '请求失败') + '</div>';
+      });
+  }
+  /* ==================== 资金明细逻辑结束 ==================== */
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
@@ -100,7 +212,8 @@
             <p class="profile-hint">加入时间：${I.fmtDate(profile.created_at).split(' ')[0]}</p>
           </div>
 
-          <div class="balance-card">
+          <div class="balance-card" id="balanceCard" title="点击查看资金明细">
+            <div class="bc-hint"><i class="fa-solid fa-list-ul"></i> 明细</div>
             <div class="bc-top">
               <div class="bc-emblem">₽</div>
               <div class="bc-title-group"><div class="bc-title">国库储备</div><div class="bc-subtitle">National Treasury</div></div>
@@ -165,7 +278,6 @@
                 <input id="pLanguage" type="text" value="${I.escapeHtml(profile.official_language)}" maxlength="80">
               </div>
               
-              <!-- 🚨 新增国家介绍 -->
               <div class="field full">
                 <label>国家介绍</label>
                 <textarea id="pDescription" placeholder="向世界介绍你的国家历史、文化或现状..." style="min-height: 120px; line-height: 1.6; resize: vertical;">${I.escapeHtml(profile.description || '')}</textarea>
@@ -238,7 +350,6 @@
       }
     });
 
-    // 保存资料（新增 description 字段）
     I.$('#saveProfileBtn').addEventListener('click', function () {
       var btn = this; btn.disabled = true;
       var data = {
@@ -246,7 +357,7 @@
         social_system: I.$('#pSocial').value.trim(),
         capital: I.$('#pCapital').value.trim(),
         official_language: I.$('#pLanguage').value.trim(),
-        description: I.$('#pDescription').value.trim() // 🚨 获取介绍
+        description: I.$('#pDescription').value.trim()
       };
 
       var flagFile = I.$('#pFlag').files[0];
@@ -291,6 +402,16 @@
     });
 
     I.$('#logoutBtn').addEventListener('click', function () { if (confirm('确定退出登录吗？')) I.logout(); });
+
+    /* ==================== 资金明细：绑定事件 ==================== */
+    I.$('#balanceCard').addEventListener('click', openFunds);
+    I.$('#fundsClose').addEventListener('click', closeFunds);
+    I.$('.funds-modal-mask').addEventListener('click', closeFunds);
+    I.$('#fundsLoadMore').addEventListener('click', function () { loadFunds(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && I.$('#fundsModal').classList.contains('open')) closeFunds();
+    });
+    /* ==================== 事件绑定结束 ==================== */
   }
 
   function loadResources() {

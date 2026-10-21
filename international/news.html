@@ -7,7 +7,82 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  /* 高颜值上传框 */
+  /* 🚨 核心修复：等高卡片网格 */
+  .news-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+    align-items: stretch; /* 强制等高 */
+  }
+  .news-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 撑满整个网格高度 */
+    overflow: hidden;
+  }
+
+  /* 媒体区域统一高度 */
+  .news-media {
+    height: 200px;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    background: var(--glass-2);
+  }
+  .news-media img, .news-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* 音频区域专属居中处理 */
+  .news-media.audio-media {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .news-media.audio-media audio {
+    width: 100%;
+  }
+
+  /* 文字内容区 */
+  .news-body {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* 撑满剩余空间 */
+  }
+  .news-body h3 {
+    font-size: 16px; line-height: 1.5; margin: 0 0 10px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .news-body p {
+    font-size: 13px; color: var(--muted); margin: 0 0 16px; line-height: 1.6;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    flex: 1; /* 让文字区自己撑开 */
+  }
+
+  /* 🚨 核心修复：把底部操作栏推到最底部 */
+  .news-footer-bar {
+    margin-top: auto; 
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 14px; border-top: 1px solid var(--border);
+  }
+  
+  .news-action-group { display: flex; gap: 8px; }
+  .news-pill-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 20px;
+    background: var(--glass-2); border: 1px solid var(--border);
+    font-size: 12px; color: var(--muted); cursor: pointer;
+    transition: all 0.2s ease; user-select: none;
+  }
+  .news-pill-btn:hover { background: var(--glass-3); color: var(--ink); border-color: var(--border-2); }
+  .news-pill-btn i { font-size: 14px; }
+  .news-pill-btn.liked { color: #ef4444; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.08); }
+
+  /* 上传框样式 */
   .custom-upload {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     width: 100%; min-height: 100px; padding: 16px;
@@ -28,24 +103,13 @@
   .custom-upload.has-file > i, .custom-upload.has-file > span.placeholder { display: none; }
   .custom-upload.has-file .file-preview { display: flex; }
 
-  /* 🚨 修复下拉框：半透明暗底，拒绝白底白字 */
   select {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    color: var(--ink) !important;
-    border: 1px solid var(--border-2) !important;
-    border-radius: var(--r-sm);
-    outline: none;
-    cursor: pointer;
-    padding: 12px 14px;
+    background-color: rgba(0, 0, 0, 0.3) !important; color: var(--ink) !important;
+    border: 1px solid var(--border-2) !important; border-radius: var(--r-sm);
+    outline: none; cursor: pointer; padding: 12px 14px;
   }
-  select:focus {
-    border-color: var(--gold) !important;
-  }
-  /* 修复 Windows 浏览器下 option 纯黑或白底问题，改为深空灰 */
-  select option {
-    background-color: #111827 !important; 
-    color: #fff !important;
-  }
+  select:focus { border-color: var(--gold) !important; }
+  select option { background-color: #111827 !important; color: #fff !important; }
 </style>
 </head>
 <body>
@@ -108,7 +172,6 @@
           </div>
           <div class="field">
             <label>上传媒体</label>
-            <!-- 自定义上传框 -->
             <label class="custom-upload" id="newsUploadBox" for="nMediaFile">
               <i class="fa-solid fa-cloud-arrow-up"></i>
               <span class="placeholder">点击选择文件</span>
@@ -130,7 +193,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -151,7 +214,6 @@
     I.$('#publishModal').classList.add('open');
   });
 
-  // 监听文件选择，显示预览
   I.$('#nMediaFile').addEventListener('change', function() {
     var file = this.files[0];
     var box = I.$('#newsUploadBox');
@@ -166,46 +228,112 @@
 
   function loadNews() {
     I.client.from('news').select('*, profiles(id, username, flag_url)').order('created_at', { ascending: false }).limit(60).then(function (res) {
-      var wrap = I.$('#newsList');
       var list = res.data || [];
       if (!list.length) {
-        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-newspaper"></i><p>还没有新闻</p></div>';
+        I.$('#newsList').innerHTML = '<div class="empty-state"><i class="fa-solid fa-newspaper"></i><p>还没有新闻</p></div>';
         return;
       }
-      var html = '<div class="news-grid">';
-      list.forEach(function (n) {
-        var media = '';
-        if (n.media_url && n.media_type === 'image') {
-          media = '<div class="news-media"><img src="' + I.escapeHtml(n.media_url) + '" alt=""><div class="media-badge"><i class="fa-solid fa-image"></i> 图片</div></div>';
-        } else if (n.media_url && n.media_type === 'video') {
-          media = '<div class="news-media"><video src="' + I.escapeHtml(n.media_url) + '"></video><div class="media-badge"><i class="fa-solid fa-video"></i> 视频</div></div>';
-        } else if (n.media_url && n.media_type === 'audio') {
-          media = '<div class="news-media"><audio src="' + I.escapeHtml(n.media_url) + '" controls></audio><div class="media-badge"><i class="fa-solid fa-headphones"></i> 音频</div></div>';
-        }
 
-        var author = n.profiles || {};
-        var avatar = author.flag_url || I.avatarFallback(author.username || '?');
+      I.client.from('news_likes').select('news_id').eq('user_id', profile.id).then(function(likesRes) {
+        var likedSet = new Set((likesRes.data || []).map(function(x){ return x.news_id; }));
 
-        html +=
-          '<article class="news-card glass" onclick="location.href=\'news-detail.html?id=' + n.id + '\'">' +
-            media +
-            '<div class="news-body">' +
-              '<h3>' + I.escapeHtml(n.title) + '</h3>' +
-              '<p>' + I.escapeHtml(n.content) + '</p>' +
-              '<div class="news-foot">' +
-                '<div class="news-author">' +
-                  '<img src="' + I.escapeHtml(avatar) + '" alt="">' +
-                  '<span style="color:var(--ink-2)">' + I.escapeHtml(author.username || '未知') + '</span>' +
+        var html = '<div class="news-grid">';
+        list.forEach(function (n) {
+          var media = '';
+          // 渲染媒体区域
+          if (n.media_url && n.media_type === 'image') {
+            media = '<div class="news-media"><img src="' + I.escapeHtml(n.media_url) + '" alt=""><div class="media-badge"><i class="fa-solid fa-image"></i> 图片</div></div>';
+          } else if (n.media_url && n.media_type === 'video') {
+            media = '<div class="news-media"><video src="' + I.escapeHtml(n.media_url) + '"></video><div class="media-badge"><i class="fa-solid fa-video"></i> 视频</div></div>';
+          } else if (n.media_url && n.media_type === 'audio') {
+            media = '<div class="news-media audio-media"><audio src="' + I.escapeHtml(n.media_url) + '" controls></audio><div class="media-badge"><i class="fa-solid fa-headphones"></i> 音频</div></div>';
+          }
+
+          var author = n.profiles || {};
+          var avatar = author.flag_url || I.avatarFallback(author.username || '?');
+          
+          var isLiked = likedSet.has(n.id);
+          var btnClass = isLiked ? 'news-pill-btn liked' : 'news-pill-btn';
+          var heartClass = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+
+          html +=
+            '<article class="news-card glass" onclick="location.href=\'news-detail.html?id=' + n.id + '\'">' +
+              media +
+              '<div class="news-body">' +
+                '<h3>' + I.escapeHtml(n.title) + '</h3>' +
+                '<p>' + I.escapeHtml(n.content) + '</p>' +
+                
+                // 底部操作栏
+                '<div class="news-footer-bar">' +
+                  '<div class="news-author" style="display:flex; align-items:center; gap:8px;">' +
+                    '<img src="' + I.escapeHtml(avatar) + '" alt="" style="width:22px;height:22px;border-radius:50%;object-fit:cover;">' +
+                    '<span style="color:var(--ink-2);font-size:12px;">' + I.escapeHtml(author.username || '未知') + '</span>' +
+                  '</div>' +
+                  
+                  '<div class="news-action-group">' +
+                    '<div class="' + btnClass + '" onclick="toggleLikeList(event, \'' + n.id + '\', this)">' +
+                      '<i class="' + heartClass + '"></i> <span>' + (n.like_count || 0) + '</span>' +
+                    '</div>' +
+                    '<div class="news-pill-btn" onclick="event.stopPropagation(); location.href=\'news-detail.html?id=' + n.id + '\'">' +
+                      '<i class="fa-regular fa-comment"></i> <span>' + (n.comment_count || 0) + '</span>' +
+                    '</div>' +
+                    '<div class="news-pill-btn" onclick="shareList(event, \'' + n.id + '\', this)">' +
+                      '<i class="fa-solid fa-share-nodes"></i> <span>' + (n.share_count || 0) + '</span>' +
+                    '</div>' +
+                  '</div>' +
                 '</div>' +
-                '<span>' + I.relativeTime(n.created_at) + '</span>' +
               '</div>' +
-            '</div>' +
-          '</article>';
+            '</article>';
+        });
+        html += '</div>';
+        I.$('#newsList').innerHTML = html;
       });
-      html += '</div>';
-      wrap.innerHTML = html;
     });
   }
+
+  // 列表页点赞
+  window.toggleLikeList = function(e, id, el) {
+    e.stopPropagation();
+    var icon = el.querySelector('i');
+    var span = el.querySelector('span');
+    var currentCount = parseInt(span.textContent) || 0;
+    var isLiked = el.classList.contains('liked');
+
+    if (isLiked) {
+      I.client.from('news_likes').delete().eq('news_id', id).eq('user_id', profile.id).then(function() {
+        el.classList.remove('liked');
+        icon.classList.replace('fa-solid', 'fa-regular');
+        span.textContent = Math.max(0, currentCount - 1);
+      });
+    } else {
+      I.client.from('news_likes').insert({news_id: id, user_id: profile.id}).then(function() {
+        el.classList.add('liked');
+        icon.classList.replace('fa-regular', 'fa-solid');
+        span.textContent = currentCount + 1;
+      });
+    }
+  };
+
+  // 列表页分享（防连点）
+  window.shareList = function(e, id, el) {
+    e.stopPropagation();
+    if (el.style.pointerEvents === 'none') return; 
+    
+    var url = location.origin + location.pathname.replace('news.html', 'news-detail.html') + '?id=' + id;
+    navigator.clipboard.writeText(url).then(function() {
+      I.toast('链接已复制', 'success');
+      var span = el.querySelector('span');
+      span.textContent = (parseInt(span.textContent) || 0) + 1;
+      I.client.rpc('increment_share_count', { n_id: id });
+      
+      el.style.opacity = '0.5';
+      el.style.pointerEvents = 'none';
+      setTimeout(function() {
+        el.style.opacity = '1';
+        el.style.pointerEvents = 'auto';
+      }, 3000);
+    });
+  };
 
   I.$('#newsForm').addEventListener('submit', function (e) {
     e.preventDefault();
