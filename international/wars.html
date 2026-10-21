@@ -78,6 +78,8 @@
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('wars');
+    // 🚨 初始化右下角聊天室
+    I.initChat(); 
     I.getProfile(true).then(function (p) {
       profile = p;
       connectWebSocket();
@@ -85,36 +87,49 @@
     });
   });
 
-  // 🚨 连接 Node.js 服务器接收战报
   function connectWebSocket() {
-    ws = new WebSocket('ws://47.109.88.206:3000'); 
+    // 🚨 修改为安全的 wss 地址
+    ws = new WebSocket('wss://iecp-api.ponxigrad.tech/ws/'); 
     ws.onmessage = function(event) {
-      var bar = I.$('#broadcastBar');
-      var txt = I.$('#broadcastText');
-      txt.textContent = event.data;
-      bar.style.display = 'flex';
-      
-      clearTimeout(window.warBcTimer);
-      window.warBcTimer = setTimeout(function(){ bar.style.display = 'none'; }, 8000);
+      try {
+        var data = JSON.parse(event.data);
+        if (data.type === 'system') {
+          var bar = I.$('#broadcastBar');
+          var txt = I.$('#broadcastText');
+          txt.textContent = data.msg;
+          bar.style.display = 'flex';
+          
+          clearTimeout(window.warBcTimer);
+          window.warBcTimer = setTimeout(function(){ bar.style.display = 'none'; }, 8000);
+        }
+      } catch (e) {}
     };
   }
 
   function loadData() {
-    // 获取我的兵力和敌对关系
-    Promise.all([
-      I.client.from('military').select('*').eq('country_id', profile.id).maybeSingle(),
-      I.client.from('relations').select('*').or(`country_a.eq.${profile.id},country_b.eq.${profile.id}`).eq('relation_type', 'war')
-    ]).then(function(results) {
-      myMil = results[0].data || { infantry:0, tanks:0, fighters:0 };
-      var relations = results[1].data || [];
-      
-      if (relations.length === 0) {
+    I.client.from('military').select('*').eq('country_id', profile.id).maybeSingle().then(function(milRes) {
+      myMil = milRes.data || { infantry:0, tanks:0, fighters:0 };
+      return I.client.from('relations').select('*').eq('relation_type', 'war');
+    }).then(function(relRes) {
+      if (relRes.error) {
+        I.toast('读取关系表失败：' + relRes.error.message, 'error');
+        return;
+      }
+
+      var allWars = relRes.data || [];
+      var myWars = allWars.filter(function(r) {
+        return r.country_a === profile.id || r.country_b === profile.id;
+      });
+
+      if (myWars.length === 0) {
         I.$('#warListWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-dove" style="color:var(--cyan);font-size:40px;margin-bottom:12px;"></i><p>目前世界和平，没有敌对国家。你可以去国家主页发起宣战。</p></div>`;
         return;
       }
 
-      var enemyIds = relations.map(r => r.country_a === profile.id ? r.country_b : r.country_a);
-      
+      var enemyIds = myWars.map(function(r) {
+        return r.country_a === profile.id ? r.country_b : r.country_a;
+      });
+
       I.client.from('profiles').select('id, username, flag_url').in('id', enemyIds).then(function(res) {
         enemies = res.data || [];
         renderEnemies();
@@ -174,22 +189,20 @@
       var r = res.data;
       if (!r.ok) { I.toast(r.msg, 'error'); return; }
 
-      // 组装全服广播信息
       var broadcastMsg = '';
       if (r.win) {
-        broadcastMsg = `🚨 战报：${profile.username} 对 ${defenderName} 发动了突袭并大获全胜！掠夺了 ${I.fmtNumber(r.loot)} ₽ 资金！(战力: ${r.a_power} vs ${r.d_power})`;
+        broadcastMsg = `【胜】战报：${profile.username} 对 ${defenderName} 发动了突袭并大获全胜！掠夺了 ${I.fmtNumber(r.loot)} ₽ 资金！(战力: ${r.a_power} vs ${r.d_power})`;
         I.toast(`大获全胜！掠夺了 ${I.fmtNumber(r.loot)} ₽`, 'success');
       } else {
-        broadcastMsg = `🛡️ 战报：${profile.username} 对 ${defenderName} 发动了突袭，但遭遇顽强抵抗，全军覆没！(战力: ${r.a_power} vs ${r.d_power})`;
+        broadcastMsg = `【败】战报：${profile.username} 对 ${defenderName} 发动了突袭，但遭遇顽强抵抗，全军覆没！(战力: ${r.a_power} vs ${r.d_power})`;
         I.toast('进攻失败，我军损失惨重', 'error');
       }
 
-      // 发送 WebSocket 全服广播
       if (ws && ws.readyState === WebSocket.OPEN) {
-         ws.send(broadcastMsg);
+         // 🚨 发送 JSON 格式的系统消息
+         ws.send(JSON.stringify({ type: 'system', msg: broadcastMsg }));
       }
       
-      // 刷新页面数据
       loadData();
     });
   };
