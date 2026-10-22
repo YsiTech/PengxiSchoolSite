@@ -28,6 +28,19 @@
     gap: 4px !important;
     text-align: left !important;
   }
+
+  /* 🚨 优化资源进度条，让整体更大气 */
+  .res-name-row { font-size: 13px !important; margin-bottom: 8px !important; }
+  .res-bar { height: 6px !important; border-radius: 99px !important; background: rgba(255,255,255,0.08) !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5) !important; }
+  .res-fill { border-radius: 99px !important; position: relative !important; overflow: hidden !important; }
+  /* 进度条流光特效 */
+  .res-fill::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: resShine 2s infinite;
+  }
+  @keyframes resShine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+  .res-total { font-size: 13px !important; font-weight: bold !important; color: var(--gold) !important; background: rgba(212,175,55,0.1) !important; padding: 4px 10px !important; border-radius: 8px !important; border: 1px solid rgba(212,175,55,0.2) !important; }
 </style>
 </head>
 <body>
@@ -210,7 +223,7 @@
             <p class="profile-email">${I.escapeHtml(profile.social_system)}</p>
             <div style="margin-bottom:14px"><span class="role-tag"><i class="fa-solid fa-shield-halved"></i> 主权国家</span></div>
             <div class="exp-bar-wrap">
-              <div class="exp-text"><span>Lv.<span>1</span></span><span>国际影响力 <span>100</span> / 500</span></div>
+              <div class="exp-text"><span>Lv.<span>1</span></span><span>国际影响力 <span>${I.fmtNumber(profile.influence || 100)}</span> / 500</span></div>
               <div class="exp-track"><div class="exp-fill" style="width: 20%;"></div></div>
             </div>
             <p class="profile-hint">加入时间：${I.fmtDate(profile.created_at).split(' ')[0]}</p>
@@ -420,39 +433,55 @@
       var grid = I.$('#resGrid');
       if (res.error || !res.data) { grid.innerHTML = `<div style="color:var(--red); font-size:12px;">资源勘探失败，请刷新页面。</div>`; return; }
       var r = res.data;
-      var total = (r.oil || 0) + (r.gas || 0) + (r.iron_ore || 0) + (r.rare_metal || 0) + (r.food || 0);
-      var evalGrade = "C";
-      if (total > 50000) evalGrade = "S"; else if (total > 30000) evalGrade = "A"; else if (total > 15000) evalGrade = "B";
-      I.$('#resTotalEval').innerText = '综合评估：' + evalGrade;
 
-      // 🚨 在局部写一个专门用于资源的缩写函数
+      // 专门用于资源的缩写函数
       function fmtRes(val) {
         if (val === null || val === undefined || isNaN(val)) return '0';
         var num = Number(val);
-        if (num >= 100000000) {
-          return (num / 100000000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '亿';
-        } else if (num >= 10000) {
-          return (num / 10000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '万';
-        } else {
-          return Number(num.toFixed(2)).toLocaleString('en-US');
-        }
+        if (num >= 100000000) return (num / 100000000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '亿';
+        if (num >= 10000) return (num / 10000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '万';
+        return Number(num.toFixed(2)).toLocaleString('en-US');
       }
 
+      // 🚨 适中容量：200万 / 100万 / 150万 / 50万 / 200万
       var resData = [
-        { name: '原油储备', val: r.oil, unit: '吨', max: 10000, icon: 'fa-oil-well', cls: 'oil' },
-        { name: '天然气', val: r.gas, unit: 'm³', max: 15000, icon: 'fa-fire-flame-simple', cls: 'gas' },
-        { name: '铁矿石', val: r.iron_ore, unit: '吨', max: 5000, icon: 'fa-mountain', cls: 'mineral' },
-        { name: '稀有金属', val: r.rare_metal, unit: '吨', max: 2000, icon: 'fa-atom', cls: 'rare' },
-        { name: '粮食储备', val: r.food, unit: '吨', max: 6000, icon: 'fa-wheat-awn', cls: 'food' }
+        { name: '原油储备', val: r.oil, unit: '吨', max: 2000000, icon: 'fa-oil-well', cls: 'oil' },
+        { name: '天然气', val: r.gas, unit: 'm³', max: 1000000, icon: 'fa-fire-flame-simple', cls: 'gas' },
+        { name: '铁矿石', val: r.iron_ore, unit: '吨', max: 1500000, icon: 'fa-mountain', cls: 'mineral' },
+        { name: '稀有金属', val: r.rare_metal, unit: '吨', max: 500000, icon: 'fa-atom', cls: 'rare' },
+        { name: '粮食储备', val: r.food, unit: '吨', max: 2000000, icon: 'fa-wheat-awn', cls: 'food' }
       ];
 
+      var totalPct = 0;
       var html = '';
+
       resData.forEach(function(item) {
-        var valFormatted = fmtRes(item.val); // 🚨 使用局部缩写函数
-        var pct = Math.min(100, Math.round((item.val / item.max) * 100));
+        var rawPct = (item.val / item.max) * 100;
+        var pct = Math.min(100, rawPct); // 进度条最高 100%
+        totalPct += pct; // 累加用于计算综合平均分
+
+        var valFormatted = fmtRes(item.val);
         html += `<div class="res-item"><div class="res-icon ${item.cls}"><i class="fa-solid ${item.icon}"></i></div><div class="res-info"><div class="res-name-row"><span>${item.name}</span><span>${valFormatted} ${item.unit}</span></div><div class="res-bar"><div class="res-fill ${item.cls}" style="width: ${pct}%;"></div></div></div></div>`;
       });
       grid.innerHTML = html;
+
+      // 🚨 用户指定的 15 级绝对评级系统
+      var grades = [
+        "枯竭", "贫瘠", "匮乏", "短缺", "基本自足", 
+        "略有结余", "充实", "丰厚", "殷实", "富饶", 
+        "极盛", "饱和", "渊渟岳峙", "浩瀚如海", "绝对霸权"
+      ];
+      
+      var avgPct = totalPct / resData.length; // 各项进度的平均值 (0 - 100)
+      
+      // 将 0-100 映射到 0-14 的索引
+      var gradeIndex = Math.floor(avgPct / (100 / 15));
+      if (gradeIndex >= 15) gradeIndex = 14;
+      if (gradeIndex < 0) gradeIndex = 0;
+      
+      var evalGrade = grades[gradeIndex];
+      
+      I.$('#resTotalEval').innerText = '综合评估：' + evalGrade;
     });
   }
 })();
