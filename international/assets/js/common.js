@@ -8,49 +8,62 @@
   w.IECP = w.IECP || {};
   w.IECP.client = client;
 
-  // 🚨 下拉菜单样式（仅电脑端生效）
+  // 🚨 动态注入样式：隐藏滚动条、修复下滑动
   if (!document.getElementById('nav-dropdown-style')) {
     var style = document.createElement('style');
     style.id = 'nav-dropdown-style';
     style.innerHTML = `
+      /* ================= 电脑端导航下拉 ================= */
       @media (min-width: 769px) {
-        .iecp-nav { overflow: visible !important; } /* 电脑端允许菜单溢出 */
-        
+        .iecp-nav { overflow: visible !important; }
         .nav-dropdown { position: relative; display: inline-block; height: 100%; }
-        .nav-dropdown .dropdown-toggle { 
-          padding: 9px 16px; border-radius: var(--r-sm); font-size: 14px; 
-          color: var(--ink-2); letter-spacing: .3px; display: inline-flex; 
-          align-items: center; gap: 8px; transition: .18s; cursor: pointer; 
-          text-decoration: none; white-space: nowrap;
-        }
-        .nav-dropdown:hover .dropdown-toggle, .nav-dropdown.active .dropdown-toggle, .nav-dropdown.open .dropdown-toggle { 
-          background: var(--glass-2); color: var(--gold-2); 
-        }
-        
-        .nav-dropdown .dropdown-menu { 
-          position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-          min-width: 170px; background: rgba(10,14,26,.95); backdrop-filter: blur(20px); 
-          border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 10px; 
-          display: none; flex-direction: column; 
-          box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 9999; 
-          margin-top: 0px; gap: 4px;
-        }
+        .nav-dropdown .dropdown-toggle { padding: 9px 16px; border-radius: var(--r-sm); font-size: 14px; color: var(--ink-2); letter-spacing: .3px; display: inline-flex; align-items: center; gap: 8px; transition: .18s; cursor: pointer; text-decoration: none; white-space: nowrap; }
+        .nav-dropdown:hover .dropdown-toggle, .nav-dropdown.active .dropdown-toggle, .nav-dropdown.open .dropdown-toggle { background: var(--glass-2); color: var(--gold-2); }
+        .nav-dropdown .dropdown-menu { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); min-width: 170px; background: rgba(10,14,26,.95); backdrop-filter: blur(20px); border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 10px; display: none; flex-direction: column; box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 9999; margin-top: 0px; gap: 4px; }
         .nav-dropdown:hover .dropdown-menu, .nav-dropdown.open .dropdown-menu { display: flex; }
-        
-        .nav-dropdown::after {
-          content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 15px;
-        }
-
-        .nav-dropdown .dropdown-menu a { 
-          padding: 10px 14px; border-radius: 8px; font-size: 13.5px; color: var(--ink-2); 
-          display: flex; align-items: center; gap: 10px; transition: 0.2s; 
-          text-decoration: none; white-space: nowrap; 
-        }
-        .nav-dropdown .dropdown-menu a:hover, .nav-dropdown .dropdown-menu a.active { 
-          background: rgba(212, 175, 55, 0.15); color: var(--gold-2); font-weight: 600; 
-        }
+        .nav-dropdown::after { content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 15px; }
+        .nav-dropdown .dropdown-menu a { padding: 10px 14px; border-radius: 8px; font-size: 13.5px; color: var(--ink-2); display: flex; align-items: center; gap: 10px; transition: 0.2s; text-decoration: none; white-space: nowrap; }
+        .nav-dropdown .dropdown-menu a:hover, .nav-dropdown .dropdown-menu a.active { background: rgba(212, 175, 55, 0.15); color: var(--gold-2); font-weight: 600; }
         .nav-dropdown .dropdown-menu i { width: 16px; text-align: center; }
       }
+
+      /* ================= 🚨 核心修复：彻底隐藏滚动条但保留滑动 ================= */
+      
+      /* 1. 快捷预览列表 */
+      #notifList {
+        max-height: 280px !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important; 
+        overscroll-behavior: contain !important;      
+        touch-action: pan-y !important;               
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important; /* IE */
+      }
+      #notifList::-webkit-scrollbar { display: none !important; } /* Chrome/Safari */
+
+      /* 2. 消息中心的卡片列表 */
+      #notifCenterList {
+        max-height: 65vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior: contain !important;
+        touch-action: pan-y !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+      #notifCenterList::-webkit-scrollbar { display: none !important; }
+
+      /* 3. 详细通知正文区 (解决长文本把按钮挤没的问题) */
+      #ndBody {
+        max-height: 55vh !important; 
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        overscroll-behavior: contain !important;
+        touch-action: pan-y !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+      }
+      #ndBody::-webkit-scrollbar { display: none !important; }
     `;
     document.head.appendChild(style);
   }
@@ -136,7 +149,6 @@
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   };
 
-  // 🚨 核心：根据屏幕宽度渲染不同的导航
   w.IECP.renderNav = function (activeId) {
     var host = document.getElementById('iecp-nav'); if (!host) return;
     
@@ -169,13 +181,11 @@
     });
 
     if (isMobile) {
-      // 📱 手机端：直接平铺，允许滑动
       devItems.forEach(function(it) {
         var cls = it.id === activeId ? ' class="active"' : '';
         html += '<a' + cls + ' href="' + it.href + '"><i class="fa-solid ' + it.icon + '"></i>' + it.text + '</a>';
       });
     } else {
-      // 💻 电脑端：使用下拉菜单
       var isChildActive = devItems.some(c => c.id === activeId);
       var toggleClass = isChildActive ? ' active' : '';
       var subHtml = devItems.map(c => 
@@ -196,7 +206,6 @@
     host.innerHTML = html;
 
     if (!isMobile) {
-      // 电脑端监听点击展开（防止某些浏览器 hover 失效）
       setTimeout(function() {
         var toggles = document.querySelectorAll('.nav-dropdown .dropdown-toggle');
         toggles.forEach(function(t) {
@@ -226,24 +235,25 @@
       var modalsHtml = `
         <div id="notifModalsContainer">
           <div class="iecp-modal" id="notifCenterModal" style="z-index:9999;">
-            <div class="iecp-modal-box glass-2" style="max-width:600px; padding:0; overflow:hidden;">
-              <div style="padding:20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2);">
+            <div class="iecp-modal-box glass-2" style="max-width:600px; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height: 85vh;">
+              <div style="padding:20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); flex-shrink: 0;">
                 <h3 style="margin:0; font-size:18px; color:var(--gold);"><i class="fa-solid fa-bell"></i> 消息中心</h3>
                 <div style="display:flex; gap:15px; align-items:center;">
                   <span style="font-size:12px; cursor:pointer; color:var(--cyan);" onclick="markAllRead(event)">全部标为已读</span>
                   <button class="btn btn-ghost btn-sm" onclick="closeNotifModal()" style="padding:4px 10px;"><i class="fa-solid fa-xmark"></i></button>
                 </div>
               </div>
-              <div id="notifCenterList" style="padding:20px; max-height:65vh; overflow-y:auto; display:flex; flex-direction:column; gap:12px; background:rgba(15,23,42,0.9);"></div>
+              <div id="notifCenterList" style="padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; background:rgba(15,23,42,0.9); flex: 1;"></div>
             </div>
           </div>
+          
           <div class="iecp-modal" id="notifDetailModal" style="z-index:10000;">
-            <div class="iecp-modal-box glass-2" style="max-width:500px; padding:0; overflow:hidden;">
-              <div style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3);">
+            <div class="iecp-modal-box glass-2" style="max-width:500px; padding:0; overflow:hidden; display:flex; flex-direction:column; max-height: 85vh;">
+              <div style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); flex-shrink: 0;">
                 <h3 style="margin:0; font-size:16px; color:var(--gold);" id="ndTitle">通知详情</h3>
                 <button class="btn btn-ghost btn-sm" onclick="closeNotifDetail()" style="padding:4px 10px;"><i class="fa-solid fa-xmark"></i></button>
               </div>
-              <div style="padding:24px; background:rgba(15,23,42,0.95);" id="ndBody"></div>
+              <div style="padding:24px; background:rgba(15,23,42,0.95); overflow-y:auto; flex: 1;" id="ndBody"></div>
             </div>
           </div>
         </div>
@@ -263,7 +273,7 @@
               <span>快捷预览</span>
               <span style="font-size:12px; cursor:pointer; color:var(--cyan); font-weight:normal;" onclick="markAllRead(event)">全部已读</span>
             </div>
-            <div class="notif-list" id="notifList" style="max-height:280px; overflow-y:auto; padding:0;"></div>
+            <div class="notif-list" id="notifList"></div>
             <div class="notif-footer" onclick="openNotifModal()">查看全部通知 <i class="fa-solid fa-arrow-right"></i></div>
           </div>
         </div>
@@ -315,12 +325,12 @@
           <div style="width:28px; height:28px; border-radius:50%; background:${m.bg}; color:${m.color}; display:grid; place-items:center; flex-shrink:0;"><i class="fa-solid ${m.icon}" style="font-size:12px;"></i></div>
           <div style="flex:1; min-width:0; margin-left:10px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-              <span style="font-size:12.5px; font-weight:bold; color:#fff;">${w.IECP.escapeHtml(n.title)}</span>
+              <span style="font-size:12.5px; font-weight:bold; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px;">${w.IECP.escapeHtml(n.title)}</span>
               <span style="font-size:10px; color:var(--muted-2);">${w.IECP.relativeTime(n.created_at)}</span>
             </div>
             <div style="font-size:11.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${w.IECP.escapeHtml(n.content)}</div>
           </div>
-          ${n.is_read ? '' : '<div style="width:6px; height:6px; background:var(--red); border-radius:50%; margin-left:6px;"></div>'}
+          ${n.is_read ? '' : '<div style="width:6px; height:6px; background:var(--red); border-radius:50%; margin-left:6px; flex-shrink:0;"></div>'}
         </div>
       `;
     }).join('');
