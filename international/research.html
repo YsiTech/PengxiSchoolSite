@@ -8,29 +8,28 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
   .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-  .tech-card { background: var(--glass-2); border: 1px solid var(--border); border-radius: var(--r); padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden;}
-  .tech-card:hover { border-color: var(--cyan); }
-  
+  .tech-card { background: var(--glass-2); border: 1px solid var(--border); border-radius: var(--r); padding: 24px; display: flex; flex-direction: column; gap: 16px; position: relative; }
   .tech-header { display: flex; align-items: center; gap: 16px; }
   .tech-icon { width: 48px; height: 48px; border-radius: 10px; display: grid; place-items: center; font-size: 24px; background: rgba(79,195,247,0.1); color: var(--cyan); }
   .tech-title { font-size: 18px; font-weight: 700; color: #fff; }
-  .tech-desc { font-size: 12px; color: var(--muted); }
-  
   .tech-progress { display: flex; gap: 4px; margin: 10px 0; }
   .tech-bar { flex: 1; height: 8px; background: rgba(0,0,0,0.5); border-radius: 4px; }
   .tech-bar.active { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
-  
   .tech-cost { font-size: 12px; color: var(--gold-2); background: rgba(212,175,55,0.1); padding: 12px; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; }
+  
+  /* 研发中遮罩 */
+  .research-overlay { position: absolute; inset: 0; background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; border-radius: var(--r); }
+  .research-overlay i { font-size: 32px; color: var(--cyan); margin-bottom: 12px; animation: spin 4s linear infinite; }
+  @keyframes spin { 100% { transform: rotate(360deg); } }
+  .research-overlay .timer { font-family: var(--mono); font-size: 24px; color: #fff; font-weight: bold; }
+  .research-overlay .btn-claim { margin-top: 16px; padding: 8px 24px; border-radius: 20px; font-weight: bold; border: none; }
 </style>
 </head>
 <body>
 
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
@@ -38,21 +37,13 @@
 
 <section class="iecp-page-head">
   <div class="iecp-page-head-inner">
-    <div class="iecp-breadcrumb">
-      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>国家研究所</span>
-    </div>
-    <div>
-      <h1><i class="fa-solid fa-flask"></i> 国家研究所</h1>
-      <p>研发尖端科技，打造无敌之师</p>
-    </div>
+    <div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>国家研究所</span></div>
+    <div><h1><i class="fa-solid fa-flask"></i> 国家研究所</h1><p>科技研发需要消耗时间，同一时间只能研发一项</p></div>
   </div>
 </section>
 
 <main class="iecp-main">
-  <div id="resTop" class="glass" style="padding:20px; margin-bottom:24px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:20px;">
-    <div class="loading-state"><div class="spinner"></div><span>正在读取资源...</span></div>
-  </div>
-
+  <div id="resTop" class="glass" style="padding:20px; margin-bottom:24px; display:flex; justify-content:space-around; flex-wrap:wrap; gap:20px;"></div>
   <div class="tech-grid" id="techList"></div>
 </main>
 
@@ -65,6 +56,7 @@
   var profile = null;
   var myRes = null;
   var myTech = null;
+  var timer = null;
 
   var TECHS = [
     { type: 'inf_tech', name: '单兵作战系统', icon: 'fa-person-rifle', desc: '每级提升 10% 步兵战力' },
@@ -76,10 +68,10 @@
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('research'); 
-    // 🚨 已经删掉了 I.initChat() 的调用
     I.getProfile(true).then(function (p) {
       profile = p;
       loadData();
+      startTimer();
     });
   });
 
@@ -96,31 +88,47 @@
   }
 
   function renderRes() {
-    var r = myRes;
     I.$('#resTop').innerHTML = `
-      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-mountain" style="color:var(--gold-2)"></i> 铁矿: <b>${I.fmtNumber(r.iron_ore)}</b></div>
-      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-oil-well" style="color:var(--gold-2)"></i> 原油: <b>${I.fmtNumber(r.oil)}</b></div>
-      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-atom" style="color:var(--gold-2)"></i> 稀有金属: <b>${I.fmtNumber(r.rare_metal)}</b></div>
+      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-mountain" style="color:var(--gold-2)"></i> 铁矿: <b>${I.fmtNumber(myRes.iron_ore)}</b></div>
+      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-oil-well" style="color:var(--gold-2)"></i> 原油: <b>${I.fmtNumber(myRes.oil)}</b></div>
+      <div style="display:flex; align-items:center; gap:4px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-atom" style="color:var(--gold-2)"></i> 稀有金属: <b>${I.fmtNumber(myRes.rare_metal)}</b></div>
     `;
   }
 
   function renderTech() {
     var html = '';
+    var isAnyUpgrading = myTech.upgrading_type !== null;
+
     TECHS.forEach(function(t) {
       var lvl = myTech[t.type] || 0;
-      var isMax = lvl >= 10;
+      var isMax = lvl >= 5;
+      var isThisUpgrading = myTech.upgrading_type === t.type;
       
-      var costIron = 200 + (lvl * 100);
-      var costOil = 100 + (lvl * 50);
-      var costRare = (t.type === 'air_tech' || t.type === 'defense_tech') ? (20 + lvl * 10) : 0;
+      var costIron = 2000 + (lvl * 1000);
+      var costOil = 1000 + (lvl * 500);
+      var costRare = (t.type === 'air_tech' || t.type === 'defense_tech') ? (100 + lvl * 50) : 0;
+      var timeHours = lvl + 1;
 
       var barsHtml = '';
-      for(var i=0; i<10; i++) {
+      for(var i=0; i<5; i++) {
         barsHtml += `<div class="tech-bar ${i < lvl ? 'active' : ''}"></div>`;
+      }
+
+      var overlayHtml = '';
+      if (isThisUpgrading) {
+        overlayHtml = `
+          <div class="research-overlay">
+            <i class="fa-solid fa-gear"></i>
+            <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">正在研发中...</div>
+            <div class="timer" id="rtimer-${t.type}">计算中...</div>
+            <button class="btn-claim" id="rbtn-${t.type}" style="display:none;" onclick="claimResearch()">领取成果</button>
+          </div>
+        `;
       }
 
       html += `
         <div class="tech-card">
+          ${overlayHtml}
           <div class="tech-header">
             <div class="tech-icon"><i class="fa-solid ${t.icon}"></i></div>
             <div>
@@ -136,8 +144,9 @@
               <span><i class="fa-solid fa-mountain"></i> ${costIron}</span>
               <span><i class="fa-solid fa-oil-well"></i> ${costOil}</span>
               ${costRare > 0 ? `<span><i class="fa-solid fa-atom"></i> ${costRare}</span>` : ''}
+              <span style="margin-left:auto; color:var(--cyan);"><i class="fa-regular fa-clock"></i> ${timeHours}小时</span>
             </div>
-            <button class="btn btn-cyan" style="width:100%;" onclick="upgrade('${t.type}')"><i class="fa-solid fa-microchip"></i> 研发升级</button>
+            <button class="btn btn-cyan" style="width:100%;" onclick="upgrade('${t.type}')" ${isAnyUpgrading ? 'disabled' : ''}><i class="fa-solid fa-microchip"></i> 开始研发</button>
           `}
         </div>
       `;
@@ -145,20 +154,50 @@
     I.$('#techList').innerHTML = html;
   }
 
-  window.upgrade = function(type) {
-    if (!confirm('确认消耗资源研发该项科技吗？')) return;
-    
-    I.toast('正在研发...', 'success', 1000);
-    I.client.rpc('upgrade_tech', { c_id: profile.id, t_type: type }).then(function(res) {
-      if (res.error) { I.toast('研发失败: ' + res.error.message, 'error'); return; }
+  function startTimer() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(function() {
+      if (!myTech || !myTech.upgrade_end_time || !myTech.upgrading_type) return;
       
-      var result = res.data;
-      if (!result.ok) {
-        I.toast(result.msg, 'error');
+      var now = new Date();
+      var end = new Date(myTech.upgrade_end_time);
+      var timerEl = I.$('#rtimer-' + myTech.upgrading_type);
+      var btnEl = I.$('#rbtn-' + myTech.upgrading_type);
+      
+      if (!timerEl || !btnEl) return;
+
+      if (now >= end) {
+        timerEl.textContent = '已完成';
+        timerEl.style.color = '#22c55e';
+        btnEl.style.display = 'block';
+        btnEl.className = 'btn btn-gold btn-claim';
       } else {
-        I.toast('科技研发成功！战力已提升', 'success');
-        loadData(); 
+        var diff = Math.floor((end - now) / 1000);
+        var h = Math.floor(diff / 3600);
+        var m = Math.floor((diff % 3600) / 60);
+        var s = diff % 60;
+        timerEl.textContent = `${h}时 ${m}分 ${s}秒`;
       }
+    }, 1000);
+  }
+
+  window.upgrade = function(type) {
+    if (!confirm('确认消耗资源并开始研发吗？')) return;
+    I.toast('正在启动研发...', 'success', 1000);
+    I.client.rpc('start_research', { c_id: profile.id, t_type: type }).then(function(res) {
+      if (res.error) return I.toast('失败: ' + res.error.message, 'error');
+      if (!res.data.ok) return I.toast(res.data.msg, 'error');
+      I.toast('研发已开始', 'success');
+      loadData();
+    });
+  };
+
+  window.claimResearch = function() {
+    I.client.rpc('claim_research', { c_id: profile.id }).then(function(res) {
+      if (res.error) return I.toast('领取失败', 'error');
+      if (!res.data.ok) return I.toast(res.data.msg, 'error');
+      I.toast('科技升级成功！', 'success');
+      loadData();
     });
   };
 

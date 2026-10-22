@@ -8,6 +8,53 @@
   w.IECP = w.IECP || {};
   w.IECP.client = client;
 
+  // 🚨 下拉菜单样式（仅电脑端生效）
+  if (!document.getElementById('nav-dropdown-style')) {
+    var style = document.createElement('style');
+    style.id = 'nav-dropdown-style';
+    style.innerHTML = `
+      @media (min-width: 769px) {
+        .iecp-nav { overflow: visible !important; } /* 电脑端允许菜单溢出 */
+        
+        .nav-dropdown { position: relative; display: inline-block; height: 100%; }
+        .nav-dropdown .dropdown-toggle { 
+          padding: 9px 16px; border-radius: var(--r-sm); font-size: 14px; 
+          color: var(--ink-2); letter-spacing: .3px; display: inline-flex; 
+          align-items: center; gap: 8px; transition: .18s; cursor: pointer; 
+          text-decoration: none; white-space: nowrap;
+        }
+        .nav-dropdown:hover .dropdown-toggle, .nav-dropdown.active .dropdown-toggle, .nav-dropdown.open .dropdown-toggle { 
+          background: var(--glass-2); color: var(--gold-2); 
+        }
+        
+        .nav-dropdown .dropdown-menu { 
+          position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+          min-width: 170px; background: rgba(10,14,26,.95); backdrop-filter: blur(20px); 
+          border: 1px solid rgba(212,175,55,0.3); border-radius: 12px; padding: 10px; 
+          display: none; flex-direction: column; 
+          box-shadow: 0 15px 40px rgba(0,0,0,0.8); z-index: 9999; 
+          margin-top: 0px; gap: 4px;
+        }
+        .nav-dropdown:hover .dropdown-menu, .nav-dropdown.open .dropdown-menu { display: flex; }
+        
+        .nav-dropdown::after {
+          content: ''; position: absolute; top: 100%; left: 0; right: 0; height: 15px;
+        }
+
+        .nav-dropdown .dropdown-menu a { 
+          padding: 10px 14px; border-radius: 8px; font-size: 13.5px; color: var(--ink-2); 
+          display: flex; align-items: center; gap: 10px; transition: 0.2s; 
+          text-decoration: none; white-space: nowrap; 
+        }
+        .nav-dropdown .dropdown-menu a:hover, .nav-dropdown .dropdown-menu a.active { 
+          background: rgba(212, 175, 55, 0.15); color: var(--gold-2); font-weight: 600; 
+        }
+        .nav-dropdown .dropdown-menu i { width: 16px; text-align: center; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
   w.IECP.$  = function (s, c) { return (c || document).querySelector(s); };
   w.IECP.$$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
 
@@ -89,25 +136,87 @@
     return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
   };
 
+  // 🚨 核心：根据屏幕宽度渲染不同的导航
   w.IECP.renderNav = function (activeId) {
     var host = document.getElementById('iecp-nav'); if (!host) return;
-    var items = [
+    
+    var baseItems = [
       { id:'index', icon:'fa-globe', text:'首页', href:'index.html' },
       { id:'countries', icon:'fa-flag', text:'国家列表', href:'countries.html' },
       { id:'news', icon:'fa-newspaper', text:'新闻发布', href:'news.html' },
       { id:'diplomacy', icon:'fa-handshake', text:'交流中心', href:'diplomacy.html' },
       { id:'market', icon:'fa-store', text:'交易行', href:'market.html' },
-      { id:'transfer', icon:'fa-money-bill-transfer', text:'跨国汇款', href:'transfer.html' },
-      // 🚨 新增国家基建入口
+      { id:'transfer', icon:'fa-money-bill-transfer', text:'跨国汇款', href:'transfer.html' }
+    ];
+    
+    var devItems = [
       { id:'mining', icon:'fa-trowel-bricks', text:'国家基建', href:'mining.html' },
       { id:'military', icon:'fa-industry', text:'军工厂', href:'military.html' },
       { id:'research', icon:'fa-flask', text:'研究所', href:'research.html' },
-      { id:'forecast', icon:'fa-cloud-bolt', text:'灾害预报', href:'forecast.html' },
+      { id:'forecast', icon:'fa-cloud-bolt', text:'灾害预报', href:'forecast.html' }
+    ];
+    
+    var endItems = [
       { id:'wars', icon:'fa-shield-halved', text:'战争系统', href:'wars.html' }
     ];
-    host.innerHTML = items.map(function (it) {
-      return '<a' + (it.id === activeId ? ' class="active"' : '') + ' href="' + it.href + '"><i class="fa-solid ' + it.icon + '"></i>' + it.text + '</a>';
-    }).join('');
+    
+    var isMobile = window.innerWidth <= 768;
+    var html = '';
+    
+    baseItems.forEach(function(it) {
+      var cls = it.id === activeId ? ' class="active"' : '';
+      html += '<a' + cls + ' href="' + it.href + '"><i class="fa-solid ' + it.icon + '"></i>' + it.text + '</a>';
+    });
+
+    if (isMobile) {
+      // 📱 手机端：直接平铺，允许滑动
+      devItems.forEach(function(it) {
+        var cls = it.id === activeId ? ' class="active"' : '';
+        html += '<a' + cls + ' href="' + it.href + '"><i class="fa-solid ' + it.icon + '"></i>' + it.text + '</a>';
+      });
+    } else {
+      // 💻 电脑端：使用下拉菜单
+      var isChildActive = devItems.some(c => c.id === activeId);
+      var toggleClass = isChildActive ? ' active' : '';
+      var subHtml = devItems.map(c => 
+        '<a href="' + c.href + '" ' + (c.id === activeId ? 'class="active"' : '') + '><i class="fa-solid ' + c.icon + '"></i>' + c.text + '</a>'
+      ).join('');
+
+      html += '<div class="nav-dropdown' + toggleClass + '">' +
+                '<a href="javascript:void(0)" class="dropdown-toggle"><i class="fa-solid fa-building"></i>国家发展 <i class="fa-solid fa-caret-down" style="font-size:10px;"></i></a>' +
+                '<div class="dropdown-menu">' + subHtml + '</div>' +
+              '</div>';
+    }
+
+    endItems.forEach(function(it) {
+      var cls = it.id === activeId ? ' class="active"' : '';
+      html += '<a' + cls + ' href="' + it.href + '"><i class="fa-solid ' + it.icon + '"></i>' + it.text + '</a>';
+    });
+
+    host.innerHTML = html;
+
+    if (!isMobile) {
+      // 电脑端监听点击展开（防止某些浏览器 hover 失效）
+      setTimeout(function() {
+        var toggles = document.querySelectorAll('.nav-dropdown .dropdown-toggle');
+        toggles.forEach(function(t) {
+          t.addEventListener('click', function(e) {
+            e.preventDefault();
+            var parent = this.parentNode;
+            document.querySelectorAll('.nav-dropdown').forEach(function(d) {
+              if (d !== parent) d.classList.remove('open');
+            });
+            parent.classList.toggle('open');
+          });
+        });
+        
+        document.addEventListener('click', function(e) {
+          if (!e.target.closest('.nav-dropdown')) {
+            document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+          }
+        });
+      }, 50);
+    }
   };
 
   w.IECP.renderUserBadge = function () {

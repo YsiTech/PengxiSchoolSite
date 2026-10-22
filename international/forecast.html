@@ -6,22 +6,45 @@
 <title>灾害预报 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .forecast-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .f-card { background: var(--glass); border: 1px solid var(--border); padding: 24px; border-radius: var(--r); position: relative; overflow: hidden; }
+  .f-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .f-icon { width: 44px; height: 44px; border-radius: 10px; display: grid; place-items: center; font-size: 20px; }
+  .f-icon.fire { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .f-icon.flood { background: rgba(79,195,247,0.15); color: #4fc3f7; }
+  .f-icon.earthquake { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .f-icon.drought { background: rgba(167,139,250,0.15); color: #a78bfa; }
+  .f-title { font-size: 16px; font-weight: bold; color: #fff; }
+  .f-desc { font-size: 12px; color: var(--muted); }
+  .f-cost { font-size: 13px; color: var(--gold-2); background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+
+  /* 升级遮罩 */
+  .upgrading-overlay { position: absolute; inset: 0; background: rgba(10, 14, 26, 0.9); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+  .upgrading-overlay i { font-size: 28px; color: var(--cyan); margin-bottom: 12px; }
+  .upgrading-overlay .timer { font-family: var(--mono); font-size: 20px; color: #fff; font-weight: bold; }
+  .upgrading-overlay .btn-claim { margin-top: 16px; padding: 8px 24px; border-radius: 20px; font-weight: bold; border: none; display: none; }
+</style>
 </head>
 <body>
+
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange</span></div></a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
 </header>
 
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>灾害预报</span></div>
+    <div><h1><i class="fa-solid fa-cloud-bolt" style="color:var(--gold);"></i> 灾害预报中心</h1><p>升级不同灾害的预报系统，降低灾害发生时造成的资源损失。</p></div>
+  </div>
+</section>
+
 <main class="iecp-main">
-  <h1 style="color:#fff;margin-bottom:10px;"><i class="fa-solid fa-cloud-bolt" style="color:var(--gold);"></i> 灾害预报中心</h1>
-  <p style="color:var(--muted);margin-bottom:30px;">升级不同灾害的预报系统，降低灾害发生时造成的资源损失。</p>
-
   <div id="resTop" class="glass" style="padding:16px;margin-bottom:24px;display:flex;gap:20px;flex-wrap:wrap;font-size:14px;"></div>
-
   <div class="forecast-grid" id="forecastList"></div>
 </main>
 
@@ -32,12 +55,13 @@
 (function () {
   var I = IECP;
   var profile = null, myForecast = null, myRes = null;
+  var timer = null;
 
   var TYPES = [
-    { id: 'fire', name: '火灾预警系统', icon: 'fa-fire', desc: '减少原油损失', res: 'oil' },
-    { id: 'flood', name: '洪水预警系统', icon: 'fa-water', desc: '减少稀有金属损失', res: 'rare_metal' },
-    { id: 'earthquake', name: '地震预警系统', icon: 'fa-house-crack', desc: '减少铁矿石损失', res: 'iron_ore' },
-    { id: 'drought', name: '旱灾预警系统', icon: 'fa-sun', desc: '减少粮食损失', res: 'food' }
+    { id: 'fire', name: '火灾预警', icon: 'fa-fire', desc: '减少原油损失', res: 'oil' },
+    { id: 'flood', name: '洪水预警', icon: 'fa-water', desc: '减少稀有金属损失', res: 'rare_metal' },
+    { id: 'earthquake', name: '地震预警', icon: 'fa-house-crack', desc: '减少铁矿石损失', res: 'iron_ore' },
+    { id: 'drought', name: '旱灾预警', icon: 'fa-sun', desc: '减少粮食损失', res: 'food' }
   ];
 
   I.requireAuth().then(function (ok) {
@@ -46,6 +70,7 @@
     I.getProfile(true).then(function (p) {
       profile = p;
       loadData();
+      startTimer();
     });
   });
 
@@ -70,11 +95,25 @@
     TYPES.forEach(function(t) {
       var lvl = myForecast[t.id + '_lvl'] || 0;
       var isMax = lvl >= 5;
-      var costIron = 1000 + (lvl * 500);
-      var costOil = 500 + (lvl * 200);
+      var upgradingUntil = myForecast[t.id + '_upgrading_until'];
+      var isUpgrading = upgradingUntil && new Date(upgradingUntil) > new Date();
+
+      var overlayHtml = '';
+      if (isUpgrading || (upgradingUntil && new Date(upgradingUntil) <= new Date())) {
+        // 如果还在倒计时，或者时间到了但没领取，显示遮罩
+        overlayHtml = `
+          <div class="upgrading-overlay">
+            <i class="fa-solid fa-satellite-dish ${isUpgrading ? 'fa-fade' : ''}"></i>
+            <div style="font-size:12px; color:var(--muted); margin-bottom:8px;">${isUpgrading ? '系统升级中...' : '升级已完成'}</div>
+            <div class="timer" id="ftimer-${t.id}" style="${isUpgrading ? '' : 'color:#22c55e;'}">${isUpgrading ? '计算中...' : '待领取'}</div>
+            <button class="btn btn-gold btn-claim" id="fbtn-${t.id}" onclick="claim('${t.id}')" style="${isUpgrading ? 'display:none;' : 'display:block;'}">领取升级</button>
+          </div>
+        `;
+      }
 
       html += `
         <div class="f-card">
+          ${overlayHtml}
           <div class="f-header">
             <div class="f-icon ${t.id}"><i class="fa-solid ${t.icon}"></i></div>
             <div>
@@ -85,9 +124,10 @@
           ${isMax ? `<div style="text-align:center;color:var(--green);font-weight:bold;padding:10px;">已达到最高级</div>` : `
             <div class="f-cost">
               <div>升级消耗：</div>
-              <div style="margin-top:4px;"><i class="fa-solid fa-mountain"></i> 铁矿 ${costIron} &nbsp;|&nbsp; <i class="fa-solid fa-oil-well"></i> 原油 ${costOil}</div>
+              <div style="margin-top:4px;"><i class="fa-solid fa-mountain"></i> 铁矿 5000 &nbsp;|&nbsp; <i class="fa-solid fa-oil-well"></i> 原油 3000</div>
+              <div style="margin-top:4px; color:var(--cyan);"><i class="fa-regular fa-clock"></i> 耗时 2 小时</div>
             </div>
-            <button class="btn btn-cyan" style="width:100%;" onclick="upgrade('${t.id}')"><i class="fa-solid fa-arrow-up"></i> 升级系统</button>
+            <button class="btn btn-cyan" style="width:100%;" onclick="upgrade('${t.id}')" ${isUpgrading || upgradingUntil ? 'disabled' : ''}><i class="fa-solid fa-arrow-up"></i> 升级系统</button>
           `}
         </div>
       `;
@@ -95,12 +135,48 @@
     I.$('#forecastList').innerHTML = html;
   }
 
+  function startTimer() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(function() {
+      var now = new Date();
+      TYPES.forEach(function(t) {
+        var until = myForecast[t.id + '_upgrading_until'];
+        if (!until) return;
+        var end = new Date(until);
+        var timerEl = I.$('#ftimer-' + t.id);
+        var btnEl = I.$('#fbtn-' + t.id);
+        if (!timerEl || !btnEl) return;
+
+        if (now >= end) {
+          timerEl.textContent = '待领取';
+          timerEl.style.color = '#22c55e';
+          btnEl.style.display = 'block';
+        } else {
+          var diff = Math.floor((end - now) / 1000);
+          var h = Math.floor(diff / 3600);
+          var m = Math.floor((diff % 3600) / 60);
+          var s = diff % 60;
+          timerEl.textContent = `${h}时 ${m}分 ${s}秒`;
+        }
+      });
+    }, 1000);
+  }
+
   window.upgrade = function(type) {
     if (!confirm('确认消耗资源升级该预警系统吗？')) return;
-    I.client.rpc('upgrade_forecast', { p_country_id: profile.id, p_type: type }).then(function(res) {
+    I.client.rpc('start_forecast_upgrade', { c_id: profile.id, p_type: type }).then(function(res) {
       if (res.error) return I.toast(res.error.message, 'error');
       if (!res.data.ok) return I.toast(res.data.msg, 'error');
-      I.toast('升级成功！抗灾能力提升', 'success');
+      I.toast('升级已开始', 'success');
+      loadData();
+    });
+  };
+
+  window.claim = function(type) {
+    I.client.rpc('claim_forecast_upgrade', { c_id: profile.id, p_type: type }).then(function(res) {
+      if (res.error) return I.toast(res.error.message, 'error');
+      if (!res.data.ok) return I.toast(res.data.msg, 'error');
+      I.toast('系统升级成功！', 'success');
       loadData();
     });
   };
