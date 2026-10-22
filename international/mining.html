@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  /* 🚨 顶部新建控制台样式优化 */
   .build-console {
     background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
     border: 1px solid rgba(255,255,255,0.1);
@@ -31,8 +30,8 @@
     font-weight: bold; padding: 10px 24px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; 
   }
   .btn-build:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(212,175,55,0.4); }
+  .btn-build:disabled { background: #333; color: #888; box-shadow: none; transform: none; cursor: not-allowed; }
 
-  /* 🚨 分类 Tab 样式 */
   .type-tabs {
     display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 24px;
     scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.05);
@@ -50,7 +49,6 @@
     box-shadow: 0 4px 12px rgba(212,175,55,0.15);
   }
 
-  /* 🚨 采集器网格与卡片 */
   .mine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
   .mine-card { background: linear-gradient(150deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative; overflow: hidden; transition: 0.3s; }
   .mine-card:hover { border-color: var(--gold); box-shadow: 0 10px 30px rgba(212,175,55,0.1); transform: translateY(-2px); }
@@ -95,7 +93,6 @@
   .float-text { position: absolute; color: var(--green); font-weight: bold; font-size: 18px; pointer-events: none; animation: floatUp 1.5s ease-out forwards; z-index: 20; }
   @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
 
-  /* 空状态 */
   .empty-mining { grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; background: rgba(17, 24, 39, 0.4); border: 2px dashed rgba(255,255,255,0.1); border-radius: 16px; text-align: center; }
   .empty-mining i { font-size: 50px; color: var(--muted-2); margin-bottom: 16px; opacity: 0.5; }
   .empty-mining p { color: var(--muted); font-size: 14px; }
@@ -129,7 +126,6 @@
 
 <main class="iecp-main">
   
-  <!-- 🚨 顶部控制台 -->
   <div class="build-console">
     <div class="build-console-info" id="buildCostDisplay">
       <!-- JS 动态渲染 -->
@@ -142,11 +138,10 @@
         <option value="rare_metal">稀土矿井</option>
         <option value="food">农业基地</option>
       </select>
-      <button class="btn-build" onclick="createBuilding()"><i class="fa-solid fa-hammer"></i> 新建采集器</button>
+      <button class="btn-build" id="btnNewBuild" onclick="createBuilding()"><i class="fa-solid fa-hammer"></i> 新建采集器</button>
     </div>
   </div>
 
-  <!-- 🚨 分类 Tab -->
   <div class="type-tabs" id="typeTabs">
     <div class="type-tab active" onclick="switchTab('all', this)"><i class="fa-solid fa-layer-group"></i> 全部设施</div>
     <div class="type-tab" onclick="switchTab('oil', this)"><i class="fa-solid fa-oil-well" style="color:#f59e0b"></i> 原油</div>
@@ -156,7 +151,6 @@
     <div class="type-tab" onclick="switchTab('food', this)"><i class="fa-solid fa-wheat-awn" style="color:#22c55e"></i> 粮食</div>
   </div>
 
-  <!-- 采集器网格 -->
   <div class="mine-grid" id="mineGrid">
     <div class="loading-state" style="grid-column:1/-1;"><div class="spinner"></div><span>正在连接矿场主控台...</span></div>
   </div>
@@ -171,14 +165,14 @@
   var profile = null;
   var buildings = [];
   var timer = null;
-  var activeTab = 'all'; // 当前选中的分类
+  var activeTab = 'all';
 
   var TYPE_INFO = {
-    oil: { name: '原油钻井', unit: '吨', img: 'oil.png', icon: 'fa-oil-well', color: '#f59e0b' },
-    gas: { name: '天然气田', unit: 'm³', img: 'gas.png', icon: 'fa-fire-flame-simple', color: '#ef4444' },
-    iron_ore: { name: '露天铁矿', unit: '吨', img: 'iron.png', icon: 'fa-mountain', color: '#a78bfa' },
-    rare_metal: { name: '稀土矿井', unit: '吨', img: 'rare.png', icon: 'fa-atom', color: '#4fc3f7' },
-    food: { name: '农业基地', unit: '吨', img: 'food.png', icon: 'fa-wheat-awn', color: '#22c55e' }
+    oil: { name: '原油钻井', unit: '吨', img: 'oil.png', icon: 'fa-oil-well', color: '#f59e0b', max: 5 },
+    gas: { name: '天然气田', unit: 'm³', img: 'gas.png', icon: 'fa-fire-flame-simple', color: '#ef4444', max: 5 },
+    iron_ore: { name: '露天铁矿', unit: '吨', img: 'iron.png', icon: 'fa-mountain', color: '#a78bfa', max: 3 },
+    rare_metal: { name: '稀土矿井', unit: '吨', img: 'rare.png', icon: 'fa-atom', color: '#4fc3f7', max: 2 },
+    food: { name: '农业基地', unit: '吨', img: 'food.png', icon: 'fa-wheat-awn', color: '#22c55e', max: 10 }
   };
 
   var BUILD_COST = {
@@ -234,20 +228,32 @@
     });
   });
 
+  // 🚨 动态更新顶部成本 UI，展示：当前数量/上限
   window.updateBuildCostUI = function() {
     var type = I.$('#newBuildType').value;
     var reqs = BUILD_COST[type];
-    
-    var html = '<span style="color:var(--muted); margin-right:4px;">新建消耗：</span>';
+    var info = TYPE_INFO[type];
+
+    // 统计该类当前数量
+    var currentCount = buildings.filter(b => b.type === type).length;
+    var isMaxed = currentCount >= info.max;
+
+    var html = `<span style="color:var(--muted); margin-right:4px;">新建消耗：</span>`;
     reqs.forEach(function(req) {
       var rInfo = TYPE_INFO[req.t];
       html += `<span class="cost-tag"><i class="fa-solid ${rInfo.icon}" style="color:${rInfo.color}"></i> ${I.fmtNumber(req.a)}</span>`;
     });
     
+    // 添加数量显示
+    html += `<span style="margin-left:8px; font-size:12px; color:${isMaxed ? 'var(--red)' : 'var(--cyan)'}; font-weight:bold;">(${currentCount}/${info.max})</span>`;
+
     I.$('#buildCostDisplay').innerHTML = html;
+    
+    // 如果满级，禁用按钮
+    I.$('#btnNewBuild').disabled = isMaxed;
+    I.$('#btnNewBuild').innerHTML = isMaxed ? '<i class="fa-solid fa-ban"></i> 已达上限' : '<i class="fa-solid fa-hammer"></i> 新建采集器';
   };
 
-  // 🚨 切换分类 Tab
   window.switchTab = function(type, btn) {
     activeTab = type;
     document.querySelectorAll('.type-tab').forEach(el => el.classList.remove('active'));
@@ -261,6 +267,7 @@
         buildings = res.data;
         renderUI();
         startTimer();
+        updateBuildCostUI(); // 🚨 数据加载完，刷新一下顶部的数量
       }
     });
   }
@@ -275,7 +282,6 @@
     var wrap = I.$('#mineGrid');
     var html = '';
 
-    // 过滤当前 Tab 的数据
     var filtered = buildings.filter(function(b) {
       return activeTab === 'all' || b.type === activeTab;
     });
@@ -421,7 +427,6 @@
       if (!res.data.ok) { I.toast(res.data.msg, 'error'); return; }
       
       I.toast('新建成功！', 'success');
-      // 自动切换到刚新建的资源分类
       var tabBtns = document.querySelectorAll('.type-tab');
       tabBtns.forEach(btn => {
         if (btn.textContent.includes(typeName.substring(0,2))) {

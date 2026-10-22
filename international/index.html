@@ -3,74 +3,429 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IECP 国际交流与合作平台 · 联结文明 · 共享未来</title>
+<title>IECP · 国际交流与合作平台</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<style>
+  body {
+    background-color: #05070a;
+    overflow-x: hidden;
+  }
+
+  /* 动态极光背景 */
+  .aurora-bg {
+    position: fixed; inset: 0; z-index: -2;
+    background: 
+      radial-gradient(circle at 15% 50%, rgba(79, 195, 247, 0.12), transparent 50%),
+      radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.12), transparent 50%),
+      radial-gradient(circle at 50% 80%, rgba(167, 139, 250, 0.08), transparent 50%);
+    filter: blur(80px);
+    animation: auroraMove 15s ease-in-out infinite alternate;
+  }
+  @keyframes auroraMove {
+    0% { transform: scale(1) translate(0, 0); }
+    100% { transform: scale(1.2) translate(-5%, 5%); }
+  }
+  
+  #home-particles { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+  /* ============================================================
+     Hero 区域
+     ============================================================ */
+  .hero-section {
+    min-height: calc(100vh - 64px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 60px 20px 40px; position: relative;
+  }
+  
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 16px; border-radius: 99px; background: rgba(212,175,55,0.1);
+    border: 1px solid rgba(212,175,55,0.3); color: var(--gold-2);
+    font-size: 12px; letter-spacing: 2px; margin-bottom: 24px;
+    animation: fadeUp 0.8s ease both;
+  }
+  
+  .hero-title {
+    font-size: clamp(40px, 6vw, 76px); font-weight: 900; line-height: 1.1;
+    letter-spacing: 4px; margin: 0 0 24px;
+    background: linear-gradient(135deg, #ffffff 10%, #d4af37 60%, #a78bfa 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: fadeUp 0.8s ease 0.1s both;
+    text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .hero-subtitle {
+    font-size: clamp(15px, 2vw, 18px); color: var(--muted);
+    max-width: 680px; line-height: 1.8; margin-bottom: 40px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-actions {
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+  
+  .btn-hero {
+    padding: 16px 36px; border-radius: 12px; font-size: 16px; font-weight: 800;
+    display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.3s;
+    text-decoration: none;
+  }
+  .btn-hero-primary {
+    background: linear-gradient(135deg, var(--gold), #b8860b);
+    color: #0a0e1a; border: none; box-shadow: 0 8px 25px rgba(212,175,55,0.3);
+  }
+  .btn-hero-primary:hover { transform: translateY(-4px); box-shadow: 0 12px 35px rgba(212,175,55,0.5); }
+  .btn-hero-ghost {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.15);
+    color: var(--ink); backdrop-filter: blur(10px);
+  }
+  .btn-hero-ghost:hover { background: rgba(255,255,255,0.08); border-color: var(--gold); transform: translateY(-4px); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============================================================
+     🚨 极客风数据统计终端 (深度优化版)
+     ============================================================ */
+  .dashboard-section {
+    max-width: 1100px; margin: -20px auto 80px; padding: 0 20px;
+    animation: fadeUp 0.8s ease 0.5s both;
+  }
+  
+  .dashboard-panel {
+    background: rgba(10, 14, 26, 0.8); backdrop-filter: blur(16px);
+    border: 1px solid rgba(79, 195, 247, 0.2); border-radius: 16px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5), inset 0 0 20px rgba(79,195,247,0.05);
+    overflow: hidden;
+  }
+
+  .dash-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: linear-gradient(90deg, rgba(79,195,247,0.1), transparent);
+  }
+  .dash-title { font-size: 14px; font-weight: bold; color: var(--cyan); letter-spacing: 2px; font-family: var(--mono); display: flex; align-items: center; gap: 8px;}
+  .en-title { display: inline; font-size: 12px; color: var(--muted); font-weight: normal; margin-left: 4px; }
+  
+  .dash-status { font-size: 12px; color: var(--green); display: flex; align-items: center; gap: 6px; font-family: var(--mono); }
+  .dash-status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); animation: pulseGreen 2s infinite; }
+  
+  @keyframes pulseGreen { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+  .dash-table { width: 100%; border-collapse: collapse; font-family: var(--mono); }
+  .dash-table th { text-align: left; padding: 12px 24px; font-size: 12px; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: normal; }
+  .dash-table td { padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.02); vertical-align: middle; }
+  .dash-table tr:last-child td { border-bottom: none; }
+  .dash-table tr:hover td { background: rgba(255,255,255,0.02); }
+  
+  .td-label { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--ink-2); font-family: var(--font); }
+  .td-label i { width: 20px; text-align: center; font-size: 16px; }
+  .td-value { text-align: right; font-size: 20px; font-weight: 800; color: #fff; }
+  
+  .val-gold { color: var(--gold-2); }
+  .val-cyan { color: var(--cyan); }
+  .val-red { color: #ef4444; }
+  .val-purple { color: #a78bfa; }
+
+  /* ============================================================
+     特性卡片
+     ============================================================ */
+  .features-section { max-width: 1200px; margin: 0 auto 80px; padding: 0 20px; }
+  .section-title { text-align: center; font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 40px; }
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  
+  .feature-card {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8));
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
+    padding: 30px 24px; position: relative; overflow: hidden; transition: 0.3s;
+    cursor: pointer; text-decoration: none; display: block;
+  }
+  .feature-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.5); border-color: rgba(212,175,55,0.4); }
+  .fc-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 20px; transition: 0.3s; }
+  .feature-card:hover .fc-icon { transform: scale(1.1) rotate(5deg); }
+  .fc-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 10px; }
+  .fc-desc { font-size: 13.5px; color: var(--muted); line-height: 1.7; }
+
+  /* ============================================================
+     实时动态
+     ============================================================ */
+  .live-section { max-width: 900px; margin: 0 auto 80px; padding: 0 20px; }
+  .live-box { background: rgba(17, 24, 39, 0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; }
+  .live-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; }
+  .live-header .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: pulseRed 1.5s infinite; }
+  .live-header h3 { margin: 0; font-size: 16px; color: #fff; }
+  .live-list { display: flex; flex-direction: column; gap: 12px; max-height: 240px; overflow-y: auto; padding-right: 4px; }
+  .live-list::-webkit-scrollbar { width: 4px; }
+  .live-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+  .live-item { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink-2); padding: 10px 12px; background: rgba(255,255,255,0.02); border-radius: 8px; }
+  .live-item i { color: var(--gold-2); font-size: 14px; }
+  @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+
+  /* 📱 移动端优化 */
+  @media (max-width: 768px) {
+    .hero-section { padding: 40px 16px 30px; min-height: auto; }
+    .hero-title { letter-spacing: 2px; font-size: 36px; }
+    .hero-actions { width: 100%; flex-direction: column; gap: 12px; }
+    .btn-hero { width: 100%; justify-content: center; padding: 14px; }
+    
+    .dashboard-section { padding: 0 16px; margin: 10px auto 40px; }
+    .dash-header { padding: 12px 16px; }
+    .en-title { display: none; } /* 🚨 手机端隐藏英文，防止折行 */
+    
+    .dash-table th { padding: 12px 16px; }
+    .dash-table td { padding: 14px 16px; }
+    .td-label { font-size: 13.5px; gap: 10px; }
+    .td-value { font-size: 18px; }
+
+    .features-grid { grid-template-columns: 1fr; gap: 16px; }
+    .feature-card { padding: 20px; }
+    .fc-icon { width: 44px; height: 44px; font-size: 20px; margin-bottom: 14px; }
+    
+    .live-section { padding: 0 16px; margin-bottom: 40px; }
+  }
+</style>
 </head>
 <body>
+
+<div class="aurora-bg"></div>
+<canvas id="home-particles"></canvas>
 
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
     <a class="iecp-logo" href="index.html">
       <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text">
-        <b>IECP</b>
-        <span>Exchange &amp; Cooperation</span>
-      </div>
+      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
     </a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
 </header>
 
-<section class="iecp-hero">
-  <div class="iecp-hero-inner">
-    <div class="iecp-hero-tag">International Exchange &amp; Cooperation Platform</div>
-    <h1>联结文明<em>·</em>共享未来</h1>
-    <p class="iecp-hero-sub">
-      IECP 是一个面向虚构国家与文明体的国际交流与合作平台。在这里，你可以建立国家、发布新闻、申请建交、开展贸易、参与战争演练，与来自各地的国家共同书写属于我们的世界。
-    </p>
-    <div class="iecp-hero-actions">
-      <a class="btn btn-gold" href="register.html"><i class="fa-solid fa-plus"></i> 建立国家</a>
-      <a class="btn btn-ghost" href="countries.html"><i class="fa-solid fa-globe"></i> 浏览国家</a>
+<main>
+  <!-- Hero 区域 -->
+  <section class="hero-section">
+    <div class="hero-tag"><i class="fa-solid fa-satellite"></i> 接入国际核心数据网络</div>
+    <h1 class="hero-title">联结文明<br>共享未来</h1>
+    <p class="hero-subtitle">IECP 是一个面向虚拟国家与文明体的国际交流与合作平台。在这里，你可以建立国家、发布新闻、申请建交、开展贸易、参与战争演练，与来自各地的国家共同书写属于我们的世界。</p>
+    <div class="hero-actions">
+      <a href="register.html" class="btn-hero btn-hero-primary"><i class="fa-solid fa-plus"></i> 建立你的国家</a>
+      <a href="countries.html" class="btn-hero btn-hero-ghost"><i class="fa-solid fa-globe"></i> 浏览世界版图</a>
     </div>
+  </section>
 
-    <div class="iecp-features">
-      <div class="iecp-feature glass reveal">
-        <i class="fa-solid fa-flag"></i>
-        <h4>国家档案</h4>
-        <p>填写国家名、社会性质、首都、官方语言，上传国旗与国徽，建立你的国家档案。</p>
+  <!-- 🚨 极客风数据终端（已移除兵力） -->
+  <section class="dashboard-section">
+    <div class="dashboard-panel">
+      <div class="dash-header">
+        <div class="dash-title">
+          <i class="fa-solid fa-server"></i> 全服数据终端 <span class="en-title">GLOBAL DATABASE</span>
+        </div>
+        <div class="dash-status">SYSTEM ONLINE</div>
       </div>
-      <div class="iecp-feature glass reveal">
-        <i class="fa-solid fa-handshake"></i>
-        <h4>建交与外交</h4>
-        <p>向其他国家申请建交或宣战，建立友好或敌对关系，在交流中心公开对话。</p>
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>数据指标</th>
+            <th style="text-align:right;">实时数值</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-label"><i class="fa-solid fa-flag" style="color:var(--gold)"></i> 注册主权国家</td>
+            <td class="td-value val-gold" id="statCountries">-</td>
+          </tr>
+          <tr>
+            <td class="td-label"><i class="fa-solid fa-handshake" style="color:var(--green)"></i> 国际建交对数</td>
+            <td class="td-value" style="color:var(--green)" id="statAllies">-</td>
+          </tr>
+          <tr>
+            <td class="td-label"><i class="fa-solid fa-fire" style="color:#ef4444"></i> 正在进行的战争</td>
+            <td class="td-value val-red" id="statWars">-</td>
+          </tr>
+          <tr>
+            <td class="td-label"><i class="fa-solid fa-newspaper" style="color:var(--cyan)"></i> 全球发布新闻数</td>
+            <td class="td-value val-cyan" id="statNews">-</td>
+          </tr>
+          <tr>
+            <td class="td-label"><i class="fa-solid fa-store" style="color:var(--purple)"></i> 交易行在售物资</td>
+            <td class="td-value val-purple" id="statMarket">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 核心特性 -->
+  <section class="features-section">
+    <h2 class="section-title">掌控国家命脉</h2>
+    <div class="features-grid">
+      <a href="mining.html" class="feature-card">
+        <div class="fc-icon" style="color:#d4af37; background:rgba(212,175,55,0.1);"><i class="fa-solid fa-industry"></i></div>
+        <div class="fc-title">国家基建</div>
+        <div class="fc-desc">建造并升级你的资源开采设施，随时间不断产出战略物资，打造坚实的国家经济底座。</div>
+      </a>
+      <a href="market.html" class="feature-card">
+        <div class="fc-icon" style="color:#4fc3f7; background:rgba(79,195,247,0.1);"><i class="fa-solid fa-store"></i></div>
+        <div class="fc-title">全球交易</div>
+        <div class="fc-desc">在交易行中发布物资、互通有无。利用市场价格波动赚取财富，或是重金求购稀有金属。</div>
+      </a>
+      <a href="diplomacy.html" class="feature-card">
+        <div class="fc-icon" style="color:#22c55e; background:rgba(34,197,94,0.1);"><i class="fa-solid fa-handshake"></i></div>
+        <div class="fc-title">外交博弈</div>
+        <div class="fc-desc">发布国际新闻，递交建交申请。是结为盟友共御外敌，还是发表声明谴责，皆在你一念之间。</div>
+      </a>
+      <a href="wars.html" class="feature-card">
+        <div class="fc-icon" style="color:#ef4444; background:rgba(239,68,68,0.1);"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="fc-title">战争系统</div>
+        <div class="fc-desc">研发科技，制造坦克与战机。对敌国发起突袭，掠夺他们的国库资金与未收取的资源。</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- 实时世界动态 -->
+  <section class="live-section">
+    <div class="live-box">
+      <div class="live-header">
+        <div class="dot"></div>
+        <h3>全球实时动态</h3>
       </div>
-      <div class="iecp-feature glass reveal">
-        <i class="fa-solid fa-store"></i>
-        <h4>贸易与交易</h4>
-        <p>以亚斯卢布结算，在交易行发布或购买资源，管理你的国家财富。</p>
-      </div>
-      <div class="iecp-feature glass reveal">
-        <i class="fa-solid fa-shield-halved"></i>
-        <h4>战争演练</h4>
-        <p>参与娱乐性质的战争系统，通过军事演练提升国家声誉，赢取奖励。</p>
+      <div class="live-list" id="liveFeed">
+        <div class="live-item"><i class="fa-solid fa-circle-notch fa-spin"></i> 正在接收全球新闻信号...</div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+</main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
-  (function () {
-    IECP.requireAuth().then(function (ok) {
-      if (!ok) return;
-      IECP.initTopbar('index');
-    });
-  })();
-</script>
+// 3D 星空粒子特效
+(function initParticles() {
+  const canvas = document.getElementById('home-particles'); const ctx = canvas.getContext('2d');
+  let width, height; let particles = [];
+  function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+  
+  class Particle {
+    constructor() { 
+      this.x = Math.random() * width; this.y = Math.random() * height; 
+      this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3; 
+      this.radius = Math.random() * 1.5 + 0.5; 
+    }
+    update() { 
+      this.x += this.vx; this.y += this.vy; 
+      if (this.x < 0 || this.x > width) this.vx *= -1; 
+      if (this.y < 0 || this.y > height) this.vy *= -1; 
+    }
+    draw() { 
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); 
+      ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.fill(); 
+    }
+  }
+  for (let i = 0; i < 100; i++) particles.push(new Particle());
+  
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].update(); particles[i].draw();
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) { 
+          ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); 
+          ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 - dist / 800})`; ctx.stroke(); 
+        }
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
 
+// 🚨 数据加载与动画
+(function () {
+  var I = IECP;
+  
+  I.initTopbar('index');
+
+  // 并发拉取所有统计数据 (去掉了兵力)
+  Promise.all([
+    I.client.from('profiles').select('*', { count: 'exact', head: true }),
+    I.client.from('relations').select('*').eq('relation_type', 'ally'),
+    I.client.from('relations').select('*').eq('relation_type', 'war'),
+    I.client.from('news').select('*', { count: 'exact', head: true }),
+    I.client.from('market_items').select('*', { count: 'exact', head: true }).eq('status', 'on_sale')
+  ]).then(function(results) {
+    var userCount = results[0].count || 0;
+    var allyCount = results[1].data ? results[1].data.length : 0;
+    var warCount = results[2].data ? results[2].data.length : 0;
+    var newsCount = results[3].count || 0;
+    var marketCount = results[4].count || 0;
+
+    // 动态数字滚动动画
+    animateValue("statCountries", 0, userCount, 1200);
+    animateValue("statAllies", 0, allyCount, 1200);
+    animateValue("statWars", 0, warCount, 1200);
+    animateValue("statNews", 0, newsCount, 1200);
+    animateValue("statMarket", 0, marketCount, 1200);
+
+  }).catch(function(err) {
+    console.error("数据加载失败", err);
+  });
+
+  // 拉取最新新闻
+  I.client.from('news').select('title, created_at').order('created_at', { ascending: false }).limit(6).then(function(res) {
+    var list = res.data || [];
+    var feed = I.$('#liveFeed');
+    
+    if (!list.length) {
+      feed.innerHTML = '<div class="live-item"><i class="fa-solid fa-ghost"></i> 世界目前一片宁静...</div>';
+      return;
+    }
+    
+    feed.innerHTML = list.map(n => `
+      <div class="live-item">
+        <i class="fa-solid fa-bullhorn"></i>
+        <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${I.escapeHtml(n.title)}</span>
+        <span style="color:var(--muted-2); font-size:11px;">${I.relativeTime(n.created_at)}</span>
+      </div>
+    `).join('');
+  });
+
+  // 数字滚动动画
+  function animateValue(id, start, end, duration) {
+    var obj = document.getElementById(id);
+    if (!obj) return;
+    var range = end - start;
+    var minTimer = 50;
+    var stepTime = Math.abs(Math.floor(duration / (range || 1)));
+    var startTime = new Date().getTime();
+    var endTime = startTime + duration;
+    var timer;
+   
+    function run() {
+      var now = new Date().getTime();
+      var remaining = Math.max(0, endTime - now);
+      var temp = range - (remaining / duration) * range;
+      var current = Math.floor(start + temp);
+      
+      obj.innerHTML = current;
+      
+      if (now >= endTime) {
+        obj.innerHTML = end;
+        clearTimeout(timer);
+      } else {
+        timer = setTimeout(run, Math.max(minTimer, stepTime));
+      }
+    }
+    run();
+  }
+
+})();
+</script>
 </body>
 </html>
