@@ -10,7 +10,7 @@
   #news-particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
   
   .detail-actions { display: flex; gap: 16px; align-items: center; border-top: 1px solid var(--border); padding-top: 24px; margin-top: 30px; }
-  .detail-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 24px; background: var(--glass-2); border: 1px solid var(--border); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .detail-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border-radius: 24px; background: var(--glass-2); border: 1px solid var(--border); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
   .detail-btn:hover { background: var(--glass-3); color: var(--ink); border-color: var(--border-2); }
   .detail-btn.liked { color: #ef4444; border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.1); }
   .detail-btn i { font-size: 16px; }
@@ -23,20 +23,99 @@
   .comment-toolbar .img-btn { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; cursor: pointer; transition: color 0.2s; padding: 4px; }
   .comment-toolbar .img-btn:hover { color: var(--cyan); }
   
-  .comment-item { display: flex; gap: 12px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+  .comment-item { display: flex; gap: 12px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border); position: relative; }
   .comment-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
-  .comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-2); }
-  .comment-content-box { flex: 1; }
-  .comment-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-2); flex-shrink: 0; }
+  .comment-content-box { flex: 1; min-width: 0; }
+  .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .comment-user-info { display: flex; align-items: center; gap: 10px; }
   .comment-name { font-size: 14px; font-weight: 600; color: var(--gold-2); }
   .comment-time { font-size: 12px; color: var(--muted); }
-  .comment-text { font-size: 14px; color: var(--ink-2); line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
+  
+  /* 操作小按钮 */
+  .comment-ops { display: flex; gap: 12px; opacity: 0; transition: opacity 0.2s; }
+  .comment-item:hover .comment-ops { opacity: 1; }
+  .op-btn { font-size: 12px; color: var(--muted); cursor: pointer; transition: 0.2s; }
+  .op-btn:hover { color: var(--cyan); }
+  .op-btn.del:hover { color: #ef4444; }
+
+  .comment-text { font-size: 14px; color: var(--ink-2); line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; word-break: break-all; }
+  .comment-text .at-user { color: var(--cyan); font-weight: bold; }
   .comment-img { max-width: 200px; border-radius: 8px; cursor: zoom-in; border: 1px solid var(--border); }
 
-  /* 插入内容的富文本渲染 */
+  /* 富文本渲染 */
   .rich-content { font-size: 16px; line-height: 1.9; color: var(--ink-2); white-space: pre-wrap; word-wrap: break-word; }
   .rich-content img, .rich-content video { max-width: 100%; border-radius: 12px; margin: 16px 0; border: 1px solid var(--border); display: block; }
   .rich-content audio { width: 100%; margin: 16px 0; outline: none; }
+
+  /* ============================================================
+     📱 移动端深度优化
+     ============================================================ */
+  @media (max-width: 768px) {
+    /* 容器内边距收紧，释放阅读空间 */
+    .iecp-main {
+      padding: 16px 12px 40px !important;
+      margin: 0 auto !important;
+    }
+    
+    /* 新闻内容卡片内边距缩小 */
+    .glass {
+      padding: 20px 16px !important;
+    }
+
+    /* 标题字号微调 */
+    .glass h1 {
+      font-size: 22px !important;
+      line-height: 1.4 !important;
+    }
+
+    /* 🚨 操作栏强制单行，防挤压换行 */
+    .detail-actions {
+      gap: 8px !important;
+      padding-top: 20px !important;
+      margin-top: 20px !important;
+      justify-content: space-between !important;
+    }
+    
+    .detail-btn {
+      flex: 1 !important;
+      padding: 8px 0 !important;
+      font-size: 12px !important;
+      gap: 4px !important;
+      border-radius: 12px !important;
+    }
+    
+    .detail-btn i {
+      font-size: 14px !important;
+    }
+
+    /* 评论操作按钮在手机上默认显示，不依赖 hover */
+    .comment-ops {
+      opacity: 1 !important;
+    }
+
+    /* 评论区输入框优化 */
+    .comment-box {
+      padding: 12px !important;
+    }
+    .comment-input-wrapper textarea {
+      font-size: 16px !important; /* 防止 iOS 自动放大输入框 */
+    }
+
+    /* 评论头像稍微缩小 */
+    .comment-avatar {
+      width: 32px !important;
+      height: 32px !important;
+    }
+
+    /* 编辑/删除按钮布局 */
+    div[style*="display:flex; gap:10px; margin-left:auto;"] {
+      margin-left: 0 !important;
+      margin-top: 10px !important;
+      width: 100% !important;
+      justify-content: flex-end !important;
+    }
+  }
 </style>
 </head>
 <body>
@@ -107,21 +186,15 @@
   // 🚨 解析富文本中的占位符
   function renderRichContent(text, mediaList) {
     if (!text) return '';
-    var safeText = I.escapeHtml(text); // 先转义防 XSS
-    
-    // 建立媒体映射
+    var safeText = I.escapeHtml(text);
     var map = {};
     if (mediaList && Array.isArray(mediaList)) {
       mediaList.forEach(m => { map[m.id] = m; });
     }
-
-    // 正则匹配 [图片: xxx] / [视频: xxx] / [音频: xxx]
     var regex = /\[(图片|视频|音频):\s*([a-zA-Z0-9_]+)\]/g;
-    
     return safeText.replace(regex, function(match, type, id) {
       var media = map[id];
-      if (!media) return match; // 找不到就原样显示
-      
+      if (!media) return match;
       if (type === '图片') return `<img src="${media.url}" alt="新闻图片">`;
       if (type === '视频') return `<video src="${media.url}" controls></video>`;
       if (type === '音频') return `<audio src="${media.url}" controls></audio>`;
@@ -133,20 +206,14 @@
     var author = n.profiles || {};
     var avatar = author.flag_url || I.avatarFallback(author.username || '?');
     var isAuthor = author.id === profile.id;
-    
-    // 渲染正文（富文本替换）
     var contentHtml = renderRichContent(n.content, n.media_list);
 
-    // 处理未插入正文的附件（追加到文章末尾）
     var unplacedMediaHtml = '';
     if (n.media_list && n.media_list.length > 0) {
       var usedIds = [];
       var regex = /\[(图片|视频|音频):\s*([a-zA-Z0-9_]+)\]/g;
       var match;
-      while ((match = regex.exec(n.content)) !== null) {
-        usedIds.push(match[2]);
-      }
-      
+      while ((match = regex.exec(n.content)) !== null) { usedIds.push(match[2]); }
       n.media_list.forEach(function(m) {
         if (!usedIds.includes(m.id)) {
           if (m.type === 'image') unplacedMediaHtml += `<img src="${m.url}" style="max-width:100%; border-radius:12px; margin:16px 0; border:1px solid var(--border);">`;
@@ -174,7 +241,7 @@
       <div class="glass" style="padding:40px;">
         <h1 style="font-size:28px; line-height:1.4; margin-bottom:20px; color:var(--ink);">${I.escapeHtml(n.title)}</h1>
         
-        <div style="display:flex; align-items:center; gap:16px; padding-bottom:24px; border-bottom:1px solid var(--border); margin-bottom:30px;">
+        <div style="display:flex; align-items:center; gap:16px; padding-bottom:24px; border-bottom:1px solid var(--border); margin-bottom:30px; flex-wrap: wrap;">
           <img src="${I.escapeHtml(avatar)}" style="width:48px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--border-2);">
           <div>
             <div style="font-size:15px; font-weight:600;"><a href="country.html?id=${author.id}" style="color:var(--gold-2);">${I.escapeHtml(author.username || '未知')}</a></div>
@@ -260,16 +327,25 @@
       var p = c.profiles || {};
       var avatar = p.flag_url || I.avatarFallback(p.username || '?');
       var imgHtml = c.image_url ? `<div style="margin-top:8px;"><img src="${c.image_url}" class="comment-img" onclick="window.open(this.src)"></div>` : '';
+      
+      var isMyComment = (c.user_id === profile.id);
+      var formattedContent = I.escapeHtml(c.content).replace(/@([a-zA-Z0-9_\u4e00-\u9fa5]+)/g, '<span class="at-user">@$1</span>');
 
       html += `
-        <div class="comment-item">
+        <div class="comment-item" id="comment-${c.id}">
           <img src="${avatar}" class="comment-avatar">
           <div class="comment-content-box">
             <div class="comment-header">
-              <span class="comment-name">${I.escapeHtml(p.username || '未知')}</span>
-              <span class="comment-time">${I.relativeTime(c.created_at)}</span>
+              <div class="comment-user-info">
+                <span class="comment-name">${I.escapeHtml(p.username || '未知')}</span>
+                <span class="comment-time">${I.relativeTime(c.created_at)}</span>
+              </div>
+              <div class="comment-ops">
+                <span class="op-btn" onclick="replyTo('${I.escapeHtml(p.username)}')"><i class="fa-solid fa-reply"></i> 回复</span>
+                ${isMyComment ? `<span class="op-btn del" onclick="deleteComment('${c.id}')"><i class="fa-solid fa-trash"></i> 删除</span>` : ''}
+              </div>
             </div>
-            <div class="comment-text">${I.escapeHtml(c.content)}</div>
+            <div class="comment-text">${formattedContent}</div>
             ${imgHtml}
           </div>
         </div>
@@ -277,6 +353,30 @@
     });
     wrap.innerHTML = html;
   }
+
+  window.replyTo = function(username) {
+    var input = I.$('#commentInput');
+    var prefix = '@' + username + ' ';
+    if (!input.value.startsWith('@')) { input.value = prefix + input.value; } 
+    else { input.value = prefix; }
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+    I.$('.comment-box').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  window.deleteComment = function(commentId) {
+    if (!confirm('⚠️ 确定要删除这条评论吗？')) return;
+    I.toast('正在删除...', 'success', 1000);
+    I.client.from('news_comments').delete().eq('id', commentId).then(function(r) {
+      if (r.error) return I.toast('删除失败：' + r.error.message, 'error');
+      I.toast('评论已删除', 'success');
+      var cSpan = I.$('#commentCount');
+      if (cSpan) cSpan.textContent = Math.max(0, parseInt(cSpan.textContent) - 1);
+      I.client.from('news_comments').select('*, profiles(username, flag_url)').eq('news_id', newsId).order('created_at', { ascending: true }).then(function(res) {
+        renderComments(res.data || []);
+      });
+    });
+  };
 
   window.deleteCurrentNews = function() {
     if (!confirm('⚠️ 确定要彻底删除这条新闻吗？')) return;
@@ -292,7 +392,6 @@
     var span = I.$('#likeCount');
     var currentCount = parseInt(span.textContent) || 0;
     var isLiked = el.classList.contains('liked');
-
     if (isLiked) {
       I.client.from('news_likes').delete().eq('news_id', newsId).eq('user_id', profile.id).then(function() {
         el.classList.remove('liked');
@@ -325,29 +424,18 @@
     var input = I.$('#commentInput');
     var content = input.value.trim();
     if (!content && !currentCommentImgUrl) { I.toast('请输入评论或上传图片', 'error'); return; }
-    
     var btn = I.$('#submitCommentBtn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 发送中';
-    
-    I.client.from('news_comments').insert({
-      news_id: newsId, 
-      user_id: profile.id, 
-      content: content || '',
-      image_url: currentCommentImgUrl
-    }).then(function(r) {
+    I.client.from('news_comments').insert({ news_id: newsId, user_id: profile.id, content: content || '', image_url: currentCommentImgUrl }).then(function(r) {
       btn.disabled = false;
       btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送';
-      
       if (r.error) { I.toast(r.error.message, 'error'); return; }
-      
       input.value = '';
       removeCommentImg(); 
       I.toast('评论发布成功', 'success');
-      
       var cSpan = I.$('#commentCount');
       cSpan.textContent = parseInt(cSpan.textContent) + 1;
-      
       I.client.from('news_comments').select('*, profiles(username, flag_url)').eq('news_id', newsId).order('created_at', { ascending: true }).then(function(res) {
         renderComments(res.data || []);
       });
