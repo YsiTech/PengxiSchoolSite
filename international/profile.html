@@ -20,6 +20,14 @@
   .emblem-upload-wrap:hover .emblem-overlay { opacity: 1; }
   .emblem-overlay i { font-size: 20px; color: var(--gold); }
   .emblem-overlay span { font-size: 11px; letter-spacing: 1px; }
+
+  /* 🚨 修复户名重叠 */
+  .bc-holder {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+    text-align: left !important;
+  }
 </style>
 </head>
 <body>
@@ -135,10 +143,6 @@
           var icon = isIn ? 'fa-arrow-down-long' : 'fa-arrow-up-long';
           var sign = isIn ? '+' : '−';
           var note = log.note ? I.escapeHtml(log.note) : (isIn ? '资金收入' : '资金支出');
-          
-          // 🚨 资金明细这里也改成纯数字千分位
-          var deltaFormatted = Number(Math.abs(delta)).toLocaleString('en-US');
-          var afterFormatted = Number(log.balance_after).toLocaleString('en-US');
 
           html += '<div class="funds-item">' +
             '<div class="funds-icon ' + cls + '"><i class="fa-solid ' + icon + '"></i></div>' +
@@ -146,8 +150,8 @@
               '<div class="funds-title">' + note + '</div>' +
               '<div class="funds-meta">' + I.fmtDate(log.created_at) + '</div>' +
             '</div>' +
-            '<div class="funds-amt ' + cls + '">' + sign + deltaFormatted + ' ₽' +
-              '<span class="funds-after">余额 ' + afterFormatted + '</span>' +
+            '<div class="funds-amt ' + cls + '">' + sign + I.fmtNumber(Math.abs(delta)) + ' ₽' +
+              '<span class="funds-after">余额 ' + I.fmtNumber(log.balance_after) + '</span>' +
             '</div>' +
           '</div>';
         });
@@ -189,9 +193,6 @@
   function render() {
     var wrap = I.$('#profileWrap');
 
-    // 🚨 核心修改：把国库的 I.fmtNumber(profile.balance) 换成纯数字千分位
-    var rawBalanceStr = Number(profile.balance || 0).toLocaleString('en-US');
-
     wrap.innerHTML = `
       <div class="profile-grid">
         <aside class="profile-side">
@@ -222,7 +223,7 @@
               <div class="bc-title-group"><div class="bc-title">国库储备</div><div class="bc-subtitle">National Treasury</div></div>
             </div>
             <div class="bc-amount-group">
-              <div class="bc-amount">${rawBalanceStr}</div>
+              <div class="bc-amount">${I.fmtNumber(profile.balance)}</div>
               <div class="bc-amount-unit">亚斯卢布 · АСР ₽</div>
             </div>
             <div class="bc-bottom">
@@ -424,6 +425,19 @@
       if (total > 50000) evalGrade = "S"; else if (total > 30000) evalGrade = "A"; else if (total > 15000) evalGrade = "B";
       I.$('#resTotalEval').innerText = '综合评估：' + evalGrade;
 
+      // 🚨 在局部写一个专门用于资源的缩写函数
+      function fmtRes(val) {
+        if (val === null || val === undefined || isNaN(val)) return '0';
+        var num = Number(val);
+        if (num >= 100000000) {
+          return (num / 100000000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '亿';
+        } else if (num >= 10000) {
+          return (num / 10000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '万';
+        } else {
+          return Number(num.toFixed(2)).toLocaleString('en-US');
+        }
+      }
+
       var resData = [
         { name: '原油储备', val: r.oil, unit: '吨', max: 10000, icon: 'fa-oil-well', cls: 'oil' },
         { name: '天然气', val: r.gas, unit: 'm³', max: 15000, icon: 'fa-fire-flame-simple', cls: 'gas' },
@@ -434,7 +448,7 @@
 
       var html = '';
       resData.forEach(function(item) {
-        var valFormatted = I.fmtNumber(item.val);
+        var valFormatted = fmtRes(item.val); // 🚨 使用局部缩写函数
         var pct = Math.min(100, Math.round((item.val / item.max) * 100));
         html += `<div class="res-item"><div class="res-icon ${item.cls}"><i class="fa-solid ${item.icon}"></i></div><div class="res-info"><div class="res-name-row"><span>${item.name}</span><span>${valFormatted} ${item.unit}</span></div><div class="res-bar"><div class="res-fill ${item.cls}" style="width: ${pct}%;"></div></div></div></div>`;
       });

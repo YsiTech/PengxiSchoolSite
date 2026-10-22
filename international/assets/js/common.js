@@ -17,24 +17,11 @@
     });
   };
   
-  // 🚨 修正数字格式化：只有一万以上才用“万”，一亿以上才用“亿”，千以下原样显示
+  // 🚨 全局恢复纯数字（带千分位），不再缩写
   w.IECP.fmtNumber = function (num) {
     if (num === null || num === undefined || isNaN(num)) return '0';
     var n = Number(num);
-    var isNeg = n < 0;
-    var absN = Math.abs(n);
-    var res = '';
-
-    if (absN >= 100000000) {
-      res = (absN / 100000000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '亿';
-    } else if (absN >= 10000) {
-      res = (absN / 10000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '万';
-    } else {
-      // 一万以下，原样显示，保留最多两位小数，带千分位逗号
-      res = Number(absN.toFixed(2)).toLocaleString('en-US');
-    }
-
-    return (isNeg ? '-' : '') + res;
+    return n.toLocaleString('en-US', { maximumFractionDigits: 2 });
   };
 
   w.IECP.fmtDate = function (iso) {
