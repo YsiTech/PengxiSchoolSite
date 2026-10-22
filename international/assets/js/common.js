@@ -17,7 +17,6 @@
     });
   };
   
-  // 🚨 全局恢复纯数字（带千分位），不再缩写
   w.IECP.fmtNumber = function (num) {
     if (num === null || num === undefined || isNaN(num)) return '0';
     var n = Number(num);
@@ -99,6 +98,8 @@
       { id:'diplomacy', icon:'fa-handshake', text:'交流中心', href:'diplomacy.html' },
       { id:'market', icon:'fa-store', text:'交易行', href:'market.html' },
       { id:'transfer', icon:'fa-money-bill-transfer', text:'跨国汇款', href:'transfer.html' },
+      // 🚨 新增国家基建入口
+      { id:'mining', icon:'fa-trowel-bricks', text:'国家基建', href:'mining.html' },
       { id:'military', icon:'fa-industry', text:'军工厂', href:'military.html' },
       { id:'research', icon:'fa-flask', text:'研究所', href:'research.html' },
       { id:'forecast', icon:'fa-cloud-bolt', text:'灾害预报', href:'forecast.html' },

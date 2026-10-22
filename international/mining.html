@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>国家基建 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .mine-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 30px; }
+  .mine-card { background: linear-gradient(150deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9)); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative; overflow: hidden; transition: 0.3s; }
+  .mine-card:hover { border-color: var(--gold); box-shadow: 0 10px 30px rgba(212,175,55,0.1); }
+  
+  .mine-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .mine-icon { width: 64px; height: 64px; border-radius: 12px; background: rgba(0,0,0,0.3); display: grid; place-items: center; padding: 10px; }
+  .mine-icon img { width: 100%; height: 100%; object-fit: contain; }
+  .mine-icon i { font-size: 30px; color: var(--gold); }
+  .mine-title { font-size: 18px; font-weight: bold; color: #fff; }
+  .mine-level { font-size: 12px; color: var(--gold-2); background: rgba(212,175,55,0.15); padding: 2px 8px; border-radius: 99px; display: inline-block; margin-top: 4px; }
+
+  .storage-info { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+  .storage-info b { color: var(--cyan); font-family: var(--mono); }
+  
+  .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; margin-bottom: 20px; position: relative; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--cyan)); border-radius: 99px; transition: width 0.5s; }
+  .progress-fill.full { background: #22c55e; }
+
+  /* 升级中覆盖层 */
+  .upgrading-overlay { position: absolute; inset: 0; background: rgba(15,23,42,0.85); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+  .upgrading-overlay i { font-size: 30px; color: var(--cyan); margin-bottom: 10px; }
+  .upgrading-overlay .countdown { font-family: var(--mono); font-size: 20px; color: #fff; font-weight: bold; }
+  .upgrading-overlay .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .mine-actions { display: flex; gap: 10px; margin-top: auto; }
+  .btn-collect { flex: 1; background: linear-gradient(135deg, var(--cyan), #0284c7); color: #fff; font-weight: bold; }
+  .btn-collect:disabled { background: #333; color: #888; }
+  .btn-upgrade { flex: 1; background: rgba(255,255,255,0.05); color: var(--ink); border: 1px solid var(--border-2); }
+  .btn-upgrade:hover { background: rgba(212,175,55,0.15); color: var(--gold); border-color: var(--gold); }
+
+  /* 飘字动画 */
+  .float-text { position: absolute; color: var(--green); font-weight: bold; font-size: 18px; pointer-events: none; animation: floatUp 1.5s ease-out forwards; z-index: 20; }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-50px); } }
+</style>
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>国家基建</span></div>
+    <div>
+      <h1><i class="fa-solid fa-industry" style="color:var(--gold)"></i> 国家基建与资源开采</h1>
+      <p>你的矿场正在持续产出资源，请及时收取，否则将面临被敌国掠夺的风险！</p>
+    </div>
+  </div>
+</section>
+
+<main class="iecp-main">
+  <div class="mine-grid" id="mineGrid">
+    <div class="loading-state" style="grid-column:1/-1;"><div class="spinner"></div><span>正在连接矿场主控台...</span></div>
+  </div>
+</main>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP;
+  var profile = null;
+  var buildings = [];
+  var timer = null;
+
+  var TYPE_INFO = {
+    oil: { name: '原油钻井', unit: '吨', img: 'oil.png', icon: 'fa-oil-well', cls: 'oil' },
+    gas: { name: '天然气田', unit: 'm³', img: 'gas.png', icon: 'fa-fire-flame-simple', cls: 'gas' },
+    iron_ore: { name: '露天铁矿', unit: '吨', img: 'iron.png', icon: 'fa-mountain', cls: 'mineral' },
+    rare_metal: { name: '稀土矿井', unit: '吨', img: 'rare.png', icon: 'fa-atom', cls: 'rare' },
+    food: { name: '农业基地', unit: '吨', img: 'food.png', icon: 'fa-wheat-awn', cls: 'food' }
+  };
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('military'); 
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      loadBuildings();
+    });
+  });
+
+  function loadBuildings() {
+    I.client.from('resource_buildings').select('*').eq('country_id', profile.id).then(function(res) {
+      if (res.data) {
+        // 按预设顺序排序
+        var order = ['oil', 'gas', 'iron_ore', 'rare_metal', 'food'];
+        buildings = res.data.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
+        renderUI();
+        startTimer();
+      }
+    });
+  }
+
+  // 计算当前产量和上限
+  function getStats(level) {
+    var rate = [0, 50, 120, 250, 500, 1000][level];
+    var cap = [0, 1000, 3000, 8000, 20000, 50000][level];
+    return { rate: rate, cap: cap };
+  }
+
+  function renderUI() {
+    var wrap = I.$('#mineGrid');
+    var html = '';
+
+    buildings.forEach(function(b) {
+      var info = TYPE_INFO[b.type];
+      var stats = getStats(b.level);
+      var isUpgrading = b.upgrading_until && new Date(b.upgrading_until) > new Date();
+      
+      // 计算当前储量
+      var secs = (new Date() - new Date(b.last_collected_at)) / 1000;
+      var currentAmount = Math.min(stats.cap, (secs / 3600) * stats.rate);
+      var pct = Math.min(100, (currentAmount / stats.cap) * 100);
+      
+      var isFull = currentAmount >= stats.cap;
+      
+      html += `
+        <div class="mine-card" id="card-${b.id}">
+          ${isUpgrading ? `
+            <div class="upgrading-overlay">
+              <i class="fa-solid fa-person-digging fa-bounce"></i>
+              <div class="countdown" id="timer-${b.id}">计算中...</div>
+              <div class="label">正在升级中...</div>
+            </div>
+          ` : ''}
+
+          <div class="mine-header">
+            <div class="mine-icon">
+              <img src="photo/${info.img}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'">
+              <i class="fa-solid ${info.icon}" style="display:none;"></i>
+            </div>
+            <div>
+              <div class="mine-title">${info.name}</div>
+              <div class="mine-level">Lv.${b.level}</div>
+            </div>
+          </div>
+
+          <div class="storage-info">
+            <span>已产出:</span>
+            <span><b class="amount-text">${I.fmtNumber(currentAmount)}</b> ${info.unit}</span>
+          </div>
+          <div class="storage-info" style="margin-bottom:8px;">
+            <span>上限: ${I.fmtNumber(stats.cap)}</span>
+            <span>速率: ${stats.rate}/小时</span>
+          </div>
+          
+          <div class="progress-bar">
+            <div class="progress-fill ${isFull ? 'full' : ''}" style="width: ${pct}%"></div>
+          </div>
+
+          <div class="mine-actions">
+            <button class="btn btn-collect btn-sm" onclick="collect('${b.id}', this)" ${isUpgrading || currentAmount < 1 ? 'disabled' : ''}>
+              <i class="fa-solid fa-hand-holding-droplet"></i> 收取
+            </button>
+            <button class="btn btn-upgrade btn-sm" onclick="upgrade('${b.id}')" ${isUpgrading || b.level >= 5 ? 'disabled' : ''}>
+              <i class="fa-solid fa-arrow-up-from-bracket"></i> 升级
+            </button>
+          </div>
+        </div>
+      `;
+    });
+    wrap.innerHTML = html;
+  }
+
+  function startTimer() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(function() {
+      var now = new Date();
+      
+      buildings.forEach(function(b) {
+        var card = I.$('#card-' + b.id);
+        if (!card) return;
+
+        var stats = getStats(b.level);
+        
+        // 1. 处理升级倒计时
+        if (b.upgrading_until) {
+          var upEnd = new Date(b.upgrading_until);
+          if (now < upEnd) {
+            var diff = Math.floor((upEnd - now) / 1000);
+            var h = Math.floor(diff / 3600);
+            var m = Math.floor((diff % 3600) / 60);
+            var s = diff % 60;
+            var timerEl = I.$('#timer-' + b.id);
+            if (timerEl) timerEl.textContent = `${h}时 ${m}分 ${s}秒`;
+          } else {
+            // 升级完成，重新加载数据
+            loadBuildings();
+          }
+        }
+
+        // 2. 处理资源产出进度条
+        if (!b.upgrading_until) {
+          var secs = (now - new Date(b.last_collected_at)) / 1000;
+          var amount = Math.min(stats.cap, (secs / 3600) * stats.rate);
+          var pct = Math.min(100, (amount / stats.cap) * 100);
+          
+          var amountText = card.querySelector('.amount-text');
+          var bar = card.querySelector('.progress-fill');
+          
+          if (amountText) amountText.textContent = I.fmtNumber(amount);
+          if (bar) {
+            bar.style.width = pct + '%';
+            if (pct >= 100) bar.classList.add('full');
+          }
+        }
+      });
+    }, 1000);
+  }
+
+  // 收取资源
+  window.collect = function(id, btn) {
+    btn.disabled = true;
+    I.client.rpc('collect_building', { b_id: id }).then(function(res) {
+      if (res.error) { I.toast('收取失败', 'error'); btn.disabled = false; return; }
+      if (!res.data.ok) { I.toast(res.data.msg, 'error'); btn.disabled = false; return; }
+      
+      var gained = res.data.gained;
+      var type = res.data.type;
+      
+      // 飘字动画
+      var card = I.$('#card-' + id);
+      var float = document.createElement('div');
+      float.className = 'float-text';
+      float.textContent = '+' + I.fmtNumber(gained);
+      float.style.left = '50%';
+      float.style.bottom = '50px';
+      float.style.transform = 'translateX(-50%)';
+      card.appendChild(float);
+      setTimeout(() => float.remove(), 1500);
+
+      I.toast(`成功收取 ${I.fmtNumber(gained)} ${TYPE_INFO[type].unit}`, 'success');
+      
+      // 立即更新本地时间，让进度条归零
+      var b = buildings.find(x => x.id === id);
+      if (b) b.last_collected_at = new Date().toISOString();
+      setTimeout(function(){ btn.disabled = false; }, 500);
+      
+    });
+  };
+
+  // 升级建筑
+  window.upgrade = function(id) {
+    if (!confirm('确认升级该设施吗？升级期间将停止产出。')) return;
+    I.client.rpc('upgrade_building', { b_id: id }).then(function(res) {
+      if (res.error) { I.toast('升级失败', 'error'); return; }
+      if (!res.data.ok) { I.toast(res.data.msg, 'error'); return; }
+      
+      I.toast(`开始升级，耗时 ${res.data.hours} 小时`, 'success');
+      loadBuildings(); // 刷新页面
+    });
+  };
+
+})();
+</script>
+</body>
+</html>

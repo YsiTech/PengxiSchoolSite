@@ -7,6 +7,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
+  /* ============================================================
+     🚨 全新高级商品详情页 UI (修复报错拦截)
+     ============================================================ */
   .detail-container {
     max-width: 900px;
     margin: 30px auto 100px auto; 
@@ -146,7 +149,7 @@
     gap: 8px;
   }
 
-  /* 桌面端购买按钮区 */
+  /* 购买按钮区 */
   .action-area {
     display: flex;
     flex-direction: column;
@@ -228,61 +231,24 @@
 
   /* 📱 移动端极致优化 */
   @media (max-width: 768px) {
-    .detail-container {
-      margin: 10px auto 90px auto;
-      flex-direction: column;
-      gap: 16px;
-      padding: 0 12px;
-    }
-    
-    .product-img-box {
-      width: 100%;
-      border-radius: 12px;
-      min-height: 200px;
-    }
-    .product-img-box img {
-      max-height: 400px;
-    }
-
-    .product-info {
-      width: 100%;
-      gap: 16px;
-    }
+    .detail-container { margin: 10px auto 90px auto; flex-direction: column; gap: 16px; padding: 0 12px; }
+    .product-img-box { width: 100%; border-radius: 12px; min-height: 200px; }
+    .product-img-box img { max-height: 400px; }
+    .product-info { width: 100%; gap: 16px; }
     .product-title { font-size: 20px; }
     .product-price { font-size: 32px; }
     
-    /* 🚨 手机端悬浮底栏（去除多余装饰） */
     .action-area {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(10px);
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
       border-top: 1px solid rgba(255,255,255,0.1);
-      padding: 10px 12px; /* 减小内边距 */
-      flex-direction: row;
-      align-items: center;
-      gap: 8px; /* 减小间距 */
-      z-index: 100;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+      padding: 10px 12px; flex-direction: row; align-items: center; gap: 8px;
+      z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
     }
-
-    .qty-input-group {
-      height: 44px;
-      width: 110px; /* 缩小宽度防止溢出 */
-      flex-shrink: 0;
-    }
+    .qty-input-group { height: 44px; width: 110px; flex-shrink: 0; }
     .qty-btn { width: 32px; font-size: 16px; }
     .qty-input-group input { font-size: 15px; }
-
-    .btn-buy, .btn-remove {
-      height: 44px;
-      flex: 1;
-      margin: 0;
-      font-size: 15px;
-      border-radius: 8px;
-    }
+    .btn-buy, .btn-remove { height: 44px; flex: 1; margin: 0; font-size: 15px; border-radius: 8px; }
   }
 </style>
 </head>
@@ -367,43 +333,22 @@
 
     I.$('#detailWrap').innerHTML = `
       <div class="detail-container">
-        <div class="product-img-box">
-          ${imgHtml}
-        </div>
-        
+        <div class="product-img-box">${imgHtml}</div>
         <div class="product-info">
-          <div style="margin-bottom: 10px;">
-            <a href="market.html" style="color:var(--muted); font-size:13px;"><i class="fa-solid fa-arrow-left"></i> 返回交易行</a>
-          </div>
-
-          <h1 class="product-title">
-            ${I.escapeHtml(m.title)}
-            ${isOfficial ? `<span class="official-tag"><i class="fa-solid fa-crown"></i> 官方</span>` : ''}
-          </h1>
-
+          <div style="margin-bottom: 10px;"><a href="market.html" style="color:var(--muted); font-size:13px;"><i class="fa-solid fa-arrow-left"></i> 返回交易行</a></div>
+          <h1 class="product-title">${I.escapeHtml(m.title)} ${isOfficial ? `<span class="official-tag"><i class="fa-solid fa-crown"></i> 官方</span>` : ''}</h1>
           <div class="product-price-box">
             <div class="product-price">${I.fmtNumber(m.price)}</div>
             <div class="product-price-unit">₽ / ${unitDisplay}</div>
             <div style="margin-left:auto; font-size:12px; color:var(--muted);">库存: ${m.quantity}</div>
           </div>
-
           <div class="seller-info">
             <img src="${displayFlag}" alt="">
-            <div>
-              <div class="seller-label">卖家</div>
-              <a href="${sellerLink}" class="seller-name">${displayName}</a>
-            </div>
+            <div><div class="seller-label">卖家</div><a href="${sellerLink}" class="seller-name">${displayName}</a></div>
           </div>
-
-          <div class="product-desc">
-            ${I.escapeHtml(m.description || '卖家很懒，没有留下描述。')}
-          </div>
-
+          <div class="product-desc">${I.escapeHtml(m.description || '卖家很懒，没有留下描述。')}</div>
           ${extraHint}
-          
-          <div class="action-area">
-            ${actionHtml}
-          </div>
+          <div class="action-area">${actionHtml}</div>
         </div>
       </div>
     `;
@@ -421,10 +366,8 @@
 
   window.removeItem = function (itemId) {
     if (!confirm('确认下架该商品吗？如果是资源，将退回你的国家仓库。')) return;
-    
     I.client.from('market_items').select('*').eq('id', itemId).maybeSingle().then(function(r){
       var item = r.data; if (!item) return;
-
       I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
         if (item.item_type === 'resource' && item.resource_type) {
           var backBaseQty = (item.base_quantity || 0) * item.quantity; 
@@ -450,11 +393,7 @@
     if (qty > maxQty) return I.toast('库存不足', 'error');
     var totalCost = price * qty;
     if (profile.balance < totalCost) return I.toast('国库余额不足', 'error');
-    
-    if (sellerId === profile.id && !currentItem.is_admin_post) {
-      return I.toast('不能购买自己的商品', 'error');
-    }
-    
+    if (sellerId === profile.id && !currentItem.is_admin_post) return I.toast('不能购买自己的商品', 'error');
     if (!confirm(`确认花费 ${I.fmtNumber(totalCost)} ₽ 购买？`)) return;
 
     I.toast('正在处理...', 'success', 1000);
@@ -473,14 +412,11 @@
         }
 
         var sellerPromise = Promise.resolve();
-        
         if (!currentItem.is_admin_post) {
           sellerPromise = I.client.rpc('add_balance', { uid: sellerId, amount: totalCost, note: '售出 · ' + itemTitle }).then(function(r3) {
             if (r3.error) throw new Error('卖家加款失败');
             return I.client.rpc('send_notification', { p_user_id: sellerId, p_type: 'trade', p_title: '资产售出', p_content: `你的【${itemTitle}】被买走，入账 ${I.fmtNumber(totalCost)} ₽。` });
           });
-        } else {
-          console.log("官方商品交易成功，已销毁资金：", totalCost);
         }
 
         sellerPromise.then(function(){
@@ -491,7 +427,15 @@
               seller_id: sellerId, buyer_id: profile.id, title: itemTitle, description: currentItem.description,
               price: price, quantity: qty, status: 'sold', sold_at: new Date().toISOString(),
               is_admin_post: true, item_type: 'other', item_data: currentItem.item_data
-            }).then(function(){ finishTransaction(); });
+            }).then(function(res) {
+              // 🚨 核心修复：检查插入是否报错
+              if (res.error) {
+                 I.toast('入库失败！请联系管理员：' + res.error.message, 'error', 5000);
+                 console.error("入库失败", res.error);
+              } else {
+                 finishTransaction();
+              }
+            });
           } else {
             if (currentItem.item_type === 'resource' && currentItem.resource_type) {
               var actualBaseQty = (currentItem.base_quantity || 0) * qty; 
@@ -507,7 +451,13 @@
                 seller_id: sellerId, buyer_id: profile.id, title: itemTitle, description: currentItem.description,
                 price: price, quantity: qty, status: 'sold', sold_at: new Date().toISOString(),
                 is_admin_post: false, item_type: 'other'
-              }).then(function(){ finishTransaction(); });
+              }).then(function(res) {
+                 if (res.error) {
+                   I.toast('入库失败：' + res.error.message, 'error');
+                 } else {
+                   finishTransaction();
+                 }
+              });
             }
           }
 
