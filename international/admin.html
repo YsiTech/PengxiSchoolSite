@@ -8,27 +8,6 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
   #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #05070a; }
-  
-  #lockScreen {
-    position: fixed; inset: 0; z-index: 1000;
-    background: rgba(5,7,10,0.95); backdrop-filter: blur(10px);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
-  .lock-box {
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
-    padding: 40px; border-radius: 20px; text-align: center; width: 100%; max-width: 400px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-  }
-  .lock-box i { font-size: 50px; color: var(--red); margin-bottom: 20px; text-shadow: 0 0 20px rgba(239,68,68,0.5); }
-  .lock-box h2 { color: #fff; margin-bottom: 10px; letter-spacing: 2px; }
-  .lock-box p { color: var(--muted); font-size: 13px; margin-bottom: 30px; }
-  .lock-input {
-    width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2);
-    padding: 15px; border-radius: 10px; color: #fff; font-size: 18px; text-align: center;
-    letter-spacing: 5px; outline: none; margin-bottom: 20px; font-family: var(--mono); box-sizing: border-box;
-  }
-  .lock-input:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
-
   .admin-container { max-width: 1200px; margin: 40px auto; position: relative; z-index: 10; padding: 0 20px; }
   .admin-tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; overflow-x: auto; }
   .admin-tab { background: transparent; border: none; color: var(--muted); font-size: 15px; padding: 10px 20px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: bold; white-space: nowrap; }
@@ -60,69 +39,22 @@
 
   .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
 
-  /* 弹窗样式 */
   .admin-modal { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; }
   .admin-modal.show { display: flex; }
   .admin-modal-box { width: 100%; max-width: 450px; background: #0f172a; border: 1px solid var(--border-2); border-radius: 16px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: popIn 0.2s ease; }
   @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
   .admin-modal-box h3 { margin-top: 0; color: #fff; font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;}
+  
+  .multi-res-item { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 8px; }
+  .multi-res-item label { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 13px; width: 100px; cursor: pointer; }
+  .multi-res-item input[type="number"] { flex: 1; padding: 6px 10px; }
 </style>
 </head>
 <body>
 
 <canvas id="particle-canvas"></canvas>
 
-<!-- 定向降灾弹窗 -->
-<div class="admin-modal" id="disasterModal">
-  <div class="admin-modal-box">
-    <h3 id="disasterTitle"><i class="fa-solid fa-cloud-bolt" style="color:var(--red)"></i> 降下天灾</h3>
-    <div class="field-group">
-      <div class="field">
-        <label>灾害类型</label>
-        <select id="triggerDisasterType" class="input-control" style="background:#1a2233; color:#fff; border:1px solid #333;">
-          <option value="fire">🔥 火灾 (损失原油)</option>
-          <option value="flood">🌊 洪灾 (损失稀有金属)</option>
-          <option value="earthquake">🌋 地震 (损失铁矿石)</option>
-          <option value="drought">☀️ 旱灾 (损失粮食)</option>
-        </select>
-      </div>
-      <div class="field" style="margin-top:12px;">
-        <label>损失比例 (%)</label>
-        <input type="number" id="triggerDisasterLoss" class="input-control" value="20" min="1" max="100">
-      </div>
-    </div>
-    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
-      <button class="btn btn-ghost" onclick="document.getElementById('disasterModal').classList.remove('show')">取消</button>
-      <button class="btn btn-red" id="triggerDisasterBtn">确认降灾</button>
-    </div>
-  </div>
-</div>
-
-<!-- 资产透视模态框 -->
-<div class="admin-modal" id="assetModal">
-  <div class="admin-modal-box" style="max-width:600px;">
-    <h3 id="assetTitle">国家资产透视</h3>
-    <div class="asset-body" id="assetBody" style="max-height:60vh; overflow-y:auto;">
-      <!-- 动态渲染 -->
-    </div>
-    <div style="text-align:right; margin-top:20px;">
-      <button class="btn btn-ghost" onclick="document.getElementById('assetModal').classList.remove('show')">关闭</button>
-    </div>
-  </div>
-</div>
-
-<div id="lockScreen">
-  <div class="lock-box">
-    <i class="fa-solid fa-shield-halved"></i>
-    <h2>IECP 核心控制台</h2>
-    <p>检测到高权限区域，请输入核心密钥</p>
-    <input type="password" id="secretKey" class="lock-input" placeholder="••••••••" autocomplete="off">
-    <button class="btn btn-red" style="width: 100%; padding: 14px;" onclick="verifyKey()">授权进入</button>
-    <div id="lockMsg" style="color: var(--red); font-size: 13px; margin-top: 15px; height: 20px;"></div>
-  </div>
-</div>
-
-<header class="iecp-topbar hide" id="adminHeader" style="background:rgba(5,7,10,0.8);">
+<header class="iecp-topbar" id="adminHeader" style="background:rgba(5,7,10,0.8);">
   <div class="iecp-topbar-inner">
     <a class="iecp-logo" href="index.html">
       <img src="photo/un.png" alt="IECP">
@@ -134,80 +66,44 @@
   </div>
 </header>
 
-<main class="admin-container hide" id="adminWrap"></main>
+<main class="admin-container" id="adminWrap">
+  <div class="loading-state"><div class="spinner"></div><span>正在验证最高权限...</span></div>
+</main>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
-// 粒子特效
-(function initParticles() {
-  const canvas = document.getElementById('particle-canvas'); const ctx = canvas.getContext('2d');
-  let width, height; let particles = [];
-  function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resize); resize();
-  class Particle {
-    constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5; this.radius = Math.random() * 1.5 + 0.5; }
-    update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
-    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.fill(); }
-  }
-  for (let i = 0; i < 100; i++) particles.push(new Particle());
-  function animate() {
-    ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < particles.length; i++) {
-      particles[i].update(); particles[i].draw();
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 - dist / 800})`; ctx.stroke(); }
-      }
-    }
-    requestAnimationFrame(animate);
-  }
-  animate();
-})();
-
-const ADMIN_SECRET = "IECP-ROOT-2026";
 var I = IECP; var profile = null; 
-var allUsers = []; 
-var allResources = {}; 
-var allInventory = {}; 
 
-// 当前选中的降灾目标
-var currentTargetCountryId = null;
-
-window.verifyKey = async function() {
-  var key = document.getElementById('secretKey').value.trim();
-  var msg = document.getElementById('lockMsg');
-  if (key !== ADMIN_SECRET) { msg.innerText = '密钥错误'; return; }
-  msg.style.color = 'var(--gold-2)'; msg.innerText = '密钥正确，正在验证...';
-  I.requireAuth().then(function(ok) {
-    if (!ok) return;
-    I.getProfile(true).then(function(p) {
-      if (!p || p.role !== 'admin') { msg.style.color = 'var(--red)'; msg.innerText = '拒绝访问：你的账号不是管理员！'; return; }
-      profile = p;
-      document.getElementById('lockScreen').classList.add('hide');
-      document.getElementById('adminHeader').classList.remove('hide');
-      document.getElementById('adminWrap').classList.remove('hide');
-      renderLayout(); loadData();
-    });
+I.requireAuth().then(function(ok) {
+  if (!ok) return;
+  I.getProfile(true).then(function(p) {
+    if (!p || p.role !== 'admin') { 
+      I.$('#adminWrap').innerHTML = `<div class="empty-state"><i class="fa-solid fa-ban" style="color:var(--red); font-size:40px;"></i><p style="color:var(--red); font-size:18px;">拒绝访问</p></div>`; 
+      return; 
+    }
+    profile = p;
+    renderLayout(); loadData();
   });
-};
+});
 
 function renderLayout() {
   I.$('#adminWrap').innerHTML = `
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="switchTab(this, 'tab-dash')"><i class="fa-solid fa-chart-pie"></i> 系统总览</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-users')"><i class="fa-solid fa-users-gear"></i> 国家管理</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-shop')"><i class="fa-solid fa-crown"></i> 官方上架</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-shop-mgr')"><i class="fa-solid fa-list-check"></i> 官方商品管理</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-broadcast')"><i class="fa-solid fa-rocket"></i> 全服空投</button>
-      <button class="admin-tab" onclick="switchTab(this, 'tab-banks')"><i class="fa-solid fa-building-columns"></i> 银行管理</button>
-      <button class="admin-tab" onclick="switchTab(this, 'tab-disaster')"><i class="fa-solid fa-cloud-bolt"></i> 灾害全局</button>
-      <button class="admin-tab" onclick="switchTab(this, 'tab-system-notify')"><i class="fa-solid fa-bullhorn"></i> 全服通知</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-notify')"><i class="fa-solid fa-bullhorn"></i> 全服通知</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-disaster')"><i class="fa-solid fa-cloud-bolt"></i> 灾害设置</button>
     </div>
 
+    <!-- 1. 总览 -->
     <div id="tab-dash" class="admin-panel active">
       <div class="panel-card">
-        <h3><i class="fa-solid fa-chart-line" style="color:var(--cyan); margin-right:10px;"></i> 全服实时数据</h3>
+        <h3>全服实时数据</h3>
         <div class="stats-grid">
           <div class="stat-box"><b id="statTotalUsers">-</b><span>注册国家总数</span></div>
           <div class="stat-box"><b id="statTotalMoney">-</b><span>全服资金总额 (₽)</span></div>
@@ -216,16 +112,16 @@ function renderLayout() {
         </div>
       </div>
       <div class="panel-card">
-        <h3><i class="fa-solid fa-crown" style="color:var(--gold); margin-right:10px;"></i> 全服财富榜 (Top 3)</h3>
+        <h3>全服财富榜 (Top 3)</h3>
         <ul id="topRichList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;"></ul>
       </div>
       <div class="panel-card" style="border-color: rgba(239,68,68,0.3);">
-        <h3 style="color:var(--red); border-left-color:var(--red);"><i class="fa-solid fa-triangle-exclamation" style="margin-right:10px;"></i> 紧急干预</h3>
-        <p style="color:var(--muted); font-size:13px; margin-bottom:16px;">强制结束所有战役，并重置所有交战关系为中立。</p>
-        <button class="btn btn-red" onclick="forcePeace()"><i class="fa-solid fa-dove"></i> 一键强制全服停战</button>
+        <h3 style="color:var(--red); border-left-color:var(--red);">紧急干预</h3>
+        <button class="btn btn-red" onclick="forcePeace()">一键强制全服停战</button>
       </div>
     </div>
 
+    <!-- 2. 国家管理 -->
     <div id="tab-users" class="admin-panel">
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -234,32 +130,104 @@ function renderLayout() {
         </div>
         <div style="max-height: 600px; overflow-y: auto;">
           <table class="admin-table">
-            <thead><tr><th>国家</th><th>国库余额</th><th>身份</th><th style="text-align:right;">管理操作</th></tr></thead>
+            <thead><tr><th>国家</th><th>国库余额</th><th>影响力</th><th>身份</th><th style="text-align:right;">管理操作</th></tr></thead>
             <tbody id="userTableBody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
+    <!-- 3. 官方上架 -->
+    <div id="tab-shop" class="admin-panel">
+      <div class="panel-card">
+        <h3><i class="fa-solid fa-store" style="color:var(--gold);"></i> 官方商城上架</h3>
+        
+        <div class="form-row">
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">商品类型</label>
+            <select id="shopType" class="input-control" onchange="toggleShopFields()">
+              <option value="resource">战略资源包</option>
+              <option value="influence">国际影响力道具</option>
+              <option value="spy">间谍卫星</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">商品标题</label>
+            <input type="text" id="shopTitle" class="input-control" placeholder="如：官方特惠原油包">
+          </div>
+        </div>
+
+        <!-- 多资源捆绑包区 -->
+        <div id="shopResRow" style="margin-bottom:16px;">
+          <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">选择包含的资源 (可多选)</label>
+          <div class="multi-res-item"><label><input type="checkbox" id="cbOil"> 原油 (吨)</label><input type="number" id="amtOil" class="input-control" placeholder="数量"></div>
+          <div class="multi-res-item"><label><input type="checkbox" id="cbGas"> 天然气 (m³)</label><input type="number" id="amtGas" class="input-control" placeholder="数量"></div>
+          <div class="multi-res-item"><label><input type="checkbox" id="cbIron"> 铁矿石 (吨)</label><input type="number" id="amtIron" class="input-control" placeholder="数量"></div>
+          <div class="multi-res-item"><label><input type="checkbox" id="cbRare"> 稀有金属 (吨)</label><input type="number" id="amtRare" class="input-control" placeholder="数量"></div>
+          <div class="multi-res-item"><label><input type="checkbox" id="cbFood"> 粮食 (吨)</label><input type="number" id="amtFood" class="input-control" placeholder="数量"></div>
+        </div>
+
+        <!-- 影响力道具专属 -->
+        <div class="form-row" id="shopInfluenceRow" style="display:none;">
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">影响力等级</label>
+            <select id="shopInfLevel" class="input-control">
+              <option value="初级">初级影响力包 (+100)</option>
+              <option value="中级">中级影响力包 (+500)</option>
+              <option value="高级">高级影响力包 (+2000)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">单价 (₽)</label>
+            <input type="number" id="shopPrice" class="input-control" placeholder="如：50000">
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">库存数量 (份)</label>
+            <input type="number" id="shopQty" class="input-control" placeholder="如：10">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div>
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">商品图片 (可选)</label>
+            <input type="file" id="shopImageFile" class="input-control" accept="image/*" style="padding:8px;">
+          </div>
+        </div>
+
+        <button class="btn btn-gold" style="margin-top:15px; padding:12px 30px;" onclick="publishOfficialItem()"><i class="fa-solid fa-cloud-arrow-up"></i> 立即官方上架</button>
+      </div>
+    </div>
+
+    <!-- 4. 官方商品管理 -->
+    <div id="tab-shop-mgr" class="admin-panel">
+      <div class="panel-card">
+        <h3>在售官方商品</h3>
+        <table class="admin-table">
+          <thead><tr><th>商品</th><th>价格</th><th>库存</th><th style="text-align:right;">操作</th></tr></thead>
+          <tbody id="officialShopBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 5. 全服空投 -->
     <div id="tab-broadcast" class="admin-panel">
       <div class="panel-card">
         <h3>全服物资空投</h3>
-        <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">给所有注册国家发放福利。如果不发某一项，请留空。</p>
         <div class="form-row">
+          <div><label style="font-size:12px; color:var(--muted);">发放资金 (₽)</label><input type="number" id="bcMoney" class="input-control" placeholder="如：10000"></div>
           <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">发放亚斯卢布 (₽)</label>
-            <input type="number" id="bcMoney" class="input-control" placeholder="如：10000">
-          </div>
-          <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">发放战略资源</label>
+            <label style="font-size:12px; color:var(--muted);">发放战略资源</label>
             <div style="display:flex; gap:10px;">
               <select id="bcResType" class="input-control" style="flex:1;">
                 <option value="">-- 不发资源 --</option>
-                <option value="oil">原油 (万吨)</option>
-                <option value="gas">天然气 (亿m³)</option>
-                <option value="iron_ore">铁矿石 (万吨)</option>
+                <option value="oil">原油 (吨)</option>
+                <option value="gas">天然气 (m³)</option>
+                <option value="iron_ore">铁矿石 (吨)</option>
                 <option value="rare_metal">稀有金属 (吨)</option>
-                <option value="food">粮食 (万吨)</option>
+                <option value="food">粮食 (吨)</option>
               </select>
               <input type="number" id="bcResAmount" class="input-control" placeholder="数量" style="flex:1;">
             </div>
@@ -267,11 +235,17 @@ function renderLayout() {
         </div>
         <div class="form-row">
           <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">发放全服道具</label>
-            <input type="text" id="bcItemName" class="input-control" placeholder="如：全服补偿礼包">
+            <label style="font-size:12px; color:var(--muted);">发放全服道具</label>
+            <select id="bcItemSelect" class="input-control">
+              <option value="">-- 不发道具 --</option>
+              <option value="间谍卫星">🛰️ 间谍卫星</option>
+              <option value="初级影响力包">🧠 初级影响力包</option>
+              <option value="中级影响力包">🧠 中级影响力包</option>
+              <option value="高级影响力包">🧠 高级影响力包</option>
+            </select>
           </div>
           <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">道具数量</label>
+            <label style="font-size:12px; color:var(--muted);">每人数量</label>
             <input type="number" id="bcItemQty" class="input-control" placeholder="如：1" min="1">
           </div>
         </div>
@@ -279,36 +253,24 @@ function renderLayout() {
       </div>
     </div>
 
-    <div id="tab-banks" class="admin-panel">
-      <div class="panel-card">
-        <h3>添加新银行</h3>
-        <div class="form-row">
-          <input type="text" id="newBankName" class="input-control" placeholder="输入银行名称">
-          <button class="btn btn-gold" style="flex:0 0 120px;" onclick="addBank()">添加</button>
-        </div>
-      </div>
-      <div class="panel-card">
-        <h3>现有银行列表</h3>
-        <ul id="bankList" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px;"></ul>
-      </div>
-    </div>
-
-    <div id="tab-disaster" class="admin-panel">
-      <div class="panel-card">
-        <h3>全服灾害概率与损失比例 (每日随机事件)</h3>
-        <div class="form-row"><div><label>火灾概率 (0~1)</label><input type="number" id="cfgFire" class="input-control" step="0.01"></div><div><label>洪灾概率</label><input type="number" id="cfgFlood" class="input-control" step="0.01"></div></div>
-        <div class="form-row"><div><label>地震概率</label><input type="number" id="cfgEarth" class="input-control" step="0.01"></div><div><label>旱灾概率</label><input type="number" id="cfgDrought" class="input-control" step="0.01"></div></div>
-        <div class="form-row"><div><label>单次最大资源损失比例 (0.1 = 10%)</label><input type="number" id="cfgLossPct" class="input-control" step="0.01"></div></div>
-        <button class="btn btn-gold" onclick="saveDisasterCfg()">保存全局设置</button>
-      </div>
-    </div>
-
-    <div id="tab-system-notify" class="admin-panel">
+    <!-- 6. 全服通知 -->
+    <div id="tab-notify" class="admin-panel">
       <div class="panel-card">
         <h3>发送全服系统通知</h3>
-        <div class="form-row"><div><label>标题</label><input type="text" id="sysNotifTitle" class="input-control" placeholder="如：系统维护公告"></div></div>
-        <div class="form-row"><div><label>内容</label><textarea id="sysNotifContent" class="input-control" style="min-height:100px;"></textarea></div></div>
-        <button class="btn btn-gold" onclick="sendSysNotif()">发送通知</button>
+        <div class="form-row"><div><input type="text" id="sysNotifTitle" class="input-control" placeholder="通知标题"></div></div>
+        <div class="form-row"><div><textarea id="sysNotifContent" class="input-control" style="min-height:100px;" placeholder="通知内容"></textarea></div></div>
+        <button class="btn btn-gold" onclick="sendSysNotif()"><i class="fa-solid fa-paper-plane"></i> 发送通知</button>
+      </div>
+    </div>
+
+    <!-- 7. 灾害设置 -->
+    <div id="tab-disaster" class="admin-panel">
+      <div class="panel-card">
+        <h3>全服灾害概率与损失比例</h3>
+        <div class="form-row"><div><label>火灾概率</label><input type="number" id="cfgFire" class="input-control" step="0.01"></div><div><label>洪灾概率</label><input type="number" id="cfgFlood" class="input-control" step="0.01"></div></div>
+        <div class="form-row"><div><label>地震概率</label><input type="number" id="cfgEarth" class="input-control" step="0.01"></div><div><label>旱灾概率</label><input type="number" id="cfgDrought" class="input-control" step="0.01"></div></div>
+        <div class="form-row"><div><label>单次最大资源损失比例</label><input type="number" id="cfgLossPct" class="input-control" step="0.01"></div></div>
+        <button class="btn btn-gold" onclick="saveDisasterCfg()">保存设置</button>
       </div>
     </div>
   `;
@@ -319,70 +281,164 @@ window.switchTab = function(btn, tabId) {
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(tabId).classList.add('active');
-  if (tabId === 'tab-banks') loadBanks();
   if (tabId === 'tab-dash') loadData();
+  if (tabId === 'tab-shop-mgr') loadOfficialItems();
   if (tabId === 'tab-disaster') loadDisasterCfg();
 };
 
-async function loadData() {
-  const [usersRes, resourcesRes, inventoryRes, warsRes, txRes] = await Promise.all([
-    I.client.from('profiles').select('*').order('created_at', { ascending: false }),
-    I.client.from('country_resources').select('*'),
-    I.client.from('market_items').select('*').eq('status', 'sold'),
-    I.client.from('wars').select('*', { count: 'exact', head: true }).eq('status', 'ongoing'),
-    I.client.from('transfers').select('*', { count: 'exact', head: true })
-  ]);
+window.toggleShopFields = function() {
+  var type = I.$('#shopType').value;
+  I.$('#shopResRow').style.display = type === 'resource' ? 'block' : 'none';
+  I.$('#shopInfluenceRow').style.display = type === 'influence' ? 'flex' : 'none';
+};
 
-  allUsers = usersRes.data || [];
-  allResources = {};
-  (resourcesRes.data || []).forEach(r => { allResources[r.country_id] = r; });
-  allInventory = {};
-  (inventoryRes.data || []).forEach(item => {
-    if (!allInventory[item.buyer_id]) allInventory[item.buyer_id] = [];
-    allInventory[item.buyer_id].push(item);
+// 🚨 核心对接：官方上架 (支持多资源 + 图片)
+window.publishOfficialItem = async function() {
+  var type = I.$('#shopType').value;
+  var title = I.$('#shopTitle').value.trim();
+  var price = parseInt(I.$('#shopPrice').value, 10);
+  var qty = parseInt(I.$('#shopQty').value, 10);
+  var file = I.$('#shopImageFile').files[0];
+
+  if (!title || !price || !qty) return I.toast('请完整填写标题、价格和数量', 'error');
+
+  var p_data = {};
+  var p_type = 'other';
+  var p_unit = '份';
+  var p_desc = '';
+  var imgUrl = null;
+
+  if (type === 'resource') {
+    var resObj = {};
+    if (I.$('#cbOil').checked && I.$('#amtOil').value) resObj.oil = parseInt(I.$('#amtOil').value);
+    if (I.$('#cbGas').checked && I.$('#amtGas').value) resObj.gas = parseInt(I.$('#amtGas').value);
+    if (I.$('#cbIron').checked && I.$('#amtIron').value) resObj.iron_ore = parseInt(I.$('#amtIron').value);
+    if (I.$('#cbRare').checked && I.$('#amtRare').value) resObj.rare_metal = parseInt(I.$('#amtRare').value);
+    if (I.$('#cbFood').checked && I.$('#amtFood').value) resObj.food = parseInt(I.$('#amtFood').value);
+    
+    if (Object.keys(resObj).length === 0) return I.toast('请至少勾选并填写一种资源', 'error');
+
+    p_data = { effect: 'resource', resources: resObj };
+    p_type = 'resource';
+    p_desc = `官方特供战略资源包，包含多种珍贵物资。`;
+  } else if (type === 'influence') {
+    var infLevel = I.$('#shopInfLevel').value;
+    p_data = { effect: infLevel === '初级' ? 'influence_low' : infLevel === '中级' ? 'influence_mid' : 'influence_high' };
+    p_unit = '个';
+    p_desc = `使用后可增加${infLevel}国际影响力。`;
+  } else if (type === 'spy') {
+    p_data = { effect: 'spy' };
+    p_unit = '个';
+    p_desc = `使用后可获取敌国详细资产情报。`;
+  }
+
+  I.toast('正在处理...', 'success', 1000);
+
+  if (file) {
+    var ext = (file.name.split('.').pop() || 'png').toLowerCase();
+    var path = profile.id + '/shop/' + Date.now() + '.' + ext;
+    var { error: upErr } = await I.client.storage.from('media').upload(path, file);
+    if (upErr) return I.toast('图片上传失败', 'error');
+    imgUrl = I.client.storage.from('media').getPublicUrl(path).data.publicUrl;
+  }
+
+  var { data, error } = await I.client.rpc('admin_publish_item', {
+    p_title: title, p_price: price, p_quantity: qty, p_unit: p_unit, p_desc: p_desc, p_type: p_type, p_data: p_data, p_image_url: imgUrl
   });
 
-  var totalMoney = 0;
-  allUsers.forEach(u => totalMoney += (u.balance || 0));
-  I.$('#statTotalUsers').innerText = allUsers.length;
-  I.$('#statTotalMoney').innerText = I.fmtNumber(totalMoney);
-  I.$('#statTotalWars').innerText = warsRes.count || 0;
-  I.$('#statTotalTransfers').innerText = txRes.count || 0;
+  if (error) return I.toast('上架失败：' + error.message, 'error');
+  if (!data.ok) return I.toast(data.msg, 'error');
 
-  const topUsers = [...allUsers].sort((a,b) => (b.balance||0) - (a.balance||0)).slice(0, 3);
-  I.$('#topRichList').innerHTML = topUsers.map((u, i) => `
-    <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px 16px; border-radius:8px; border-left:3px solid ${i===0?'var(--gold)':i===1?'silver':i===2?'#cd7f32':'#fff'};">
-      <div style="display:flex; align-items:center; gap:12px;">
-        <span style="font-size:18px; font-weight:bold; color:var(--muted);">${i+1}</span>
-        <img src="${u.flag_url || I.avatarFallback(u.username)}" style="width:30px; height:20px; object-fit:cover; border-radius:3px;">
-        <span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span>
-      </div>
-      <span style="color:var(--gold-2); font-family:var(--mono); font-size:16px;">${I.fmtNumber(u.balance)} ₽</span>
-    </li>
-  `).join('');
+  I.toast('官方商品上架成功', 'success');
+  I.$('#shopTitle').value = ''; I.$('#shopPrice').value = ''; I.$('#shopQty').value = '';
+};
 
-  var tbody = I.$('#userTableBody');
-  tbody.innerHTML = allUsers.map(u => `
-    <tr class="user-row" data-name="${I.escapeHtml(u.username).toLowerCase()}">
+// 🚨 核心：加载和下架官方商品
+async function loadOfficialItems() {
+  var tbody = I.$('#officialShopBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">加载中...</td></tr>';
+  
+  var { data } = await I.client.from('market_items').select('*').eq('is_admin_post', true).eq('status', 'on_sale').order('created_at', { ascending: false });
+  
+  if (!data || !data.length) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">暂无在售的官方商品</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(item => `
+    <tr>
       <td>
         <div style="display:flex; align-items:center; gap:10px;">
-          <img src="${u.flag_url || I.avatarFallback(u.username)}" style="width:30px; height:20px; object-fit:cover; border-radius:3px;">
-          <span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span>
+          ${item.image_url ? `<img src="${item.image_url}" style="width:40px;height:30px;object-fit:cover;border-radius:4px;">` : `<div style="width:40px;height:30px;background:#333;border-radius:4px;"></div>`}
+          <span style="color:#fff;">${I.escapeHtml(item.title)}</span>
         </div>
       </td>
-      <td style="color:var(--gold-2); font-family:var(--mono);">${I.fmtNumber(u.balance)} ₽</td>
-      <td>${u.role === 'admin' ? '<span class="market-tag admin" style="margin:0;">管理员</span>' : '<span class="market-tag" style="margin:0;">普通</span>'}</td>
-      <td style="text-align:right; display:flex; gap:6px; justify-content:flex-end;">
-        <button class="btn btn-cyan btn-sm" onclick="viewUserAssets('${u.id}', '${I.escapeHtml(u.username)}')" title="透视资产"><i class="fa-solid fa-eye"></i></button>
-        <button class="btn btn-gold btn-sm" onclick="promptEditMoney('${u.id}', '${I.escapeHtml(u.username)}', ${u.balance})" title="修改资金"><i class="fa-solid fa-coins"></i></button>
-        <button class="btn btn-red btn-sm" onclick="openDisasterModal('${u.id}', '${I.escapeHtml(u.username)}')" title="降下天灾"><i class="fa-solid fa-cloud-bolt"></i></button>
-        <button class="btn btn-red btn-sm" style="background:#7f1d1d; border-color:#7f1d1d;" onclick="deleteUser('${u.id}', '${I.escapeHtml(u.username)}')" title="抹除国家"><i class="fa-solid fa-trash"></i></button>
+      <td style="color:var(--gold-2);">${I.fmtNumber(item.price)} ₽</td>
+      <td style="color:var(--cyan);">${item.quantity}</td>
+      <td style="text-align:right;">
+        <button class="btn btn-red btn-sm" onclick="removeOfficialItem('${item.id}')"><i class="fa-solid fa-arrow-down"></i> 下架</button>
       </td>
     </tr>
   `).join('');
 }
 
-// 搜索过滤
+window.removeOfficialItem = async function(id) {
+  if (!confirm('确认下架该官方商品？')) return;
+  var { error } = await I.client.from('market_items').update({ status: 'removed' }).eq('id', id);
+  if (error) return I.toast(error.message, 'error');
+  I.toast('已下架', 'success');
+  loadOfficialItems();
+};
+
+// 其他基础功能保持不变...
+async function loadData() {
+  const [usersRes, warsRes, txRes] = await Promise.all([
+    I.client.from('profiles').select('*').order('created_at', { ascending: false }),
+    I.client.from('wars').select('*', { count: 'exact', head: true }).eq('status', 'ongoing'),
+    I.client.from('transfers').select('*', { count: 'exact', head: true })
+  ]);
+  var allUsers = usersRes.data || [];
+  var totalMoney = 0;
+  allUsers.forEach(u => totalMoney += (u.balance || 0));
+  
+  if(I.$('#statTotalUsers')) {
+    I.$('#statTotalUsers').innerText = allUsers.length;
+    I.$('#statTotalMoney').innerText = I.fmtNumber(totalMoney);
+    I.$('#statTotalWars').innerText = warsRes.count || 0;
+    I.$('#statTotalTransfers').innerText = txRes.count || 0;
+  }
+
+  var topRichList = I.$('#topRichList');
+  if (topRichList) {
+    const topUsers = [...allUsers].sort((a,b) => (b.balance||0) - (a.balance||0)).slice(0, 3);
+    topRichList.innerHTML = topUsers.map((u, i) => `
+      <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px 16px; border-radius:8px; border-left:3px solid ${i===0?'var(--gold)':i===1?'silver':i===2?'#cd7f32':'#fff'};">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:18px; font-weight:bold; color:var(--muted);">${i+1}</span>
+          <span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span>
+        </div>
+        <span style="color:var(--gold-2); font-family:var(--mono); font-size:16px;">${I.fmtNumber(u.balance)} ₽</span>
+      </li>
+    `).join('');
+  }
+
+  var tbody = I.$('#userTableBody');
+  if (tbody) {
+    tbody.innerHTML = allUsers.map(u => `
+      <tr class="user-row" data-name="${I.escapeHtml(u.username).toLowerCase()}">
+        <td><span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span></td>
+        <td style="color:var(--gold-2);">${I.fmtNumber(u.balance)} ₽</td>
+        <td style="color:var(--cyan);">${u.influence || 0}</td>
+        <td>${u.role === 'admin' ? '管理员' : '普通'}</td>
+        <td style="text-align:right;">
+          <button class="btn btn-gold btn-sm" onclick="promptEditMoney('${u.id}', '${u.balance}')">改钱</button>
+          <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">抹除</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+}
+
 window.filterUserTable = function() {
   var kw = I.$('#userSearchInput').value.toLowerCase();
   document.querySelectorAll('.user-row').forEach(tr => {
@@ -391,173 +447,66 @@ window.filterUserTable = function() {
   });
 };
 
-// 打开降灾弹窗
-window.openDisasterModal = function(countryId, username) {
-  currentTargetCountryId = countryId;
-  I.$('#disasterTitle').innerHTML = `<i class="fa-solid fa-cloud-bolt" style="color:var(--red)"></i> 降灾给：${username}`;
-  I.$('#disasterModal').classList.add('show');
-};
-
-// 确认执行降灾
-I.$('#triggerDisasterBtn').addEventListener('click', async function() {
-  if (!currentTargetCountryId) return;
-  var type = I.$('#triggerDisasterType').value;
-  var pct = parseFloat(I.$('#triggerDisasterLoss').value) / 100;
-  
-  if (isNaN(pct) || pct <= 0 || pct > 1) return I.toast('请输入 1-100 的损失比例', 'error');
-
-  var btn = this; btn.disabled = true; btn.textContent = '正在降灾...';
-  
-  var { data, error } = await I.client.rpc('admin_trigger_disaster', { 
-    p_country_id: currentTargetCountryId, 
-    p_type: type, 
-    p_loss_pct: pct 
-  });
-
-  btn.disabled = false; btn.textContent = '确认降灾';
-
-  if (error) {
-    I.toast('降灾失败：' + error.message, 'error');
-  } else if (!data.ok) {
-    I.toast(data.msg, 'error');
-  } else {
-    I.toast(`天灾降临成功！造成损失：${I.fmtNumber(data.loss)}`, 'success');
-    I.$('#disasterModal').classList.remove('show');
-    loadData(); // 刷新数据
-  }
-});
-
-window.viewUserAssets = function(userId, username) {
-  var res = allResources[userId] || { oil: 0, gas: 0, iron_ore: 0, rare_metal: 0, food: 0 };
-  var inv = allInventory[userId] || [];
-  I.$('#assetTitle').innerText = `资产透视 · ${username}`;
-  var resHtml = `
-    <div style="font-size:14px; color:var(--gold); margin-bottom:12px; border-bottom:1px dashed rgba(212,175,55,0.3); padding-bottom:6px;"><i class="fa-solid fa-cubes"></i> 战略资源</div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:24px;">
-      <div style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:13.5px;"><span style="color:var(--muted);">原油</span><span style="color:var(--cyan); font-family:var(--mono); font-weight:bold;">${I.fmtNumber(res.oil)} 万吨</span></div>
-      <div style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:13.5px;"><span style="color:var(--muted);">天然气</span><span style="color:var(--cyan); font-family:var(--mono); font-weight:bold;">${I.fmtNumber(res.gas)} 亿m³</span></div>
-      <div style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:13.5px;"><span style="color:var(--muted);">铁矿石</span><span style="color:var(--cyan); font-family:var(--mono); font-weight:bold;">${I.fmtNumber(res.iron_ore)} 万吨</span></div>
-      <div style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:13.5px;"><span style="color:var(--muted);">稀有金属</span><span style="color:var(--cyan); font-family:var(--mono); font-weight:bold;">${I.fmtNumber(res.rare_metal)} 吨</span></div>
-      <div style="background:rgba(255,255,255,0.03); padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; font-size:13.5px;"><span style="color:var(--muted);">粮食</span><span style="color:var(--cyan); font-family:var(--mono); font-weight:bold;">${I.fmtNumber(res.food)} 万吨</span></div>
-    </div>
-  `;
-  var invHtml = `<div style="font-size:14px; color:var(--gold); margin-bottom:12px; border-bottom:1px dashed rgba(212,175,55,0.3); padding-bottom:6px;"><i class="fa-solid fa-boxes-stacked"></i> 国家仓库 (${inv.length} 件)</div>`;
-  if (inv.length === 0) { invHtml += `<div style="color:var(--muted); font-size:13px; text-align:center; padding:20px;">仓库空空如也</div>`; } 
-  else {
-    invHtml += `<div style="display:flex; flex-direction:column; gap:8px;">`;
-    inv.forEach(item => { 
-      invHtml += `<div style="background:rgba(255,255,255,0.03); padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); display:flex; justify-content:space-between; align-items:center; font-size:13.5px;"><div style="display:flex; flex-direction:column; gap:4px;"><b style="color:#fff;">${I.escapeHtml(item.title)}</b><span style="font-size:11px; color:var(--muted-2);">${I.fmtDate(item.sold_at).split(' ')[0]} 获得</span></div><span style="color:var(--muted); font-size:12px; background:rgba(0,0,0,0.3); padding:2px 8px; border-radius:4px;">× ${item.quantity}</span></div>`; 
-    });
-    invHtml += `</div>`;
-  }
-  I.$('#assetBody').innerHTML = resHtml + invHtml;
-  I.$('#assetModal').classList.add('show');
-};
-
-window.promptEditMoney = async function(userId, username, currentBalance) {
-  var input = prompt(`修改【${username}】的国库余额。\n当前余额：${currentBalance} ₽\n请输入新余额：`, currentBalance);
+window.promptEditMoney = async function(userId, currentBalance) {
+  var input = prompt(`请输入新余额：`, currentBalance);
   if (input === null) return;
   var newBal = parseInt(input, 10);
-  if (isNaN(newBal) || newBal < 0) return I.toast('请输入正确的数字', 'error');
+  if (isNaN(newBal) || newBal < 0) return I.toast('数字错误', 'error');
   var { error } = await I.client.from('profiles').update({ balance: newBal }).eq('id', userId);
-  if (error) return I.toast('修改失败：' + error.message, 'error', 4000);
-  I.toast(`余额已修改`, 'success');
-  loadData();
+  if (error) return I.toast(error.message, 'error');
+  I.toast('修改成功', 'success'); loadData();
 };
 
-window.deleteUser = async function(userId, username) {
-  if (profile.id === userId) return I.toast('不能删除自己', 'error');
-  if (!confirm(`⚠️ 确定要彻底删除国家【${username}】吗？`)) return;
-  var { error } = await I.client.from('profiles').delete().eq('id', userId);
-  if (error) return I.toast('删除失败：' + error.message, 'error');
-  I.toast('国家已抹除', 'success');
-  loadData();
+window.deleteUser = async function(userId) {
+  if (!confirm('确定彻底删除该国家？')) return;
+  await I.client.from('profiles').delete().eq('id', userId);
+  I.toast('已抹除', 'success'); loadData();
 };
 
 window.forcePeace = async function() {
-  if (!confirm('⚠️ 强制结束全服所有正在进行的战争？')) return;
-  I.toast('正在执行强制停战...', 'success');
-  var { error } = await I.client.rpc('admin_force_peace');
-  if (error) return I.toast('执行失败：' + error.message, 'error');
-  I.toast('全服已恢复和平！', 'success');
-  loadData();
+  if (!confirm('强制全服停战？')) return;
+  await I.client.rpc('admin_force_peace');
+  I.toast('已恢复和平', 'success'); loadData();
 };
 
 window.doBroadcast = async function() {
   var money = parseInt(I.$('#bcMoney').value, 10) || 0;
   var resType = I.$('#bcResType').value;
   var resAmount = parseInt(I.$('#bcResAmount').value, 10) || 0;
-  var itemName = I.$('#bcItemName').value.trim();
+  var itemSel = I.$('#bcItemSelect').value;
   var itemQty = parseInt(I.$('#bcItemQty').value, 10) || 0;
 
-  if (money <= 0 && (!resType || resAmount <= 0) && (!itemName || itemQty <= 0)) return I.toast('请至少填写一项要发放的物资', 'error');
-  if (!confirm('⚠️ 警告：你正在向全服所有国家发放物资，确认执行？')) return;
-
-  I.toast('正在执行空投...', 'success', 2000);
-  var { error } = await I.client.rpc('admin_give_all', { money_amount: money, res_type: resType || null, res_amount: resAmount, item_name: itemName || null, item_qty: itemQty });
-  if (error) I.toast('空投失败：' + error.message, 'error', 4000);
-  else { I.toast('全服空投成功！', 'success', 3000); loadData(); }
-};
-
-async function loadBanks() {
-  var { data } = await I.client.from('banks').select('*').order('created_at', { ascending: true });
-  var ul = I.$('#bankList');
-  if (!data || !data.length) { ul.innerHTML = '<li style="color:var(--muted);">暂无银行</li>'; return; }
-  ul.innerHTML = data.map(b => `<li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px 16px; border-radius:8px;"><span style="color:#fff; font-weight:600;">${I.escapeHtml(b.name)}</span><button class="btn btn-red btn-sm" onclick="deleteBank('${b.id}')"><i class="fa-solid fa-trash"></i> 删除</button></li>`).join('');
-}
-
-window.addBank = async function() {
-  var name = I.$('#newBankName').value.trim();
-  if (!name) return I.toast('请输入银行名称', 'error');
-  var { error } = await I.client.from('banks').insert({ name: name });
-  if (error) return I.toast('添加失败：' + error.message, 'error');
-  I.$('#newBankName').value = ''; I.toast('银行添加成功', 'success'); loadBanks();
-};
-
-window.deleteBank = async function(id) {
-  if (!confirm('确定删除该银行吗？')) return;
-  var { error } = await I.client.from('banks').delete().eq('id', id);
-  if (error) return I.toast('删除失败', 'error');
-  I.toast('银行已删除', 'success'); loadBanks();
-};
-
-// ===== 灾害与通知 =====
-async function loadDisasterCfg() {
-  var {data} = await I.client.from('disaster_config').select('*').eq('id', 1).single();
-  if(data) {
-    I.$('#cfgFire').value = data.fire_prob;
-    I.$('#cfgFlood').value = data.flood_prob;
-    I.$('#cfgEarth').value = data.earthquake_prob;
-    I.$('#cfgDrought').value = data.drought_prob;
-    I.$('#cfgLossPct').value = data.max_loss_pct;
-  }
-}
-
-window.saveDisasterCfg = async function() {
-  var d = {
-    fire_prob: parseFloat(I.$('#cfgFire').value),
-    flood_prob: parseFloat(I.$('#cfgFlood').value),
-    earthquake_prob: parseFloat(I.$('#cfgEarth').value),
-    drought_prob: parseFloat(I.$('#cfgDrought').value),
-    max_loss_pct: parseFloat(I.$('#cfgLossPct').value)
-  };
-  await I.client.from('disaster_config').update(d).eq('id', 1);
-  I.toast('全局灾害配置已更新', 'success');
+  if (money <= 0 && (!resType || resAmount <= 0) && (!itemSel || itemQty <= 0)) return I.toast('请填写物资', 'error');
+  if (!confirm('确认执行全服空投？')) return;
+  
+  var { error } = await I.client.rpc('admin_give_all', { money_amount: money, res_type: resType || null, res_amount: resAmount, item_name: itemSel || null, item_qty: itemQty });
+  if (error) return I.toast(error.message, 'error');
+  I.toast('空投成功', 'success'); loadData();
 };
 
 window.sendSysNotif = async function() {
   var t = I.$('#sysNotifTitle').value.trim();
   var c = I.$('#sysNotifContent').value.trim();
-  if(!t || !c) return I.toast('请输入标题和内容', 'error');
-  
+  if(!t || !c) return I.toast('请填写内容', 'error');
   var {data: users} = await I.client.from('profiles').select('id');
   var notifs = users.map(u => ({ user_id: u.id, type: 'system', title: t, content: c }));
-  
-  if(notifs.length) {
-    await I.client.from('notifications').insert(notifs);
-    I.toast('全服通知发送成功', 'success');
-    I.$('#sysNotifTitle').value = ''; I.$('#sysNotifContent').value = '';
+  await I.client.from('notifications').insert(notifs);
+  I.toast('通知已发送', 'success');
+};
+
+async function loadDisasterCfg() {
+  var {data} = await I.client.from('disaster_config').select('*').eq('id', 1).single();
+  if(data) {
+    I.$('#cfgFire').value = data.fire_prob; I.$('#cfgFlood').value = data.flood_prob;
+    I.$('#cfgEarth').value = data.earthquake_prob; I.$('#cfgDrought').value = data.drought_prob;
+    I.$('#cfgLossPct').value = data.max_loss_pct;
   }
+}
+
+window.saveDisasterCfg = async function() {
+  var d = { fire_prob: parseFloat(I.$('#cfgFire').value), flood_prob: parseFloat(I.$('#cfgFlood').value), earthquake_prob: parseFloat(I.$('#cfgEarth').value), drought_prob: parseFloat(I.$('#cfgDrought').value), max_loss_pct: parseFloat(I.$('#cfgLossPct').value) };
+  await I.client.from('disaster_config').update(d).eq('id', 1);
+  I.toast('配置已保存', 'success');
 };
 </script>
 </body>

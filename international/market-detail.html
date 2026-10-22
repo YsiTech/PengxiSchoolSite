@@ -8,31 +8,21 @@
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
 </header>
-
-<main class="iecp-main" id="detailWrap" style="max-width:900px; margin:40px auto;">
-  <div class="loading-state"><div class="spinner"></div><span>正在加载商品信息…</span></div>
-</main>
+<main class="iecp-main" id="detailWrap" style="max-width:900px; margin:40px auto;"></main>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
-  var I = IECP;
-  var itemId = new URLSearchParams(location.search).get('id');
-  var profile = null;
-  var currentItem = null;
+  var I = IECP; var itemId = new URLSearchParams(location.search).get('id'); var profile = null; var currentItem = null;
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
@@ -44,11 +34,9 @@
       return I.client.from('market_items').select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url)').eq('id', itemId).maybeSingle();
     }).then(function(res){
       if (!res || res.error || !res.data) {
-        I.$('#detailWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>商品不存在或已被彻底删除</p><a href="market.html" class="btn btn-ghost" style="margin-top:20px">返回交易行</a></div>`;
-        return;
+        I.$('#detailWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>商品不存在</p><a href="market.html" class="btn btn-ghost">返回</a></div>`; return;
       }
-      currentItem = res.data;
-      renderItem(currentItem);
+      currentItem = res.data; renderItem(currentItem);
     });
   });
 
@@ -56,195 +44,151 @@
     var seller = m.seller || {};
     var isMine = m.seller_id === profile.id;
     var isSold = m.status === 'sold';
-
+    var isOfficial = m.is_admin_post === true;
     var unitDisplay = m.custom_unit ? ` ${m.custom_unit}` : '';
+
+    var displayName = isOfficial ? 'IECP 官方' : I.escapeHtml(seller.username || '未知');
+    var displayFlag = isOfficial ? 'photo/un.png' : I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username));
+    var sellerLink = isOfficial ? 'javascript:void(0)' : `country.html?id=${seller.id}`;
 
     var actionBtn = '';
     if (isSold) {
       actionBtn = `<button class="btn btn-ghost" disabled><i class="fa-solid fa-ban"></i> 已售罄</button>`;
-    } else if (isMine) {
-      actionBtn = `<button class="btn btn-red" onclick="removeItem('${m.id}')"><i class="fa-solid fa-trash"></i> 下架商品</button>`;
-    } else {
+    } else if (isOfficial) {
+      // 🚨 官方商品：所有人都可以买，包括管理员自己（方便测试）
       actionBtn = `
         <div style="display:flex; gap:10px; align-items:center;">
-          <div class="field" style="margin:0; width:100px;">
-            <input type="number" id="buyQty" value="1" min="1" max="${m.quantity}" style="padding:10px; text-align:center; font-weight:bold;">
-          </div>
-          <button class="btn btn-gold" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}', ${m.quantity})" style="flex:1;">
-            <i class="fa-solid fa-cart-shopping"></i> 确认购买
-          </button>
+          <div class="field" style="margin:0; width:100px;"><input type="number" id="buyQty" value="1" min="1" max="${m.quantity}" style="padding:10px; text-align:center; font-weight:bold;"></div>
+          <button class="btn btn-gold" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}', ${m.quantity})" style="flex:1;"><i class="fa-solid fa-cart-shopping"></i> 确认购买</button>
         </div>
-        <div style="font-size:12px; color:var(--muted); margin-top:8px;">单价: ${I.fmtNumber(m.price)} ₽ / ${unitDisplay}，当前库存: ${m.quantity}${unitDisplay}</div>
-      `;
+        <div style="font-size:12px; color:var(--muted); margin-top:8px;">单价: ${I.fmtNumber(m.price)} ₽ / ${unitDisplay}，当前库存: ${m.quantity}${unitDisplay}</div>`;
+        
+      if (isMine) {
+        actionBtn += `<div style="font-size:12px; color:var(--gold); margin-top:10px;"><i class="fa-solid fa-circle-info"></i> 这是您上架的官方商品，如需下架请前往后台控制台。</div>`;
+      }
+    } else if (isMine) {
+      // 普通玩家自己的商品：只能下架
+      actionBtn = `<button class="btn btn-red" onclick="removeItem('${m.id}')"><i class="fa-solid fa-trash"></i> 下架商品</button>`;
+    } else {
+      // 普通玩家的商品，别人来买
+      actionBtn = `
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="field" style="margin:0; width:100px;"><input type="number" id="buyQty" value="1" min="1" max="${m.quantity}" style="padding:10px; text-align:center; font-weight:bold;"></div>
+          <button class="btn btn-gold" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}', ${m.quantity})" style="flex:1;"><i class="fa-solid fa-cart-shopping"></i> 确认购买</button>
+        </div>
+        <div style="font-size:12px; color:var(--muted); margin-top:8px;">单价: ${I.fmtNumber(m.price)} ₽ / ${unitDisplay}，当前库存: ${m.quantity}${unitDisplay}</div>`;
     }
 
-    var imgHtml = m.image_url 
-      ? `<img src="${m.image_url}" style="width:100%; border-radius:12px; margin-bottom:24px; border:1px solid var(--border-2);">` 
-      : `<div style="width:100%; aspect-ratio:16/9; background:var(--glass-2); border-radius:12px; margin-bottom:24px; display:grid; place-items:center; font-size:60px; color:var(--muted-2);"><i class="fa-solid fa-${m.item_type === 'resource' ? 'cubes' : 'box-open'}"></i></div>`;
-
-    var typeTag = m.item_type === 'resource' ? `<span style="background:var(--cyan); color:#000; padding:2px 8px; border-radius:4px; font-size:12px; margin-left:10px;">资源</span>` : '';
+    var imgHtml = m.image_url ? `<img src="${m.image_url}" style="width:100%; border-radius:12px; margin-bottom:24px; border:1px solid var(--border-2);">` : `<div style="width:100%; aspect-ratio:16/9; background:var(--glass-2); border-radius:12px; margin-bottom:24px; display:grid; place-items:center; font-size:60px; color:var(--muted-2);"><i class="fa-solid fa-${m.item_type === 'resource' ? 'cubes' : 'box-open'}"></i></div>`;
+    var typeTag = isOfficial ? `<span style="background:var(--purple); color:#fff; padding:2px 8px; border-radius:4px; font-size:12px; margin-left:10px;"><i class="fa-solid fa-crown"></i> 官方</span>` : '';
 
     I.$('#detailWrap').innerHTML = `
-      <div style="margin-bottom:20px;">
-        <a href="market.html" style="color:var(--muted); font-size:14px;"><i class="fa-solid fa-arrow-left"></i> 返回交易行</a>
-      </div>
-      
+      <div style="margin-bottom:20px;"><a href="market.html" style="color:var(--muted); font-size:14px;"><i class="fa-solid fa-arrow-left"></i> 返回交易行</a></div>
       <div class="glass" style="padding:40px; display:flex; gap:40px; flex-wrap:wrap;">
-        <div style="flex:1; min-width:300px;">
-          ${imgHtml}
-        </div>
-        
+        <div style="flex:1; min-width:300px;">${imgHtml}</div>
         <div style="flex:1; min-width:300px; display:flex; flex-direction:column;">
           <h1 style="font-size:26px; margin-bottom:10px; color:var(--ink);">${I.escapeHtml(m.title)} ${typeTag}</h1>
-          <div style="font-size:32px; font-family:var(--mono); color:var(--gold-2); font-weight:700; margin-bottom:20px;">
-            ${I.fmtNumber(m.price)} <span style="font-size:14px; color:var(--muted); font-weight:400;">₽ / ${m.custom_unit || '件'}</span>
-          </div>
-          
+          <div style="font-size:32px; font-family:var(--mono); color:var(--gold-2); font-weight:700; margin-bottom:20px;">${I.fmtNumber(m.price)} <span style="font-size:14px; color:var(--muted); font-weight:400;">₽ / ${m.custom_unit || '份'}</span></div>
           <div style="padding:16px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:24px;">
             <div style="display:flex; align-items:center; gap:12px;">
-              <img src="${I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username))}" style="width:36px; height:24px; border-radius:4px; object-fit:cover;">
-              <div>
-                <div style="font-size:12px; color:var(--muted);">卖家</div>
-                <a href="country.html?id=${seller.id}" style="font-size:14px; font-weight:600; color:var(--cyan);">${I.escapeHtml(seller.username || '未知')}</a>
-              </div>
+              <img src="${displayFlag}" style="width:36px; height:24px; border-radius:4px; object-fit:cover;">
+              <div><div style="font-size:12px; color:var(--muted);">卖家</div><a href="${sellerLink}" style="font-size:14px; font-weight:600; color:var(--cyan);">${displayName}</a></div>
             </div>
           </div>
-
-          <div style="font-size:14.5px; line-height:1.8; color:var(--ink-2); margin-bottom:30px; white-space:pre-wrap; flex:1;">
-            ${I.escapeHtml(m.description || '卖家很懒，没有留下描述。')}
-          </div>
-
+          <div style="font-size:14.5px; line-height:1.8; color:var(--ink-2); margin-bottom:30px; white-space:pre-wrap; flex:1;">${I.escapeHtml(m.description || '卖家很懒，没有留下描述。')}</div>
           <div>${actionBtn}</div>
         </div>
-      </div>
-    `;
+      </div>`;
   }
 
-  window.buyItem = function (itemId, price, sellerId, maxQty) {
-    var qty = parseInt(I.$('#buyQty').value, 10);
-    if (!qty || qty < 1) { I.toast('请输入正确的购买数量', 'error'); return; }
-    if (qty > maxQty) { I.toast('库存不足', 'error'); return; }
-
-    var totalCost = price * qty;
-    if (profile.balance < totalCost) { I.toast('国库余额不足', 'error'); return; }
-
-    if (!confirm(`确认花费 ${I.fmtNumber(totalCost)} ₽ 购买 ${qty}${currentItem.custom_unit || ''}该物品吗？`)) return;
-
-    I.toast('正在处理交易...', 'success', 1000);
-    var itemTitle = currentItem.title || '商品';
-
-    // 1. 扣买家钱
-    I.client.rpc('add_balance', { 
-      uid: profile.id, 
-      amount: -totalCost, 
-      note: '交易行购买 · ' + itemTitle 
-    }).then(function (r1) {
-      if (r1.error) { I.toast('扣款失败：' + r1.error.message, 'error'); return; }
-
-      var newQty = maxQty - qty;
-      var updateData = { quantity: newQty };
-      if (newQty === 0) {
-        updateData.status = 'sold';
-        updateData.buyer_id = profile.id; 
-        updateData.sold_at = new Date().toISOString();
-      }
-
-      // 2. 更新库存
-      I.client.from('market_items').update(updateData).eq('id', itemId).then(function (r2) {
-        if (r2.error) {
-          I.toast('交易失败：' + r2.error.message, 'error');
-          I.client.rpc('add_balance', { uid: profile.id, amount: totalCost, note: '交易行购买失败退款 · ' + itemTitle });
-          return;
-        }
-
-        // 3. 给卖家加钱
-        I.client.rpc('add_balance', { 
-          uid: sellerId, 
-          amount: totalCost,
-          note: '交易行售出 · ' + itemTitle
-        }).then(function(r3){
-          if(r3.error) { I.toast('卖家加款失败', 'error'); return; }
-
-          // 🚨 4. 发送通知（使用 insert 强写，失败会弹红字）
-          I.client.from('notifications').insert({
-            user_id: sellerId, type: 'trade', title: '资产售出',
-            content: `你的【${itemTitle}】被 ${profile.username} 买走，入账 ${I.fmtNumber(totalCost)} ₽。`
-          }).then(function(notifRes) {
-            if (notifRes.error) {
-              console.error("通知卖家失败:", notifRes.error);
-              I.toast('通知卖家失败: ' + notifRes.error.message, 'error', 5000);
-            }
-          });
-
-          I.client.from('notifications').insert({
-            user_id: profile.id, type: 'trade', title: '购买成功',
-            content: `你花费 ${I.fmtNumber(totalCost)} ₽ 购入了【${itemTitle}】。`
-          }).then(function(notifRes) {
-            if (notifRes.error) {
-              console.error("通知买家失败:", notifRes.error);
-              I.toast('通知买家失败: ' + notifRes.error.message, 'error', 5000);
-            }
-          });
-
-          // 5. 移交资源/物品
-          if (currentItem.item_type === 'resource' && currentItem.resource_type) {
-            var actualBaseQty = (currentItem.base_quantity || 0) * qty; 
-            I.client.from('country_resources').select(currentItem.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
-              if (resRes.data) {
-                var myCurrent = parseFloat(resRes.data[currentItem.resource_type]) || 0;
-                var upObj = {};
-                upObj[currentItem.resource_type] = parseFloat((myCurrent + actualBaseQty).toFixed(4));
-                
-                I.client.from('country_resources').update(upObj).eq('country_id', profile.id).then(function(){
-                  finishTransaction();
-                });
-              } else {
-                finishTransaction();
-              }
-            });
-          } else {
-            finishTransaction();
-          }
-
-          function finishTransaction() {
-            I.client.from('transactions').insert({
-              buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: totalCost
-            }).then(function () {
-              I.toast('购买成功！物资已入库', 'success');
-              setTimeout(function () { location.reload(); }, 800);
-            });
-          }
-        });
-      });
-    });
-  };
-
+  // 下架逻辑（仅限普通商品）
   window.removeItem = function (itemId) {
     if (!confirm('确认下架该商品吗？如果是资源，将退回你的国家仓库。')) return;
     
     I.client.from('market_items').select('*').eq('id', itemId).maybeSingle().then(function(r){
-      var item = r.data;
-      if (!item) return;
+      var item = r.data; if (!item) return;
 
       I.client.from('market_items').update({ status: 'removed' }).eq('id', itemId).then(function () {
-        
         if (item.item_type === 'resource' && item.resource_type) {
           var backBaseQty = (item.base_quantity || 0) * item.quantity; 
           I.client.from('country_resources').select(item.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
             if (resRes.data) {
               var currentBase = parseFloat(resRes.data[item.resource_type]) || 0;
-              var upObj = {};
-              upObj[item.resource_type] = parseFloat((currentBase + backBaseQty).toFixed(4));
+              var upObj = {}; upObj[item.resource_type] = parseFloat((currentBase + backBaseQty).toFixed(4));
               I.client.from('country_resources').update(upObj).eq('country_id', profile.id).then(function(){
-                I.toast('商品已下架，资源已退还', 'success');
-                setTimeout(function () { location.href = 'market.html'; }, 800);
+                I.toast('商品已下架，资源已退还', 'success'); setTimeout(function () { location.href = 'market.html'; }, 800);
               });
             }
           });
         } else {
-          I.toast('商品已下架', 'success');
-          setTimeout(function () { location.href = 'market.html'; }, 800);
+          I.toast('商品已下架', 'success'); setTimeout(function () { location.href = 'market.html'; }, 800);
         }
+      });
+    });
+  };
+
+  window.buyItem = function (itemId, price, sellerId, maxQty) {
+    var qty = parseInt(I.$('#buyQty').value, 10);
+    if (!qty || qty < 1) return I.toast('数量错误', 'error');
+    if (qty > maxQty) return I.toast('库存不足', 'error');
+    var totalCost = price * qty;
+    if (profile.balance < totalCost) return I.toast('国库余额不足', 'error');
+    
+    // 🚨 关键修复：如果是普通商品，不能买自己的。如果是官方商品，允许管理员买自己的。
+    if (sellerId === profile.id && !currentItem.is_admin_post) {
+      return I.toast('不能购买自己的商品', 'error');
+    }
+    
+    if (!confirm(`确认花费 ${I.fmtNumber(totalCost)} ₽ 购买？`)) return;
+
+    I.toast('正在处理...', 'success', 1000);
+    var itemTitle = currentItem.title;
+
+    I.client.rpc('add_balance', { uid: profile.id, amount: -totalCost, note: '交易行购买 · ' + itemTitle }).then(function (r1) {
+      if (r1.error) return I.toast('扣款失败', 'error');
+      var newQty = maxQty - qty; var updateData = { quantity: newQty };
+      if (newQty === 0) { updateData.status = 'sold'; updateData.buyer_id = profile.id; updateData.sold_at = new Date().toISOString(); }
+
+      I.client.from('market_items').update(updateData).eq('id', itemId).then(function (r2) {
+        if (r2.error) {
+          I.client.rpc('add_balance', { uid: profile.id, amount: totalCost, note: '退款 · ' + itemTitle });
+          return I.toast('交易失败', 'error');
+        }
+        I.client.rpc('add_balance', { uid: sellerId, amount: totalCost, note: '售出 · ' + itemTitle }).then(function(){
+          I.client.rpc('send_notification', { p_user_id: sellerId, p_type: 'trade', p_title: '资产售出', p_content: `你的【${itemTitle}】被买走，入账 ${I.fmtNumber(totalCost)} ₽。` });
+          I.client.rpc('send_notification', { p_user_id: profile.id, p_type: 'trade', p_title: '购买成功', p_content: `你花费 ${I.fmtNumber(totalCost)} ₽ 购入了【${itemTitle}】。` });
+
+          if (currentItem.is_admin_post) {
+            I.client.from('market_items').insert({
+              seller_id: sellerId, buyer_id: profile.id, title: itemTitle, description: currentItem.description,
+              price: price, quantity: qty, status: 'sold', sold_at: new Date().toISOString(),
+              is_admin_post: true, item_type: 'other', item_data: currentItem.item_data
+            }).then(function(){ finishTransaction(); });
+          } else {
+            if (currentItem.item_type === 'resource' && currentItem.resource_type) {
+              var actualBaseQty = (currentItem.base_quantity || 0) * qty; 
+              I.client.from('country_resources').select(currentItem.resource_type).eq('country_id', profile.id).maybeSingle().then(function(resRes){
+                if (resRes.data) {
+                  var myCurrent = parseFloat(resRes.data[currentItem.resource_type]) || 0;
+                  var upObj = {}; upObj[currentItem.resource_type] = parseFloat((myCurrent + actualBaseQty).toFixed(4));
+                  I.client.from('country_resources').update(upObj).eq('country_id', profile.id).then(function(){ finishTransaction(); });
+                } else finishTransaction();
+              });
+            } else {
+              I.client.from('market_items').insert({
+                seller_id: sellerId, buyer_id: profile.id, title: itemTitle, description: currentItem.description,
+                price: price, quantity: qty, status: 'sold', sold_at: new Date().toISOString(),
+                is_admin_post: false, item_type: 'other'
+              }).then(function(){ finishTransaction(); });
+            }
+          }
+
+          function finishTransaction() {
+            I.client.from('transactions').insert({ buyer_id: profile.id, seller_id: sellerId, item_id: itemId, amount: totalCost }).then(function () {
+              I.toast('购买成功！', 'success'); setTimeout(function () { location.reload(); }, 800);
+            });
+          }
+        });
       });
     });
   };

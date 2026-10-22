@@ -7,52 +7,23 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  /* 详情页操作栏 */
-  .detail-actions { 
-    display: flex; gap: 16px; align-items: center; 
-    border-top: 1px solid var(--border); padding-top: 24px; margin-top: 30px; 
-  }
-  .detail-btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 10px 20px; border-radius: 24px;
-    background: var(--glass-2); border: 1px solid var(--border);
-    color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer;
-    transition: all 0.2s;
-  }
+  #news-particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+  
+  .detail-actions { display: flex; gap: 16px; align-items: center; border-top: 1px solid var(--border); padding-top: 24px; margin-top: 30px; }
+  .detail-btn { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 24px; background: var(--glass-2); border: 1px solid var(--border); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
   .detail-btn:hover { background: var(--glass-3); color: var(--ink); border-color: var(--border-2); }
   .detail-btn.liked { color: #ef4444; border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.1); }
   .detail-btn i { font-size: 16px; }
 
-  /* 评论区样式 */
-  .comment-box {
-    background: var(--glass-2); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px; margin-bottom: 24px;
-  }
-  .comment-input-wrapper {
-    background: rgba(0,0,0,0.2); border: 1px solid var(--border-2);
-    border-radius: 8px; overflow: hidden; transition: border-color 0.2s;
-  }
+  .comment-box { background: var(--glass-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+  .comment-input-wrapper { background: rgba(0,0,0,0.2); border: 1px solid var(--border-2); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
   .comment-input-wrapper:focus-within { border-color: var(--gold); }
-  .comment-input-wrapper textarea {
-    width: 100%; min-height: 80px; background: transparent; border: none;
-    padding: 12px; color: var(--ink); font-size: 14px; resize: vertical; outline: none; display: block;
-  }
-  .comment-toolbar {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 12px; border-top: 1px solid var(--border);
-    background: rgba(0,0,0,0.1);
-  }
-  .comment-toolbar .img-btn {
-    display: flex; align-items: center; gap: 6px; color: var(--muted);
-    font-size: 13px; cursor: pointer; transition: color 0.2s; padding: 4px;
-  }
+  .comment-input-wrapper textarea { width: 100%; min-height: 80px; background: transparent; border: none; padding: 12px; color: var(--ink); font-size: 14px; resize: vertical; outline: none; display: block; }
+  .comment-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.1); }
+  .comment-toolbar .img-btn { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; cursor: pointer; transition: color 0.2s; padding: 4px; }
   .comment-toolbar .img-btn:hover { color: var(--cyan); }
   
-  /* 评论列表项 */
-  .comment-item {
-    display: flex; gap: 12px; padding-bottom: 20px; margin-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
+  .comment-item { display: flex; gap: 12px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
   .comment-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
   .comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-2); }
   .comment-content-box { flex: 1; }
@@ -61,34 +32,53 @@
   .comment-time { font-size: 12px; color: var(--muted); }
   .comment-text { font-size: 14px; color: var(--ink-2); line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; }
   .comment-img { max-width: 200px; border-radius: 8px; cursor: zoom-in; border: 1px solid var(--border); }
+
+  /* 插入内容的富文本渲染 */
+  .rich-content { font-size: 16px; line-height: 1.9; color: var(--ink-2); white-space: pre-wrap; word-wrap: break-word; }
+  .rich-content img, .rich-content video { max-width: 100%; border-radius: 12px; margin: 16px 0; border: 1px solid var(--border); display: block; }
+  .rich-content audio { width: 100%; margin: 16px 0; outline: none; }
 </style>
 </head>
 <body>
 
+<canvas id="news-particle-canvas"></canvas>
+
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
 </header>
 
 <main class="iecp-main" id="detailWrap" style="max-width:900px; margin:40px auto;">
-  <div class="loading-state"><div class="spinner"></div><span>正在加载新闻…</span></div>
+  <div class="loading-state"><div class="spinner"></div><span>正在解密新闻数据…</span></div>
 </main>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
+(function initParticles() {
+  const canvas = document.getElementById('news-particle-canvas'); const ctx = canvas.getContext('2d');
+  let width, height; let particles = [];
+  function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+  class Particle {
+    constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3; this.radius = Math.random() * 1.5 + 0.5; }
+    update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
+    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(212, 175, 55, 0.2)'; ctx.fill(); }
+  }
+  for (let i = 0; i < 60; i++) particles.push(new Particle());
+  function animate() { ctx.clearRect(0, 0, width, height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+  animate();
+})();
+
 (function () {
   var I = IECP;
   var newsId = new URLSearchParams(location.search).get('id');
   var profile = null;
-  var currentCommentImgUrl = null; // 记录当前评论待发送的图片
+  var currentCommentImgUrl = null; 
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
@@ -114,18 +104,67 @@
     });
   });
 
+  // 🚨 解析富文本中的占位符
+  function renderRichContent(text, mediaList) {
+    if (!text) return '';
+    var safeText = I.escapeHtml(text); // 先转义防 XSS
+    
+    // 建立媒体映射
+    var map = {};
+    if (mediaList && Array.isArray(mediaList)) {
+      mediaList.forEach(m => { map[m.id] = m; });
+    }
+
+    // 正则匹配 [图片: xxx] / [视频: xxx] / [音频: xxx]
+    var regex = /\[(图片|视频|音频):\s*([a-zA-Z0-9_]+)\]/g;
+    
+    return safeText.replace(regex, function(match, type, id) {
+      var media = map[id];
+      if (!media) return match; // 找不到就原样显示
+      
+      if (type === '图片') return `<img src="${media.url}" alt="新闻图片">`;
+      if (type === '视频') return `<video src="${media.url}" controls></video>`;
+      if (type === '音频') return `<audio src="${media.url}" controls></audio>`;
+      return match;
+    });
+  }
+
   function renderNews(n, isLiked) {
     var author = n.profiles || {};
     var avatar = author.flag_url || I.avatarFallback(author.username || '?');
-    var mediaHtml = '';
-    if (n.media_url) {
-      if (n.media_type === 'image') mediaHtml = `<div style="margin-bottom:24px; border-radius:12px; overflow:hidden;"><img src="${n.media_url}" style="width:100%; display:block;"></div>`;
-      else if (n.media_type === 'video') mediaHtml = `<div style="margin-bottom:24px; border-radius:12px; overflow:hidden; background:#000;"><video src="${n.media_url}" controls style="width:100%; display:block;"></video></div>`;
-      else if (n.media_type === 'audio') mediaHtml = `<div style="margin-bottom:24px; padding:20px; background:var(--glass); border-radius:12px;"><audio src="${n.media_url}" controls style="width:100%;"></audio></div>`;
+    var isAuthor = author.id === profile.id;
+    
+    // 渲染正文（富文本替换）
+    var contentHtml = renderRichContent(n.content, n.media_list);
+
+    // 处理未插入正文的附件（追加到文章末尾）
+    var unplacedMediaHtml = '';
+    if (n.media_list && n.media_list.length > 0) {
+      var usedIds = [];
+      var regex = /\[(图片|视频|音频):\s*([a-zA-Z0-9_]+)\]/g;
+      var match;
+      while ((match = regex.exec(n.content)) !== null) {
+        usedIds.push(match[2]);
+      }
+      
+      n.media_list.forEach(function(m) {
+        if (!usedIds.includes(m.id)) {
+          if (m.type === 'image') unplacedMediaHtml += `<img src="${m.url}" style="max-width:100%; border-radius:12px; margin:16px 0; border:1px solid var(--border);">`;
+          else if (m.type === 'video') unplacedMediaHtml += `<video src="${m.url}" controls style="max-width:100%; border-radius:12px; margin:16px 0; border:1px solid var(--border);"></video>`;
+          else if (m.type === 'audio') unplacedMediaHtml += `<audio src="${m.url}" controls style="width:100%; margin:16px 0;"></audio>`;
+        }
+      });
     }
 
     var heartClass = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
     var btnClass = isLiked ? 'detail-btn liked' : 'detail-btn';
+
+    var authorActions = isAuthor ? `
+      <div style="display:flex; gap:10px; margin-left:auto;">
+        <button class="btn btn-ghost btn-sm" onclick="location.href='news.html'"><i class="fa-solid fa-pen"></i> 去主页编辑</button>
+        <button class="btn btn-red btn-sm" onclick="deleteCurrentNews()"><i class="fa-solid fa-trash"></i> 删除</button>
+      </div>
+    ` : '';
 
     I.$('#detailWrap').innerHTML = `
       <div style="margin-bottom:20px;">
@@ -141,12 +180,13 @@
             <div style="font-size:15px; font-weight:600;"><a href="country.html?id=${author.id}" style="color:var(--gold-2);">${I.escapeHtml(author.username || '未知')}</a></div>
             <div style="font-size:12px; color:var(--muted); margin-top:2px;">${I.fmtDate(n.created_at)}</div>
           </div>
+          ${authorActions}
         </div>
 
-        ${mediaHtml}
-        <div style="font-size:16px; line-height:1.9; color:var(--ink-2); white-space:pre-wrap;">${I.escapeHtml(n.content)}</div>
+        <div class="rich-content">${contentHtml}</div>
         
-        <!-- 全新操作栏 -->
+        ${unplacedMediaHtml ? `<div style="margin-top:30px; padding-top:20px; border-top:1px dashed var(--border);"><h4 style="color:var(--muted); font-size:14px; margin-bottom:10px;">附加媒体</h4>${unplacedMediaHtml}</div>` : ''}
+        
         <div class="detail-actions">
           <div class="${btnClass}" onclick="toggleLikeDetail(this)">
             <i class="${heartClass}"></i> <span id="likeCount">${n.like_count || 0}</span> 点赞
@@ -160,7 +200,6 @@
         </div>
       </div>
 
-      <!-- 评论区 -->
       <div class="glass" style="padding: 30px; margin-top: 24px;">
         <h3 style="margin-bottom: 20px; font-size: 18px; color: var(--ink);"><i class="fa-solid fa-comments" style="color:var(--gold);"></i> 评论区</h3>
         
@@ -175,8 +214,8 @@
               <button class="btn btn-gold btn-sm" id="submitCommentBtn" onclick="submitComment()" style="padding:6px 16px; font-size:12px; border-radius:6px;"><i class="fa-solid fa-paper-plane"></i> 发送</button>
             </div>
           </div>
-          <div id="commentImgPreviewWrap" style="display:none; margin-top:12px; position:relative; display:inline-block;">
-            <img id="commentImgPreview" style="height:80px; border-radius:6px; border:1px solid var(--border);">
+          <div id="commentImgPreviewWrap" style="display: none; margin-top: 12px; position: relative; width: fit-content;">
+            <img id="commentImgPreview" style="height:80px; border-radius:6px; border:1px solid var(--border); display: block;">
             <i class="fa-solid fa-circle-xmark" onclick="removeCommentImg()" style="position:absolute; top:-8px; right:-8px; color:#ef4444; font-size:18px; cursor:pointer; background:#0a0e1a; border-radius:50%;"></i>
           </div>
         </div>
@@ -185,7 +224,6 @@
       </div>
     `;
 
-    // 监听评论图片选择
     I.$('#commentImgFile').addEventListener('change', function() {
       var file = this.files[0];
       if (!file) return;
@@ -200,7 +238,7 @@
         var url = I.client.storage.from('media').getPublicUrl(path).data.publicUrl;
         currentCommentImgUrl = url;
         I.$('#commentImgPreview').src = url;
-        I.$('#commentImgPreviewWrap').style.display = 'inline-block';
+        I.$('#commentImgPreviewWrap').style.display = 'block'; 
       });
     });
   }
@@ -208,7 +246,7 @@
   window.removeCommentImg = function() {
     currentCommentImgUrl = null;
     I.$('#commentImgFile').value = '';
-    I.$('#commentImgPreviewWrap').style.display = 'none';
+    I.$('#commentImgPreviewWrap').style.display = 'none'; 
   };
 
   function renderComments(list) {
@@ -221,7 +259,6 @@
     list.forEach(function(c) {
       var p = c.profiles || {};
       var avatar = p.flag_url || I.avatarFallback(p.username || '?');
-      
       var imgHtml = c.image_url ? `<div style="margin-top:8px;"><img src="${c.image_url}" class="comment-img" onclick="window.open(this.src)"></div>` : '';
 
       html += `
@@ -241,7 +278,15 @@
     wrap.innerHTML = html;
   }
 
-  // 详情页点赞
+  window.deleteCurrentNews = function() {
+    if (!confirm('⚠️ 确定要彻底删除这条新闻吗？')) return;
+    I.client.from('news').delete().eq('id', newsId).then(function(r) {
+      if (r.error) return I.toast('删除失败：' + r.error.message, 'error');
+      I.toast('新闻已删除', 'success');
+      setTimeout(() => location.href = 'news.html', 800);
+    });
+  };
+
   window.toggleLikeDetail = function(el) {
     var icon = el.querySelector('i');
     var span = I.$('#likeCount');
@@ -263,25 +308,19 @@
     }
   };
 
-  // 详情页分享
   window.shareDetail = function(el) {
     if (el.style.pointerEvents === 'none') return;
     navigator.clipboard.writeText(location.href).then(function() {
-      I.toast('链接已复制', 'success');
+      I.toast('链接已复制到剪贴板', 'success');
       var span = I.$('#shareCount');
       span.textContent = (parseInt(span.textContent) || 0) + 1;
       I.client.rpc('increment_share_count', { n_id: newsId });
-      
       el.style.opacity = '0.5';
       el.style.pointerEvents = 'none';
-      setTimeout(function() {
-        el.style.opacity = '1';
-        el.style.pointerEvents = 'auto';
-      }, 3000);
+      setTimeout(function() { el.style.opacity = '1'; el.style.pointerEvents = 'auto'; }, 3000);
     });
   };
 
-  // 详情页提交评论（支持图片）
   window.submitComment = function() {
     var input = I.$('#commentInput');
     var content = input.value.trim();
@@ -303,7 +342,7 @@
       if (r.error) { I.toast(r.error.message, 'error'); return; }
       
       input.value = '';
-      removeCommentImg(); // 清空图片和预览
+      removeCommentImg(); 
       I.toast('评论发布成功', 'success');
       
       var cSpan = I.$('#commentCount');

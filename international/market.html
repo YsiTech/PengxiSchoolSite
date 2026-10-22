@@ -30,14 +30,7 @@
   .custom-upload.has-file > i, .custom-upload.has-file > span.placeholder { display: none; }
   .custom-upload.has-file .file-preview { display: flex; }
 
-  select {
-    background-color: rgba(0, 0, 0, 0.3) !important;
-    color: var(--ink) !important;
-    border: 1px solid var(--border-2) !important;
-    border-radius: var(--r-sm);
-    outline: none;
-    cursor: pointer;
-  }
+  select { background-color: rgba(0, 0, 0, 0.3) !important; color: var(--ink) !important; border: 1px solid var(--border-2) !important; border-radius: var(--r-sm); outline: none; cursor: pointer; }
   select:focus { border-color: var(--gold) !important; }
   select option { background-color: #111827 !important; color: #fff !important; }
 </style>
@@ -46,10 +39,7 @@
 
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
@@ -57,62 +47,39 @@
 
 <section class="iecp-page-head">
   <div class="iecp-page-head-inner">
-    <div class="iecp-breadcrumb">
-      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>交易行</span>
-    </div>
+    <div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>交易行</span></div>
     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px">
-      <div>
-        <h1><i class="fa-solid fa-store"></i> 交易行</h1>
-        <p>以亚斯卢布（₽）结算 · 发布并管理你的交易物品</p>
-      </div>
+      <div><h1><i class="fa-solid fa-store"></i> 交易行</h1><p>以亚斯卢布（₽）结算 · 发布并管理你的交易物品</p></div>
       <button class="btn btn-gold" id="openPublishBtn"><i class="fa-solid fa-plus"></i> 发布物品</button>
     </div>
   </div>
 </section>
 
-<main class="iecp-main">
-  <div id="marketList">
-    <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
-  </div>
-</main>
+<main class="iecp-main"><div id="marketList"><div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div></div></main>
 
 <!-- 上架物品弹窗 -->
 <div class="iecp-modal" id="publishModal">
   <div class="iecp-modal-box glass-2" style="max-width:550px">
     <h3><i class="fa-solid fa-plus" style="color:var(--gold)"></i> 发布商品</h3>
-    
     <div style="display:flex; gap:10px; margin:20px 0;">
       <button class="btn btn-gold" id="tabResource" onclick="switchType('resource')" style="flex:1; padding:10px;">国家战略资源</button>
       <button class="btn btn-ghost" id="tabOther" onclick="switchType('other')" style="flex:1; padding:10px;">其他自定义物品</button>
     </div>
 
     <form id="itemForm" style="margin-top:10px">
-      
-      <!-- 资源专属表单区 -->
       <div id="resourceFields" class="field-group" style="display:none;">
         <div class="field">
           <label>选择要出售的库存种类 <span class="req">*</span></label>
           <select id="iResType" style="padding:12px 14px;">
-            <option value="oil">原油储备</option>
-            <option value="gas">天然气</option>
-            <option value="iron_ore">铁矿石</option>
-            <option value="rare_metal">稀有金属</option>
-            <option value="food">粮食储备</option>
+            <option value="oil">原油储备</option><option value="gas">天然气</option><option value="iron_ore">铁矿石</option><option value="rare_metal">稀有金属</option><option value="food">粮食储备</option>
           </select>
           <span class="profile-hint" id="myResHint" style="color:var(--gold-2); margin-top:4px;">当前拥有：加载中...</span>
         </div>
       </div>
 
-      <!-- 通用表单区 -->
       <div class="field-group two">
-        <div class="field">
-          <label>商品标题 <span class="req">*</span></label>
-          <input id="iTitle" type="text" placeholder="如：亚斯精钢限时特惠" maxlength="60">
-        </div>
-        <div class="field">
-          <label>单价（亚斯卢布 ₽ / 单位） <span class="req">*</span></label>
-          <input id="iPrice" type="number" placeholder="如 5000" min="1">
-        </div>
+        <div class="field"><label>商品标题 <span class="req">*</span></label><input id="iTitle" type="text" placeholder="如：亚斯精钢限时特惠" maxlength="60"></div>
+        <div class="field"><label>单价（亚斯卢布 ₽ / 单位） <span class="req">*</span></label><input id="iPrice" type="number" placeholder="如 5000" min="1"></div>
       </div>
       
       <div class="field-group two">
@@ -120,33 +87,20 @@
           <label>上架数量 <span class="req">*</span></label>
           <div style="display:flex; gap:8px;">
             <input id="iQuantity" type="number" placeholder="数量" min="1" value="1" style="flex:1;">
-            <select id="iUnit" style="width:100px; padding:0 10px;">
-              <!-- 选项由 JS 动态生成 -->
-            </select>
+            <select id="iUnit" style="width:100px; padding:0 10px;"></select>
           </div>
         </div>
-
         <div class="field">
           <label>商品图片（可选）</label>
           <label class="custom-upload" id="marketUploadBox" for="iFile" style="min-height: 60px;">
-            <i class="fa-solid fa-image"></i>
-            <span class="placeholder">点击上传</span>
-            <div class="file-preview">
-              <img id="iFilePreview" src="" style="display:none;">
-              <i id="iFileIcon" class="fa-solid fa-file" style="display:none;"></i>
-              <span id="iFileName">未选择</span>
-            </div>
+            <i class="fa-solid fa-image"></i><span class="placeholder">点击上传</span>
+            <div class="file-preview"><img id="iFilePreview" src="" style="display:none;"><i id="iFileIcon" class="fa-solid fa-file" style="display:none;"></i><span id="iFileName">未选择</span></div>
             <input id="iFile" type="file" accept="image/*" style="display:none">
           </label>
         </div>
       </div>
       
-      <div class="field-group">
-        <div class="field">
-          <label>商品描述</label>
-          <textarea id="iDesc" placeholder="简单描述一下你的商品……" style="min-height:80px"></textarea>
-        </div>
-      </div>
+      <div class="field-group"><div class="field"><label>商品描述</label><textarea id="iDesc" placeholder="简单描述一下你的商品……" style="min-height:80px"></textarea></div></div>
 
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
         <span id="itemHint" style="font-size:13px;color:var(--red);margin-right:auto;align-self:center;font-weight:bold;"></span>
@@ -162,12 +116,8 @@
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
-  var I = IECP;
-  var profile = null;
-  var myResources = null; 
-  var currentPublishType = 'resource';
+  var I = IECP; var profile = null; var myResources = null; var currentPublishType = 'resource';
 
-  // 🚨 核心字典：完全对齐基础单位（吨/m³），rate 代表 1 单位等于多少个基础单位
   var RES_CONFIG = {
     oil: { name: '原油储备', units: [ { label: '吨', rate: 1 }, { label: '千吨', rate: 1000 }, { label: '万吨', rate: 10000 } ] },
     gas: { name: '天然气', units: [ { label: 'm³', rate: 1 }, { label: '千m³', rate: 1000 }, { label: '万m³', rate: 10000 }, { label: '亿m³', rate: 100000000 } ] },
@@ -179,197 +129,122 @@
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('market');
-    I.getProfile(true).then(function (p) {
-      profile = p;
-      loadMyResources(); 
-      loadMarket();
-    });
+    I.getProfile(true).then(function (p) { profile = p; loadMyResources(); loadMarket(); });
   });
 
-  I.$('#openPublishBtn').addEventListener('click', function(){
-    switchType('resource');
-    I.$('#publishModal').classList.add('open');
-  });
+  I.$('#openPublishBtn').addEventListener('click', function(){ switchType('resource'); I.$('#publishModal').classList.add('open'); });
 
   window.switchType = function(type) {
-    currentPublishType = type;
-    var isRes = type === 'resource';
-    
+    currentPublishType = type; var isRes = type === 'resource';
     I.$('#tabResource').className = isRes ? 'btn btn-gold' : 'btn btn-ghost';
     I.$('#tabOther').className = !isRes ? 'btn btn-gold' : 'btn btn-ghost';
-    
     I.$('#resourceFields').style.display = isRes ? 'block' : 'none';
-    
-    if (isRes) {
-      I.$('#iResType').dispatchEvent(new Event('change'));
-    } else {
-      I.$('#iTitle').value = ''; 
-      I.$('#iUnit').innerHTML = '<option value="1">个</option>';
-    }
+    if (isRes) { I.$('#iResType').dispatchEvent(new Event('change')); } 
+    else { I.$('#iTitle').value = ''; I.$('#iUnit').innerHTML = '<option value="1">个</option>'; }
   };
 
   I.$('#iResType').addEventListener('change', function() {
-    var type = this.value;
-    
-    var unitHtml = '';
-    RES_CONFIG[type].units.forEach(function(u) {
-      unitHtml += `<option value="${u.rate}">${u.label}</option>`;
-    });
+    var type = this.value; var unitHtml = '';
+    RES_CONFIG[type].units.forEach(function(u) { unitHtml += `<option value="${u.rate}">${u.label}</option>`; });
     I.$('#iUnit').innerHTML = unitHtml;
-
-    updateMyResHint(); // 更新库存显示
-    
-    if (!I.$('#iTitle').value.trim()) {
-      I.$('#iTitle').value = '【资源】' + RES_CONFIG[type].name;
-    }
+    updateMyResHint();
+    if (!I.$('#iTitle').value.trim()) I.$('#iTitle').value = '【资源】' + RES_CONFIG[type].name;
   });
 
-  // 监听单位切换，实时更新库存提示
   I.$('#iUnit').addEventListener('change', updateMyResHint);
 
   function updateMyResHint() {
-    var type = I.$('#iResType').value;
-    var unitRate = parseFloat(I.$('#iUnit').value) || 1;
-    var unitLabel = I.$('#iUnit').options[I.$('#iUnit').selectedIndex].text;
-
+    var type = I.$('#iResType').value; var unitRate = parseFloat(I.$('#iUnit').value) || 1; var unitLabel = I.$('#iUnit').options[I.$('#iUnit').selectedIndex].text;
     if (myResources) {
-      var baseQty = parseFloat(myResources[type]) || 0; // 数据库里的基础数量（吨）
-      var displayQty = baseQty / unitRate; // 换算成当前选中单位的数量
-      
-      // 格式化显示（带千分位）
+      var baseQty = parseFloat(myResources[type]) || 0; var displayQty = baseQty / unitRate;
       I.$('#myResHint').innerHTML = `当前国家库存：<b style="color:var(--cyan); font-size:14px;">${I.fmtNumber(displayQty)} ${unitLabel}</b>`;
     }
   }
 
   function loadMyResources() {
-    I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle().then(function(res){
-      if (res.data) {
-        myResources = res.data;
-        I.$('#iResType').dispatchEvent(new Event('change')); 
-      }
-    });
+    I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle().then(function(res){ if (res.data) { myResources = res.data; I.$('#iResType').dispatchEvent(new Event('change')); } });
   }
 
   I.$('#iFile').addEventListener('change', function() {
-    var file = this.files[0];
-    var box = I.$('#marketUploadBox');
+    var file = this.files[0]; var box = I.$('#marketUploadBox');
     if (file) {
-      box.classList.add('has-file');
-      I.$('#iFileName').textContent = file.name;
+      box.classList.add('has-file'); I.$('#iFileName').textContent = file.name;
       if (file.type.startsWith('image/')) {
         var reader = new FileReader();
-        reader.onload = function(e) {
-          I.$('#iFilePreview').src = e.target.result;
-          I.$('#iFilePreview').style.display = 'block';
-          I.$('#iFileIcon').style.display = 'none';
-        };
+        reader.onload = function(e) { I.$('#iFilePreview').src = e.target.result; I.$('#iFilePreview').style.display = 'block'; I.$('#iFileIcon').style.display = 'none'; };
         reader.readAsDataURL(file);
       }
-    } else {
-      box.classList.remove('has-file');
-      I.$('#iFileName').textContent = '未选择';
-    }
+    } else { box.classList.remove('has-file'); I.$('#iFileName').textContent = '未选择'; }
   });
 
   function loadMarket() {
-    I.client.from('market_items')
-      .select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url, role)')
-      .eq('status', 'on_sale')
-      .order('created_at', { ascending: false })
-      .then(function (res) {
-        var wrap = I.$('#marketList');
-        var list = res.data || [];
-        if (!list.length) {
-          wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-store"></i><p>交易行暂无物品</p></div>';
-          return;
-        }
-        var html = '<div class="market-grid">';
-        list.forEach(function (m) {
-          var seller = m.seller || {};
-          var isAdmin = m.is_admin_post || seller.role === 'admin';
-          var tag = isAdmin ? '<span class="market-tag admin"><i class="fa-solid fa-crown"></i> 官方</span>' : '';
-          if (m.item_type === 'resource') {
-            tag += '<span class="market-tag" style="color:var(--cyan); border-color:var(--cyan);"><i class="fa-solid fa-cubes"></i> 资源</span>';
-          }
+    I.client.from('market_items').select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url, role)').eq('status', 'on_sale').order('created_at', { ascending: false }).then(function (res) {
+      var wrap = I.$('#marketList'); var list = res.data || [];
+      if (!list.length) { wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-store"></i><p>交易行暂无物品</p></div>'; return; }
+      var html = '<div class="market-grid">';
+      list.forEach(function (m) {
+        var seller = m.seller || {};
+        var isOfficial = m.is_admin_post === true; // 强制判定官方
+        var tag = isOfficial ? '<span class="market-tag admin"><i class="fa-solid fa-crown"></i> 官方</span>' : '';
+        if (m.item_type === 'resource') tag += '<span class="market-tag" style="color:var(--cyan); border-color:var(--cyan);"><i class="fa-solid fa-cubes"></i> 资源</span>';
 
-          var unitDisplay = m.custom_unit ? ` ${m.custom_unit}` : '';
+        var unitDisplay = m.custom_unit ? ` ${m.custom_unit}` : '';
+        
+        // 官方名字和头像处理
+        var displayName = isOfficial ? 'IECP 官方' : I.escapeHtml(seller.username || '未知');
+        var displayFlag = isOfficial ? 'photo/un.png' : I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username));
 
-          html +=
-            '<article class="market-card glass" onclick="location.href=\'market-detail.html?id=' + m.id + '\'">' +
-              '<div class="market-img">' +
-                (m.image_url ? '<img src="' + I.escapeHtml(m.image_url) + '" alt="">' : '<i class="fa-solid fa-box-open"></i>') +
-              '</div>' +
-              '<div class="market-body">' +
-                tag +
-                '<h4>' + I.escapeHtml(m.title) + '</h4>' +
-                '<p>' + I.escapeHtml(m.description || '（暂无描述）') + '</p>' +
-                '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽ / 单位</span></div>' +
-                '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">' +
-                  '<div style="font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">' +
-                    '<img src="' + I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username)) + '" style="width:16px;height:12px;border-radius:2px;"> ' +
-                    I.escapeHtml(seller.username || '未知') +
-                  '</div>' +
-                  '<span class="market-qty">库存 ' + I.fmtNumber(m.quantity) + unitDisplay + '</span>' +
+        html +=
+          '<article class="market-card glass" onclick="location.href=\'market-detail.html?id=' + m.id + '\'">' +
+            '<div class="market-img">' + (m.image_url ? '<img src="' + I.escapeHtml(m.image_url) + '" alt="">' : '<i class="fa-solid fa-box-open"></i>') + '</div>' +
+            '<div class="market-body">' + tag +
+              '<h4>' + I.escapeHtml(m.title) + '</h4>' +
+              '<p>' + I.escapeHtml(m.description || '（暂无描述）') + '</p>' +
+              '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽ / 单位</span></div>' +
+              '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">' +
+                '<div style="font-size:12px; color:var(--muted); display:flex; align-items:center; gap:6px;">' +
+                  '<img src="' + displayFlag + '" style="width:16px;height:12px;border-radius:2px;object-fit:cover;"> ' + displayName +
                 '</div>' +
+                '<span class="market-qty">库存 ' + I.fmtNumber(m.quantity) + unitDisplay + '</span>' +
               '</div>' +
-            '</article>';
-        });
-        html += '</div>';
-        wrap.innerHTML = html;
+            '</div>' +
+          '</article>';
       });
+      html += '</div>'; wrap.innerHTML = html;
+    });
   }
 
   I.$('#itemForm').addEventListener('submit', function (e) {
     e.preventDefault();
-    var btn = I.$('#itemSubmit');
-    var hint = I.$('#itemHint');
-    var price = parseFloat(I.$('#iPrice').value);
-    var qty = parseFloat(I.$('#iQuantity').value);
-    var title = I.$('#iTitle').value.trim();
-    var unitRate = parseFloat(I.$('#iUnit').value);
-    var unitLabel = I.$('#iUnit').options[I.$('#iUnit').selectedIndex].text;
+    var btn = I.$('#itemSubmit'); var hint = I.$('#itemHint');
+    var price = parseFloat(I.$('#iPrice').value); var qty = parseFloat(I.$('#iQuantity').value); var title = I.$('#iTitle').value.trim();
+    var unitRate = parseFloat(I.$('#iUnit').value); var unitLabel = I.$('#iUnit').options[I.$('#iUnit').selectedIndex].text;
 
-    if (!title) { hint.textContent = '请填写商品标题'; return; }
-    if (!price || price < 1) { hint.textContent = '单价必须大于 0'; return; }
-    if (!qty || qty < 1) { hint.textContent = '数量必须大于 0'; return; }
+    if (!title) return hint.textContent = '请填写标题';
+    if (!price || price < 1) return hint.textContent = '单价必须大于 0';
+    if (!qty || qty < 1) return hint.textContent = '数量必须大于 0';
 
-    var desc = I.$('#iDesc').value.trim();
-    var resType = null;
-    var imgUrl = null;
-    var file = I.$('#iFile').files[0];
-    
-    var baseDeductQty = 0;
+    var desc = I.$('#iDesc').value.trim(); var resType = null; var imgUrl = null; var file = I.$('#iFile').files[0]; var baseDeductQty = 0;
 
     if (currentPublishType === 'resource') {
-      resType = I.$('#iResType').value;
-      baseDeductQty = qty * unitRate; // 换算成基础单位（吨）扣除
-      
+      resType = I.$('#iResType').value; baseDeductQty = qty * unitRate;
       var myQty = myResources ? (parseFloat(myResources[resType]) || 0) : 0;
-      if (myQty < baseDeductQty) { 
-        hint.textContent = `库存不足！你只有相当于 ${I.fmtNumber(myQty / unitRate)} ${unitLabel} 的资源。`; 
-        return; 
-      }
-      
+      if (myQty < baseDeductQty) return hint.textContent = `库存不足！`;
       desc = `【战略资源：${RES_CONFIG[resType].name}】 ` + desc;
     }
 
-    btn.disabled = true;
-    hint.textContent = '正在处理...';
-
+    btn.disabled = true; hint.textContent = '正在处理...';
     var deductPromise = Promise.resolve();
+    
     if (currentPublishType === 'resource') {
-      var updateRes = {};
-      updateRes[resType] = parseFloat((myResources[resType] - baseDeductQty).toFixed(4));
+      var updateRes = {}; updateRes[resType] = parseFloat((myResources[resType] - baseDeductQty).toFixed(4));
       deductPromise = I.client.from('country_resources').update(updateRes).eq('country_id', profile.id);
     }
 
     deductPromise.then(function(dedRes) {
       if (dedRes && dedRes.error) throw new Error('扣除库存失败：' + dedRes.error.message);
-      
       if (file) {
-        var ext = (file.name.split('.').pop() || 'png').toLowerCase();
-        var path = profile.id + '/' + Date.now() + '.' + ext;
-        
+        var ext = (file.name.split('.').pop() || 'png').toLowerCase(); var path = profile.id + '/' + Date.now() + '.' + ext;
         return I.client.storage.from('media').upload(path, file).then(function(storageRes) {
           if (storageRes.error) throw storageRes.error;
           imgUrl = I.client.storage.from('media').getPublicUrl(path).data.publicUrl;
@@ -377,32 +252,16 @@
       }
     }).then(function() {
       return I.client.from('market_items').insert({
-        seller_id: profile.id,
-        title: title,
-        price: price,       
-        quantity: qty,      
-        custom_unit: unitLabel,   
-        base_quantity: baseDeductQty, // 存的是实际扣除的底量（比如 10000 吨）
-        description: desc || null,
-        image_url: imgUrl,
-        item_type: currentPublishType,
-        resource_type: resType,
-        is_admin_post: profile.role === 'admin'
+        seller_id: profile.id, title: title, price: price, quantity: qty, custom_unit: unitLabel,
+        base_quantity: baseDeductQty, description: desc || null, image_url: imgUrl,
+        item_type: currentPublishType, resource_type: resType,
+        is_admin_post: false // 🚨 关键：普通上架永远不可能是官方！
       });
     }).then(function (r) {
       btn.disabled = false;
-      if (r.error) { hint.textContent = r.error.message; return; }
-      
-      I.toast('商品已发布', 'success');
-      I.$('#itemForm').reset();
-      I.$('#marketUploadBox').classList.remove('has-file');
-      I.$('#publishModal').classList.remove('open');
-      loadMyResources(); 
-      loadMarket();
-    }).catch(function(err) {
-      btn.disabled = false;
-      hint.textContent = err.message || '网络异常，发布失败';
-    });
+      if (r.error) return hint.textContent = r.error.message;
+      I.toast('商品已发布', 'success'); I.$('#itemForm').reset(); I.$('#marketUploadBox').classList.remove('has-file'); I.$('#publishModal').classList.remove('open'); loadMyResources(); loadMarket();
+    }).catch(function(err) { btn.disabled = false; hint.textContent = err.message || '异常'; });
   });
 })();
 </script>
