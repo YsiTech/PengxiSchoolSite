@@ -36,13 +36,11 @@
     
     I.getProfile(true).then(function(p) {
       profile = p;
-      // 🚨 修复：先查商品
       return I.client.from('market_items').select('*').eq('id', itemId).maybeSingle();
     }).then(function(res){
       if (!res || res.error || !res.data) { I.$('#detailWrap').innerHTML = `<div style="text-align:center; padding:50px;">商品不存在</div>`; return; }
       currentItem = res.data;
       
-      // 🚨 修复：再查卖家
       return I.client.from('profiles').select('id, username, flag_url').eq('id', currentItem.seller_id).maybeSingle();
     }).then(function(sellerRes) {
       sellerProfile = sellerRes.data || {};
@@ -57,7 +55,7 @@
     
     var actionHtml = isSold ? `<button class="btn-buy" disabled>已售罄</button>` : 
       (isMine ? `<button class="btn-buy" disabled>这是你的商品</button>` : 
-      `<button class="btn-buy" onclick="buyItem('${m.id}', ${m.price}, ${isUnit})"><i class="fa-solid fa-cart-shopping"></i> 立即购买</button>`);
+      `<button class="btn-buy" onclick="buyItem('${m.id}', ${m.price}, ${isUnit}, '${I.escapeHtml(m.title)}')"><i class="fa-solid fa-cart-shopping"></i> 立即购买</button>`);
 
     I.$('#detailWrap').innerHTML = `
       <div class="detail-container">
@@ -79,22 +77,63 @@
       </div>`;
   }
 
-  window.buyItem = function(itemId, price, isUnit) {
+  window.buyItem = function(itemId, price, isUnit, title) {
     if (profile.balance < price) return I.toast('国库余额不足', 'error');
     if (!confirm(`确认花费 ${I.fmtNumber(price)} ₽ 购买？`)) return;
     I.toast('正在处理...', 'success');
 
+    var sellerName = currentItem.is_admin_post ? 'IECP 官方' : (sellerProfile.username || '未知');
+    var buyerName = profile.username;
+
     if (isUnit) {
+      // 🚨 兵种购买：调用 RPC
       I.client.rpc('buy_custom_unit', { p_buyer_id: profile.id, p_market_item_id: itemId }).then(function(res){
         if(res.error) return I.toast('购买失败: ' + res.error.message, 'error');
         if(!res.data.ok) return I.toast(res.data.msg, 'error');
+        
+        // 发通知：卖家
+        if (!currentItem.is_admin_post) {
+          I.client.rpc('send_notification', { 
+            p_user_id: currentItem.seller_id, p_type: 'trade', p_title: '资产售出', 
+            p_content: `你的兵种【${title}】被【${buyerName}】买走，入账 ${I.fmtNumber(price)} ₽。` 
+          });
+        }
+        // 发通知：买家
+        I.client.rpc('send_notification', { 
+          p_user_id: profile.id, p_type: 'trade', p_title: '购买成功', 
+          p_content: `你花费 ${I.fmtNumber(price)} ₽ 从【${sellerName}】处购入了兵种【${title}】，已直接装备入库。` 
+        });
+
         I.toast('购买成功，兵种已直接装备入库！', 'success');
         setTimeout(() => location.href = 'military.html', 1500);
       });
     } else {
-      I.client.rpc('add_balance', { uid: profile.id, amount: -price, note: '交易行购买' }).then(function(r){
-        I.client.from('market_items').update({ status: 'sold', buyer_id: profile.id }).eq('id', itemId).then(function(){
-           I.toast('购买成功', 'success'); setTimeout(() => location.reload(), 1000);
+      // 🚨 资源购买：普通扣款逻辑
+      I.client.rpc('add_balance', { uid: profile.id, amount: -price, note: '交易行购买 · ' + title }).then(function(r1){
+        if(r1.error) return I.toast('扣款失败', 'error');
+        
+        I.client.from('market_items').update({ status: 'sold', buyer_id: profile.id }).eq('id', itemId).then(function(r2){
+          if (r2.error) return I.toast('状态更新失败', 'error');
+          
+          // 卖家加钱
+          I.client.rpc('add_balance', { uid: currentItem.seller_id, amount: price, note: '售出 · ' + title }).then(function(r3){
+            if(r3.error) return I.toast('卖家入账失败', 'error');
+            
+            // 发通知：卖家
+            I.client.rpc('send_notification', { 
+              p_user_id: currentItem.seller_id, p_type: 'trade', p_title: '资产售出', 
+              p_content: `你的商品【${title}】被【${buyerName}】买走，入账 ${I.fmtNumber(price)} ₽。` 
+            });
+            
+            // 发通知：买家
+            I.client.rpc('send_notification', { 
+              p_user_id: profile.id, p_type: 'trade', p_title: '购买成功', 
+              p_content: `你花费 ${I.fmtNumber(price)} ₽ 从【${sellerName}】处购入了【${title}】。` 
+            });
+
+            I.toast('购买成功', 'success'); 
+            setTimeout(() => location.reload(), 1000);
+          });
         });
       });
     }

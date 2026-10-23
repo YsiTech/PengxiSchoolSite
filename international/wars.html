@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>战争系统 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
@@ -15,7 +15,10 @@
     box-shadow: inset 0 0 50px rgba(79, 195, 247, 0.1), 0 10px 40px rgba(0,0,0,0.8);
     margin-bottom: 24px;
   }
-  #warMap { width: 100%; height: 100%; z-index: 2; position: relative; }
+  #warMap { 
+    width: 100%; height: 100%; z-index: 2; position: relative; 
+    touch-action: pan-y pinch-zoom; /* 优化触摸滚动 */
+  }
 
   .radar-sweep {
     position: absolute; top: 50%; left: 50%; width: 200%; height: 200%; margin-left: -100%; margin-top: -100%;
@@ -49,7 +52,7 @@
 
   .broadcast-bar { background: linear-gradient(90deg, rgba(239,68,68,0.2), rgba(0,0,0,0)); border-left: 4px solid #ef4444; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; color: #fca5a5; font-size: 15px; font-weight: 600; display: none; align-items: center; gap: 10px; z-index: 10;}
 
-  /* 🚨 新增：右下角地图图例 */
+  /* 右侧图例 */
   .map-legend {
     position: absolute; bottom: 15px; right: 15px;
     background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(10px);
@@ -100,10 +103,23 @@
   .troop-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,0.3); display: grid; place-items: center; color: var(--gold); }
   .troop-input { width: 80px; padding: 8px; text-align: center; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-2); color: #fff; font-weight: bold; }
 
+  /* 🚨 手机端专项优化 */
   @media (max-width: 768px) {
-    .war-map-container { height: 380px; }
-    .intel-terminal { width: calc(100% - 30px); top: 10px; left: 15px; max-height: 130px; }
-    .map-legend { bottom: 10px; right: 10px; padding: 6px; font-size: 11px; }
+    .war-map-container { 
+      height: calc(100vh - 260px); /* 占据屏幕绝大部分 */
+      min-height: 450px; 
+    }
+    .intel-terminal { width: calc(100% - 30px); top: 10px; left: 15px; max-height: 110px; }
+    
+    /* 图例改为横向，放到底部中间 */
+    .map-legend { 
+      bottom: 10px; left: 50%; transform: translateX(-50%);
+      right: auto; flex-direction: row; flex-wrap: wrap; justify-content: center;
+      width: 95%; padding: 6px; font-size: 10px; gap: 8px;
+    }
+    .legend-item { gap: 4px; }
+    .legend-color { width: 10px; height: 10px; }
+
     .tactical-box { padding: 20px; max-height: 85vh; overflow-y: auto; }
     .tactic-options { grid-template-columns: 1fr; gap: 12px; } 
     .tactic-card { display: flex; align-items: center; text-align: left; padding: 12px; gap: 15px; }
@@ -149,7 +165,7 @@
       <div class="legend-item"><div class="legend-color" style="background:rgba(34,197,94,0.85)"></div> 盟友领地</div>
       <div class="legend-item"><div class="legend-color" style="background:rgba(79,195,247,0.85)"></div> 建交领地</div>
       <div class="legend-item"><div class="legend-color" style="background:rgba(239,68,68,0.85)"></div> 交战国</div>
-      <div class="legend-item"><div class="legend-color" style="background:#334155"></div> 中立国 / 无主地</div>
+      <div class="legend-item"><div class="legend-color" style="background:#334155"></div> 中立 / 无主</div>
     </div>
   </div>
 
@@ -351,7 +367,10 @@
         backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: '#4fc3f7', textStyle: { color: '#fff' }
       },
       geo: {
-        map: 'world', roam: true, zoom: 1.2,
+        map: 'world', 
+        roam: true, 
+        zoom: 1.2,
+        scaleLimit: { min: 0.8, max: 8 }, // 🚨 限制缩放范围，防缩放太飘
         label: {
           normal: { show: false }, 
           emphasis: { show: false }
