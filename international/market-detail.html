@@ -27,23 +27,32 @@
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
-  var I = IECP; var itemId = new URLSearchParams(location.search).get('id'); var profile = null; var currentItem = null;
+  var I = IECP; var itemId = new URLSearchParams(location.search).get('id'); var profile = null; var currentItem = null; var sellerProfile = null;
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('market');
     if (!itemId) { location.replace('market.html'); return; }
+    
     I.getProfile(true).then(function(p) {
       profile = p;
-      return I.client.from('market_items').select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url)').eq('id', itemId).maybeSingle();
+      // 🚨 修复：先查商品
+      return I.client.from('market_items').select('*').eq('id', itemId).maybeSingle();
     }).then(function(res){
       if (!res || res.error || !res.data) { I.$('#detailWrap').innerHTML = `<div style="text-align:center; padding:50px;">商品不存在</div>`; return; }
-      currentItem = res.data; renderItem(currentItem);
+      currentItem = res.data;
+      
+      // 🚨 修复：再查卖家
+      return I.client.from('profiles').select('id, username, flag_url').eq('id', currentItem.seller_id).maybeSingle();
+    }).then(function(sellerRes) {
+      sellerProfile = sellerRes.data || {};
+      renderItem(currentItem);
     });
   });
 
   function renderItem(m) {
-    var seller = m.seller || {}; var isMine = m.seller_id === profile.id; var isSold = m.status === 'sold';
+    var seller = sellerProfile;
+    var isMine = m.seller_id === profile.id; var isSold = m.status === 'sold';
     var isOfficial = m.is_admin_post === true; var isUnit = m.item_type === 'unit';
     
     var actionHtml = isSold ? `<button class="btn-buy" disabled>已售罄</button>` : 
@@ -61,7 +70,7 @@
           </div>
           <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px;">
             <div style="font-size:12px; color:var(--muted);">卖家</div>
-            <div style="font-weight:bold; color:var(--cyan);">${isOfficial ? 'IECP 官方' : I.escapeHtml(seller.username)}</div>
+            <div style="font-weight:bold; color:var(--cyan);">${isOfficial ? 'IECP 官方' : I.escapeHtml(seller.username || '未知')}</div>
           </div>
           <div style="background:rgba(0,0,0,0.2); padding:20px; border-radius:12px; font-size:14px; white-space:pre-wrap;">${I.escapeHtml(m.description || '暂无描述')}</div>
           ${isUnit ? `<div style="color:var(--gold); font-size:13px;"><i class="fa-solid fa-bolt"></i> 提示：购买兵种后，将直接装备至你的军队库中，无需制造时间！</div>` : ''}
@@ -76,7 +85,6 @@
     I.toast('正在处理...', 'success');
 
     if (isUnit) {
-      // 🚨 兵种直购逻辑
       I.client.rpc('buy_custom_unit', { p_buyer_id: profile.id, p_market_item_id: itemId }).then(function(res){
         if(res.error) return I.toast('购买失败: ' + res.error.message, 'error');
         if(!res.data.ok) return I.toast(res.data.msg, 'error');
@@ -84,7 +92,6 @@
         setTimeout(() => location.href = 'military.html', 1500);
       });
     } else {
-      // 普通资源购买逻辑（保持原版）
       I.client.rpc('add_balance', { uid: profile.id, amount: -price, note: '交易行购买' }).then(function(r){
         I.client.from('market_items').update({ status: 'sold', buyer_id: profile.id }).eq('id', itemId).then(function(){
            I.toast('购买成功', 'success'); setTimeout(() => location.reload(), 1000);

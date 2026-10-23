@@ -11,32 +11,39 @@
   .power-stat { display: flex; flex-direction: column; gap: 6px; }
   .power-stat span { font-size: 13px; color: var(--muted); text-transform: uppercase; }
   .power-stat b { font-size: 28px; color: var(--gold-2); font-family: var(--mono); font-weight: 900; }
+  
   .mil-tabs { display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
   .mil-tabs::-webkit-scrollbar { display: none; }
   .mil-tab { padding: 10px 24px; font-size: 14px; font-weight: 600; color: var(--muted); background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
   .mil-tab.active { background: rgba(212,175,55,0.15); color: var(--gold-2); border-color: rgba(212,175,55,0.4); }
+  
   .mil-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 40px; }
   .unit-card { background: linear-gradient(150deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9)); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; transition: 0.3s; }
   .unit-card:hover { border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
   .unit-card.defense-card:hover { border-color: var(--cyan); }
   .unit-card.navy-card:hover { border-color: #3b82f6; }
+  
   .unit-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
   .unit-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(0,0,0,0.3); display: grid; place-items: center; font-size: 26px; color: var(--gold); flex-shrink: 0; overflow: hidden; }
   .defense-card .unit-icon { color: var(--cyan); }
   .navy-card .unit-icon { color: #3b82f6; }
   .unit-icon img { width: 100%; height: 100%; object-fit: cover; }
+  
   .unit-title { font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
   .unit-count { font-size: 13px; color: var(--muted); }
   .unit-count b { color: var(--cyan); font-family: var(--mono); font-size: 15px; }
   .unit-power { background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); color: var(--gold-2); font-size: 11px; padding: 2px 8px; border-radius: 6px; }
   .defense-card .unit-power { background: rgba(79,195,247,0.1); border-color: rgba(79,195,247,0.3); color: var(--cyan); }
+  
   .unit-desc { font-size: 12px; color: var(--muted-2); margin-bottom: 16px; line-height: 1.5; }
   .unit-cost-box { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); align-items: center;}
   .cost-item { display: flex; align-items: center; gap: 5px; color: var(--ink-2); }
   .cost-item i { color: var(--gold-2); font-size: 11px; }
   .cost-time { margin-left: auto; color: var(--cyan); font-family: var(--mono); font-weight: bold; }
+  
   .build-row { display: flex; gap: 10px; margin-top: auto; }
   .build-row input { width: 80px; text-align: center; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-2); color: #fff; font-weight: bold; font-size: 16px; }
+  
   .queue-panel { background: rgba(17, 24, 39, 0.7); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
   .queue-item { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; margin-bottom: 12px; }
   .queue-info { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; }
@@ -52,6 +59,7 @@
   .form-group input { padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; }
   .img-upload { display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px dashed var(--muted); cursor: pointer; overflow: hidden; flex-shrink: 0; }
   .img-upload img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  
   @media (max-width: 768px) { .mil-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -99,6 +107,7 @@
 (function () {
   var I = IECP; var profile = null; var myRes = null; var myMil = null; var myQueue = []; var customUnits = {}; var timer = null; var activeTab = 'all';
 
+  // 完整的 28 个兵种
   var UNITS = [
     { type: 'scouts', name: '侦察兵', icon: 'fa-binoculars', category: 'army', power: 1, cost: { food: 5 }, desc: '基础侦察部队。', time: 2 },
     { type: 'infantry', name: '机械化步兵', icon: 'fa-person-rifle', category: 'army', power: 3, cost: { food: 10, iron_ore: 5 }, desc: '常规主力步兵。', time: 5 },
@@ -174,7 +183,6 @@
     var html = '';
 
     if (activeTab === 'custom') {
-      // 🚨 核心更新：自定义兵种支持所有资源输入
       html += `
         <div class="custom-form" style="grid-column: 1 / -1;">
           <h3 style="color:var(--cyan); margin-bottom:15px;"><i class="fa-solid fa-flask"></i> 研发自定义兵种</h3>
@@ -186,17 +194,23 @@
             </div>
             <div style="flex:1; min-width: 250px;">
               <div class="form-group" style="margin-bottom:10px;"><label>兵种名称</label><input id="cName" placeholder="如：帝国禁卫军"></div>
+              
               <div class="form-row" style="margin-bottom:0;">
-                <div class="form-group"><label>耗油 (战力x2)</label><input type="number" id="cOil" value="10" min="0"></div>
-                <div class="form-group"><label>耗铁 (战力x3)</label><input type="number" id="cIron" value="10" min="0"></div>
-                <div class="form-group"><label>耗气 (战力x1.5)</label><input type="number" id="cGas" value="0" min="0"></div>
-                <div class="form-group"><label>耗稀 (战力x5)</label><input type="number" id="cRare" value="0" min="0"></div>
-                <div class="form-group"><label>耗粮 (战力x0.5)</label><input type="number" id="cFood" value="0" min="0"></div>
-                <div class="form-group"><label>耗资金 (时间加成)</label><input type="number" id="cMoney" value="1000" min="0"></div>
+                <div class="form-group"><label>耗油 (战力x2)</label><input type="number" id="cOil" value="10" min="0" oninput="updateCustomPreview()"></div>
+                <div class="form-group"><label>耗铁 (战力x3)</label><input type="number" id="cIron" value="10" min="0" oninput="updateCustomPreview()"></div>
+                <div class="form-group"><label>耗气 (战力x1.5)</label><input type="number" id="cGas" value="0" min="0" oninput="updateCustomPreview()"></div>
+                <div class="form-group"><label>耗稀 (战力x5)</label><input type="number" id="cRare" value="0" min="0" oninput="updateCustomPreview()"></div>
+                <div class="form-group"><label>耗粮 (战力x0.5)</label><input type="number" id="cFood" value="0" min="0" oninput="updateCustomPreview()"></div>
+                <div class="form-group"><label>耗资金 (加速制造)</label><input type="number" id="cMoney" value="0" min="0" oninput="updateCustomPreview()"></div>
+              </div>
+              
+              <div id="customPreview" style="background:rgba(79,195,247,0.1); border:1px solid rgba(79,195,247,0.3); padding:12px; border-radius:8px; margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="font-size:14px; color:#fff;"><i class="fa-solid fa-bolt" style="color:var(--gold-2);"></i> 预计战力：<b id="previewPower" style="color:var(--gold-2); font-size:18px; margin-left:5px;">50</b></div>
+                <div style="font-size:14px; color:#fff;"><i class="fa-regular fa-clock" style="color:var(--cyan);"></i> 制造耗时：<b id="previewTime" style="color:var(--cyan); font-size:18px; margin-left:5px;">30</b> 秒</div>
               </div>
             </div>
           </div>
-          <div style="text-align:right; margin-top:10px;">
+          <div style="text-align:right; margin-top:15px;">
             <button class="btn btn-cyan" onclick="createCustomUnit()"><i class="fa-solid fa-microchip"></i> 研发并生产</button>
           </div>
         </div>
@@ -250,6 +264,23 @@
     wrap.innerHTML = html;
   }
 
+  // 🚨 实时计算战力与时间
+  window.updateCustomPreview = function() {
+    var oil = parseInt(I.$('#cOil').value) || 0;
+    var iron = parseInt(I.$('#cIron').value) || 0;
+    var gas = parseInt(I.$('#cGas').value) || 0;
+    var rare = parseInt(I.$('#cRare').value) || 0;
+    var food = parseInt(I.$('#cFood').value) || 0;
+    var money = parseInt(I.$('#cMoney').value) || 0;
+
+    var power = Math.floor((oil * 2) + (iron * 3) + (gas * 1.5) + (rare * 5) + (food * 0.5));
+    I.$('#previewPower').innerText = power;
+
+    var build_time = Math.floor((oil + iron + gas + rare + food) * 1.5 - (money / 500));
+    if (build_time < 10) build_time = 10;
+    I.$('#previewTime').innerText = build_time;
+  };
+
   window.previewImg = function(input) {
     if (input.files && input.files[0]) {
       var reader = new FileReader();
@@ -281,9 +312,8 @@
     }
 
     uploadPromise.then(function(imgUrl) {
-      // 🚨 战力计算涵盖所有资源
       var power = Math.floor((oil * 2) + (iron * 3) + (gas * 1.5) + (rare * 5) + (food * 0.5));
-      var build_time = Math.floor((oil + iron + gas + rare + food) * 1.5 + (money / 500)); 
+      var build_time = Math.floor((oil + iron + gas + rare + food) * 1.5 - (money / 500)); 
       if(build_time < 10) build_time = 10;
 
       I.client.from('country_resources').update({ 

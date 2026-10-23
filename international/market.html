@@ -42,7 +42,6 @@
       <div id="resourceFields" class="field-group" style="display:none;">
         <div class="field">
           <label>选择资源种类 <span class="req">*</span></label>
-          <!-- 🚨 补全 5 种战略资源 -->
           <select id="iResType">
             <option value="oil">原油储备</option>
             <option value="gas">天然气</option>
@@ -104,7 +103,7 @@
       I.client.from('military').select('custom_troops').eq('country_id', profile.id).maybeSingle(),
       I.client.from('custom_units').select('*')
     ]).then(function(res) {
-      myResources = res[0].data; myMil = res[1].data || {custom_troops:{}};
+      myResources = res[0].data || {}; myMil = res[1].data || {custom_troops:{}};
       (res[2].data || []).forEach(u => { myCustomUnits[u.id] = u; });
     });
   }
@@ -128,28 +127,40 @@
     }
   };
 
+  // 🚨 修复：取消连表查询，改为两步获取，彻底消灭 400 报错
   function loadMarket() {
-    I.client.from('market_items').select('*, seller:profiles!market_items_seller_id_fkey(id, username, flag_url, role)').eq('status', 'on_sale').order('created_at', { ascending: false }).then(function (res) {
+    I.client.from('market_items').select('*').eq('status', 'on_sale').order('created_at', { ascending: false }).then(function (res) {
+      if (res.error) { console.error(res.error); return I.toast('加载失败', 'error'); }
+      
       var wrap = I.$('#marketList'); var list = res.data || [];
       if (!list.length) { wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-store"></i><p>交易行暂无物品</p></div>'; return; }
-      var html = '<div class="market-grid">';
-      list.forEach(function (m) {
-        var seller = m.seller || {}; var isOfficial = m.is_admin_post === true;
-        var tag = isOfficial ? '<span class="market-tag admin">官方</span>' : '';
-        if (m.item_type === 'resource') tag += '<span class="market-tag" style="color:var(--cyan)">资源</span>';
-        if (m.item_type === 'unit') tag += '<span class="market-tag" style="color:var(--gold)">兵种</span>';
+      
+      var sellerIds = [...new Set(list.map(m => m.seller_id))].filter(id => id); // 去重并过滤空值
+      
+      I.client.from('profiles').select('id, username, flag_url, role').in('id', sellerIds).then(function (profileRes) {
+        var profileMap = {};
+        (profileRes.data || []).forEach(p => { profileMap[p.id] = p; });
 
-        html +=
-          '<article class="market-card glass" onclick="location.href=\'market-detail.html?id=' + m.id + '\'">' +
-            '<div class="market-img">' + (m.image_url ? '<img src="' + I.escapeHtml(m.image_url) + '">' : '<i class="fa-solid fa-box-open"></i>') + '</div>' +
-            '<div class="market-body">' + tag + '<h4>' + I.escapeHtml(m.title) + '</h4><p>' + I.escapeHtml(m.description || '暂无描述') + '</p>' +
-              '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽</span></div>' +
-              '<div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--muted);">' +
-                '<div>' + (isOfficial ? 'IECP官方' : I.escapeHtml(seller.username||'未知')) + '</div>' +
-                '<span class="market-qty">库存 ' + I.fmtNumber(m.quantity) + '</span>' +
-              '</div></div></article>';
+        var html = '<div class="market-grid">';
+        list.forEach(function (m) {
+          var seller = profileMap[m.seller_id] || {};
+          var isOfficial = m.is_admin_post === true;
+          var tag = isOfficial ? '<span class="market-tag admin">官方</span>' : '';
+          if (m.item_type === 'resource') tag += '<span class="market-tag" style="color:var(--cyan)">资源</span>';
+          if (m.item_type === 'unit') tag += '<span class="market-tag" style="color:var(--gold)">兵种</span>';
+
+          html +=
+            '<article class="market-card glass" onclick="location.href=\'market-detail.html?id=' + m.id + '\'">' +
+              '<div class="market-img">' + (m.image_url ? '<img src="' + I.escapeHtml(m.image_url) + '">' : '<i class="fa-solid fa-box-open"></i>') + '</div>' +
+              '<div class="market-body">' + tag + '<h4>' + I.escapeHtml(m.title) + '</h4><p>' + I.escapeHtml(m.description || '暂无描述') + '</p>' +
+                '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽</span></div>' +
+                '<div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--muted);">' +
+                  '<div>' + (isOfficial ? 'IECP官方' : I.escapeHtml(seller.username || '未知')) + '</div>' +
+                  '<span class="market-qty">库存 ' + I.fmtNumber(m.quantity) + '</span>' +
+                '</div></div></article>';
+        });
+        wrap.innerHTML = html + '</div>';
       });
-      wrap.innerHTML = html + '</div>';
     });
   }
 
