@@ -13,81 +13,37 @@
   .wh-title { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 2px; display: flex; align-items: center; gap: 12px; margin-bottom: 8px; text-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
   .wh-title i { color: var(--gold); }
   .wh-desc { color: var(--muted); font-size: 14px; font-family: var(--mono); letter-spacing: 1px; }
-
   .wh-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
   .wh-tabs { display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
   .wh-tab { padding: 8px 20px; font-size: 13px; font-weight: 600; color: var(--muted); border-radius: 8px; cursor: pointer; transition: 0.2s; border: none; background: transparent; }
-  .wh-tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
   .wh-tab.active { background: var(--gold); color: #0a0e1a; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
-
-  .wh-search { position: relative; width: 260px; }
-  .wh-search input { width: 100%; padding: 10px 16px 10px 40px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; outline: none; transition: 0.2s; }
-  .wh-search input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(79, 195, 247, 0.2); }
-  .wh-search i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); }
-
+  .wh-search input { width: 100%; padding: 10px 16px 10px 40px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; outline: none; }
   .inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; padding-bottom: 60px; }
   .inv-card { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
   .inv-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(255,255,255,0.2); box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
   .inv-card.rare-item { border-color: rgba(167, 139, 250, 0.3); background: linear-gradient(145deg, rgba(30, 41, 59, 0.7), rgba(76, 29, 149, 0.2)); }
-  .inv-card.rare-item:hover { border-color: rgba(167, 139, 250, 0.8); box-shadow: 0 15px 40px rgba(76, 29, 149, 0.4); }
-
   .inv-img-box { height: 160px; background: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 70%); display: flex; align-items: center; justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.05); }
-  .inv-img-box img { max-height: 100%; max-width: 100%; object-fit: contain; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.5)); transition: transform 0.3s; }
-  .inv-card:hover .inv-img-box img { transform: scale(1.1) rotate(2deg); }
-  .inv-img-box .placeholder { font-size: 60px; color: rgba(255,255,255,0.05); }
-  .qty-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); color: var(--gold-2); font-family: var(--mono); font-size: 13px; font-weight: bold; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.3); }
-  .rarity-tag { position: absolute; top: 12px; left: 12px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; box-shadow: 0 0 10px rgba(124, 58, 237, 0.5); }
-
+  .inv-img-box img { max-height: 100%; max-width: 100%; object-fit: contain; }
+  .qty-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.8); color: var(--gold-2); padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(212,175,55,0.3); }
+  .rarity-tag { position: absolute; top: 12px; left: 12px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; font-size: 10px; padding: 3px 8px; border-radius: 6px; }
   .inv-body { padding: 18px; display: flex; flex-direction: column; flex: 1; }
-  .inv-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .inv-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 36px; }
-  .inv-price { font-family: var(--mono); font-size: 15px; color: var(--gold-2); font-weight: 700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-  .inv-price span { font-size: 11px; color: var(--muted); font-weight: normal; }
-
-  .card-actions { display: flex; gap: 8px; margin-top: auto; }
-  .c-btn { flex: 1; padding: 10px 0; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; border: none; }
-  .c-btn-use { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; box-shadow: 0 4px 10px rgba(109, 40, 217, 0.4); width: 100%; margin-bottom: 8px; }
-  .c-btn-use:hover { background: linear-gradient(135deg, #a78bfa, #7c3aed); transform: translateY(-2px); }
-  .c-btn-list { background: rgba(255,255,255,0.05); color: var(--ink); border: 1px solid rgba(255,255,255,0.1); }
-  .c-btn-list:hover { background: rgba(212, 175, 55, 0.15); color: var(--gold); }
-  .c-btn-recycle { background: rgba(255,255,255,0.05); color: var(--ink); border: 1px solid rgba(255,255,255,0.1); }
-  .c-btn-recycle:hover { background: rgba(79, 195, 247, 0.15); color: var(--cyan); }
-  .c-btn-drop { flex: 0 0 40px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-  .c-btn-drop:hover { background: #ef4444; color: #fff; }
-
-  .empty-warehouse { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; background: rgba(17, 24, 39, 0.4); border: 2px dashed rgba(255,255,255,0.1); border-radius: 20px; text-align: center; }
-
-  /* 🚨 目标选择模态框 */
-  .target-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; max-height: 300px; overflow-y: auto; padding-right: 4px; }
-  .target-item { background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center; cursor: pointer; transition: 0.2s; }
-  .target-item:hover { background: rgba(212,175,55,0.1); border-color: var(--gold); transform: translateY(-2px); }
-  .target-item img { width: 40px; height: 26px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; }
-  .target-item span { display: block; font-size: 13px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  @media (max-width: 768px) {
-    .wh-toolbar { flex-direction: column; align-items: stretch; }
-    .wh-search { width: 100%; }
-    .inv-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
-  }
+  .inv-name { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .inv-desc { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .inv-price { font-size: 15px; color: var(--gold-2); margin-bottom: 16px; }
+  .c-btn { flex: 1; padding: 10px 0; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; border: none; }
+  .c-btn-use { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #fff; width: 100%; margin-bottom: 8px; }
+  .c-btn-list { background: rgba(255,255,255,0.05); color: var(--ink); }
+  .c-btn-recycle { background: rgba(255,255,255,0.05); color: var(--ink); }
+  .c-btn-drop { flex: 0 0 40px; background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 </style>
 </head>
 <body>
-
-<header class="iecp-topbar">
-  <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
-    <nav class="iecp-nav" id="iecp-nav"></nav>
-    <div class="iecp-user" id="iecp-user"></div>
-  </div>
-</header>
+<header class="iecp-topbar"><div class="iecp-topbar-inner"><a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a><nav class="iecp-nav" id="iecp-nav"></nav><div class="iecp-user" id="iecp-user"></div></div></header>
 
 <section class="warehouse-header">
   <div class="iecp-page-head-inner">
     <div class="iecp-breadcrumb" style="margin-bottom:20px;"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><a href="profile.html">个人中心</a><i class="fa-solid fa-chevron-right"></i><span>国家仓库</span></div>
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:20px;">
-      <div><div class="wh-title"><i class="fa-solid fa-warehouse"></i> 战术物资库</div><div class="wh-desc">NATIONAL LOGISTICS & STRATEGIC RESERVES</div></div>
-      <a href="market.html" class="btn btn-gold" style="padding:12px 24px; border-radius:12px;"><i class="fa-solid fa-store"></i> 前往交易行</a>
-    </div>
+    <div><div class="wh-title"><i class="fa-solid fa-warehouse"></i> 战术物资库</div><div class="wh-desc">NATIONAL LOGISTICS & STRATEGIC RESERVES</div></div>
   </div>
 </section>
 
@@ -98,96 +54,66 @@
       <button class="wh-tab" onclick="filterType('rare', this)">✨ 官方道具</button>
       <button class="wh-tab" onclick="filterType('normal', this)">普通物品</button>
     </div>
-    <div style="display:flex; gap:10px; align-items:center;">
-      <div class="wh-search">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInput" placeholder="搜索物资名称..." oninput="renderList()">
-      </div>
-      <button class="btn btn-red" onclick="batchRecycle()" style="padding:10px 16px; font-size:13px; border-radius:10px;"><i class="fa-solid fa-recycle"></i> 批量回收</button>
+    <div class="wh-search">
+      <input type="text" id="searchInput" placeholder="搜索物资名称..." oninput="renderList()">
     </div>
   </div>
-
-  <div id="inventoryWrap">
-    <div class="loading-state"><div class="spinner"></div><span>正在连接仓储系统...</span></div>
-  </div>
+  <div id="inventoryWrap"><div class="loading-state"><div class="spinner"></div><span>正在连接仓储系统...</span></div></div>
 </main>
 
-<!-- 上架弹窗 -->
 <div class="iecp-modal" id="listModal">
   <div class="iecp-modal-box glass-2" style="max-width:400px">
     <h3><i class="fa-solid fa-store" style="color:var(--gold)"></i> 重新上架</h3>
-    <p class="modal-sub">将物品放回交易行，供其他国家购买。</p>
     <div class="field-group">
-      <div class="field"><label>设定新价格（亚斯卢布 ₽ / 单价）</label><input id="listPrice" type="number" min="1"></div>
+      <div class="field"><label>设定新价格（₽ / 单价）</label><input id="listPrice" type="number" min="1"></div>
       <div class="field"><label>上架数量</label><input id="listQty" type="number" min="1"></div>
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
       <button class="btn btn-ghost" onclick="document.getElementById('listModal').classList.remove('open')">取消</button>
-      <button class="btn btn-gold" id="confirmListBtn"><i class="fa-solid fa-check"></i> 确认上架</button>
+      <button class="btn btn-gold" id="confirmListBtn">确认上架</button>
     </div>
   </div>
 </div>
 
-<!-- 🚨 目标选择弹窗 -->
 <div class="iecp-modal" id="targetModal">
   <div class="iecp-modal-box glass-2" style="max-width:500px">
     <h3><i class="fa-solid fa-satellite"></i> 选择侦察目标</h3>
-    <p class="modal-sub">请选择一个国家进行情报穿透。</p>
-    <div id="targetList" class="target-grid"></div>
+    <div id="targetList" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:12px; max-height:300px; overflow-y:auto;"></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
       <button class="btn btn-ghost" onclick="document.getElementById('targetModal').classList.remove('open')">取消</button>
     </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
-  var I = IECP;
-  var profile = null;
-  var allItems = []; 
-  var currentFilter = 'all';
-  var listingItemId = null;
-  var currentSpyItemId = null; // 记录当前正在使用的卫星ID
+  var I = IECP; var profile = null; var allItems = []; var currentFilter = 'all'; var listingItemId = null; var currentSpyItemId = null;
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('profile'); 
-    
-    I.getProfile(true).then(function (p) {
-      profile = p;
-      if (!profile) { location.replace('index.html'); return; }
-      loadInventory();
-    });
+    I.getProfile(true).then(function (p) { profile = p; if (!profile) { location.replace('index.html'); return; } loadInventory(); });
   });
 
   function loadInventory() {
     var wrap = I.$('#inventoryWrap');
-    I.client.from('market_items')
-      .select('*')
-      .eq('buyer_id', profile.id)
-      .eq('status', 'sold')
-      .not('sold_at', 'is', null)
-      .order('sold_at', { ascending: false })
-      .then(function(res) {
-        if (res.error) { wrap.innerHTML = `<div class="empty-state"><p style="color:var(--red)">获取仓库失败：${res.error.message}</p></div>`; return; }
-        allItems = res.data || [];
-        renderList();
-      });
+    I.client.from('market_items').select('*').eq('buyer_id', profile.id).eq('status', 'sold').not('sold_at', 'is', null).order('sold_at', { ascending: false }).then(function(res) {
+      if (res.error) { wrap.innerHTML = `<div class="empty-state"><p style="color:var(--red)">获取仓库失败：${res.error.message}</p></div>`; return; }
+      allItems = res.data || []; renderList();
+    });
   }
 
   window.filterType = function(type, btn) {
     currentFilter = type;
     document.querySelectorAll('.wh-tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    renderList();
+    btn.classList.add('active'); renderList();
   };
 
   window.renderList = function() {
-    var wrap = I.$('#inventoryWrap');
-    var keyword = I.$('#searchInput').value.toLowerCase();
+    var wrap = I.$('#inventoryWrap'); var keyword = I.$('#searchInput').value.toLowerCase();
 
     var filtered = allItems.filter(function(item) {
       var isRare = item.is_admin_post && item.item_data && item.item_data.effect;
@@ -197,68 +123,77 @@
       return true;
     });
 
-    if (!filtered.length) {
-      wrap.innerHTML = `<div class="empty-warehouse"><i class="fa-solid fa-box-open"></i><h3>未找到物资</h3><p>当前分类下没有匹配的物品，换个条件试试？</p><a href="market.html" class="btn btn-gold" style="padding:10px 24px; border-radius:10px;"><i class="fa-solid fa-store"></i> 去交易行逛逛</a></div>`;
-      return;
-    }
+    if (!filtered.length) { wrap.innerHTML = `<div class="empty-state"><i class="fa-solid fa-box-open" style="font-size:40px; margin-bottom:10px; color:var(--muted)"></i><h3>仓库空空如也</h3></div>`; return; }
 
     var html = '<div class="inv-grid">';
     filtered.forEach(function(item) {
-      var unitPrice = item.price || 0;
-      var qty = item.quantity || 1;
+      var unitPrice = item.price || 0; var qty = item.quantity || 1;
       var isRare = item.is_admin_post && item.item_data && item.item_data.effect;
+      var isResource = item.item_type === 'resource' || (item.item_data && item.item_data.res_type); // 🚨 强化资源判断
       
-      var useBtnHtml = isRare 
-        ? `<button class="c-btn c-btn-use" onclick="useItem('${item.id}', '${I.escapeHtml(item.title)}')"><i class="fa-solid fa-bolt"></i> 立即使用</button>` 
+      var useBtnHtml = (isRare || isResource) 
+        ? `<div class="card-actions"><button class="c-btn c-btn-use" onclick="useItem('${item.id}', '${I.escapeHtml(item.title)}', ${qty})"><i class="fa-solid fa-box-open"></i> 立即使用/开箱</button></div>` 
         : '';
 
-      var imgHtml = item.image_url ? `<img src="${item.image_url}" alt="">` : `<i class="fa-solid fa-box-open placeholder"></i>`;
+      var imgHtml = item.image_url ? `<img src="${item.image_url}" alt="">` : `<i class="fa-solid fa-box-open" style="font-size:60px; color:rgba(255,255,255,0.1)"></i>`;
       var tagHtml = isRare ? `<div class="rarity-tag">官方限定</div>` : '';
 
       html += `
         <div class="inv-card ${isRare ? 'rare-item' : ''}">
           <div class="inv-img-box">${imgHtml}<div class="qty-badge">×${qty}</div>${tagHtml}</div>
           <div class="inv-body">
-            <h4 class="inv-name" title="${I.escapeHtml(item.title)}">${I.escapeHtml(item.title)}</h4>
-            <div class="inv-desc">${I.escapeHtml(item.description || '暂无详细描述')}</div>
+            <h4 class="inv-name">${I.escapeHtml(item.title)}</h4>
+            <div class="inv-desc">${I.escapeHtml(item.description || '暂无描述')}</div>
             <div class="inv-price">${I.fmtNumber(unitPrice)} ₽ <span>单价</span></div>
-            <div class="card-actions">${useBtnHtml}</div>
-            <div class="card-actions" style="${isRare ? 'margin-top:0;' : 'margin-top:auto;'}">
-              <button class="c-btn c-btn-list" onclick="openListModal('${item.id}', ${unitPrice}, ${qty})" title="上架到交易行"><i class="fa-solid fa-arrow-up-from-bracket"></i> 上架</button>
-              <button class="c-btn c-btn-recycle" onclick="recycleItem('${item.id}', ${unitPrice * qty})" title="按60%原价回收"><i class="fa-solid fa-recycle"></i> 回收</button>
-              <button class="c-btn c-btn-drop" onclick="dropItem('${item.id}')" title="直接丢弃"><i class="fa-solid fa-trash"></i></button>
+            ${useBtnHtml}
+            <div class="card-actions" style="${useBtnHtml ? '' : 'margin-top:auto;'}">
+              <button class="c-btn c-btn-list" onclick="openListModal('${item.id}', ${unitPrice}, ${qty})"><i class="fa-solid fa-arrow-up-from-bracket"></i> 上架</button>
+              <button class="c-btn c-btn-recycle" onclick="recycleItem('${item.id}', ${unitPrice * qty})"><i class="fa-solid fa-recycle"></i> 回收</button>
+              <button class="c-btn c-btn-drop" onclick="dropItem('${item.id}')"><i class="fa-solid fa-trash"></i></button>
             </div>
           </div>
         </div>
       `;
     });
-    html += '</div>';
-    wrap.innerHTML = html;
+    html += '</div>'; wrap.innerHTML = html;
   };
 
-  // 🚨 使用道具逻辑
-  window.useItem = async function(id, title) {
+  window.useItem = async function(id, title, maxQty) {
     var item = allItems.find(x => x.id === id);
     var isSpy = item && item.item_data && item.item_data.effect === 'spy';
+    var isResource = item && (item.item_type === 'resource' || (item.item_data && item.item_data.res_type));
 
-    // 如果是间谍卫星，打开目标选择器
-    if (isSpy) {
-      currentSpyItemId = id;
-      openTargetSelector();
+    if (isSpy) { currentSpyItemId = id; openTargetSelector(); return; }
+
+    var qty = 1;
+    if (isResource && maxQty > 1) {
+      var input = prompt(`请输入要开箱的数量 (1 - ${maxQty}):`, "1");
+      if (!input) return;
+      qty = parseInt(input, 10);
+      if (isNaN(qty) || qty < 1 || qty > maxQty) return I.toast('数量错误', 'error');
+    } else {
+      if (!confirm(`确认使用/开箱【${title}】吗？`)) return;
+    }
+
+    executeUseItem(id, null, isResource, qty);
+  };
+
+  async function executeUseItem(id, targetId, isResource, qty) {
+    I.toast('正在执行...', 'success', 1000);
+    
+    if (isResource) {
+      var { data, error } = await I.client.rpc('consume_resource_pack', { p_item_id: id, p_user_id: profile.id, p_amount: qty });
+      if (error) return alert('开箱失败：' + error.message);
+      if (!data.ok) return alert(data.msg);
+      
+      // 🚨 核心修改：强制弹窗
+      alert(`📦 开箱成功！\n\n获得物资明细：\n${data.summary}\n\n（提示：资源已划入个人中心国库面板）`);
+      
+      loadInventory();
       return;
     }
 
-    // 其他普通道具直接使用
-    if (!confirm(`确认使用【${title}】吗？`)) return;
-    executeUseItem(id, null);
-  };
-
-  // 执行 RPC
-  async function executeUseItem(id, targetId) {
-    I.toast('正在执行...', 'success', 1000);
-    var params = { p_item_id: id };
-    if (targetId) params.p_target_id = targetId;
-
+    var params = { p_item_id: id }; if (targetId) params.p_target_id = targetId;
     var { data, error } = await I.client.rpc('use_special_item', params);
     
     if (error) return I.toast('使用失败：' + error.message, 'error');
@@ -267,97 +202,42 @@
     if (data.spy_target) {
       alert(`🛰️ 卫星锁定成功！\n\n成功截获【${data.spy_target}】的国家情报：\n\n💰 国库余额：${I.fmtNumber(data.spy_balance)} ₽\n🛢️ 原油储备：${I.fmtNumber(data.spy_oil)} 吨\n🔥 天然气：${I.fmtNumber(data.spy_gas)} m³\n⛰️ 铁矿石：${I.fmtNumber(data.spy_iron)} 吨\n💎 稀有金属：${I.fmtNumber(data.spy_rare)} 吨\n🌾 粮食储备：${I.fmtNumber(data.spy_food)} 吨`);
     } else if (data.add) {
-      I.toast(`使用成功！增加了 ${data.add} 点国际影响力`, 'success', 4000);
+      alert(`使用成功！增加了 ${data.add} 点国际影响力`);
     } else {
-      I.toast('使用成功！物资已下发', 'success', 4000);
+      alert('使用成功！');
     }
-    
     loadInventory();
   }
 
-  // 🚨 打开目标选择器并加载国家列表
   async function openTargetSelector() {
-    var listWrap = I.$('#targetList');
-    listWrap.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);">正在加载国家列表...</div>';
-    I.$('#targetModal').classList.add('open');
-
+    var listWrap = I.$('#targetList'); listWrap.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);">正在加载...</div>'; I.$('#targetModal').classList.add('open');
     var { data } = await I.client.from('profiles').select('id, username, flag_url').neq('id', profile.id).limit(50);
-    if (!data || !data.length) {
-      listWrap.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);">未找到其他目标</div>';
-      return;
-    }
-
-    listWrap.innerHTML = data.map(u => `
-      <div class="target-item" onclick="selectTarget('${u.id}', '${I.escapeHtml(u.username)}')">
-        <img src="${u.flag_url || I.avatarFallback(u.username)}">
-        <span>${I.escapeHtml(u.username)}</span>
-      </div>
-    `).join('');
+    if (!data || !data.length) { listWrap.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);">未找到目标</div>'; return; }
+    listWrap.innerHTML = data.map(u => `<div class="target-item" onclick="selectTarget('${u.id}', '${I.escapeHtml(u.username)}')"><img src="${u.flag_url || I.avatarFallback(u.username)}"><span>${I.escapeHtml(u.username)}</span></div>`).join('');
   }
 
   window.selectTarget = function(targetId, targetName) {
     I.$('#targetModal').classList.remove('open');
-    if (confirm(`确认使用卫星透视【${targetName}】吗？`)) {
-      executeUseItem(currentSpyItemId, targetId);
-    }
-  };
-
-  // 🚨 批量回收功能（清理废弃/不想要的物资）
-  window.batchRecycle = async function() {
-    var recycleList = allItems.filter(x => !x.is_admin_post); // 假设不批量回收官方道具，防误触
-    if (!recycleList.length) return I.toast('当前没有可批量回收的普通物资', 'error');
-
-    var totalRefund = 0;
-    recycleList.forEach(x => { totalRefund += Math.floor((x.price || 0) * (x.quantity || 1) * 0.6); });
-
-    if (!confirm(`⚠️ 确定批量回收所有普通物品吗？\n共 ${recycleList.length} 件，可获得 ${I.fmtNumber(totalRefund)} ₽`)) return;
-
-    I.toast('正在处理批量回收...', 'success', 1500);
-    
-    var ids = recycleList.map(x => x.id);
-    var { error } = await I.client.from('market_items').update({ status: 'recycled' }).in('id', ids).eq('status', 'sold');
-    
-    if (error) return I.toast('回收失败：' + error.message, 'error');
-    
-    await I.client.rpc('add_balance', { uid: profile.id, amount: totalRefund, note: '批量回收物品' });
-    I.toast(`批量回收成功！入账 ${I.fmtNumber(totalRefund)} ₽`, 'success');
-    loadInventory();
+    if (confirm(`确认使用卫星透视【${targetName}】吗？`)) { executeUseItem(currentSpyItemId, targetId, false, 1); }
   };
 
   window.openListModal = function(id, price, qty) {
-    listingItemId = id;
-    I.$('#listPrice').value = price > 0 ? price : 100; 
-    I.$('#listQty').value = qty;
-    I.$('#listQty').max = qty;
-    I.$('#listModal').classList.add('open');
+    listingItemId = id; I.$('#listPrice').value = price > 0 ? price : 100; I.$('#listQty').value = qty; I.$('#listQty').max = qty; I.$('#listModal').classList.add('open');
   };
 
   I.$('#confirmListBtn').addEventListener('click', function() {
-    var newPrice = parseInt(I.$('#listPrice').value, 10);
-    var newQty = parseInt(I.$('#listQty').value, 10);
-    var item = allItems.find(function(x){ return x.id === listingItemId; });
-    if (!newPrice || newPrice < 1) return I.toast('价格必须大于 0', 'error');
-    if (!newQty || newQty < 1 || newQty > item.quantity) return I.toast('数量不合理', 'error');
-
+    var newPrice = parseInt(I.$('#listPrice').value, 10); var newQty = parseInt(I.$('#listQty').value, 10); var item = allItems.find(function(x){ return x.id === listingItemId; });
+    if (!newPrice || newPrice < 1) return I.toast('价格必须大于 0', 'error'); if (!newQty || newQty < 1 || newQty > item.quantity) return I.toast('数量不合理', 'error');
     var btn = this; btn.disabled = true;
-
     if (newQty === item.quantity) {
       I.client.from('market_items').update({ status: 'on_sale', price: newPrice, buyer_id: null, sold_at: null, created_at: new Date().toISOString() }).eq('id', item.id).then(function(r){
-        btn.disabled = false;
-        if (r.error) return I.toast(r.error.message, 'error');
-        I.toast('已成功重新上架', 'success');
-        I.$('#listModal').classList.remove('open');
-        loadInventory();
+        btn.disabled = false; if (r.error) return I.toast(r.error.message, 'error'); I.toast('已上架', 'success'); I.$('#listModal').classList.remove('open'); loadInventory();
       });
     } else {
       I.client.from('market_items').update({ quantity: item.quantity - newQty }).eq('id', item.id).then(function(r1){
         if (r1.error) { btn.disabled = false; return I.toast(r1.error.message, 'error'); }
-        I.client.from('market_items').insert({ seller_id: profile.id, title: item.title, description: item.description, price: newPrice, image_url: item.image_url, quantity: newQty, status: 'on_sale' }).then(function(r2){
-          btn.disabled = false;
-          if (r2.error) return I.toast(r2.error.message, 'error');
-          I.toast('已拆分并上架部分物品', 'success');
-          I.$('#listModal').classList.remove('open');
-          loadInventory();
+        I.client.from('market_items').insert({ seller_id: profile.id, title: item.title, description: item.description, price: newPrice, image_url: item.image_url, quantity: newQty, status: 'on_sale', item_type: item.item_type, item_data: item.item_data, is_admin_post: item.is_admin_post }).then(function(r2){
+          btn.disabled = false; if (r2.error) return I.toast(r2.error.message, 'error'); I.toast('已拆分上架', 'success'); I.$('#listModal').classList.remove('open'); loadInventory();
         });
       });
     }
@@ -365,26 +245,19 @@
 
   window.recycleItem = function(id, totalCost) {
     var refund = Math.floor(totalCost * 0.6);
-    if (!confirm(`国际资源回收部门将以原价的 60% 回收该物品。\n\n你将获得：${I.fmtNumber(refund)} ₽`)) return;
-
+    if (!confirm(`回收该物品，你将获得：${I.fmtNumber(refund)} ₽`)) return;
     I.toast('正在处理回收...', 'success', 1000);
     I.client.from('market_items').update({ status: 'recycled' }).eq('id', id).eq('status', 'sold').select().then(function(r1){
-      if (r1.error || !r1.data || r1.data.length === 0) return I.toast('物品已回收或状态异常', 'error');
+      if (r1.error || !r1.data || r1.data.length === 0) return I.toast('物品异常', 'error');
       I.client.from('profiles').update({ balance: profile.balance + refund }).eq('id', profile.id).then(function(){
-        I.toast(`回收成功！国库入账 ${I.fmtNumber(refund)} ₽`, 'success');
-        profile.balance += refund; 
-        loadInventory();
+        I.toast(`回收成功！入账 ${I.fmtNumber(refund)} ₽`, 'success'); profile.balance += refund; loadInventory();
       });
     });
   };
 
   window.dropItem = function(id) {
-    if (!confirm('⚠️ 警告：丢弃后物品将彻底消失！确定要丢弃吗？')) return;
-    I.client.from('market_items').delete().eq('id', id).then(function(r){
-      if (r.error) return I.toast('丢弃失败：' + r.error.message, 'error');
-      I.toast('物品已丢弃', 'success');
-      loadInventory();
-    });
+    if (!confirm('⚠️ 警告：丢弃后物品彻底消失！确定要丢弃吗？')) return;
+    I.client.from('market_items').delete().eq('id', id).then(function(r){ if (r.error) return I.toast('丢弃失败：' + r.error.message, 'error'); I.toast('已丢弃', 'success'); loadInventory(); });
   };
 })();
 </script>

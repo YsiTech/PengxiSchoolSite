@@ -21,34 +21,17 @@
   .emblem-overlay i { font-size: 20px; color: var(--gold); }
   .emblem-overlay span { font-size: 11px; letter-spacing: 1px; }
 
-  .bc-holder {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 4px !important;
-    text-align: left !important;
-  }
-
+  .bc-holder { display: flex !important; flex-direction: column !important; gap: 4px !important; text-align: left !important; }
   .res-name-row { font-size: 13px !important; margin-bottom: 8px !important; }
   .res-bar { height: 6px !important; border-radius: 99px !important; background: rgba(255,255,255,0.08) !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5) !important; }
   .res-fill { border-radius: 99px !important; position: relative !important; overflow: hidden !important; }
-  .res-fill::after {
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    animation: resShine 2s infinite;
-  }
+  .res-fill::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: resShine 2s infinite; }
   @keyframes resShine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
   .res-total { font-size: 13px !important; font-weight: bold !important; color: var(--gold) !important; background: rgba(212,175,55,0.1) !important; padding: 4px 10px !important; border-radius: 8px !important; border: 1px solid rgba(212,175,55,0.2) !important; }
 
-  /* 🚨 资金明细专属样式 */
-  .funds-item {
-    display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 12px;
-    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px;
-    transition: 0.2s;
-  }
+  .funds-item { display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); margin-bottom: 10px; transition: 0.2s; }
   .funds-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
-  .funds-icon {
-    width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-size: 16px; flex-shrink: 0;
-  }
+  .funds-icon { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font-size: 16px; flex-shrink: 0; }
   .funds-icon.in { background: rgba(34,197,94,0.15); color: #22c55e; }
   .funds-icon.out { background: rgba(239,68,68,0.15); color: #ef4444; }
   .funds-info { flex: 1; min-width: 0; }
@@ -105,24 +88,17 @@
 (function () {
   var I = IECP;
   var profile = null;
-
   var fundsState = { page: 0, pageSize: 20, loading: false, done: false };
 
   function openFunds() {
-    var m = I.$('#fundsModal');
-    if (!m) return;
-    m.classList.add('open');
-    m.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    var m = I.$('#fundsModal'); if (!m) return;
+    m.classList.add('open'); m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
     if (fundsState.page === 0) loadFunds(true);
   }
 
   function closeFunds() {
-    var m = I.$('#fundsModal');
-    if (!m) return;
-    m.classList.remove('open');
-    m.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
+    var m = I.$('#fundsModal'); if (!m) return;
+    m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
   }
 
   function loadFunds(reset) {
@@ -130,8 +106,7 @@
     if (!reset && fundsState.done) return;
 
     if (reset) {
-      fundsState.page = 0;
-      fundsState.done = false;
+      fundsState.page = 0; fundsState.done = false;
       I.$('#fundsBody').innerHTML = '<div class="funds-loading"><div class="spinner"></div><span>正在调取国库账本…</span></div>';
       I.$('#fundsLoadMore').style.display = 'none';
     }
@@ -140,69 +115,55 @@
     var from = fundsState.page * fundsState.pageSize;
     var to = from + fundsState.pageSize - 1;
 
-    I.client.from('balance_logs')
-      .select('*')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .range(from, to)
-      .then(function (r) {
-        fundsState.loading = false;
-        var body = I.$('#fundsBody');
+    I.client.from('balance_logs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false }).range(from, to).then(function (r) {
+      fundsState.loading = false;
+      var body = I.$('#fundsBody');
 
-        if (r.error) {
-          if (reset) body.innerHTML = '<div class="funds-empty" style="color:#ef4444; text-align:center; padding:20px;"><i class="fa-solid fa-triangle-exclamation"></i> 加载失败：' + I.escapeHtml(r.error.message) + '</div>';
-          return;
-        }
+      if (r.error) {
+        if (reset) body.innerHTML = '<div class="funds-empty" style="color:#ef4444; text-align:center; padding:20px;"><i class="fa-solid fa-triangle-exclamation"></i> 加载失败：' + I.escapeHtml(r.error.message) + '</div>';
+        return;
+      }
 
-        var rows = r.data || [];
-        if (rows.length < fundsState.pageSize) fundsState.done = true;
-        fundsState.page++;
+      var rows = r.data || [];
+      if (rows.length < fundsState.pageSize) fundsState.done = true;
+      fundsState.page++;
 
-        if (reset) body.innerHTML = '';
+      if (reset) body.innerHTML = '';
+      if (reset && rows.length === 0) {
+        body.innerHTML = '<div class="funds-empty" style="text-align:center; color:var(--muted); padding:30px;"><i class="fa-solid fa-receipt" style="font-size:32px; margin-bottom:10px; opacity:0.5;"></i><br>暂无资金流水记录</div>';
+        return;
+      }
 
-        if (reset && rows.length === 0) {
-          body.innerHTML = '<div class="funds-empty" style="text-align:center; color:var(--muted); padding:30px;"><i class="fa-solid fa-receipt" style="font-size:32px; margin-bottom:10px; opacity:0.5;"></i><br>暂无资金流水记录</div>';
-          return;
-        }
+      var html = '';
+      rows.forEach(function (log) {
+        var amt = Number(log.delta !== undefined ? log.delta : (log.amount || 0));
+        var isIncome = amt > 0; 
+        var cls = isIncome ? 'in' : 'out';
+        var sign = isIncome ? '+' : '−';
+        var note = log.note ? I.escapeHtml(log.note) : (isIncome ? '资金收入' : '资金支出');
+        
+        var icon = 'fa-circle-info';
+        if (note.includes('汇款')) icon = 'fa-money-bill-transfer';
+        else if (note.includes('购买') || note.includes('交易') || note.includes('售出')) icon = 'fa-cart-shopping';
+        else if (note.includes('战争') || note.includes('掠夺') || note.includes('赔偿') || note.includes('轰炸')) icon = 'fa-shield-halved';
+        else if (note.includes('研发')) icon = 'fa-flask';
+        else if (note.includes('领土')) icon = 'fa-earth-americas';
+        else if (note.includes('官方') || note.includes('空投')) icon = 'fa-gift';
 
-        var html = '';
-        rows.forEach(function (log) {
-          // 🚨 终极兼容：读取 delta，如果没有就读 amount，彻底解决 -0 的问题
-          var amt = Number(log.delta !== undefined ? log.delta : (log.amount || 0));
-          var isIncome = amt > 0; // 直接用金额正负判断，更准确
-          var cls = isIncome ? 'in' : 'out';
-          var sign = isIncome ? '+' : '−';
-          
-          var note = log.note ? I.escapeHtml(log.note) : (isIncome ? '资金收入' : '资金支出');
-          
-          // 🚨 智能识别图标
-          var icon = 'fa-circle-info';
-          if (note.includes('汇款')) icon = 'fa-money-bill-transfer';
-          else if (note.includes('购买') || note.includes('交易') || note.includes('售出')) icon = 'fa-cart-shopping';
-          else if (note.includes('战争') || note.includes('掠夺') || note.includes('赔偿') || note.includes('轰炸')) icon = 'fa-shield-halved';
-          else if (note.includes('研发')) icon = 'fa-flask';
-          else if (note.includes('领土')) icon = 'fa-earth-americas';
-          else if (note.includes('官方') || note.includes('空投')) icon = 'fa-gift';
-
-          html += '<div class="funds-item">' +
-            '<div class="funds-icon ' + cls + '"><i class="fa-solid ' + icon + '"></i></div>' +
-            '<div class="funds-info">' +
-              '<div class="funds-title">' + note + '</div>' +
-              '<div class="funds-meta"><i class="fa-regular fa-clock"></i> ' + I.fmtDate(log.created_at) + '</div>' +
-            '</div>' +
-            '<div class="funds-amt ' + cls + '">' + sign + I.fmtNumber(Math.abs(amt)) + ' ₽' +
-              '<span class="funds-after">余额 ' + I.fmtNumber(log.balance_after || 0) + ' ₽</span>' +
-            '</div>' +
-          '</div>';
-        });
-        body.insertAdjacentHTML('beforeend', html);
-
-        I.$('#fundsLoadMore').style.display = fundsState.done ? 'none' : 'inline-flex';
-      })
-      .catch(function (err) {
-        fundsState.loading = false;
-        if (reset) I.$('#fundsBody').innerHTML = '<div class="funds-empty" style="color:#ef4444; text-align:center; padding:20px;">网络异常：' + I.escapeHtml(err.message || '请求失败') + '</div>';
+        html += '<div class="funds-item">' +
+          '<div class="funds-icon ' + cls + '"><i class="fa-solid ' + icon + '"></i></div>' +
+          '<div class="funds-info">' +
+            '<div class="funds-title">' + note + '</div>' +
+            '<div class="funds-meta"><i class="fa-regular fa-clock"></i> ' + I.fmtDate(log.created_at) + '</div>' +
+          '</div>' +
+          '<div class="funds-amt ' + cls + '">' + sign + I.fmtNumber(Math.abs(amt)) + ' ₽' +
+            '<span class="funds-after">余额 ' + I.fmtNumber(log.balance_after || 0) + ' ₽</span>' +
+          '</div>' +
+        '</div>';
       });
+      body.insertAdjacentHTML('beforeend', html);
+      I.$('#fundsLoadMore').style.display = fundsState.done ? 'none' : 'inline-flex';
+    });
   }
 
   I.requireAuth().then(function (ok) {
@@ -211,39 +172,21 @@
     
     I.getProfile(true).then(function (p) {
       if (!p) throw new Error('未找到国家档案。');
-      profile = p;
-      render();
-      loadResources();
+      profile = p; render(); loadResources();
     }).catch(function (err) {
-      console.error('[IECP] 加载失败:', err);
-      I.$('#profileWrap').innerHTML = `
-        <div class="empty-state glass" style="margin:40px auto;max-width:600px">
-          <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i>
-          <p style="font-size:18px;font-weight:bold;color:var(--ink)">无法读取国家数据</p>
-          <p style="color:var(--red);margin:10px 0">${err.message || '网络请求超时'}</p>
-          <div style="margin-top:20px">
-            <button class="btn btn-ghost" onclick="location.reload()">刷新重试</button>
-            <button class="btn btn-ghost" onclick="IECP.logout()">退出登录</button>
-          </div>
-        </div>
-      `;
+      I.$('#profileWrap').innerHTML = `<div class="empty-state glass" style="margin:40px auto;max-width:600px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i><p style="font-size:18px;font-weight:bold;color:var(--ink)">无法读取国家数据</p><p style="color:var(--red);margin:10px 0">${err.message || '网络请求超时'}</p><div style="margin-top:20px"><button class="btn btn-ghost" onclick="location.reload()">刷新重试</button><button class="btn btn-ghost" onclick="IECP.logout()">退出登录</button></div></div>`;
     });
   });
 
   function render() {
     var wrap = I.$('#profileWrap');
-
     wrap.innerHTML = `
       <div class="profile-grid">
         <aside class="profile-side">
           <div class="profile-card glass">
             <div class="profile-avatar-wrap">
-              <div class="profile-avatar" id="avatarDisplay">
-                <img src="${I.escapeHtml(profile.flag_url || I.avatarFallback(profile.username))}" alt="">
-              </div>
-              <label class="profile-avatar-edit" for="pFlag" title="更换国旗">
-                <i class="fa-solid fa-camera"></i>
-              </label>
+              <div class="profile-avatar" id="avatarDisplay"><img src="${I.escapeHtml(profile.flag_url || I.avatarFallback(profile.username))}" alt=""></div>
+              <label class="profile-avatar-edit" for="pFlag" title="更换国旗"><i class="fa-solid fa-camera"></i></label>
               <input id="pFlag" type="file" accept="image/*" style="display:none">
             </div>
             <h2 class="profile-name">${I.escapeHtml(profile.username)}</h2>
@@ -258,14 +201,8 @@
 
           <div class="balance-card" id="balanceCard" title="点击查看资金明细">
             <div class="bc-hint"><i class="fa-solid fa-list-ul"></i> 明细</div>
-            <div class="bc-top">
-              <div class="bc-emblem">₽</div>
-              <div class="bc-title-group"><div class="bc-title">国库储备</div><div class="bc-subtitle">National Treasury</div></div>
-            </div>
-            <div class="bc-amount-group">
-              <div class="bc-amount">${I.fmtNumber(profile.balance)}</div>
-              <div class="bc-amount-unit">亚斯卢布 · АСР ₽</div>
-            </div>
+            <div class="bc-top"><div class="bc-emblem">₽</div><div class="bc-title-group"><div class="bc-title">国库储备</div><div class="bc-subtitle">National Treasury</div></div></div>
+            <div class="bc-amount-group"><div class="bc-amount">${I.fmtNumber(profile.balance)}</div><div class="bc-amount-unit">亚斯卢布 · АСР ₽</div></div>
             <div class="bc-bottom">
               <div class="bc-holder"><span class="bc-holder-label">国家元首 / 户名</span><span class="bc-holder-value">${I.escapeHtml(profile.username)}</span></div>
               <img src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" style="width:38px;height:38px;object-fit:contain;opacity:0.8;border-radius:50%;">
@@ -274,58 +211,30 @@
           </div>
 
           <div class="inventory-card" onclick="location.href='transfer.html'" style="background: linear-gradient(150deg, #2d1810 0%, #1a2b4c 100%); border-color: rgba(212,175,55,0.3);">
-            <div class="ic-top">
-              <div class="ic-emblem" style="background: linear-gradient(135deg, #d4af37, #9d0c24); color: #fff;"><i class="fa-solid fa-money-bill-transfer"></i></div>
-              <div class="ic-title-group"><div class="ic-title" style="color:var(--gold-2)">跨国汇款</div><div class="ic-subtitle">Global Transfer</div></div>
-            </div>
+            <div class="ic-top"><div class="ic-emblem" style="background: linear-gradient(135deg, #d4af37, #9d0c24); color: #fff;"><i class="fa-solid fa-money-bill-transfer"></i></div><div class="ic-title-group"><div class="ic-title" style="color:var(--gold-2)">跨国汇款</div><div class="ic-subtitle">Global Transfer</div></div></div>
             <div class="ic-content"><span>通过银行卡号向其他国家转账</span><i class="fa-solid fa-arrow-right ic-arrow" style="color:var(--gold-2)"></i></div>
           </div>
 
           <div class="resource-card" id="resourceCard">
-            <div class="res-header">
-              <div class="res-title"><i class="fa-solid fa-cubes-stacked" style="color:var(--gold);"></i> 战略资源</div>
-              <div class="res-total" id="resTotalEval">综合评估：-</div>
-            </div>
+            <div class="res-header"><div class="res-title"><i class="fa-solid fa-cubes-stacked" style="color:var(--gold);"></i> 战略资源</div><div class="res-total" id="resTotalEval">综合评估：-</div></div>
             <div class="res-grid" id="resGrid"><div style="text-align:center; padding:20px; color:var(--muted); font-size:12px;">正在探测资源...</div></div>
           </div>
 
           <div class="inventory-card" onclick="location.href='inventory.html'">
-            <div class="ic-top">
-              <div class="ic-emblem"><i class="fa-solid fa-boxes-stacked"></i></div>
-              <div class="ic-title-group"><div class="ic-title">国家仓库</div><div class="ic-subtitle">National Inventory</div></div>
-            </div>
+            <div class="ic-top"><div class="ic-emblem"><i class="fa-solid fa-boxes-stacked"></i></div><div class="ic-title-group"><div class="ic-title">国家仓库</div><div class="ic-subtitle">National Inventory</div></div></div>
             <div class="ic-content"><span>查看你拥有的国际物资</span><i class="fa-solid fa-arrow-right ic-arrow"></i></div>
           </div>
         </aside>
 
         <section class="profile-content">
           <div class="card glass">
-            <div class="card-head">
-              <h3><i class="fa-solid fa-pen-to-square" style="color:var(--gold)"></i> 编辑国家档案</h3>
-            </div>
+            <div class="card-head"><h3><i class="fa-solid fa-pen-to-square" style="color:var(--gold)"></i> 编辑国家档案</h3></div>
             <div class="form-grid two">
-              <div class="field full">
-                <label>国家名</label>
-                <input id="pUsername" type="text" value="${I.escapeHtml(profile.username)}" maxlength="30">
-              </div>
-              <div class="field">
-                <label>社会性质</label>
-                <input id="pSocial" type="text" value="${I.escapeHtml(profile.social_system)}" maxlength="40">
-              </div>
-              <div class="field">
-                <label>首都</label>
-                <input id="pCapital" type="text" value="${I.escapeHtml(profile.capital)}" maxlength="40">
-              </div>
-              <div class="field full">
-                <label>官方语言</label>
-                <input id="pLanguage" type="text" value="${I.escapeHtml(profile.official_language)}" maxlength="80">
-              </div>
-              
-              <div class="field full">
-                <label>国家介绍</label>
-                <textarea id="pDescription" placeholder="向世界介绍你的国家历史、文化或现状..." style="min-height: 120px; line-height: 1.6; resize: vertical;">${I.escapeHtml(profile.description || '')}</textarea>
-              </div>
-
+              <div class="field full"><label>国家名</label><input id="pUsername" type="text" value="${I.escapeHtml(profile.username)}" maxlength="30"></div>
+              <div class="field"><label>社会性质</label><input id="pSocial" type="text" value="${I.escapeHtml(profile.social_system)}" maxlength="40"></div>
+              <div class="field"><label>首都</label><input id="pCapital" type="text" value="${I.escapeHtml(profile.capital)}" maxlength="40"></div>
+              <div class="field full"><label>官方语言</label><input id="pLanguage" type="text" value="${I.escapeHtml(profile.official_language)}" maxlength="80"></div>
+              <div class="field full"><label>国家介绍</label><textarea id="pDescription" placeholder="向世界介绍你的国家历史、文化或现状..." style="min-height: 120px; line-height: 1.6; resize: vertical;">${I.escapeHtml(profile.description || '')}</textarea></div>
               <div class="field full">
                 <label>更换国徽</label>
                 <div class="emblem-upload-wrap" id="emblemBtn" title="点击上传新国徽">
@@ -335,27 +244,15 @@
                 <input id="pEmblem" type="file" accept="image/*" style="display:none">
               </div>
             </div>
-            
-            <div class="profile-actions">
-              <button class="btn btn-gold" id="saveProfileBtn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</button>
-            </div>
+            <div class="profile-actions"><button class="btn btn-gold" id="saveProfileBtn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</button></div>
           </div>
 
           <div class="card glass">
             <div class="card-head"><h3><i class="fa-solid fa-shield-halved" style="color:var(--gold)"></i> 账号安全</h3></div>
             <div class="form-grid">
-              <div class="field full">
-                <label>登录邮箱</label>
-                <input type="text" id="pEmail" disabled style="background:rgba(255,255,255,0.02);color:var(--muted)">
-              </div>
-              <div class="field">
-                <label>新密码</label>
-                <input id="pPassword" type="password" placeholder="留空则不修改">
-              </div>
-              <div class="field">
-                <label>确认新密码</label>
-                <input id="pPassword2" type="password" placeholder="再次输入新密码">
-              </div>
+              <div class="field full"><label>登录邮箱</label><input type="text" id="pEmail" disabled style="background:rgba(255,255,255,0.02);color:var(--muted)"></div>
+              <div class="field"><label>新密码</label><input id="pPassword" type="password" placeholder="留空则不修改"></div>
+              <div class="field"><label>确认新密码</label><input id="pPassword2" type="password" placeholder="再次输入新密码"></div>
             </div>
             <div class="profile-actions"><button class="btn btn-cyan" id="savePwdBtn"><i class="fa-solid fa-key"></i> 修改密码</button></div>
           </div>
@@ -370,41 +267,21 @@
     `;
 
     I.client.auth.getUser().then(function (res) {
-      var u = res.data && res.data.user;
-      if (u) I.$('#pEmail').value = u.email || '';
+      var u = res.data && res.data.user; if (u) I.$('#pEmail').value = u.email || '';
     });
 
     I.$('#pFlag').addEventListener('change', function() {
-      var file = this.files[0];
-      if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) { I.$('#avatarDisplay').innerHTML = `<img src="${e.target.result}" alt="">`; };
-        reader.readAsDataURL(file);
-      }
+      var file = this.files[0]; if (file) { var reader = new FileReader(); reader.onload = function(e) { I.$('#avatarDisplay').innerHTML = `<img src="${e.target.result}" alt="">`; }; reader.readAsDataURL(file); }
     });
-
     I.$('#emblemBtn').addEventListener('click', function() { I.$('#pEmblem').click(); });
     I.$('#pEmblem').addEventListener('change', function() {
-      var file = this.files[0];
-      if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) { I.$('#emblemPreview').src = e.target.result; I.$('#emblemPreview').style.opacity = '1'; };
-        reader.readAsDataURL(file);
-      }
+      var file = this.files[0]; if (file) { var reader = new FileReader(); reader.onload = function(e) { I.$('#emblemPreview').src = e.target.result; I.$('#emblemPreview').style.opacity = '1'; }; reader.readAsDataURL(file); }
     });
 
     I.$('#saveProfileBtn').addEventListener('click', function () {
       var btn = this; btn.disabled = true;
-      var data = {
-        username: I.$('#pUsername').value.trim(),
-        social_system: I.$('#pSocial').value.trim(),
-        capital: I.$('#pCapital').value.trim(),
-        official_language: I.$('#pLanguage').value.trim(),
-        description: I.$('#pDescription').value.trim()
-      };
-
-      var flagFile = I.$('#pFlag').files[0];
-      var emblemFile = I.$('#pEmblem').files[0];
+      var data = { username: I.$('#pUsername').value.trim(), social_system: I.$('#pSocial').value.trim(), capital: I.$('#pCapital').value.trim(), official_language: I.$('#pLanguage').value.trim(), description: I.$('#pDescription').value.trim() };
+      var flagFile = I.$('#pFlag').files[0]; var emblemFile = I.$('#pEmblem').files[0];
 
       function up(bucket, file, field) {
         if (!file) return Promise.resolve();
@@ -417,57 +294,30 @@
         });
       }
 
-      up('flags', flagFile, 'flag')
-        .then(function () { return up('emblems', emblemFile, 'emblem'); })
-        .then(function () { return I.client.from('profiles').update(data).eq('id', profile.id); })
-        .then(function (r) {
-          btn.disabled = false;
-          if (r && r.error) { I.toast(r.error.message, 'error'); return; }
-          I.toast('档案已更新', 'success');
-          I.clearProfileCache();
-          setTimeout(function() { location.reload(); }, 800);
-        })
-        .catch(function(err){ btn.disabled = false; I.toast('保存失败: ' + err.message, 'error'); });
+      up('flags', flagFile, 'flag').then(function () { return up('emblems', emblemFile, 'emblem'); }).then(function () { return I.client.from('profiles').update(data).eq('id', profile.id); }).then(function (r) {
+        btn.disabled = false; if (r && r.error) { I.toast(r.error.message, 'error'); return; }
+        I.toast('档案已更新', 'success'); I.clearProfileCache(); setTimeout(function() { location.reload(); }, 800);
+      }).catch(function(err){ btn.disabled = false; I.toast('保存失败: ' + err.message, 'error'); });
     });
 
     I.$('#savePwdBtn').addEventListener('click', function () {
       var p1 = I.$('#pPassword').value; var p2 = I.$('#pPassword2').value;
-      if (!p1) { I.toast('请输入新密码', 'error'); return; }
-      if (p1.length < 6) { I.toast('密码至少 6 位', 'error'); return; }
-      if (p1 !== p2) { I.toast('两次输入不一致', 'error'); return; }
+      if (!p1) { I.toast('请输入新密码', 'error'); return; } if (p1.length < 6) { I.toast('密码至少 6 位', 'error'); return; } if (p1 !== p2) { I.toast('两次输入不一致', 'error'); return; }
       var btn = this; btn.disabled = true;
-      I.client.auth.updateUser({ password: p1 }).then(function (r) {
-        btn.disabled = false;
-        if (r.error) { I.toast(r.error.message, 'error'); return; }
-        I.toast('密码修改成功', 'success');
-        I.$('#pPassword').value = ''; I.$('#pPassword2').value = '';
-      });
+      I.client.auth.updateUser({ password: p1 }).then(function (r) { btn.disabled = false; if (r.error) { I.toast(r.error.message, 'error'); return; } I.toast('密码修改成功', 'success'); I.$('#pPassword').value = ''; I.$('#pPassword2').value = ''; });
     });
 
     I.$('#logoutBtn').addEventListener('click', function () { if (confirm('确定退出登录吗？')) I.logout(); });
-
-    I.$('#balanceCard').addEventListener('click', openFunds);
-    I.$('#fundsClose').addEventListener('click', closeFunds);
-    I.$('.funds-modal-mask').addEventListener('click', closeFunds);
+    I.$('#balanceCard').addEventListener('click', openFunds); I.$('#fundsClose').addEventListener('click', closeFunds); I.$('.funds-modal-mask').addEventListener('click', closeFunds);
     I.$('#fundsLoadMore').addEventListener('click', function () { loadFunds(false); });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && I.$('#fundsModal').classList.contains('open')) closeFunds();
-    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && I.$('#fundsModal').classList.contains('open')) closeFunds(); });
   }
 
   function loadResources() {
     I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle().then(function(res) {
-      var grid = I.$('#resGrid');
-      if (res.error || !res.data) { grid.innerHTML = `<div style="color:var(--red); font-size:12px;">资源勘探失败，请刷新页面。</div>`; return; }
+      var grid = I.$('#resGrid'); if (res.error || !res.data) { grid.innerHTML = `<div style="color:var(--red); font-size:12px;">资源勘探失败，请刷新页面。</div>`; return; }
       var r = res.data;
-
-      function fmtRes(val) {
-        if (val === null || val === undefined || isNaN(val)) return '0';
-        var num = Number(val);
-        if (num >= 100000000) return (num / 100000000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '亿';
-        if (num >= 10000) return (num / 10000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '万';
-        return Number(num.toFixed(2)).toLocaleString('en-US');
-      }
+      function fmtRes(val) { if (val === null || val === undefined || isNaN(val)) return '0'; var num = Number(val); if (num >= 100000000) return (num / 100000000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '亿'; if (num >= 10000) return (num / 10000).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') + '万'; return Number(num.toFixed(2)).toLocaleString('en-US'); }
 
       var resData = [
         { name: '原油储备', val: r.oil, unit: '吨', max: 2000000, icon: 'fa-oil-well', cls: 'oil' },
@@ -477,33 +327,17 @@
         { name: '粮食储备', val: r.food, unit: '吨', max: 2000000, icon: 'fa-wheat-awn', cls: 'food' }
       ];
 
-      var totalPct = 0;
-      var html = '';
-
+      var totalPct = 0; var html = '';
       resData.forEach(function(item) {
-        var rawPct = (item.val / item.max) * 100;
-        var pct = Math.min(100, rawPct);
-        totalPct += pct;
-
-        var valFormatted = fmtRes(item.val);
-        html += `<div class="res-item"><div class="res-icon ${item.cls}"><i class="fa-solid ${item.icon}"></i></div><div class="res-info"><div class="res-name-row"><span>${item.name}</span><span>${valFormatted} ${item.unit}</span></div><div class="res-bar"><div class="res-fill ${item.cls}" style="width: ${pct}%;"></div></div></div></div>`;
+        var pct = Math.min(100, (item.val / item.max) * 100); totalPct += pct;
+        html += `<div class="res-item"><div class="res-icon ${item.cls}"><i class="fa-solid ${item.icon}"></i></div><div class="res-info"><div class="res-name-row"><span>${item.name}</span><span>${fmtRes(item.val)} ${item.unit}</span></div><div class="res-bar"><div class="res-fill ${item.cls}" style="width: ${pct}%;"></div></div></div></div>`;
       });
       grid.innerHTML = html;
 
-      var grades = [
-        "枯竭", "贫瘠", "匮乏", "短缺", "基本自足", 
-        "略有结余", "充实", "丰厚", "殷实", "富饶", 
-        "极盛", "饱和", "渊渟岳峙", "浩瀚如海", "绝对霸权"
-      ];
-      
-      var avgPct = totalPct / resData.length;
-      var gradeIndex = Math.floor(avgPct / (100 / 15));
-      if (gradeIndex >= 15) gradeIndex = 14;
-      if (gradeIndex < 0) gradeIndex = 0;
-      
-      var evalGrade = grades[gradeIndex];
-      
-      I.$('#resTotalEval').innerText = '综合评估：' + evalGrade;
+      var grades = ["枯竭", "贫瘠", "匮乏", "短缺", "基本自足", "略有结余", "充实", "丰厚", "殷实", "富饶", "极盛", "饱和", "渊渟岳峙", "浩瀚如海", "绝对霸权"];
+      var avgPct = totalPct / resData.length; var gradeIndex = Math.floor(avgPct / (100 / 15));
+      if (gradeIndex >= 15) gradeIndex = 14; if (gradeIndex < 0) gradeIndex = 0;
+      I.$('#resTotalEval').innerText = '综合评估：' + grades[gradeIndex];
     });
   }
 })();

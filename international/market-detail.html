@@ -11,9 +11,16 @@
   .product-img-box { flex: 1; min-width: 300px; border-radius: 16px; background: #0f172a; display: flex; align-items: center; justify-content: center; min-height: 300px; border: 1px solid rgba(255,255,255,0.1); }
   .product-img-box img { width: 100%; max-height: 500px; object-fit: contain; }
   .product-info { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; gap: 20px; }
-  .product-title { font-size: 24px; font-weight: 800; color: #fff; }
+  .product-title { font-size: 24px; font-weight: 800; color: #fff; line-height: 1.4; word-break: break-word; }
+  .official-badge { display: inline-block; white-space: nowrap; font-size: 12px; background: var(--gold); color: #000; padding: 3px 8px; border-radius: 4px; vertical-align: middle; margin-left: 8px; font-weight: bold; }
   .product-price { font-size: 36px; color: var(--gold-2); font-family: var(--mono); }
   .btn-buy { width: 100%; height: 50px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), #b8860b); color: #000; font-size: 16px; font-weight: bold; border: none; cursor: pointer; }
+  .btn-remove { width: 100%; height: 50px; border-radius: 12px; background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .btn-remove:hover { background: #ef4444; color: #fff; }
+  .qty-input-group { display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; overflow: hidden; height: 50px; margin-bottom: 10px; }
+  .qty-btn { width: 50px; height: 100%; background: transparent; border: none; color: var(--ink); font-size: 18px; cursor: pointer; transition: 0.2s; }
+  .qty-btn:hover { background: rgba(255,255,255,0.1); }
+  .qty-input-group input { flex: 1; width: 100%; min-width: 0; height: 100%; background: transparent; border: none; text-align: center; color: #fff; font-size: 18px; font-weight: bold; outline: none; }
   @media (max-width: 768px) { .detail-container { flex-direction: column; } .product-img-box { min-height: 200px; } }
 </style>
 </head>
@@ -41,102 +48,173 @@
       if (!res || res.error || !res.data) { I.$('#detailWrap').innerHTML = `<div style="text-align:center; padding:50px;">商品不存在</div>`; return; }
       currentItem = res.data;
       
-      return I.client.from('profiles').select('id, username, flag_url').eq('id', currentItem.seller_id).maybeSingle();
+      if (!currentItem.is_admin_post) {
+        return I.client.from('profiles').select('id, username, flag_url').eq('id', currentItem.seller_id).maybeSingle();
+      }
     }).then(function(sellerRes) {
-      sellerProfile = sellerRes.data || {};
+      sellerProfile = (sellerRes && sellerRes.data) ? sellerRes.data : {};
       renderItem(currentItem);
     });
   });
 
   function renderItem(m) {
-    var seller = sellerProfile;
-    var isMine = m.seller_id === profile.id; var isSold = m.status === 'sold';
-    var isOfficial = m.is_admin_post === true; var isUnit = m.item_type === 'unit';
+    var isOfficial = m.is_admin_post === true;
+    var isSold = m.status === 'sold';
+    var isUnit = m.item_type === 'unit';
+    var isMine = m.seller_id === profile.id && !isOfficial;
     
+    var sellerName = isOfficial ? 'IECP 官方' : I.escapeHtml(sellerProfile.username || '未知');
+    var sellerAvatar = isOfficial ? 'photo/un.png' : I.escapeHtml(sellerProfile.flag_url || I.avatarFallback(sellerProfile.username));
+
+    var titleHtml = I.escapeHtml(m.title) + (isOfficial ? '<span class="official-badge">官方</span>' : '');
+
+    // 🚨 解析打包倍率
+    var unitAmount = 1;
+    var unitText = '份';
+    if (m.item_data && m.item_data.unit_amount) {
+      unitAmount = m.item_data.unit_amount;
+      unitText = unitAmount === 1000 ? '千份' : (unitAmount === 10000 ? '万份' : '份');
+    } else if (isUnit) {
+      unitText = '个';
+    }
+
     var actionHtml = isSold ? `<button class="btn-buy" disabled>已售罄</button>` : 
-      (isMine ? `<button class="btn-buy" disabled>这是你的商品</button>` : 
-      `<button class="btn-buy" onclick="buyItem('${m.id}', ${m.price}, ${isUnit}, '${I.escapeHtml(m.title)}')"><i class="fa-solid fa-cart-shopping"></i> 立即购买</button>`);
+      (isMine ? `<button class="btn-remove" onclick="removeItem('${m.id}')"><i class="fa-solid fa-arrow-down"></i> 下架商品</button>` : 
+      `<div class="qty-input-group">
+         <button class="qty-btn" onclick="changeQty(-1)">−</button>
+         <input type="number" id="buyQty" value="1" min="1" max="${m.quantity}" onchange="updateTotalPrice(${m.price})">
+         <button class="qty-btn" onclick="changeQty(1)">+</button>
+       </div>
+       <button class="btn-buy" onclick="buyItem('${m.id}', ${m.price}, ${isUnit}, '${I.escapeHtml(m.title)}')"><i class="fa-solid fa-cart-shopping"></i> 立即购买 (<span id="totalPriceDisplay">${I.fmtNumber(m.price)}</span> ₽)</button>`);
+
+    var extraInfo = '';
+    if (unitAmount > 1 && !isUnit) {
+       extraInfo = `<div style="background:rgba(212,175,55,0.1); border:1px solid rgba(212,175,55,0.3); padding:10px; border-radius:8px; font-size:13px; color:var(--gold-2); margin-bottom:10px;"><i class="fa-solid fa-boxes-packing"></i> 打包出售：购买 1 份包含 ${I.fmtNumber(unitAmount)} 基础资源。</div>`;
+    }
 
     I.$('#detailWrap').innerHTML = `
       <div class="detail-container">
         <div class="product-img-box">${m.image_url ? `<img src="${m.image_url}">` : `<i class="fa-solid fa-box-open" style="font-size:80px; color:rgba(255,255,255,0.1)"></i>`}</div>
         <div class="product-info">
           <div><a href="market.html" style="color:var(--muted);"><i class="fa-solid fa-arrow-left"></i> 返回交易行</a></div>
-          <h1 class="product-title">${I.escapeHtml(m.title)} ${isOfficial ? '【官方】' : ''}</h1>
+          <h1 class="product-title">${titleHtml}</h1>
+          
+          ${extraInfo}
+
           <div style="background:rgba(212,175,55,0.1); padding:15px; border-radius:12px; display:flex; justify-content:space-between;">
-            <div class="product-price">${I.fmtNumber(m.price)} ₽</div><div style="color:var(--muted);">库存: ${m.quantity}</div>
+            <div class="product-price">${I.fmtNumber(m.price)} ₽ <span style="font-size:14px;color:var(--muted);">/ ${unitText}</span></div>
+            <div style="color:var(--muted);">库存: ${m.quantity} ${unitText}</div>
           </div>
+          
           <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px;">
-            <div style="font-size:12px; color:var(--muted);">卖家</div>
-            <div style="font-weight:bold; color:var(--cyan);">${isOfficial ? 'IECP 官方' : I.escapeHtml(seller.username || '未知')}</div>
+            <div style="font-size:12px; color:var(--muted); margin-bottom:6px;">卖家</div>
+            <div style="font-weight:bold; color:var(--cyan); display:flex; align-items:center; gap:8px;">
+              <img src="${sellerAvatar}" style="width:24px; height:16px; border-radius:2px; object-fit:cover;">
+              ${sellerName}
+            </div>
           </div>
+          
           <div style="background:rgba(0,0,0,0.2); padding:20px; border-radius:12px; font-size:14px; white-space:pre-wrap;">${I.escapeHtml(m.description || '暂无描述')}</div>
+          
           ${isUnit ? `<div style="color:var(--gold); font-size:13px;"><i class="fa-solid fa-bolt"></i> 提示：购买兵种后，将直接装备至你的军队库中，无需制造时间！</div>` : ''}
-          ${actionHtml}
+          ${isOfficial && isMine ? `<div style="color:var(--red); font-size:13px;"><i class="fa-solid fa-circle-info"></i> 提示：这是您上架的官方商品。购买后资金将直接销毁。</div>` : ''}
+          
+          <div class="action-area">${actionHtml}</div>
         </div>
       </div>`;
   }
 
+  window.changeQty = function(delta) {
+    var input = I.$('#buyQty'); 
+    if(!input) return;
+    var val = parseInt(input.value) || 1; var max = parseInt(input.max) || 999;
+    val += delta; if (val < 1) val = 1; if (val > max) val = max; input.value = val;
+    updateTotalPrice(currentItem.price);
+  };
+
+  window.updateTotalPrice = function(price) {
+    var qty = parseInt(I.$('#buyQty').value) || 1;
+    var display = I.$('#totalPriceDisplay');
+    if (display) display.innerText = I.fmtNumber(price * qty);
+  };
+
   window.buyItem = function(itemId, price, isUnit, title) {
-    if (profile.balance < price) return I.toast('国库余额不足', 'error');
-    if (!confirm(`确认花费 ${I.fmtNumber(price)} ₽ 购买？`)) return;
+    var qty = parseInt(I.$('#buyQty').value, 10) || 1;
+    var totalCost = price * qty;
+
+    if (profile.balance < totalCost) return I.toast('国库余额不足', 'error');
+    if (!confirm(`确认花费 ${I.fmtNumber(totalCost)} ₽ 购买 ${qty} 份？`)) return;
     I.toast('正在处理...', 'success');
 
-    var sellerName = currentItem.is_admin_post ? 'IECP 官方' : (sellerProfile.username || '未知');
+    var isOfficial = currentItem.is_admin_post;
+    var sellerName = isOfficial ? 'IECP 官方' : (sellerProfile.username || '未知');
     var buyerName = profile.username;
 
+    var onSuccess = function(msg) {
+      if (!isOfficial) {
+        I.client.rpc('send_notification', { p_user_id: currentItem.seller_id, p_type: 'trade', p_title: '资产售出', p_content: `你的商品【${title}】被【${buyerName}】买走 ${qty} 份，入账 ${I.fmtNumber(totalCost)} ₽。` });
+      }
+      I.client.rpc('send_notification', { p_user_id: profile.id, p_type: 'trade', p_title: '购买成功', p_content: `你花费 ${I.fmtNumber(totalCost)} ₽ 从【${sellerName}】处购入了 ${qty} 份【${title}】。` });
+      
+      I.toast(msg, 'success');
+      setTimeout(() => {
+        location.href = isUnit ? 'military.html' : 'inventory.html';
+      }, 1500);
+    };
+
     if (isUnit) {
-      // 🚨 兵种购买：调用 RPC
-      I.client.rpc('buy_custom_unit', { p_buyer_id: profile.id, p_market_item_id: itemId }).then(function(res){
+      I.client.rpc('buy_custom_unit', { p_buyer_id: profile.id, p_market_item_id: itemId, p_buy_amount: qty }).then(function(res){
         if(res.error) return I.toast('购买失败: ' + res.error.message, 'error');
         if(!res.data.ok) return I.toast(res.data.msg, 'error');
-        
-        // 发通知：卖家
-        if (!currentItem.is_admin_post) {
-          I.client.rpc('send_notification', { 
-            p_user_id: currentItem.seller_id, p_type: 'trade', p_title: '资产售出', 
-            p_content: `你的兵种【${title}】被【${buyerName}】买走，入账 ${I.fmtNumber(price)} ₽。` 
-          });
-        }
-        // 发通知：买家
-        I.client.rpc('send_notification', { 
-          p_user_id: profile.id, p_type: 'trade', p_title: '购买成功', 
-          p_content: `你花费 ${I.fmtNumber(price)} ₽ 从【${sellerName}】处购入了兵种【${title}】，已直接装备入库。` 
-        });
-
-        I.toast('购买成功，兵种已直接装备入库！', 'success');
-        setTimeout(() => location.href = 'military.html', 1500);
+        onSuccess('购买成功，兵种已直接装备入库！');
       });
     } else {
-      // 🚨 资源购买：普通扣款逻辑
-      I.client.rpc('add_balance', { uid: profile.id, amount: -price, note: '交易行购买 · ' + title }).then(function(r1){
-        if(r1.error) return I.toast('扣款失败', 'error');
-        
-        I.client.from('market_items').update({ status: 'sold', buyer_id: profile.id }).eq('id', itemId).then(function(r2){
-          if (r2.error) return I.toast('状态更新失败', 'error');
-          
-          // 卖家加钱
-          I.client.rpc('add_balance', { uid: currentItem.seller_id, amount: price, note: '售出 · ' + title }).then(function(r3){
-            if(r3.error) return I.toast('卖家入账失败', 'error');
-            
-            // 发通知：卖家
-            I.client.rpc('send_notification', { 
-              p_user_id: currentItem.seller_id, p_type: 'trade', p_title: '资产售出', 
-              p_content: `你的商品【${title}】被【${buyerName}】买走，入账 ${I.fmtNumber(price)} ₽。` 
-            });
-            
-            // 发通知：买家
-            I.client.rpc('send_notification', { 
-              p_user_id: profile.id, p_type: 'trade', p_title: '购买成功', 
-              p_content: `你花费 ${I.fmtNumber(price)} ₽ 从【${sellerName}】处购入了【${title}】。` 
-            });
-
-            I.toast('购买成功', 'success'); 
-            setTimeout(() => location.reload(), 1000);
-          });
-        });
+      I.client.rpc('buy_resource_item', { p_buyer_id: profile.id, p_market_item_id: itemId, p_buy_amount: qty }).then(function(res){
+        if(res.error) return I.toast('购买失败: ' + res.error.message, 'error');
+        if(!res.data.ok) return I.toast(res.data.msg, 'error');
+        onSuccess('购买成功，资源已存入仓库等待开箱！');
       });
     }
+  };
+
+  // 🚨 核心修复：下架退库逻辑 (移除前端的 -> 语法错误)
+  window.removeItem = async function (id) {
+    if (!confirm('确认下架该商品吗？物资将原路退回你的国库或军队。')) return;
+    
+    // 1. 查商品信息
+    var { data: item, error } = await I.client.from('market_items').select('*').eq('id', id).single();
+    if (error || !item) return I.toast('商品查询失败', 'error');
+
+    var itemData = item.item_data || {};
+    var unitAmount = itemData.unit_amount ? parseInt(itemData.unit_amount) : 1;
+    var returnQty = item.quantity * unitAmount; // 实际退回的物资数量
+
+    // 2. 退还资源或兵种
+    if (item.item_type === 'unit') {
+      // 退还兵种
+      var uid = itemData.unit_id;
+      if (uid) {
+        var { data: milRes } = await I.client.from('military').select('custom_troops').eq('country_id', profile.id).single();
+        var inv = milRes.custom_troops || {};
+        inv[uid] = (inv[uid] || 0) + item.quantity; // 兵种退份数
+        await I.client.from('military').update({ custom_troops: inv }).eq('country_id', profile.id);
+      }
+    } else {
+      // 退还资源
+      var resType = itemData.res_type || item.resource_type;
+      if (resType) {
+        var { data: resRes } = await I.client.from('country_resources').select(resType).eq('country_id', profile.id).single();
+        var currentBase = parseFloat(resRes[resType]) || 0;
+        var upObj = {}; upObj[resType] = currentBase + returnQty;
+        await I.client.from('country_resources').update(upObj).eq('country_id', profile.id);
+      }
+    }
+
+    // 3. 将商品状态改为已下架
+    await I.client.from('market_items').update({ status: 'removed' }).eq('id', id);
+    
+    I.toast('已下架并退回物资', 'success');
+    setTimeout(function () { location.href = 'market.html'; }, 1000);
   };
 })();
 </script>

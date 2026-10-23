@@ -12,6 +12,7 @@
   .custom-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 80px; padding: 16px; background: rgba(0,0,0,0.2); border: 1.5px dashed var(--border-2); border-radius: var(--r-sm); cursor: pointer; transition: 0.2s; }
   .custom-upload.has-file { border-style: solid; border-color: var(--cyan); background: rgba(79,195,247,0.05); }
   select { background-color: rgba(0, 0, 0, 0.3) !important; color: var(--ink) !important; border: 1px solid var(--border-2) !important; border-radius: var(--r-sm); outline: none; padding:12px; }
+  select option { background-color: #0f172a !important; color: #fff !important; }
 </style>
 </head>
 <body>
@@ -22,7 +23,7 @@
   <div class="iecp-page-head-inner">
     <div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>交易行</span></div>
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px">
-      <div><h1><i class="fa-solid fa-store"></i> 交易行</h1><p>发布资源或出售自制兵种</p></div>
+      <div><h1><i class="fa-solid fa-store"></i> 交易行</h1><p>发布资源或出售自制单位</p></div>
       <button class="btn btn-gold" id="openPublishBtn"><i class="fa-solid fa-plus"></i> 发布物品</button>
     </div>
   </div>
@@ -35,12 +36,12 @@
     <h3><i class="fa-solid fa-plus" style="color:var(--gold)"></i> 发布商品</h3>
     <div style="display:flex; gap:10px; margin:20px 0;">
       <button class="btn btn-gold" id="tabResource" onclick="switchType('resource')" style="flex:1; padding:10px;">战略资源</button>
-      <button class="btn btn-ghost" id="tabUnit" onclick="switchType('unit')" style="flex:1; padding:10px;">自定义兵种</button>
+      <button class="btn btn-ghost" id="tabUnit" onclick="switchType('unit')" style="flex:1; padding:10px;">自制单位</button>
     </div>
 
     <form id="itemForm">
       <div id="resourceFields" class="field-group" style="display:none;">
-        <div class="field">
+        <div class="field" style="margin-bottom:10px;">
           <label>选择资源种类 <span class="req">*</span></label>
           <select id="iResType">
             <option value="oil">原油储备</option>
@@ -50,22 +51,30 @@
             <option value="food">粮食储备</option>
           </select>
         </div>
+        <div class="field">
+          <label>交易单位 / 打包倍率 <span class="req">*</span></label>
+          <select id="iResUnit">
+            <option value="1">1 (基础单位)</option>
+            <option value="1000">千 (1,000)</option>
+            <option value="10000">万 (10,000)</option>
+          </select>
+        </div>
       </div>
 
       <div id="unitFields" class="field-group" style="display:none;">
         <div class="field">
-          <label>选择你要出售的自定义兵种 <span class="req">*</span></label>
+          <label>选择你要出售的自定义单位 <span class="req">*</span></label>
           <select id="iUnitId"></select>
         </div>
       </div>
 
       <div class="field-group two">
         <div class="field"><label>商品标题 <span class="req">*</span></label><input id="iTitle" type="text" placeholder="如：皇家卫队特惠" required></div>
-        <div class="field"><label>单价（亚斯卢布 ₽） <span class="req">*</span></label><input id="iPrice" type="number" placeholder="5000" min="1" required></div>
+        <div class="field"><label>单价（亚斯卢布 ₽ / 份） <span class="req">*</span></label><input id="iPrice" type="number" placeholder="5000" min="1" required></div>
       </div>
       
       <div class="field-group two">
-        <div class="field"><label>上架数量 <span class="req">*</span></label><input id="iQuantity" type="number" value="1" min="1" required></div>
+        <div class="field"><label>上架份数 <span class="req">*</span></label><input id="iQuantity" type="number" value="1" min="1" required></div>
         <div class="field">
           <label>图片（可选）</label>
           <label class="custom-upload" id="marketUploadBox" for="iFile" style="min-height: 60px; padding:10px;"><i class="fa-solid fa-image"></i><span>点击上传</span><input id="iFile" type="file" accept="image/*" style="display:none"></label>
@@ -88,6 +97,8 @@
 <script>
 (function () {
   var I = IECP; var profile = null; var myResources = null; var myMil = null; var myCustomUnits = {}; var currentPublishType = 'resource';
+
+  var CAT_MAP = { 'army': '陆军', 'navy': '海军', 'air': '空军', 'defense_ground': '对地防御', 'defense_air': '对空防御' };
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
@@ -119,15 +130,16 @@
       var inv = myMil.custom_troops || {}; var html = '';
       for (var id in inv) {
         if (inv[id] > 0 && myCustomUnits[id]) {
-          html += `<option value="${id}">${I.escapeHtml(myCustomUnits[id].name)} (库存:${inv[id]})</option>`;
+          var cu = myCustomUnits[id];
+          var catName = CAT_MAP[cu.category] || '未知';
+          html += `<option value="${id}">【${catName}】${I.escapeHtml(cu.name)} (库存:${inv[id]})</option>`;
         }
       }
-      if (!html) html = '<option value="">你没有任何自定义兵种库存</option>';
+      if (!html) html = '<option value="">你没有任何自定义单位库存</option>';
       I.$('#iUnitId').innerHTML = html;
     }
   };
 
-  // 🚨 修复：取消连表查询，改为两步获取，彻底消灭 400 报错
   function loadMarket() {
     I.client.from('market_items').select('*').eq('status', 'on_sale').order('created_at', { ascending: false }).then(function (res) {
       if (res.error) { console.error(res.error); return I.toast('加载失败', 'error'); }
@@ -135,7 +147,7 @@
       var wrap = I.$('#marketList'); var list = res.data || [];
       if (!list.length) { wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-store"></i><p>交易行暂无物品</p></div>'; return; }
       
-      var sellerIds = [...new Set(list.map(m => m.seller_id))].filter(id => id); // 去重并过滤空值
+      var sellerIds = [...new Set(list.map(m => m.seller_id))].filter(id => id);
       
       I.client.from('profiles').select('id, username, flag_url, role').in('id', sellerIds).then(function (profileRes) {
         var profileMap = {};
@@ -147,16 +159,25 @@
           var isOfficial = m.is_admin_post === true;
           var tag = isOfficial ? '<span class="market-tag admin">官方</span>' : '';
           if (m.item_type === 'resource') tag += '<span class="market-tag" style="color:var(--cyan)">资源</span>';
-          if (m.item_type === 'unit') tag += '<span class="market-tag" style="color:var(--gold)">兵种</span>';
+          if (m.item_type === 'unit') tag += '<span class="market-tag" style="color:var(--gold)">自制单位</span>';
+
+          var sellerName = isOfficial ? 'IECP 官方' : I.escapeHtml(seller.username || '未知');
+          var sellerAvatar = isOfficial ? 'photo/un.png' : I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username));
+
+          var unitAmount = (m.item_data && m.item_data.unit_amount) ? m.item_data.unit_amount : 1;
+          var unitText = unitAmount === 1 ? '份' : (unitAmount === 1000 ? '千份' : (unitAmount === 10000 ? '万份' : '份'));
+          if(m.item_type !== 'resource') unitText = '个';
 
           html +=
             '<article class="market-card glass" onclick="location.href=\'market-detail.html?id=' + m.id + '\'">' +
               '<div class="market-img">' + (m.image_url ? '<img src="' + I.escapeHtml(m.image_url) + '">' : '<i class="fa-solid fa-box-open"></i>') + '</div>' +
               '<div class="market-body">' + tag + '<h4>' + I.escapeHtml(m.title) + '</h4><p>' + I.escapeHtml(m.description || '暂无描述') + '</p>' +
-                '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽</span></div>' +
-                '<div style="display:flex; justify-content:space-between; margin-top:8px; font-size:12px; color:var(--muted);">' +
-                  '<div>' + (isOfficial ? 'IECP官方' : I.escapeHtml(seller.username || '未知')) + '</div>' +
-                  '<span class="market-qty">库存 ' + I.fmtNumber(m.quantity) + '</span>' +
+                '<div class="market-price">' + I.fmtNumber(m.price) + ' <span>₽ / ' + unitText + '</span></div>' +
+                '<div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:12px; color:var(--muted);">' +
+                  '<div style="display:flex; align-items:center; gap:6px;">' +
+                    '<img src="' + sellerAvatar + '" style="width:16px;height:12px;border-radius:2px;object-fit:cover;"> ' + sellerName +
+                  '</div>' +
+                  '<span class="market-qty">库存 ' + I.fmtNumber(m.quantity) + ' ' + unitText + '</span>' +
                 '</div></div></article>';
         });
         wrap.innerHTML = html + '</div>';
@@ -174,12 +195,17 @@
 
     if (currentPublishType === 'resource') {
       var resType = I.$('#iResType').value;
-      if ((myResources[resType] || 0) < qty) { btn.disabled = false; return I.toast('库存不足', 'error'); }
-      item_data = { res_type: resType };
+      var unitRate = parseInt(I.$('#iResUnit').value) || 1; 
+      var actualDeductQty = qty * unitRate; // 实际扣除量
+
+      if ((myResources[resType] || 0) < actualDeductQty) { btn.disabled = false; return I.toast('库存不足！(所需真实数量: ' + actualDeductQty + ')', 'error'); }
+      
+      // 🚨 存储结构：res_type 和 倍率
+      item_data = { res_type: resType, unit_amount: unitRate };
     } else {
       var uid = I.$('#iUnitId').value;
       var inv = myMil.custom_troops || {};
-      if (!uid || (inv[uid] || 0) < qty) { btn.disabled = false; return I.toast('兵种库存不足', 'error'); }
+      if (!uid || (inv[uid] || 0) < qty) { btn.disabled = false; return I.toast('单位库存不足', 'error'); }
       item_data = { unit_id: uid };
       inv[uid] -= qty;
       I.client.from('military').update({ custom_troops: inv }).eq('country_id', profile.id);
@@ -194,11 +220,16 @@
     uploadPromise.then(function(imgUrl) {
       if (currentPublishType === 'resource') {
         var resType = I.$('#iResType').value;
-        var upRes = {}; upRes[resType] = (myResources[resType] || 0) - qty;
+        var upRes = {}; upRes[resType] = (myResources[resType] || 0) - actualDeductQty;
         I.client.from('country_resources').update(upRes).eq('country_id', profile.id);
+        
+        var unitName = unitRate === 1 ? '基础单位' : unitRate === 1000 ? '千单位' : '万单位';
+        I.$('#iDesc').value = I.$('#iDesc').value + `\n【规格：1 份 = ${unitRate} ${unitName}，实际总数量 ${actualDeductQty}】`;
       }
+      
+      // 🚨 存入数据库的 quantity 是份数 (qty)
       return I.client.from('market_items').insert({
-        seller_id: profile.id, title: title, price: price, quantity: qty,
+        seller_id: profile.id, title: title, price: price, quantity: qty, 
         description: I.$('#iDesc').value, image_url: imgUrl,
         item_type: currentPublishType, item_data: item_data
       });

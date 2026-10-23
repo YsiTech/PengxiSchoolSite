@@ -2,124 +2,63 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>战争系统 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  .war-map-container {
-    position: relative; width: 100%; height: 480px;
-    background: radial-gradient(circle at center, #0f172a 0%, #05070a 100%);
-    border: 1px solid rgba(79, 195, 247, 0.3);
-    border-radius: 16px; overflow: hidden;
-    box-shadow: inset 0 0 50px rgba(79, 195, 247, 0.1), 0 10px 40px rgba(0,0,0,0.8);
-    margin-bottom: 24px;
-  }
-  #warMap { 
-    width: 100%; height: 100%; z-index: 2; position: relative; 
-    touch-action: pan-y pinch-zoom; /* 优化触摸滚动 */
-  }
-
-  .radar-sweep {
-    position: absolute; top: 50%; left: 50%; width: 200%; height: 200%; margin-left: -100%; margin-top: -100%;
-    background: conic-gradient(from 0deg, transparent 0%, transparent 70%, rgba(79, 195, 247, 0.15) 90%, rgba(79, 195, 247, 0.4) 100%);
-    border-radius: 50%; animation: rotate 8s linear infinite; pointer-events: none; z-index: 1; opacity: 0.5;
-  }
+  .war-map-container { position: relative; width: 100%; height: 480px; background: radial-gradient(circle at center, #0f172a 0%, #05070a 100%); border: 1px solid rgba(79, 195, 247, 0.3); border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 50px rgba(79, 195, 247, 0.1), 0 10px 40px rgba(0,0,0,0.8); margin-bottom: 24px; }
+  #warMap { width: 100%; height: 100%; z-index: 2; position: relative; touch-action: pan-y pinch-zoom; }
+  .radar-sweep { position: absolute; top: 50%; left: 50%; width: 200%; height: 200%; margin-left: -100%; margin-top: -100%; background: conic-gradient(from 0deg, transparent 0%, transparent 70%, rgba(79, 195, 247, 0.15) 90%, rgba(79, 195, 247, 0.4) 100%); border-radius: 50%; animation: rotate 8s linear infinite; pointer-events: none; z-index: 1; opacity: 0.5; }
   @keyframes rotate { 100% { transform: rotate(360deg); } }
-
-  .intel-terminal {
-    position: absolute; top: 15px; left: 15px; width: 340px;
-    background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(12px);
-    border-left: 3px solid var(--red); border-radius: 8px;
-    padding: 12px; z-index: 10; font-family: var(--mono);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-  }
+  .intel-terminal { position: absolute; top: 15px; left: 15px; width: 340px; background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(12px); border-left: 3px solid var(--red); border-radius: 8px; padding: 12px; z-index: 10; font-family: var(--mono); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
   .intel-title { color: var(--red); font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(239,68,68,0.3); padding-bottom: 6px; font-size: 13px;}
-  .intel-list {
-    display: flex; flex-direction: column; gap: 8px; max-height: 120px; overflow-y: auto;
-    scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch;
-  }
+  .intel-list { display: flex; flex-direction: column; gap: 8px; max-height: 120px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
   .intel-list::-webkit-scrollbar { display: none; }
-  .intel-item { 
-    color: var(--ink-2); font-size: 12px; line-height: 1.4;
-    white-space: normal; word-break: break-all; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 6px;
-    animation: slideIn 0.5s ease;
-  }
+  .intel-item { color: var(--ink-2); font-size: 12px; line-height: 1.4; white-space: normal; word-break: break-all; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 6px; }
   .intel-item:last-child { border-bottom: none; }
   .intel-item .win { color: #22c55e; font-weight: bold;} 
   .intel-item .lose { color: #ef4444; font-weight: bold;}
-  @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-
   .broadcast-bar { background: linear-gradient(90deg, rgba(239,68,68,0.2), rgba(0,0,0,0)); border-left: 4px solid #ef4444; padding: 14px 20px; border-radius: 8px; margin-bottom: 24px; color: #fca5a5; font-size: 15px; font-weight: 600; display: none; align-items: center; gap: 10px; z-index: 10;}
-
-  /* 右侧图例 */
-  .map-legend {
-    position: absolute; bottom: 15px; right: 15px;
-    background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(10px);
-    border: 1px solid var(--border); border-radius: 8px; padding: 10px;
-    display: flex; flex-direction: column; gap: 6px; z-index: 10; font-size: 12px;
-  }
+  .map-legend { position: absolute; bottom: 15px; right: 15px; background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px; z-index: 10; font-size: 12px; }
   .legend-item { display: flex; align-items: center; gap: 8px; color: #ddd; }
   .legend-color { width: 14px; height: 14px; border-radius: 3px; }
-
   .tactical-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; place-items: center; z-index: 9999; }
   .tactical-modal.open { display: grid; }
-  .tactical-box { width: 700px; max-width: 90%; background: rgba(15, 23, 42, 0.95); border: 1px solid var(--cyan); border-radius: 12px; padding: 30px; box-shadow: 0 0 50px rgba(79,195,247,0.2); position: relative; animation: scaleIn 0.3s ease; }
-  @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  
-  .tactical-box h2 { margin: 0 0 10px; color: var(--cyan); font-family: var(--mono); letter-spacing: 2px; font-size: 20px;}
+  .tactical-box { width: 700px; max-width: 90%; background: rgba(15, 23, 42, 0.95); border: 1px solid var(--cyan); border-radius: 12px; padding: 30px; box-shadow: 0 0 50px rgba(79,195,247,0.2); position: relative; }
+  .tactical-box h2 { margin: 0 0 10px; color: var(--cyan); font-family: var(--mono); font-size: 20px;}
   .tactical-box p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
-  
   .tactic-options { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
   .tactic-card { border: 1px solid var(--border); background: rgba(0,0,0,0.3); border-radius: 8px; padding: 20px 10px; cursor: pointer; transition: 0.2s; text-align: center; }
   .tactic-card:hover { border-color: var(--cyan); background: rgba(79,195,247,0.1); transform: translateY(-4px); }
-  .tactic-card.raid:hover { border-color: var(--gold); background: rgba(212,175,55,0.1); }
-  .tactic-card.bomb:hover { border-color: var(--red); background: rgba(239,68,68,0.1); }
+  .tactic-card.raid:hover { border-color: var(--gold); }
+  .tactic-card.bomb:hover { border-color: var(--red); }
   .tactic-card i { font-size: 30px; margin-bottom: 12px; }
   .tactic-card.raid i { color: var(--gold); }
   .tactic-card.conquer i { color: var(--cyan); }
   .tactic-card.bomb i { color: var(--red); }
   .tactic-card h3 { margin: 0 0 8px; color: #fff; font-size: 15px; }
   .tactic-card span { font-size: 12px; color: var(--muted); line-height: 1.5; display: block; }
-
-  .lock-on-effect { position: fixed; inset: 0; pointer-events: none; z-index: 99999; border: 2px solid transparent; transition: all 0.3s; }
-  .lock-on-effect.active { border-color: rgba(239,68,68,0.5); box-shadow: inset 0 0 100px rgba(239,68,68,0.3); animation: alertFlash 0.5s infinite alternate; }
-  @keyframes alertFlash { from { opacity: 0.5; } to { opacity: 1; } }
-
   .war-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; margin-top: 24px; }
   .enemy-card { background: var(--glass-2); border: 1px solid rgba(239,68,68,0.3); border-radius: var(--r); padding: 20px; display: flex; flex-direction: column; gap: 16px; }
   .enemy-header { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
   .enemy-avatar { width: 48px; height: 32px; border-radius: 4px; object-fit: cover; border: 1px solid #ef4444; }
-  .btn-attack-main { width: 100%; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+  .btn-attack-main { width: 100%; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 8px; background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
   .peace-actions { display: flex; gap: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 16px; margin-top: auto; }
   .peace-actions .btn { flex: 1; padding: 10px 0; font-size: 13px; border-radius: 6px; }
   .btn-surrender { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
   .btn-negotiate { background: rgba(79,195,247,0.1); color: var(--cyan); border: 1px solid rgba(79,195,247,0.3); }
   .peace-request-box { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); padding: 12px 16px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
   .btn-accept-peace { flex-shrink: 0; padding: 6px 16px; font-size: 12px; font-weight: bold; border-radius: 6px; cursor: pointer; border: none; background: #22c55e; color: #fff; }
-
   .troop-select-row { display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
   .troop-info { display: flex; align-items: center; gap: 12px; }
-  .troop-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,0.3); display: grid; place-items: center; color: var(--gold); }
+  .troop-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,0.3); display: grid; place-items: center; color: var(--gold); overflow: hidden; flex-shrink: 0;}
+  .troop-icon img { width: 100%; height: 100%; object-fit: cover; }
   .troop-input { width: 80px; padding: 8px; text-align: center; border-radius: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-2); color: #fff; font-weight: bold; }
-
-  /* 🚨 手机端专项优化 */
   @media (max-width: 768px) {
-    .war-map-container { 
-      height: calc(100vh - 260px); /* 占据屏幕绝大部分 */
-      min-height: 450px; 
-    }
-    .intel-terminal { width: calc(100% - 30px); top: 10px; left: 15px; max-height: 110px; }
-    
-    /* 图例改为横向，放到底部中间 */
-    .map-legend { 
-      bottom: 10px; left: 50%; transform: translateX(-50%);
-      right: auto; flex-direction: row; flex-wrap: wrap; justify-content: center;
-      width: 95%; padding: 6px; font-size: 10px; gap: 8px;
-    }
-    .legend-item { gap: 4px; }
-    .legend-color { width: 10px; height: 10px; }
-
+    .war-map-container { height: 380px; }
+    .intel-terminal { width: calc(100% - 30px); top: 10px; left: 15px; max-height: 130px; }
+    .map-legend { bottom: 10px; right: 10px; padding: 6px; font-size: 11px; }
     .tactical-box { padding: 20px; max-height: 85vh; overflow-y: auto; }
     .tactic-options { grid-template-columns: 1fr; gap: 12px; } 
     .tactic-card { display: flex; align-items: center; text-align: left; padding: 12px; gap: 15px; }
@@ -158,8 +97,6 @@
       </div>
     </div>
     <div id="warMap"></div>
-
-    <!-- 🚨 右侧图例 -->
     <div class="map-legend">
       <div class="legend-item"><div class="legend-color" style="background:rgba(212,175,55,0.85)"></div> 我国领土</div>
       <div class="legend-item"><div class="legend-color" style="background:rgba(34,197,94,0.85)"></div> 盟友领地</div>
@@ -169,9 +106,7 @@
     </div>
   </div>
 
-  <h3 style="color:#fff; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-    <i class="fa-solid fa-list-ul" style="color:var(--red);"></i> 交战国家列表
-  </h3>
+  <h3 style="color:#fff; margin-bottom:12px;"><i class="fa-solid fa-list-ul" style="color:var(--red);"></i> 交战国家列表</h3>
   <div id="warListWrap"><div class="loading-state"><div class="spinner"></div><span>正在侦察敌情...</span></div></div>
 </main>
 
@@ -180,31 +115,11 @@
     <h2><i class="fa-solid fa-crosshairs"></i> 目标锁定：<span id="lockName" style="color:#fff;"></span></h2>
     <p>请选择本次军事行动。不同行动消耗的兵种不同。</p>
     <div class="tactic-options">
-      <div class="tactic-card raid" onclick="selectTactic('raid')">
-        <i class="fa-solid fa-hand-holding-dollar"></i>
-        <div>
-          <h3>闪电掠夺</h3>
-          <span>抢掠资金和资源。战力越高抢得越多。</span>
-        </div>
-      </div>
-      <div class="tactic-card conquer" onclick="selectTactic('conquer')">
-        <i class="fa-solid fa-flag"></i>
-        <div>
-          <h3>全面征服</h3>
-          <span>击败守军并占领该地块。战败全军覆没。</span>
-        </div>
-      </div>
-      <div class="tactic-card bomb" onclick="selectTactic('bomb')">
-        <i class="fa-solid fa-bomb"></i>
-        <div>
-          <h3>战略轰炸</h3>
-          <span>仅限空军/导弹。毁坏敌国资源（自己不得）。</span>
-        </div>
-      </div>
+      <div class="tactic-card raid" onclick="selectTactic('raid')"><i class="fa-solid fa-hand-holding-dollar"></i><div><h3>闪电掠夺</h3><span>抢掠资金。战力越高抢得越多。</span></div></div>
+      <div class="tactic-card conquer" onclick="selectTactic('conquer')"><i class="fa-solid fa-flag"></i><div><h3>全面征服</h3><span>击败守军并占领该地块。</span></div></div>
+      <div class="tactic-card bomb" onclick="selectTactic('bomb')"><i class="fa-solid fa-bomb"></i><div><h3>战略轰炸</h3><span>仅限空军。毁坏资源。</span></div></div>
     </div>
-    <div style="text-align:right; margin-top:24px;">
-      <button class="btn btn-ghost" onclick="document.getElementById('tacticalModal').classList.remove('open')">取消锁定</button>
-    </div>
+    <div style="text-align:right; margin-top:24px;"><button class="btn btn-ghost" onclick="document.getElementById('tacticalModal').classList.remove('open')">取消锁定</button></div>
   </div>
 </div>
 
@@ -234,16 +149,9 @@
 <script>
 (function () {
   var I = IECP;
-  var profile = null;
-  var myMil = null;
-  var enemies = [];
-  var peaceRequests = [];
-  var allTerritories = [];
-  var allEnemiesIds = [];    // 交战国
-  var allAlliesIds = [];     // 盟友
-  var allDiplomaticIds = []; // 建交国
-  var myChart = null;
-  var ws = null;
+  var profile = null; var myMil = null; var enemies = []; var peaceRequests = []; var allTerritories = [];
+  var allEnemiesIds = []; var allAlliesIds = []; var allDiplomaticIds = [];
+  var myChart = null; var ws = null; var myCustomUnits = {};
   
   var currentTarget = { id: null, name: null, region: null, mode: null };
 
@@ -319,16 +227,36 @@
   }
 
   var UNITS_DICT = {
-    scouts: { name: '侦察兵', icon: 'fa-binoculars', power: 1, type: 'land' },
-    infantry: { name: '机械化步兵', icon: 'fa-person-rifle', power: 3, type: 'land' },
-    artillery: { name: '自行火炮', icon: 'fa-bomb', power: 8, type: 'land' },
-    tanks: { name: '主战坦克', icon: 'fa-truck-monster', power: 15, type: 'land' },
-    mechs: { name: '机甲战士', icon: 'fa-robot', power: 35, type: 'land' },
-    carriers: { name: '核动力航母', icon: 'fa-ship', power: 300, type: 'sea' },
-    fighters: { name: '第四代战机', icon: 'fa-jet-fighter', power: 25, type: 'air' },
-    stealth_air: { name: '第五代隐身战机', icon: 'fa-jet-fighter-up', power: 60, type: 'air' },
-    bombers: { name: '战略轰炸机', icon: 'fa-plane', power: 90, type: 'air' },
-    missiles: { name: '洲际导弹', icon: 'fa-rocket', power: 100, type: 'air' }
+    scouts: { name: '侦察兵', icon: 'fa-binoculars', power: 2, type: 'land' },
+    infantry: { name: '机械化步兵', icon: 'fa-person-rifle', power: 5, type: 'land' },
+    ifv: { name: '步兵战车', icon: 'fa-truck-pickup', power: 12, type: 'land' },
+    tanks: { name: '主战坦克', icon: 'fa-truck-monster', power: 30, type: 'land' },
+    spg: { name: '自行火炮', icon: 'fa-bomb', power: 25, type: 'land' },
+    mlrs: { name: '多管火箭炮', icon: 'fa-meteor', power: 40, type: 'land' },
+    spaag: { name: '自行高炮', icon: 'fa-crosshairs', power: 22, type: 'land' },
+    spec_ops: { name: '特种部队', icon: 'fa-user-ninja', power: 55, type: 'land' },
+    tel: { name: '战术导弹车', icon: 'fa-rocket', power: 100, type: 'land' },
+    mechs: { name: '机甲战士', icon: 'fa-robot', power: 180, type: 'land' },
+    patrol_boats: { name: '巡逻艇', icon: 'fa-sailboat', power: 8, type: 'sea' },
+    missile_boat: { name: '导弹快艇', icon: 'fa-ship', power: 25, type: 'sea' },
+    frigates: { name: '导弹护卫舰', icon: 'fa-anchor', power: 40, type: 'sea' },
+    ssk: { name: '常规潜艇', icon: 'fa-water', power: 45, type: 'sea' },
+    ssn: { name: '攻击核潜艇', icon: 'fa-water', power: 90, type: 'sea' },
+    destroyers: { name: '驱逐舰', icon: 'fa-ship', power: 70, type: 'sea' },
+    lhd: { name: '两栖攻击舰', icon: 'fa-ship', power: 140, type: 'sea' },
+    cruisers: { name: '导弹巡洋舰', icon: 'fa-shield-ship', power: 180, type: 'sea' },
+    supply: { name: '综合补给舰', icon: 'fa-boxes-packing', power: 10, type: 'sea' },
+    carriers: { name: '核动力航母', icon: 'fa-ship', power: 500, type: 'sea' },
+    drones: { name: '侦察无人机', icon: 'fa-plane-up', power: 5, type: 'air' },
+    ucav: { name: '察打一体无人机', icon: 'fa-plane-departure', power: 20, type: 'air' },
+    fighters: { name: '第四代战机', icon: 'fa-jet-fighter', power: 50, type: 'air' },
+    bombers: { name: '战略轰炸机', icon: 'fa-plane', power: 150, type: 'air' },
+    ew_planes: { name: '电子战机', icon: 'fa-satellite-dish', power: 70, type: 'air' },
+    tactical_transport: { name: '战术运输机', icon: 'fa-plane-arrival', power: 15, type: 'air' },
+    gunships: { name: '重型炮艇机', icon: 'fa-plane-circle-check', power: 90, type: 'air' },
+    stealth_air: { name: '第五代隐身战机', icon: 'fa-jet-fighter-up', power: 130, type: 'air' },
+    awacs: { name: '预警机', icon: 'fa-radar', power: 80, type: 'air' },
+    spaceplanes: { name: '空天战机', icon: 'fa-meteor', power: 800, type: 'air' }
   };
 
   I.requireAuth().then(function (ok) {
@@ -345,7 +273,6 @@
 
   function initMap() {
     myChart = echarts.init(document.getElementById('warMap'));
-    
     myChart.setOption({
       backgroundColor: 'transparent',
       tooltip: {
@@ -353,7 +280,6 @@
         formatter: function (params) {
           var cnName = getGeoName(params.name);
           if (!params.data || !params.data.customData) return cnName + '<br/><span style="color:#94a3b8">无主之地</span>';
-          
           var rel = params.data.customData.relation;
           var relText = '';
           if (rel === 'self') relText = '<br/><span style="color:#d4af37;font-weight:bold;">[ 我国领土 ]</span>';
@@ -361,86 +287,54 @@
           else if (rel === 'diplomatic') relText = '<br/><span style="color:#4fc3f7;font-weight:bold;">[ 已建交 ]</span>';
           else if (rel === 'war') relText = '<br/><span style="color:#ef4444;font-weight:bold;">[ 交战中 ]</span>';
           else relText = '<br/><span style="color:#94a3b8;">[ 中立国 ]</span>';
-
           return cnName + '<br/>归属：<span style="color:#d4af37;font-weight:bold;">' + params.data.customData.ownerName + '</span>' + relText;
         },
         backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: '#4fc3f7', textStyle: { color: '#fff' }
       },
       geo: {
-        map: 'world', 
-        roam: true, 
-        zoom: 1.2,
-        scaleLimit: { min: 0.8, max: 8 }, // 🚨 限制缩放范围，防缩放太飘
-        label: {
-          normal: { show: false }, 
-          emphasis: { show: false }
-        },
-        itemStyle: { 
-          normal: { areaColor: '#1e293b', borderColor: '#334155', borderWidth: 1 },
-          emphasis: { areaColor: '#4fc3f7' } 
-        }
+        map: 'world', roam: true, zoom: 1.2, scaleLimit: { min: 0.8, max: 8 },
+        label: { normal: { show: false }, emphasis: { show: false } },
+        itemStyle: { normal: { areaColor: '#1e293b', borderColor: '#334155', borderWidth: 1 }, emphasis: { areaColor: '#4fc3f7' } }
       }
     });
 
     myChart.on('click', function (params) {
       if (!params.name) return;
-      var region = params.name;
-      var geoName = getGeoName(region);
-      var record = allTerritories.find(t => t.region_code === region);
+      var region = params.name; var geoName = getGeoName(region); var record = allTerritories.find(t => t.region_code === region);
       
       if (!record) {
-        // 无主之地
         var myLands = allTerritories.filter(t => t.owner_id === profile.id);
-        if (myLands.length >= 2) {
-          I.toast(`【${geoName}】为无主之地。但你已经拥有2块领土，无法再直接认领！请向其他国家购买。`, 'error', 4000);
-          return;
-        }
-        
+        if (myLands.length >= 2) { I.toast(`【${geoName}】为无主之地。但你已经拥有2块领土，无法再直接认领！`, 'error'); return; }
         var costText = myLands.length === 0 ? '首块领土免费！' : '这是你的第二块领土，需支付 20,000 ₽。';
         if (!confirm(`是否认领【${geoName}】？\n\n提示：${costText}`)) return;
-        
         I.toast('正在签署领土协议...', 'success', 1000);
         I.client.rpc('claim_territory', { p_user_id: profile.id, p_region_code: region, p_region_name: geoName }).then(function(res){
-          if(res.error) return I.toast(res.error.message, 'error');
-          if(!res.data.ok) return I.toast(res.data.msg, 'error');
-          I.toast(res.data.msg, 'success');
-          loadData();
+          if(res.error) return I.toast(res.error.message, 'error'); if(!res.data.ok) return I.toast(res.data.msg, 'error');
+          I.toast(res.data.msg, 'success'); loadData();
         });
-
       } else if (record.owner_id === profile.id) {
         I.toast(`【${geoName}】是你国的领土。`, 'success');
-      } else if (allEnemiesIds.includes(record.owner_id)) {
-        // 敌国：直接进入战术打击
-        var enemyObj = enemies.find(e => e.id === record.owner_id);
+      } else if (allEnemiesIds.includes(record.owner_id.toLowerCase())) {
+        var enemyObj = enemies.find(e => e.id.toLowerCase() === record.owner_id.toLowerCase());
         currentTarget = { id: record.owner_id, region: region, name: enemyObj ? enemyObj.username : '敌国', mode: null };
         document.getElementById('lockName').innerText = geoName;
         document.getElementById('tacticalModal').classList.add('open');
       } else {
-        // 中立/盟友/建交：只能购买
         var ownerName = params.data && params.data.customData ? params.data.customData.ownerName : '该国';
         var price = prompt(`你想花多少钱购买【${geoName}】（属于 ${ownerName}）？\n请输入金额（₽）：`, "50000");
         if (!price || isNaN(price) || price <= 0) return;
-        
-        I.client.from('diplomacy_requests').insert({
-          from_country: profile.id, to_country: record.owner_id, request_type: 'buy_territory',
-          message: `申请购买你的【${geoName}】领土，出价 ${price} ₽。`,
-          extra_data: { region_code: region, price: parseInt(price) }
-        }).then(function(r){
-          if(r.error) return I.toast('发送失败：' + r.error.message, 'error');
-          I.toast('购买请求已发送！', 'success');
+        I.client.from('diplomacy_requests').insert({ from_country: profile.id, to_country: record.owner_id, request_type: 'buy_territory', message: `申请购买你的【${geoName}】领土，出价 ${price} ₽。`, extra_data: { region_code: region, price: parseInt(price) } }).then(function(r){
+          if(r.error) return I.toast('发送失败：' + r.error.message, 'error'); I.toast('购买请求已发送！', 'success');
         });
       }
     });
-
     window.addEventListener('resize', function() { if(myChart) myChart.resize(); });
   }
 
   window.selectTactic = function(mode) {
     currentTarget.mode = mode;
     document.getElementById('tacticalModal').classList.remove('open');
-    var eff = document.getElementById('lockOnEffect');
-    eff.classList.add('active');
-    setTimeout(function(){ eff.classList.remove('active'); openAttackModal(currentTarget.id, currentTarget.name, currentTarget.region, mode); }, 800);
+    openAttackModal(currentTarget.id, currentTarget.name, currentTarget.region, mode);
   };
 
   function connectWebSocket() {
@@ -452,8 +346,7 @@
           if (data.type === 'system') {
             var bar = I.$('#broadcastBar'); var txt = I.$('#broadcastText');
             txt.textContent = data.msg; bar.style.display = 'flex';
-            clearTimeout(window.warBcTimer);
-            window.warBcTimer = setTimeout(function(){ bar.style.display = 'none'; }, 8000);
+            clearTimeout(window.warBcTimer); window.warBcTimer = setTimeout(function(){ bar.style.display = 'none'; }, 8000);
           }
         } catch (e) {}
       };
@@ -461,78 +354,62 @@
   }
 
   function loadData() {
+    // 🚨 核心修复：全量拉取 relations，在 JS 中做过滤，彻底杜绝查询语法错误
     Promise.all([
       I.client.from('military').select('*').eq('country_id', profile.id).maybeSingle(),
-      I.client.from('relations').select('*').or(`country_a.eq.${profile.id},country_b.eq.${profile.id}`),
+      I.client.from('relations').select('*'), // 全量拉取
       I.client.from('diplomacy_requests').select('*').eq('to_country', profile.id).eq('request_type', 'peace').eq('status', 'pending'),
       I.client.from('territories').select('*'),
-      I.client.from('profiles').select('id, username, flag_url')
+      I.client.from('profiles').select('id, username, flag_url'),
+      I.client.from('custom_units').select('*')
     ]).then(function(results) {
       myMil = results[0].data || {};
       var allRelations = results[1].data || [];
       peaceRequests = results[2].data || [];
       allTerritories = results[3].data || [];
       var profiles = results[4].data || [];
+      myCustomUnits = {}; (results[5].data || []).forEach(u => { myCustomUnits[u.id] = u; });
 
-      allEnemiesIds = []; allAlliesIds = []; allDiplomaticIds = [];
-      var myWars = [];
-
+      var myId = profile.id.toLowerCase();
+      allEnemiesIds = []; allAlliesIds = []; allDiplomaticIds = []; var myWars = [];
+      
       allRelations.forEach(function(r) {
-        var otherId = r.country_a === profile.id ? r.country_b : r.country_a;
-        if (r.relation_type === 'war') { allEnemiesIds.push(otherId); myWars.push(r); }
-        else if (r.relation_type === 'ally') { allAlliesIds.push(otherId); }
-        else if (r.relation_type === 'diplomatic') { allDiplomaticIds.push(otherId); }
+        var ca = (r.country_a || '').toLowerCase();
+        var cb = (r.country_b || '').toLowerCase();
+        var otherId = (ca === myId) ? cb : ca;
+        
+        // 只要包含当前玩家，就分类记录
+        if (ca === myId || cb === myId) {
+          if (r.relation_type === 'war') { allEnemiesIds.push(otherId); myWars.push(r); }
+          else if (r.relation_type === 'ally') { allAlliesIds.push(otherId); }
+          else if (r.relation_type === 'diplomatic') { allDiplomaticIds.push(otherId); }
+        }
       });
 
       var regionsConfig = [];
       allTerritories.forEach(function(t) {
-        var color = '#334155'; // 中立默认深灰
-        var relType = 'neutral';
+        if (!t.owner_id) return;
+        var tid = t.owner_id.toLowerCase();
+        var color = '#334155'; var relType = 'neutral';
+        
+        if (tid === myId) { color = 'rgba(212, 175, 55, 0.85)'; relType = 'self'; }
+        else if (allEnemiesIds.includes(tid)) { color = 'rgba(239, 68, 68, 0.85)'; relType = 'war'; }
+        else if (allAlliesIds.includes(tid)) { color = 'rgba(34, 197, 94, 0.85)'; relType = 'ally'; }
+        else if (allDiplomaticIds.includes(tid)) { color = 'rgba(79, 195, 247, 0.85)'; relType = 'diplomatic'; }
 
-        if (t.owner_id === profile.id) { color = 'rgba(212, 175, 55, 0.85)'; relType = 'self'; }
-        else if (allEnemiesIds.includes(t.owner_id)) { color = 'rgba(239, 68, 68, 0.85)'; relType = 'war'; }
-        else if (allAlliesIds.includes(t.owner_id)) { color = 'rgba(34, 197, 94, 0.85)'; relType = 'ally'; }
-        else if (allDiplomaticIds.includes(t.owner_id)) { color = 'rgba(79, 195, 247, 0.85)'; relType = 'diplomatic'; }
-
-        var ownerObj = profiles.find(p => p.id === t.owner_id);
+        var ownerObj = profiles.find(p => p.id.toLowerCase() === tid);
         var ownerName = ownerObj ? ownerObj.username : '未知';
 
         regionsConfig.push({
-          name: t.region_code,
-          itemStyle: { 
-            normal: { areaColor: color }, 
-            emphasis: { areaColor: color } 
-          },
-          label: { 
-            normal: { 
-              show: true, 
-              formatter: ownerName, 
-              color: '#fff', 
-              fontSize: 10, 
-              fontWeight: 'bold',
-              textShadowColor: '#000', 
-              textShadowBlur: 3 
-            },
-            emphasis: {
-              show: true,
-              formatter: ownerName, 
-              color: '#fff'
-            }
-          },
+          name: t.region_code, itemStyle: { normal: { areaColor: color }, emphasis: { areaColor: color } },
+          label: { normal: { show: true, formatter: ownerName, color: '#fff', fontSize: 10, fontWeight: 'bold', textShadowColor: '#000', textShadowBlur: 3 } },
           customData: { ownerName: ownerName, ownerId: t.owner_id, relation: relType }
         });
       });
       if(myChart) myChart.setOption({ geo: { regions: regionsConfig } });
 
-      if (myWars.length === 0) {
-        I.$('#warListWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-dove" style="color:var(--cyan);font-size:40px;margin-bottom:12px;"></i><p>目前世界和平，没有敌对国家。</p></div>`;
-        return;
-      }
-
-      I.client.from('profiles').select('id, username, flag_url').in('id', allEnemiesIds).then(function(res) {
-        enemies = res.data || [];
-        renderEnemies();
-      });
+      if (myWars.length === 0) { I.$('#warListWrap').innerHTML = `<div class="empty-state glass"><i class="fa-solid fa-dove" style="color:var(--cyan);font-size:40px;margin-bottom:12px;"></i><p>目前世界和平，没有敌对国家。</p></div>`; return; }
+      I.client.from('profiles').select('id, username, flag_url').in('id', allEnemiesIds).then(function(res) { enemies = res.data || []; renderEnemies(); });
     });
   }
 
@@ -540,56 +417,30 @@
     var html = '<div class="war-grid">';
     enemies.forEach(function(e) {
       var avatar = e.flag_url || I.avatarFallback(e.username);
-      var pReq = peaceRequests.find(r => r.from_country === e.id);
+      var pReq = peaceRequests.find(r => r.from_country.toLowerCase() === e.id.toLowerCase());
       var peaceRequestHtml = '';
-      
-      if (pReq) {
-        peaceRequestHtml = `
-          <div class="peace-request-box">
-            <span><i class="fa-solid fa-handshake"></i> 对方申请停战</span>
-            <button class="btn-accept-peace" onclick="acceptPeace('${pReq.id}')">同意</button>
-          </div>
-        `;
-      }
+      if (pReq) { peaceRequestHtml = `<div class="peace-request-box"><span><i class="fa-solid fa-handshake"></i> 对方申请停战</span><button class="btn-accept-peace" onclick="acceptPeace('${pReq.id}')">同意</button></div>`; }
 
       html += `
         <div class="enemy-card">
           ${peaceRequestHtml}
-          <div class="enemy-header">
-            <img src="${I.escapeHtml(avatar)}" class="enemy-avatar">
-            <div>
-              <div style="font-size:16px;font-weight:700;color:#fff;">${I.escapeHtml(e.username)}</div>
-              <div style="font-size:12px;color:#ef4444;"><i class="fa-solid fa-crosshairs"></i> 交战中</div>
-            </div>
-          </div>
-          <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; text-align: center;">
-             <button class="btn-attack-main" onclick="openAttackModal('${e.id}', '${I.escapeHtml(e.username)}', null, 'raid')"><i class="fa-solid fa-bomb"></i> 发动突袭</button>
-          </div>
-          <div class="peace-actions">
-            <button class="btn btn-surrender" onclick="surrender('${e.id}', '${I.escapeHtml(e.username)}')"><i class="fa-solid fa-flag"></i> 投降</button>
-            <button class="btn btn-negotiate" onclick="negotiate('${e.id}', '${I.escapeHtml(e.username)}')"><i class="fa-solid fa-handshake"></i> 协商停战</button>
-          </div>
+          <div class="enemy-header"><img src="${I.escapeHtml(avatar)}" class="enemy-avatar"><div><div style="font-size:16px;font-weight:700;color:#fff;">${I.escapeHtml(e.username)}</div><div style="font-size:12px;color:#ef4444;"><i class="fa-solid fa-crosshairs"></i> 交战中</div></div></div>
+          <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; text-align: center;"><button class="btn-attack-main" onclick="openAttackModal('${e.id}', '${I.escapeHtml(e.username)}', null, 'raid')"><i class="fa-solid fa-bomb"></i> 发动突袭</button></div>
+          <div class="peace-actions"><button class="btn btn-surrender" onclick="surrender('${e.id}', '${I.escapeHtml(e.username)}')"><i class="fa-solid fa-flag"></i> 投降</button><button class="btn btn-negotiate" onclick="negotiate('${e.id}', '${I.escapeHtml(e.username)}')"><i class="fa-solid fa-handshake"></i> 协商停战</button></div>
         </div>
       `;
     });
-    html += '</div>';
-    I.$('#warListWrap').innerHTML = html;
+    html += '</div>'; I.$('#warListWrap').innerHTML = html;
   }
 
   function loadIntelLogs() {
     I.client.from('war_logs').select('*').order('created_at', { ascending: false }).limit(5).then(function(res){
-      var logs = res.data || [];
-      var html = '';
+      var logs = res.data || []; var html = '';
       logs.forEach(function(l) {
-        var resColor = l.result === 'win' ? 'win' : 'lose';
-        var aName = l.attacker_name || '某国';
-        var dName = l.defender_name || '某国';
-        var rName = getGeoName(l.region_name) || '边境地带';
-        
+        var resColor = l.result === 'win' ? 'win' : 'lose'; var aName = l.attacker_name || '某国'; var dName = l.defender_name || '某国'; var rName = getGeoName(l.region_name) || '边境地带';
         var actionName = l.mode === 'bomb' ? '战略轰炸' : (l.mode === 'raid' ? '闪电掠夺' : '全面入侵');
         var resultText = l.result === 'win' ? `成功实施了${actionName}` : `企图实施${actionName}但被击退`;
         var detailText = l.details ? `<br/><span style="color:var(--muted-2);">${l.details}</span>` : '';
-
         html += `<div class="intel-item">[战报] <span class="${resColor}">${aName}</span> 在 ${rName} 对 ${dName} ${resultText}。${detailText}</div>`;
       });
       if(!html) html = '<div class="intel-item" style="color:var(--cyan);">[系统] 全球区域暂时和平。</div>';
@@ -599,53 +450,51 @@
 
   window.openAttackModal = function(defenderId, defenderName, regionCode, mode) {
     currentTarget = { id: defenderId, name: defenderName, region: regionCode, mode: mode };
-    
     var modeName = mode === 'raid' ? '闪电掠夺' : (mode === 'conquer' ? '全面征服' : '战略轰炸');
-    var descHtml = `向 <b style="color:var(--red)">${I.escapeHtml(defenderName)}</b> 执行【${modeName}】。`;
-    if (regionCode) {
-      descHtml += `<br/><span style="color:var(--gold);">目标地块：${getGeoName(regionCode)}</span>`;
-      if (mode === 'bomb') {
-        descHtml += `<br/><span style="color:#ef4444; font-size:12px;">轰炸仅允许选择空军和导弹部队。</span>`;
-      } else if (mode === 'conquer') {
-        descHtml += `<br/><span style="color:#ef4444; font-size:12px;">战胜将直接占领该地块！</span>`;
-      }
-    }
-    I.$('#attackDesc').innerHTML = descHtml;
+    I.$('#attackDesc').innerHTML = `向 <b style="color:var(--red)">${I.escapeHtml(defenderName)}</b> 执行【${modeName}】。`;
     
-    var listHtml = '';
-    for (var key in UNITS_DICT) {
-      var count = myMil[key] || 0;
-      var u = UNITS_DICT[key];
-      if (count <= 0) continue;
+    var listHtml = ''; var hasTroop = false;
 
+    for (var key in UNITS_DICT) {
+      var count = myMil[key] || 0; var u = UNITS_DICT[key];
+      if (count <= 0) continue;
       if (mode === 'bomb' && u.type !== 'air') continue;
 
+      hasTroop = true;
       listHtml += `
         <div class="troop-select-row">
           <div class="troop-info">
             <div class="troop-icon"><i class="fa-solid ${u.icon}"></i></div>
-            <div>
-              <div class="troop-name">${u.name} <span style="font-size:11px;color:var(--gold-2);">(战力${u.power})</span></div>
-              <div class="troop-have">可用: ${I.fmtNumber(count)}</div>
-            </div>
+            <div><div class="troop-name">${u.name} <span style="font-size:11px;color:var(--gold-2);">(战力${u.power})</span></div><div class="troop-have">可用: ${I.fmtNumber(count)}</div></div>
           </div>
-          <input type="number" class="troop-input" id="atk_${key}" value="0" min="0" max="${count}" 
-                 data-power="${u.power}" oninput="calcPower()">
+          <input type="number" class="troop-input" id="atk_${key}" value="0" min="0" max="${count}" data-power="${u.power}" oninput="calcPower()">
         </div>
       `;
     }
 
-    if (!listHtml) {
-      I.toast(mode === 'bomb' ? '你没有可执行轰炸的空军或导弹！' : '你没有任何进攻部队！', 'error');
-      return;
+    var customInv = myMil.custom_troops || {};
+    for (var id in customInv) {
+      if (customInv[id] <= 0) continue;
+      var cu = myCustomUnits[id]; if (!cu) continue;
+      if (cu.category.indexOf('defense') !== -1) continue;
+      if (mode === 'bomb' && cu.category !== 'air') continue;
+
+      hasTroop = true;
+      var iconHtml = cu.image_url ? `<img src="${cu.image_url}" style="width:100%;height:100%;object-fit:cover;">` : `<i class="fa-solid fa-robot"></i>`;
+      listHtml += `
+        <div class="troop-select-row">
+          <div class="troop-info">
+            <div class="troop-icon">${iconHtml}</div>
+            <div><div class="troop-name">${I.escapeHtml(cu.name)} <span style="font-size:11px;color:var(--gold-2);">(战力${cu.power})</span></div><div class="troop-have">可用: ${I.fmtNumber(customInv[id])}</div></div>
+          </div>
+          <input type="number" class="troop-input" id="atk_${id}" value="0" min="0" max="${customInv[id]}" data-power="${cu.power}" oninput="calcPower()">
+        </div>
+      `;
     }
 
-    I.$('#troopList').innerHTML = listHtml;
+    if (!hasTroop) return I.toast('你没有可派出的部队！', 'error');
+    I.$('#troopList').innerHTML = `<div style="text-align:right; margin-bottom:10px;"><a href="javascript:void(0)" onclick="fillAllTroops()" style="font-size:12px; color:var(--cyan);">一键全军出击</a></div>` + listHtml;
     I.$('#attackPowerDisplay').textContent = '0';
-    
-    var quickFillHtml = `<div style="text-align:right; margin-bottom:10px;"><a href="javascript:void(0)" onclick="fillAllTroops()" style="font-size:12px; color:var(--cyan);">一键全军出击</a></div>`;
-    I.$('#troopList').insertAdjacentHTML('afterbegin', quickFillHtml);
-
     I.$('#confirmAttackBtn').onclick = doAttack;
     I.$('#attackModal').classList.add('open');
   };
@@ -660,65 +509,40 @@
   window.calcPower = function() {
     var totalPower = 0;
     document.querySelectorAll('.troop-input').forEach(function(input) {
-      var val = parseInt(input.value) || 0;
-      var power = parseInt(input.getAttribute('data-power')) || 0;
+      var val = parseInt(input.value) || 0; var power = parseInt(input.getAttribute('data-power')) || 0;
       totalPower += val * power;
     });
     I.$('#attackPowerDisplay').textContent = I.fmtNumber(totalPower);
   };
 
   function doAttack() {
-    var troopsPayload = {};
-    var hasTroop = false;
-    
+    var troopsPayload = {}; var hasTroop = false;
     document.querySelectorAll('.troop-input').forEach(function(input) {
       var val = parseInt(input.value) || 0;
-      if (val > 0) {
-        var key = input.id.replace('atk_', '');
-        troopsPayload[key] = val;
-        hasTroop = true;
-      }
+      if (val > 0) { var key = input.id.replace('atk_', ''); troopsPayload[key] = val; hasTroop = true; }
     });
 
     if (!hasTroop) return I.toast('请至少派出一名士兵', 'error');
     I.$('#attackModal').classList.remove('open');
     I.toast('指令已下达，正在执行打击...', 'success', 1500);
 
-    I.client.rpc('war_attack_v3', {
-      p_attacker_id: profile.id,
-      p_defender_id: currentTarget.id,
-      p_troops: troopsPayload,
-      p_region_code: currentTarget.region,
-      p_mode: currentTarget.mode || 'conquer'
-    }).then(function(res) {
+    I.client.rpc('war_attack_v3', { p_attacker_id: profile.id, p_defender_id: currentTarget.id, p_troops: troopsPayload, p_region_code: currentTarget.region, p_mode: currentTarget.mode || 'conquer' }).then(function(res) {
       if (res.error) return I.toast('出错：' + res.error.message, 'error');
-      var r = res.data;
-      if (!r.ok) return I.toast(r.msg, 'error');
+      var r = res.data; if (!r.ok) return I.toast(r.msg, 'error');
 
-      var broadcastMsg = '';
-      var geoName = currentTarget.region ? `【${getGeoName(currentTarget.region)}】` : '';
-      
+      var broadcastMsg = ''; var geoName = currentTarget.region ? `【${getGeoName(currentTarget.region)}】` : '';
       if (r.win) {
-        if (currentTarget.mode === 'bomb') {
-          broadcastMsg = `【空袭警报】${profile.username} 对 ${currentTarget.name} 的 ${geoName} 发动了战略轰炸，敌方损失惨重！`;
-        } else if (currentTarget.mode === 'conquer') {
-          broadcastMsg = `【领土沦陷】${profile.username} 在 ${geoName} 击溃了 ${currentTarget.name}，成功占领该区域！`;
-        } else {
-          broadcastMsg = `【闪电突袭】${profile.username} 突袭了 ${currentTarget.name} 的 ${geoName}，掠夺大量财富后撤离！`;
-        }
-        
+        if (currentTarget.mode === 'bomb') broadcastMsg = `【空袭警报】${profile.username} 对 ${currentTarget.name} 的 ${geoName} 发动了战略轰炸，敌方损失惨重！`;
+        else if (currentTarget.mode === 'conquer') broadcastMsg = `【领土沦陷】${profile.username} 在 ${geoName} 击溃了 ${currentTarget.name}，成功占领该区域！`;
+        else broadcastMsg = `【闪电突袭】${profile.username} 突袭了 ${currentTarget.name} 的 ${geoName}，掠夺大量财富后撤离！`;
         I.toast(`大获全胜！${r.details}`, 'success', 4000);
       } else {
         broadcastMsg = `【战败防线】${profile.username} 向 ${currentTarget.name} 的 ${geoName} 发起的进攻被成功拦截！`;
         I.toast('进攻失败：' + r.msg, 'error');
       }
 
-      if (ws && ws.readyState === WebSocket.OPEN) {
-         ws.send(JSON.stringify({ type: 'system', msg: broadcastMsg }));
-      }
-      
-      loadData();
-      loadIntelLogs();
+      if (ws && ws.readyState === WebSocket.OPEN) { ws.send(JSON.stringify({ type: 'system', msg: broadcastMsg })); }
+      loadData(); loadIntelLogs();
     });
   }
 
@@ -727,9 +551,7 @@
     I.toast('正在递交投降书...', 'success', 1000);
     I.client.rpc('surrender_war', { p_winner_id: defenderId, p_loser_id: profile.id }).then(function(res) {
       if (res.error) return I.toast('投降失败：' + res.error.message, 'error');
-      if (!res.data.ok) return I.toast(res.data.msg, 'error');
-      I.toast('已投降，战争结束', 'success');
-      loadData();
+      if (!res.data.ok) return I.toast(res.data.msg, 'error'); I.toast('已投降，战争结束', 'success'); loadData();
     });
   };
 
@@ -738,8 +560,7 @@
     I.toast('正在发送请求...', 'success', 1000);
     I.client.rpc('request_peace', { p_from_id: profile.id, p_to_id: defenderId }).then(function(res) {
       if (res.error) return I.toast('发送失败: ' + res.error.message, 'error');
-      if (!res.data.ok) return I.toast(res.data.msg, 'error');
-      I.toast('停战协议已发送', 'success');
+      if (!res.data.ok) return I.toast(res.data.msg, 'error'); I.toast('停战协议已发送', 'success');
     });
   };
 
@@ -748,12 +569,9 @@
     I.toast('正在处理...', 'success', 1000);
     I.client.rpc('accept_peace', { p_request_id: reqId }).then(function(res) {
       if (res.error) return I.toast('处理失败', 'error');
-      if (!res.data.ok) return I.toast(res.data.msg, 'error');
-      I.toast('停战成功，战争结束', 'success');
-      loadData();
+      if (!res.data.ok) return I.toast(res.data.msg, 'error'); I.toast('停战成功，战争结束', 'success'); loadData();
     });
   };
-
 })();
 </script>
 </body>
