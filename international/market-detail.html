@@ -7,229 +7,32 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  /* ============================================================
-     🚨 全新高级商品详情页 UI (修复报错拦截)
-     ============================================================ */
-  .detail-container {
-    max-width: 900px;
-    margin: 30px auto 100px auto; 
-    padding: 0 16px;
-    display: flex;
-    gap: 30px;
-    align-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  /* 左侧大图 */
-  .product-img-box {
-    flex: 1;
-    min-width: 300px;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: #0f172a;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px;
-  }
-  .product-img-box img {
-    width: 100%;
-    height: auto;
-    max-height: 600px;
-    display: block;
-    object-fit: contain; 
-  }
-  .product-img-box .fallback-icon {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    display: grid;
-    place-items: center;
-    font-size: 80px;
-    color: rgba(255,255,255,0.05);
-  }
-
-  /* 右侧信息区 */
-  .product-info {
-    flex: 1.2;
-    min-width: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .product-title {
-    font-size: 24px;
-    font-weight: 800;
-    color: #fff;
-    line-height: 1.4;
-    margin: 0;
-  }
-  .official-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: linear-gradient(135deg, #a78bfa, #7c3aed);
-    color: #fff;
-    font-size: 11px;
-    font-weight: bold;
-    padding: 3px 8px;
-    border-radius: 6px;
-    vertical-align: middle;
-    margin-left: 8px;
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.4);
-  }
-
-  .product-price-box {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    background: rgba(212,175,55,0.1);
-    padding: 12px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(212,175,55,0.2);
-  }
-  .product-price {
-    font-size: 36px;
-    font-weight: 900;
-    color: var(--gold-2);
-    font-family: var(--mono);
-    line-height: 1;
-  }
-  .product-price-unit {
-    font-size: 14px;
-    color: var(--muted);
-    font-weight: 500;
-  }
-
-  /* 卖家信息 */
-  .seller-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 16px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-  }
-  .seller-info img {
-    width: 40px;
-    height: 28px;
-    border-radius: 4px;
-    object-fit: cover;
-    border: 1px solid var(--border-2);
-  }
+  .detail-container { max-width: 900px; margin: 30px auto 100px auto; padding: 0 16px; display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+  .product-img-box { flex: 1; min-width: 300px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); background: #0f172a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; display: flex; align-items: center; justify-content: center; min-height: 300px; }
+  .product-img-box img { width: 100%; height: auto; max-height: 600px; display: block; object-fit: contain; }
+  .product-img-box .fallback-icon { width: 100%; aspect-ratio: 1 / 1; display: grid; place-items: center; font-size: 80px; color: rgba(255,255,255,0.05); }
+  .product-info { flex: 1.2; min-width: 300px; display: flex; flex-direction: column; gap: 20px; }
+  .product-title { font-size: 24px; font-weight: 800; color: #fff; line-height: 1.4; margin: 0; }
+  .official-tag { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 6px; vertical-align: middle; margin-left: 8px; box-shadow: 0 0 10px rgba(124, 58, 237, 0.4); }
+  .product-price-box { display: flex; align-items: baseline; gap: 8px; background: rgba(212,175,55,0.1); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(212,175,55,0.2); }
+  .product-price { font-size: 36px; font-weight: 900; color: var(--gold-2); font-family: var(--mono); line-height: 1; }
+  .product-price-unit { font-size: 14px; color: var(--muted); font-weight: 500; }
+  .seller-info { display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; }
+  .seller-info img { width: 40px; height: 28px; border-radius: 4px; object-fit: cover; border: 1px solid var(--border-2); }
   .seller-name { font-size: 14px; font-weight: 600; color: var(--cyan); }
   .seller-label { font-size: 12px; color: var(--muted); }
-
-  /* 商品描述 */
-  .product-desc {
-    font-size: 14.5px;
-    line-height: 1.8;
-    color: var(--ink-2);
-    background: rgba(0,0,0,0.2);
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px dashed rgba(255,255,255,0.1);
-    white-space: pre-wrap;
-  }
-
-  /* 管理员提示（普通文档流内） */
-  .admin-hint {
-    font-size: 12.5px;
-    color: var(--gold-2);
-    background: rgba(212,175,55,0.1);
-    border: 1px solid rgba(212,175,55,0.3);
-    padding: 10px 14px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* 购买按钮区 */
-  .action-area {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .qty-input-group {
-    display: flex;
-    align-items: center;
-    background: rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 12px;
-    overflow: hidden;
-    height: 50px;
-  }
-  .qty-btn {
-    width: 50px;
-    height: 100%;
-    background: transparent;
-    border: none;
-    color: var(--ink);
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.2s;
-  }
+  .product-desc { font-size: 14.5px; line-height: 1.8; color: var(--ink-2); background: rgba(0,0,0,0.2); padding: 20px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); white-space: pre-wrap; }
+  .admin-hint { font-size: 12.5px; color: var(--gold-2); background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; gap: 8px; }
+  .action-area { display: flex; flex-direction: column; gap: 12px; }
+  .qty-input-group { display: flex; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 12px; overflow: hidden; height: 50px; }
+  .qty-btn { width: 50px; height: 100%; background: transparent; border: none; color: var(--ink); font-size: 18px; cursor: pointer; transition: 0.2s; }
   .qty-btn:hover { background: rgba(255,255,255,0.1); }
-  .qty-input-group input {
-    flex: 1;
-    width: 100%;
-    min-width: 0;
-    height: 100%;
-    background: transparent;
-    border: none;
-    text-align: center;
-    color: #fff;
-    font-size: 18px;
-    font-weight: bold;
-    outline: none;
-    -moz-appearance: textfield;
-  }
-  .qty-input-group input::-webkit-outer-spin-button,
-  .qty-input-group input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  .btn-buy {
-    width: 100%;
-    height: 50px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, var(--gold), #b8860b);
-    color: #0a0e1a;
-    font-size: 16px;
-    font-weight: 800;
-    border: none;
-    cursor: pointer;
-    transition: 0.2s;
-    box-shadow: 0 4px 15px rgba(212,175,55,0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
+  .qty-input-group input { flex: 1; width: 100%; min-width: 0; height: 100%; background: transparent; border: none; text-align: center; color: #fff; font-size: 18px; font-weight: bold; outline: none; -moz-appearance: textfield; }
+  .btn-buy { width: 100%; height: 50px; border-radius: 12px; background: linear-gradient(135deg, var(--gold), #b8860b); color: #0a0e1a; font-size: 16px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(212,175,55,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
   .btn-buy:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,175,55,0.5); }
   .btn-buy:disabled { background: #333; color: #888; box-shadow: none; transform: none; cursor: not-allowed; }
-
-  .btn-remove {
-    width: 100%;
-    height: 50px;
-    border-radius: 12px;
-    background: rgba(239,68,68,0.1);
-    color: #ef4444;
-    border: 1px solid rgba(239,68,68,0.3);
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-  .btn-remove:hover { background: #ef4444; color: #fff; }
-
-  /* 📱 移动端极致优化 */
+  .btn-remove { width: 100%; height: 50px; border-radius: 12px; background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  
   @media (max-width: 768px) {
     .detail-container { margin: 10px auto 90px auto; flex-direction: column; gap: 16px; padding: 0 12px; }
     .product-img-box { width: 100%; border-radius: 12px; min-height: 200px; }
@@ -237,14 +40,7 @@
     .product-info { width: 100%; gap: 16px; }
     .product-title { font-size: 20px; }
     .product-price { font-size: 32px; }
-    
-    .action-area {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
-      border-top: 1px solid rgba(255,255,255,0.1);
-      padding: 10px 12px; flex-direction: row; align-items: center; gap: 8px;
-      z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
-    }
+    .action-area { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.1); padding: 10px 12px; flex-direction: row; align-items: center; gap: 8px; z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
     .qty-input-group { height: 44px; width: 110px; flex-shrink: 0; }
     .qty-btn { width: 32px; font-size: 16px; }
     .qty-input-group input { font-size: 15px; }
@@ -299,9 +95,7 @@
     var displayFlag = isOfficial ? 'photo/un.png' : I.escapeHtml(seller.flag_url || I.avatarFallback(seller.username));
     var sellerLink = isOfficial ? 'javascript:void(0)' : `country.html?id=${seller.id}`;
 
-    var imgHtml = m.image_url 
-      ? `<img src="${m.image_url}" alt="">` 
-      : `<div class="fallback-icon"><i class="fa-solid fa-${m.item_type === 'resource' ? 'cubes' : 'box-open'}"></i></div>`;
+    var imgHtml = m.image_url ? `<img src="${m.image_url}" alt="">` : `<div class="fallback-icon"><i class="fa-solid fa-${m.item_type === 'resource' ? 'cubes' : 'box-open'}"></i></div>`;
 
     var actionHtml = '';
     var extraHint = '';
@@ -310,25 +104,15 @@
       actionHtml = `<button class="btn-buy" disabled><i class="fa-solid fa-ban"></i> 已售罄</button>`;
     } else if (isOfficial) {
       actionHtml = `
-        <div class="qty-input-group">
-          <button class="qty-btn" onclick="changeQty(-1)">−</button>
-          <input type="number" id="buyQty" value="1" min="1" max="${m.quantity}">
-          <button class="qty-btn" onclick="changeQty(1)">+</button>
-        </div>
-        <button class="btn-buy" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}', ${m.quantity})"><i class="fa-solid fa-cart-shopping"></i> 立即购买</button>
-      `;
-      if (isMine) extraHint = `<div class="admin-hint"><i class="fa-solid fa-circle-info"></i> 这是您上架的官方商品，资金将直接销毁，如需下架请前往后台</div>`;
+        <div class="qty-input-group"><button class="qty-btn" onclick="changeQty(-1)">−</button><input type="number" id="buyQty" value="1" min="1" max="${m.quantity}"><button class="qty-btn" onclick="changeQty(1)">+</button></div>
+        <button class="btn-buy" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}', ${m.quantity})"><i class="fa-solid fa-cart-shopping"></i> 立即购买</button>`;
+      if (isMine) extraHint = `<div class="admin-hint"><i class="fa-solid fa-circle-info"></i> 这是您上架的官方商品，资金将直接销毁</div>`;
     } else if (isMine) {
       actionHtml = `<button class="btn-remove" onclick="removeItem('${m.id}')"><i class="fa-solid fa-arrow-down"></i> 下架商品</button>`;
     } else {
       actionHtml = `
-        <div class="qty-input-group">
-          <button class="qty-btn" onclick="changeQty(-1)">−</button>
-          <input type="number" id="buyQty" value="1" min="1" max="${m.quantity}">
-          <button class="qty-btn" onclick="changeQty(1)">+</button>
-        </div>
-        <button class="btn-buy" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}', ${m.quantity})"><i class="fa-solid fa-cart-shopping"></i> 立即购买</button>
-      `;
+        <div class="qty-input-group"><button class="qty-btn" onclick="changeQty(-1)">−</button><input type="number" id="buyQty" value="1" min="1" max="${m.quantity}"><button class="qty-btn" onclick="changeQty(1)">+</button></div>
+        <button class="btn-buy" onclick="buyItem('${m.id}', ${m.price}, '${m.seller_id}', ${m.quantity})"><i class="fa-solid fa-cart-shopping"></i> 立即购买</button>`;
     }
 
     I.$('#detailWrap').innerHTML = `
@@ -337,15 +121,8 @@
         <div class="product-info">
           <div style="margin-bottom: 10px;"><a href="market.html" style="color:var(--muted); font-size:13px;"><i class="fa-solid fa-arrow-left"></i> 返回交易行</a></div>
           <h1 class="product-title">${I.escapeHtml(m.title)} ${isOfficial ? `<span class="official-tag"><i class="fa-solid fa-crown"></i> 官方</span>` : ''}</h1>
-          <div class="product-price-box">
-            <div class="product-price">${I.fmtNumber(m.price)}</div>
-            <div class="product-price-unit">₽ / ${unitDisplay}</div>
-            <div style="margin-left:auto; font-size:12px; color:var(--muted);">库存: ${m.quantity}</div>
-          </div>
-          <div class="seller-info">
-            <img src="${displayFlag}" alt="">
-            <div><div class="seller-label">卖家</div><a href="${sellerLink}" class="seller-name">${displayName}</a></div>
-          </div>
+          <div class="product-price-box"><div class="product-price">${I.fmtNumber(m.price)}</div><div class="product-price-unit">₽ / ${unitDisplay}</div><div style="margin-left:auto; font-size:12px; color:var(--muted);">库存: ${m.quantity}</div></div>
+          <div class="seller-info"><img src="${displayFlag}" alt=""><div><div class="seller-label">卖家</div><a href="${sellerLink}" class="seller-name">${displayName}</a></div></div>
           <div class="product-desc">${I.escapeHtml(m.description || '卖家很懒，没有留下描述。')}</div>
           ${extraHint}
           <div class="action-area">${actionHtml}</div>
@@ -355,13 +132,8 @@
   }
 
   window.changeQty = function(delta) {
-    var input = I.$('#buyQty');
-    var val = parseInt(input.value) || 1;
-    var max = parseInt(input.max) || 999;
-    val += delta;
-    if (val < 1) val = 1;
-    if (val > max) val = max;
-    input.value = val;
+    var input = I.$('#buyQty'); var val = parseInt(input.value) || 1; var max = parseInt(input.max) || 999;
+    val += delta; if (val < 1) val = 1; if (val > max) val = max; input.value = val;
   };
 
   window.removeItem = function (itemId) {
@@ -375,14 +147,10 @@
             if (resRes.data) {
               var currentBase = parseFloat(resRes.data[item.resource_type]) || 0;
               var upObj = {}; upObj[item.resource_type] = parseFloat((currentBase + backBaseQty).toFixed(4));
-              I.client.from('country_resources').update(upObj).eq('country_id', profile.id).then(function(){
-                I.toast('商品已下架，资源已退还', 'success'); setTimeout(function () { location.href = 'market.html'; }, 800);
-              });
+              I.client.from('country_resources').update(upObj).eq('country_id', profile.id).then(function(){ I.toast('已下架并退还', 'success'); setTimeout(function () { location.href = 'market.html'; }, 800); });
             }
           });
-        } else {
-          I.toast('商品已下架', 'success'); setTimeout(function () { location.href = 'market.html'; }, 800);
-        }
+        } else { I.toast('商品已下架', 'success'); setTimeout(function () { location.href = 'market.html'; }, 800); }
       });
     });
   };
@@ -398,6 +166,8 @@
 
     I.toast('正在处理...', 'success', 1000);
     var itemTitle = currentItem.title;
+    var buyerName = profile.username; // 🚨 买家的名字
+    var sellerName = currentItem.is_admin_post ? 'IECP 官方' : (currentItem.seller ? currentItem.seller.username : '未知'); // 🚨 卖家的名字
 
     I.client.rpc('add_balance', { uid: profile.id, amount: -totalCost, note: '交易行购买 · ' + itemTitle }).then(function (r1) {
       if (r1.error) return I.toast('扣款失败', 'error');
@@ -415,12 +185,21 @@
         if (!currentItem.is_admin_post) {
           sellerPromise = I.client.rpc('add_balance', { uid: sellerId, amount: totalCost, note: '售出 · ' + itemTitle }).then(function(r3) {
             if (r3.error) throw new Error('卖家加款失败');
-            return I.client.rpc('send_notification', { p_user_id: sellerId, p_type: 'trade', p_title: '资产售出', p_content: `你的【${itemTitle}】被买走，入账 ${I.fmtNumber(totalCost)} ₽。` });
+            
+            // 🚨 修复：明确通知给卖家，买家是谁
+            return I.client.rpc('send_notification', { 
+              p_user_id: sellerId, p_type: 'trade', p_title: '资产售出', 
+              p_content: `你的【${itemTitle}】被【${buyerName}】买走，入账 ${I.fmtNumber(totalCost)} ₽。` 
+            });
           });
         }
 
         sellerPromise.then(function(){
-          I.client.rpc('send_notification', { p_user_id: profile.id, p_type: 'trade', p_title: '购买成功', p_content: `你花费 ${I.fmtNumber(totalCost)} ₽ 购入了【${itemTitle}】。` });
+          // 🚨 修复：明确通知给买家，卖家是谁
+          I.client.rpc('send_notification', { 
+            p_user_id: profile.id, p_type: 'trade', p_title: '购买成功', 
+            p_content: `你花费 ${I.fmtNumber(totalCost)} ₽ 从【${sellerName}】处购入了【${itemTitle}】。` 
+          });
 
           if (currentItem.is_admin_post) {
             I.client.from('market_items').insert({
@@ -428,13 +207,9 @@
               price: price, quantity: qty, status: 'sold', sold_at: new Date().toISOString(),
               is_admin_post: true, item_type: 'other', item_data: currentItem.item_data
             }).then(function(res) {
-              // 🚨 核心修复：检查插入是否报错
               if (res.error) {
-                 I.toast('入库失败！请联系管理员：' + res.error.message, 'error', 5000);
-                 console.error("入库失败", res.error);
-              } else {
-                 finishTransaction();
-              }
+                 I.toast('入库失败：' + res.error.message, 'error');
+              } else { finishTransaction(); }
             });
           } else {
             if (currentItem.item_type === 'resource' && currentItem.resource_type) {
@@ -452,11 +227,8 @@
                 price: price, quantity: qty, status: 'sold', sold_at: new Date().toISOString(),
                 is_admin_post: false, item_type: 'other'
               }).then(function(res) {
-                 if (res.error) {
-                   I.toast('入库失败：' + res.error.message, 'error');
-                 } else {
-                   finishTransaction();
-                 }
+                 if (res.error) { I.toast('入库失败：' + res.error.message, 'error'); } 
+                 else { finishTransaction(); }
               });
             }
           }

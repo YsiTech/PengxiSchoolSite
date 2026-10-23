@@ -6,197 +6,489 @@
 <title>交流中心 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<style>
+  /* 🚨 聊天室主体布局 */
+  .chat-wrap {
+    display: flex;
+    flex-direction: column;
+    max-width: 900px;
+    margin: 0 auto;
+    height: calc(100vh - 180px);
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+
+  .chat-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    scrollbar-width: thin;
+  }
+
+  /* 气泡容器 */
+  .msg-row { display: flex; gap: 12px; max-width: 80%; }
+  .msg-row.mine { align-self: flex-end; flex-direction: row-reverse; }
+  .msg-row.other { align-self: flex-start; }
+
+  .msg-avatar { width: 40px; height: 28px; border-radius: 4px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-2); }
+  
+  .msg-content-wrap { display: flex; flex-direction: column; gap: 4px; }
+  .msg-row.mine .msg-content-wrap { align-items: flex-end; }
+  
+  .msg-info { font-size: 11px; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  .msg-info b { color: var(--gold-2); font-size: 12px; }
+
+  .msg-bubble {
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+    position: relative;
+    background: var(--glass-2);
+    color: var(--ink);
+    border: 1px solid var(--border);
+  }
+  .msg-row.mine .msg-bubble {
+    background: linear-gradient(135deg, rgba(79,195,247,0.2), rgba(79,195,247,0.05));
+    border-color: rgba(79,195,247,0.3);
+    border-bottom-right-radius: 2px;
+  }
+  .msg-row.other .msg-bubble { border-bottom-left-radius: 2px; }
+  
+  .msg-bubble.recalled { background: transparent; border: 1px dashed var(--border-2); color: var(--muted); font-style: italic; }
+
+  /* 媒体内容 */
+  .msg-media { max-width: 300px; border-radius: 8px; margin-bottom: 8px; display: block; border: 1px solid var(--border); }
+  audio.msg-media { width: 250px; }
+  .file-attach {
+    display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.3);
+    padding: 12px; border-radius: 8px; margin-bottom: 8px; text-decoration: none; color: #fff; border: 1px solid var(--border-2);
+  }
+  .file-attach:hover { border-color: var(--gold); }
+  .file-attach i { font-size: 24px; color: var(--gold); }
+  .file-attach .f-name { font-size: 13px; font-weight: bold; }
+  .file-attach .f-size { font-size: 11px; color: var(--muted); }
+
+  /* 撤回按钮 */
+  .recall-btn { display: none; font-size: 11px; color: var(--red); cursor: pointer; transition: 0.2s; margin-left: 8px; }
+  .msg-row.mine:hover .recall-btn { display: inline-block; }
+  .recall-btn:hover { text-decoration: underline; }
+
+  /* 底部输入区 */
+  .chat-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.2);
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .chat-input-box {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border-2);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .chat-input-box:focus-within { border-color: var(--cyan); }
+
+  .chat-input-box textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 12px 16px;
+    color: #fff;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    min-height: 44px;
+    max-height: 120px;
+  }
+
+  .chat-tools { display: flex; padding: 4px 12px 8px 12px; gap: 16px; color: var(--muted); }
+  .chat-tools label { cursor: pointer; transition: 0.2s; font-size: 18px; }
+  .chat-tools label:hover { color: var(--cyan); }
+
+  .btn-send {
+    height: 44px; width: 80px; border-radius: 12px;
+    background: var(--cyan); color: #000; font-weight: bold; border: none; cursor: pointer;
+    display: grid; place-items: center; transition: 0.2s;
+  }
+  .btn-send:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(79,195,247,0.4); }
+
+  /* 外交弹窗列表 */
+  .diplo-item { display: flex; justify-content: space-between; align-items: center; background: var(--glass-2); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 10px; }
+  .diplo-item.war { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+</style>
 </head>
 <body>
 
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
 </header>
 
-<section class="iecp-page-head">
-  <div class="iecp-page-head-inner">
-    <div class="iecp-breadcrumb">
-      <a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>交流中心</span>
-    </div>
-    <h1><i class="fa-solid fa-handshake"></i> 交流中心</h1>
-    <p>公开对话 · 申请建交 · 处理宣战</p>
-  </div>
-</section>
-
 <main class="iecp-main">
-  <div class="comm-feed" id="feed">
-
-    <section class="glass" style="padding:20px 22px;margin-bottom:8px">
-      <h3 style="margin:0 0 16px;font-size:15px;letter-spacing:1px"><i class="fa-solid fa-inbox" style="color:var(--gold)"></i> 收到的新申请</h3>
-      <div id="requestsWrap">
-        <div class="loading-state" style="padding:20px 0"><div class="spinner"></div></div>
+  <div class="chat-wrap">
+    
+    <!-- 聊天室头部 -->
+    <div class="chat-header">
+      <div>
+        <h2 style="margin:0; font-size:18px; color:var(--ink);"><i class="fa-solid fa-comments" style="color:var(--gold);"></i> 国际交流大厅</h2>
+        <p style="margin:0; font-size:12px; color:var(--muted);">遵守国际法，文明发言</p>
       </div>
-    </section>
-
-    <div class="comm-compose glass">
-      <img class="comm-avatar" id="composeAvatar" src="" alt="">
-      <textarea id="postContent" placeholder="向国际社会发表声明或问候……" maxlength="500"></textarea>
-      <button class="btn btn-gold btn-sm" id="postBtn" style="align-self:flex-end"><i class="fa-solid fa-paper-plane"></i> 发表</button>
+      <button class="btn btn-ghost btn-sm" onclick="openDiploModal()">
+        <i class="fa-solid fa-bell"></i> 外交事务 <span id="diploBadge" style="background:var(--red);color:#fff;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:4px;display:none;">0</span>
+      </button>
     </div>
 
-    <div id="postsWrap">
-      <div class="loading-state"><div class="spinner"></div><span>正在加载…</span></div>
+    <!-- 消息列表 -->
+    <div class="chat-messages" id="chatMessages">
+      <div class="loading-state"><div class="spinner"></div><span>正在接入国际频道...</span></div>
     </div>
+
+    <!-- 输入区 -->
+    <div class="chat-footer">
+      <div class="chat-input-box">
+        <textarea id="chatInput" placeholder="输入消息，支持附带多媒体文件..." oninput="autoResize(this)"></textarea>
+        <div class="chat-tools">
+          <!-- 🚨 仅保留一个多媒体上传按钮，根据文件类型自动识别 -->
+          <label for="mediaFile" title="发送图片/视频/音频/文件"><i class="fa-solid fa-paperclip"></i></label>
+          <input type="file" id="mediaFile" style="display:none" onchange="handleFileSelect()">
+          <span id="fileHint" style="font-size:12px; color:var(--cyan); align-self:center; display:none;"></span>
+        </div>
+      </div>
+      <button class="btn-send" id="btnSend" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+
   </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 🚨 外交事务弹窗 -->
+<div class="iecp-modal" id="diploModal">
+  <div class="iecp-modal-box glass-2" style="max-width:500px">
+    <h3><i class="fa-solid fa-envelope-open-text" style="color:var(--gold)"></i> 外交事务</h3>
+    <p class="modal-sub">处理待办的外交请求。宣战通知仅作公示，无需接受。</p>
+    <div id="diploList" style="max-height:60vh; overflow-y:auto; padding-right:4px;">
+      <!-- 动态渲染 -->
+    </div>
+    <div style="text-align:right; margin-top:20px;">
+      <button class="btn btn-ghost" onclick="document.getElementById('diploModal').classList.remove('open')">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
   var I = IECP;
   var profile = null;
+  var selectedFile = null;
+  var pollTimer = null;
+  var lastMessageId = 0;
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('diplomacy');
-    
     I.getProfile(true).then(function (p) {
       profile = p;
-      if (!profile) {
-        I.$('#feed').innerHTML = `<div class="empty-state glass"><p style="color:var(--red)">无法获取你的国家档案，请重新登录</p></div>`;
-        return;
-      }
-      I.$('#composeAvatar').src = p.flag_url || I.avatarFallback(p.username);
-      loadRequests();
-      loadPosts();
+      loadMessages();
+      loadDiplomacy();
+      // 轮询新消息（每5秒）
+      pollTimer = setInterval(loadMessages, 5000);
+      // 轮询外交请求（每10秒）
+      setInterval(loadDiplomacy, 10000);
     });
   });
 
-  function loadRequests() {
-    I.client.from('diplomacy_requests')
-      .select('*, from:profiles!diplomacy_requests_from_country_fkey(id, username, flag_url)')
-      .eq('to_country', profile.id)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false })
-      .then(function (res) {
-        var wrap = I.$('#requestsWrap');
-        var list = res.data || [];
-        if (!list.length) {
-          wrap.innerHTML = '<p style="color:var(--muted);font-size:13px;margin:0"><i class="fa-solid fa-check"></i> 暂无待处理申请</p>';
-          return;
-        }
-        
-        var html = '';
-        list.forEach(function (r) {
-          var from = r.from || {};
-          var typeLabel = r.request_type === 'ally' ? '建交' : '宣战';
-          var typeIcon = r.request_type === 'ally' ? 'fa-handshake' : 'fa-shield-halved';
-          var color = r.request_type === 'ally' ? 'var(--green)' : 'var(--red)';
-          
-          html +=
-            '<div style="display:flex;gap:14px;align-items:center;padding:12px 14px;background:var(--glass);border-radius:10px;border:1px solid var(--border);margin-bottom:10px;flex-wrap:wrap">' +
-              '<img src="' + I.escapeHtml(from.flag_url || I.avatarFallback(from.username)) + '" style="width:40px;height:26px;object-fit:cover;border-radius:4px">' +
-              '<div style="flex:1;min-width:150px">' +
-                '<b style="font-size:13.5px;display:block">' + I.escapeHtml(from.username || '未知') + '</b>' +
-                '<span style="font-size:12px;color:' + color + '"><i class="fa-solid ' + typeIcon + '"></i> 申请' + typeLabel + '</span>' +
-                (r.message ? '<p style="font-size:12.5px;color:var(--muted);margin:6px 0 0;line-height:1.6">“' + I.escapeHtml(r.message) + '”</p>' : '') +
-              '</div>' +
-              '<div style="display:flex;gap:8px">' +
-                '<button class="btn btn-ghost btn-sm" onclick="respondRequest(\'' + r.id + '\',\'rejected\',\'' + r.request_type + '\')">拒绝</button>' +
-                '<button class="btn btn-gold btn-sm" onclick="respondRequest(\'' + r.id + '\',\'accepted\',\'' + r.request_type + '\', \'' + r.from_country + '\')">接受</button>' +
-              '</div>' +
-            '</div>';
-        });
-        wrap.innerHTML = html;
+  // 🚨 自动伸缩输入框
+  window.autoResize = function(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  };
+
+  // 🚨 文件选择
+  window.handleFileSelect = function() {
+    var file = I.$('#mediaFile').files[0];
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) { I.toast('文件不能超过 50MB', 'error'); return; }
+    selectedFile = file;
+    I.$('#fileHint').textContent = '已选择: ' + file.name;
+    I.$('#fileHint').style.display = 'inline-block';
+  };
+
+  // 🚨 加载消息
+  function loadMessages() {
+    // 获取最新 50 条
+    I.client.from('posts')
+      .select('*, author:profiles(id, username, flag_url)')
+      .order('created_at', { ascending: true })
+      .limit(50)
+      .then(function(res) {
+        if (res.error) return console.error(res.error);
+        renderMessages(res.data || []);
       });
   }
 
-  window.respondRequest = function (reqId, status, type, fromId) {
-    I.client.from('diplomacy_requests').update({ status: status }).eq('id', reqId).then(function (r) {
-      if (r.error) { I.toast(r.error.message, 'error'); return; }
+  function renderMessages(list) {
+    var wrap = I.$('#chatMessages');
+    
+    // 判断是否需要滚动到底部
+    var isAtBottom = wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight < 50;
 
-      if (status === 'accepted') {
-        var a = fromId < profile.id ? fromId : profile.id;
-        var b = fromId < profile.id ? profile.id : fromId;
-        
-        // 1. 更新 relations
-        I.client.from('relations').upsert({
-          country_a: a, country_b: b,
-          relation_type: type === 'ally' ? 'ally' : 'war'
-        }).then(function () {
-          
-          // 2. 如果是接受宣战，必须同步开启战争记录
-          if (type === 'war') {
-            I.client.from('wars').insert({
-              attacker_id: fromId,
-              defender_id: profile.id,
-              status: 'ongoing'
-            }).then(function () {
-              I.toast('已接受宣战，战争系统已启动！', 'success');
-              loadRequests();
-            });
-          } else {
-            I.toast('已建立友好关系', 'success');
-            loadRequests();
-          }
-        });
+    var html = '';
+    list.forEach(function(m) {
+      var isMine = m.author_id === profile.id;
+      var author = m.author || {};
+      var avatar = author.flag_url || I.avatarFallback(author.username || '?');
+      
+      var timeStr = I.fmtDate(m.created_at).split(' ')[1];
+      var now = new Date();
+      var canRecall = isMine && !m.is_recalled && (now - new Date(m.created_at) < 120000);
+
+      var bubbleContent = '';
+      if (m.is_recalled) {
+        bubbleContent = `<div class="msg-bubble recalled">该消息已撤回</div>`;
       } else {
-        I.toast('已拒绝', 'success');
-        loadRequests();
+        var mediaHtml = '';
+        if (m.media_url) {
+          if (m.media_type === 'image') mediaHtml = `<img src="${m.media_url}" class="msg-media" onclick="window.open(this.src)">`;
+          else if (m.media_type === 'video') mediaHtml = `<video src="${m.media_url}" controls class="msg-media"></video>`;
+          else if (m.media_type === 'audio') mediaHtml = `<audio src="${m.media_url}" controls class="msg-media"></audio>`;
+          else if (m.media_type === 'file') {
+            mediaHtml = `<a href="${m.media_url}" target="_blank" download class="file-attach">
+              <i class="fa-solid fa-file-arrow-down"></i>
+              <div><div class="f-name">${I.escapeHtml(m.file_name || '附件文件')}</div><div class="f-size">点击下载</div></div>
+            </a>`;
+          }
+        }
+        
+        var textHtml = m.content ? `<div style="white-space: pre-wrap;">${I.escapeHtml(m.content)}</div>` : '';
+        bubbleContent = `<div class="msg-bubble">${mediaHtml}${textHtml}</div>`;
+      }
+
+      html += `
+        <div class="msg-row ${isMine ? 'mine' : 'other'}" data-id="${m.id}">
+          <img src="${avatar}" class="msg-avatar">
+          <div class="msg-content-wrap">
+            <div class="msg-info">
+              ${!isMine ? `<b>${I.escapeHtml(author.username || '未知')}</b>` : ''}
+              <span>${timeStr}</span>
+              ${canRecall ? `<span class="recall-btn" onclick="recallMessage('${m.id}')">撤回</span>` : ''}
+            </div>
+            ${bubbleContent}
+          </div>
+        </div>
+      `;
+    });
+    
+    wrap.innerHTML = html;
+    if (isAtBottom || wrap.scrollTop === 0) {
+      wrap.scrollTop = wrap.scrollHeight;
+    }
+  }
+
+  // 🚨 发送消息
+  window.sendMessage = function() {
+    var content = I.$('#chatInput').value.trim();
+    if (!content && !selectedFile) return;
+
+    var btn = I.$('#btnSend');
+    btn.disabled = true;
+
+    function doInsert(mediaUrl, mediaType, fileName) {
+      I.client.from('posts').insert({
+        author_id: profile.id,
+        content: content,
+        media_url: mediaUrl,
+        media_type: mediaType,
+        file_name: fileName
+      }).then(function(r) {
+        btn.disabled = false;
+        if (r.error) { I.toast(r.error.message, 'error'); return; }
+        
+        // 清空输入
+        I.$('#chatInput').value = '';
+        I.$('#chatInput').style.height = '44px';
+        selectedFile = null;
+        I.$('#fileHint').style.display = 'none';
+        I.$('#mediaFile').value = '';
+        
+        loadMessages();
+      });
+    }
+
+    if (selectedFile) {
+      var file = selectedFile;
+      var ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+      var path = profile.id + '/' + Date.now() + '.' + ext;
+      I.toast('正在上传附件...', 'success', 1000);
+
+      I.client.storage.from('media').upload(path, file).then(function(r) {
+        if (r.error) { btn.disabled = false; I.toast('上传失败', 'error'); return; }
+        var url = I.client.storage.from('media').getPublicUrl(path).data.publicUrl;
+        var type = file.type.startsWith('image/') ? 'image' : 
+                   file.type.startsWith('video/') ? 'video' : 
+                   file.type.startsWith('audio/') ? 'audio' : 'file';
+        doInsert(url, type, file.name);
+      });
+    } else {
+      doInsert(null, null, null);
+    }
+  };
+
+  // 🚨 撤回消息
+  window.recallMessage = function(id) {
+    if (!confirm('确认撤回该消息吗？')) return;
+    I.client.from('posts').update({ is_recalled: true }).eq('id', id).then(function(r) {
+      if (r.error) { I.toast('撤回失败：' + r.error.message, 'error'); return; }
+      I.toast('已撤回', 'success');
+      loadMessages();
+    });
+  };
+
+  // 🚨 加载外交事务
+  function loadDiplomacy() {
+    I.client.from('diplomacy_requests')
+      .select('*, from_profile:profiles!diplomacy_requests_from_country_fkey(username)')
+      .eq('to_country', profile.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .then(function(res) {
+        var list = res.data || [];
+        var badge = I.$('#diploBadge');
+        if (list.length > 0) {
+          badge.style.display = 'inline-block';
+          badge.textContent = list.length;
+        } else {
+          badge.style.display = 'none';
+        }
+        renderDiploList(list);
+      });
+  }
+
+  function renderDiploList(list) {
+    var wrap = I.$('#diploList');
+    if (!list.length) {
+      wrap.innerHTML = '<div style="text-align:center; padding:30px; color:var(--muted);">暂无待办外交事务</div>';
+      return;
+    }
+
+    var html = '';
+    list.forEach(function(req) {
+      var fromName = req.from_profile ? req.from_profile.username : '未知国家';
+      
+      if (req.request_type === 'war') {
+        // 宣战：仅提醒，无按钮
+        html += `
+          <div class="diplo-item war">
+            <div>
+              <div style="font-size:14px; font-weight:bold; color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> 遭遇宣战</div>
+              <div style="font-size:13px; color:var(--ink-2); margin-top:4px;">【${I.escapeHtml(fromName)}】已向你宣战！</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:4px;">${I.relativeTime(req.created_at)}</div>
+            </div>
+          </div>
+        `;
+      } else if (req.request_type === 'ally') {
+        // 建交：有同意/拒绝
+        html += `
+          <div class="diplo-item">
+            <div>
+              <div style="font-size:14px; font-weight:bold; color:var(--gold);"><i class="fa-solid fa-handshake"></i> 建交申请</div>
+              <div style="font-size:13px; color:var(--ink-2); margin-top:4px;">【${I.escapeHtml(fromName)}】申请与你建立友好关系。</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:4px;">${I.relativeTime(req.created_at)}</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-cyan btn-sm" onclick="handleDiplo('${req.id}', '${req.from_country}', 'ally', 'accept')">同意</button>
+              <button class="btn btn-ghost btn-sm" onclick="handleDiplo('${req.id}', '${req.from_country}', 'ally', 'reject')">拒绝</button>
+            </div>
+          </div>
+        `;
+      } else if (req.request_type === 'peace') {
+        // 停战：有同意/拒绝
+        html += `
+          <div class="diplo-item">
+            <div>
+              <div style="font-size:14px; font-weight:bold; color:var(--cyan);"><i class="fa-solid fa-dove"></i> 停战申请</div>
+              <div style="font-size:13px; color:var(--ink-2); margin-top:4px;">【${I.escapeHtml(fromName)}】请求结束战争。</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:4px;">${I.relativeTime(req.created_at)}</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-cyan btn-sm" onclick="handleDiplo('${req.id}', '${req.from_country}', 'peace', 'accept')">同意</button>
+              <button class="btn btn-ghost btn-sm" onclick="handleDiplo('${req.id}', '${req.from_country}', 'peace', 'reject')">拒绝</button>
+            </div>
+          </div>
+        `;
+      }
+    });
+    wrap.innerHTML = html;
+  }
+
+  window.openDiploModal = function() {
+    I.$('#diploModal').classList.add('open');
+  };
+
+  // 🚨 处理外交请求
+  window.handleDiplo = function(reqId, fromId, type, action) {
+    var status = action === 'accept' ? 'accepted' : 'rejected';
+    
+    I.client.from('diplomacy_requests').update({ status: status }).eq('id', reqId).then(function(r) {
+      if (r.error) { I.toast('操作失败', 'error'); return; }
+      
+      if (action === 'accept') {
+        if (type === 'ally') {
+          var a = profile.id < fromId ? profile.id : fromId;
+          var b = profile.id < fromId ? fromId : profile.id;
+          I.client.from('relations').delete().match({ country_a: a, country_b: b }).then(function(){
+            I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: 'ally' }).then(function(){
+              I.toast('已建立外交关系', 'success');
+              loadDiplomacy();
+            });
+          });
+        } else if (type === 'peace') {
+          // 这里直接调用之前写过的停战同意逻辑（但在外交事务面板里，我们直接处理关系）
+          // 简化处理：更新关系为 neutral
+          I.client.from('relations').update({ relation_type: 'neutral' })
+            .or(`and(country_a.eq.${profile.id},country_b.eq.${fromId}),and(country_a.eq.${fromId},country_b.eq.${profile.id})`)
+            .then(function(){
+              I.toast('已停战', 'success');
+              loadDiplomacy();
+            });
+        }
+      } else {
+        I.toast('已拒绝请求', 'info');
+        loadDiplomacy();
       }
     });
   };
 
-  I.$('#postBtn').addEventListener('click', function () {
-    var content = I.$('#postContent').value.trim();
-    if (!content) { I.toast('请输入内容', 'error'); return; }
-    var btn = this;
-    btn.disabled = true;
-    I.client.from('posts').insert({ author_id: profile.id, content: content }).then(function (r) {
-      btn.disabled = false;
-      if (r.error) { I.toast(r.error.message, 'error'); return; }
-      I.$('#postContent').value = '';
-      I.toast('发表成功', 'success');
-      loadPosts();
-    });
-  });
-
-  function loadPosts() {
-    I.client.from('posts')
-      .select('*, author:profiles!posts_author_id_fkey(id, username, flag_url)')
-      .order('created_at', { ascending: false })
-      .limit(80)
-      .then(function (res) {
-        var wrap = I.$('#postsWrap');
-        var list = res.data || [];
-        if (!list.length) {
-          wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-comments"></i><p>还没有动态</p><small>发表第一条国际声明</small></div>';
-          return;
-        }
-        var html = '';
-        list.forEach(function (p) {
-          var a = p.author || {};
-          html +=
-            '<div class="comm-post glass">' +
-              '<img class="comm-avatar" src="' + I.escapeHtml(a.flag_url || I.avatarFallback(a.username)) + '">' +
-              '<div class="comm-body">' +
-                '<div class="comm-head">' +
-                  '<a href="country.html?id=' + I.escapeHtml(a.id || '') + '"><b>' + I.escapeHtml(a.username || '未知') + '</b></a>' +
-                  '<time>' + I.relativeTime(p.created_at) + '</time>' +
-                '</div>' +
-                '<p>' + I.escapeHtml(p.content) + '</p>' +
-              '</div>' +
-            '</div>';
-        });
-        wrap.innerHTML = html;
-      });
-  }
 })();
 </script>
-
 </body>
 </html>
