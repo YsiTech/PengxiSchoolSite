@@ -78,7 +78,7 @@
         <a href="register.html" style="color: var(--gold-2);">注册新国家 <i class="fa-solid fa-arrow-right"></i></a>
       </div>
 
-      <!-- 🚨 新增：紧急逃生出口（防止手机端缓存卡死） -->
+      <!-- 紧急逃生出口（防止手机端缓存死循环） -->
       <div style="text-align: center; margin-top: 25px; font-size: 12px; color: var(--muted);">
         页面卡住了？<span style="color: var(--cyan); cursor: pointer; text-decoration: underline;" onclick="forceLogout()">点此清理登录缓存</span>
       </div>
@@ -86,17 +86,24 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- 🚨 核心修复：将 jsdelivr 替换为国内可稳定访问的 unpkg -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
+// 🚨 防呆提示：如果 CDN 被墙导致核心库没加载出来，阻止后续报错
+if (typeof IECP === 'undefined' || !IECP.client) {
+  alert('网络波动，核心组件未加载成功。请刷新页面或检查您的网络！');
+  throw new Error('IECP SDK not loaded');
+}
+
 // ==========================================
 // 1. 登录状态自动检测与跳转
 // ==========================================
 (function() {
   IECP.client.auth.getSession().then(function(res) {
     if (res.data && res.data.session) {
-      // 🚨 加 100 毫秒延迟，给页面渲染的时间，防止瞬间死循环
+      // 加 100 毫秒延迟，给页面渲染的时间，防止瞬间死循环
       setTimeout(function() { location.replace('index.html'); }, 100);
     }
   });
@@ -105,7 +112,7 @@
 
 // 🚨 强制清理卡死的缓存并刷新
 window.forceLogout = function() {
-  if(confirm('确定要清理登录状态并重新登录吗？')) {
+  if(confirm('确定要清理卡死的登录状态并重新登录吗？')) {
     IECP.client.auth.signOut().then(function() {
       localStorage.clear();
       sessionStorage.clear();

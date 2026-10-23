@@ -86,7 +86,6 @@
   .file-attach .f-name { font-size: 13px; font-weight: bold; }
   .file-attach .f-size { font-size: 11px; color: var(--muted); }
 
-  /* 撤回按钮：桌面 hover 显示，移动端常显 */
   .recall-btn {
     display: inline-block;
     font-size: 11px; color: var(--red); cursor: pointer;
@@ -147,6 +146,7 @@
 
   .diplo-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--glass-2); padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 10px; }
   .diplo-item.war { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+  .diplo-item.trade { border-color: rgba(212,175,55,0.3); background: rgba(212,175,55,0.05); }
 
   @media (max-width: 640px) {
     .chat-wrap { height: calc(100dvh - 150px); border-radius: 12px; }
@@ -204,7 +204,7 @@
 </main>
 
 <div class="iecp-modal" id="diploModal">
-  <div class="iecp-modal-box glass-2" style="max-width:440px">
+  <div class="iecp-modal-box glass-2" style="max-width:500px">
     <h3><i class="fa-solid fa-envelope-open-text" style="color:var(--gold)"></i> 外交事务</h3>
     <p class="modal-sub">处理待办的外交请求。宣战通知仅作公示，无需接受。</p>
     <div id="diploList" style="max-height:60vh; overflow-y:auto; padding-right:4px;">
@@ -228,6 +228,16 @@
   var diploTimer = null;
   var currentSig = '';
   var isDesktop = window.matchMedia('(pointer: fine)').matches;
+
+  // 地名映射库（与 wars.html 保持一致，用于展示）
+  var GEO_NAME_MAP = {
+    'China': '东亚核心大陆', 'Russia': '东欧及北亚冻土', 'United States of America': '北美中央大平原', 'United States': '北美中央大平原', 
+    'Canada': '北美北部寒带针叶林', 'Brazil': '南美亚马逊盆地', 'Australia': '澳洲中西部干旱高原',
+    'India': '南亚次大陆', 'Japan': '东北亚列岛', 'United Kingdom': '西北欧不列颠群岛',
+    'France': '西欧广阔平原', 'Germany': '中欧核心地带', 'South Africa': '南部非洲高原',
+    'Egypt': '北非尼罗河三角洲', 'Indonesia': '东南亚赤道群岛', 'Saudi Arabia': '阿拉伯半岛中北部'
+  };
+  function getGeoName(code) { return GEO_NAME_MAP[code] || '远洋专属经济区'; }
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
@@ -291,7 +301,6 @@
 
   // ============ 消息加载 ============
   function loadMessages() {
-    // 🚨 关键修复：必须降序取最新 50 条，再反转为升序渲染
     I.client.from('posts')
       .select('*, author:profiles(id, username, flag_url)')
       .order('created_at', { ascending: false })
@@ -300,7 +309,7 @@
         if (res.error) { console.error(res.error); return; }
         var list = (res.data || []).slice().reverse();
         var sig = list.map(function (m) { return m.id + (m.is_recalled ? 'r' : ''); }).join('|');
-        if (sig === currentSig) return; // 无变化不重绘，避免闪烁
+        if (sig === currentSig) return; 
         currentSig = sig;
         renderMessages(list);
       });
@@ -407,7 +416,7 @@
         I.$('#fileHint').textContent = '';
         I.$('#mediaFile').value = '';
 
-        currentSig = ''; // 强制刷新
+        currentSig = ''; 
         loadMessages();
       });
     }
@@ -513,6 +522,22 @@
           + '<button class="btn btn-cyan btn-sm" onclick="handleDiplo(\'' + rid + '\',\'' + fromId + '\',\'peace\',\'accept\')">同意</button>'
           + '<button class="btn btn-ghost btn-sm" onclick="handleDiplo(\'' + rid + '\',\'' + fromId + '\',\'peace\',\'reject\')">拒绝</button>'
           + '</div></div>';
+      } else if (req.request_type === 'buy_territory') {
+        // 🚨 处理购买领土请求
+        var extra = req.extra_data || {};
+        var geoName = getGeoName(extra.region_code);
+        var price = parseInt(extra.price || 0).toLocaleString();
+        
+        html += '<div class="diplo-item trade">'
+          + '<div style="min-width:0">'
+          + '<div style="font-size:14px; font-weight:bold; color:var(--gold);"><i class="fa-solid fa-money-bill-wave"></i> 购买领土申请</div>'
+          + '<div style="font-size:13px; color:var(--ink-2); margin-top:4px;">【' + safeName + '】想购买你的 <b style="color:#fff;">' + geoName + '</b>，出价 <b style="color:var(--gold-2);">' + price + ' ₽</b>。</div>'
+          + '<div style="font-size:11px; color:var(--muted); margin-top:4px;">' + I.relativeTime(req.created_at) + '</div>'
+          + '</div>'
+          + '<div style="display:flex; gap:8px; flex-shrink:0;">'
+          + '<button class="btn btn-gold btn-sm" onclick="handleBuyTerritory(\'' + rid + '\', \'accept\')">出售</button>'
+          + '<button class="btn btn-ghost btn-sm" onclick="handleBuyTerritory(\'' + rid + '\', \'reject\')">拒绝</button>'
+          + '</div></div>';
       }
     });
     wrap.innerHTML = html;
@@ -542,7 +567,6 @@
         if (r.error) { I.toast('操作失败', 'error'); return; }
         var a = profile.id < fromId ? profile.id : fromId;
         var b = profile.id < fromId ? fromId : profile.id;
-        // 🚨 双向删除，避免反向残留导致重复关系
         I.client.from('relations').delete()
           .or('and(country_a.eq.' + a + ',country_b.eq.' + b + '),and(country_a.eq.' + b + ',country_b.eq.' + a + ')')
           .then(function () {
@@ -554,11 +578,9 @@
           });
       });
     } else if (type === 'peace') {
-      // 🚨 必须调用 accept_peace RPC，否则 wars 表不会结束
       I.client.rpc('accept_peace', { p_request_id: reqId }).then(function (r) {
         if (r.error) {
           console.warn('accept_peace RPC 失败，使用兜底逻辑:', r.error);
-          // 兜底：至少把关系和请求状态改正
           I.client.from('diplomacy_requests').update({ status: 'accepted' }).eq('id', reqId).then(function () {
             I.client.from('relations').update({ relation_type: 'neutral' })
               .or('and(country_a.eq.' + profile.id + ',country_b.eq.' + fromId + '),and(country_a.eq.' + fromId + ',country_b.eq.' + profile.id + ')')
@@ -573,6 +595,29 @@
         }
       });
     }
+  };
+
+  // 🚨 处理购买领土请求
+  window.handleBuyTerritory = function(reqId, action) {
+    if (action === 'reject') {
+      I.client.from('diplomacy_requests').update({ status: 'rejected' }).eq('id', reqId).then(function (r) {
+        if (r.error) { I.toast('操作失败', 'error'); return; }
+        I.toast('已拒绝购买请求', 'info');
+        loadDiplomacy();
+      });
+      return;
+    }
+    
+    if (!confirm('确认出售该领土吗？资金将直接打入你的国库。')) return;
+    I.toast('正在处理交易...', 'success', 1000);
+    
+    I.client.rpc('accept_buy_territory', { p_request_id: reqId }).then(function(res) {
+      if (res.error) return I.toast('交易失败：' + res.error.message, 'error');
+      if (!res.data.ok) return I.toast(res.data.msg, 'error');
+      
+      I.toast('交易成功，领土已出售！', 'success');
+      loadDiplomacy();
+    });
   };
 
 })();
