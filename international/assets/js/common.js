@@ -28,40 +28,24 @@
       }
 
       /* ================= 🚨 核心修复：彻底隐藏滚动条但保留滑动 ================= */
-      
-      /* 1. 快捷预览列表 */
       #notifList {
-        max-height: 280px !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important; 
-        overscroll-behavior: contain !important;      
-        touch-action: pan-y !important;               
-        scrollbar-width: none !important; /* Firefox */
-        -ms-overflow-style: none !important; /* IE */
+        max-height: 280px !important; overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain !important;
+        touch-action: pan-y !important; scrollbar-width: none !important; -ms-overflow-style: none !important;
       }
-      #notifList::-webkit-scrollbar { display: none !important; } /* Chrome/Safari */
+      #notifList::-webkit-scrollbar { display: none !important; }
 
-      /* 2. 消息中心的卡片列表 */
       #notifCenterList {
-        max-height: 65vh !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        overscroll-behavior: contain !important;
-        touch-action: pan-y !important;
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
+        max-height: 65vh !important; overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain !important;
+        touch-action: pan-y !important; scrollbar-width: none !important; -ms-overflow-style: none !important;
       }
       #notifCenterList::-webkit-scrollbar { display: none !important; }
 
-      /* 3. 详细通知正文区 (解决长文本把按钮挤没的问题) */
       #ndBody {
-        max-height: 55vh !important; 
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        overscroll-behavior: contain !important;
-        touch-action: pan-y !important;
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
+        max-height: 55vh !important; overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain !important;
+        touch-action: pan-y !important; scrollbar-width: none !important; -ms-overflow-style: none !important;
       }
       #ndBody::-webkit-scrollbar { display: none !important; }
     `;
@@ -287,7 +271,18 @@
         '</a>';
 
       w.IECP.loadNotifications(p.id);
-    }).catch(function(){ host.innerHTML = '<a class="btn btn-ghost btn-sm" href="login.html">登录</a>'; });
+    }).catch(function(err){ 
+      // 🚨 核心修复：如果获取档案失败，检查本地是否真的没登录（防网络波动死循环）
+      w.IECP.client.auth.getSession().then(function(res) {
+        if (res.data && res.data.session) {
+          // 有登录状态，只是网络卡了，显示刷新按钮
+          host.innerHTML = '<a href="javascript:location.reload()" class="btn btn-ghost btn-sm" style="color:var(--gold); font-weight:bold;"><i class="fa-solid fa-rotate-right"></i> 刷新重试</a>';
+        } else {
+          // 确实没登录
+          host.innerHTML = '<a class="btn btn-ghost btn-sm" href="login.html">登录</a>';
+        }
+      });
+    });
   };
 
   w.IECP.loadNotifications = function(userId) {

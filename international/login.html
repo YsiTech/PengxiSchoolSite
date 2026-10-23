@@ -77,6 +77,11 @@
         <a href="forgot-password.html">忘记密码？</a>
         <a href="register.html" style="color: var(--gold-2);">注册新国家 <i class="fa-solid fa-arrow-right"></i></a>
       </div>
+
+      <!-- 🚨 新增：紧急逃生出口（防止手机端缓存卡死） -->
+      <div style="text-align: center; margin-top: 25px; font-size: 12px; color: var(--muted);">
+        页面卡住了？<span style="color: var(--cyan); cursor: pointer; text-decoration: underline;" onclick="forceLogout()">点此清理登录缓存</span>
+      </div>
     </div>
   </div>
 </div>
@@ -86,14 +91,28 @@
 <script src="assets/js/common.js"></script>
 <script>
 // ==========================================
-// 1. 登录核心逻辑
+// 1. 登录状态自动检测与跳转
 // ==========================================
 (function() {
   IECP.client.auth.getSession().then(function(res) {
-    if (res.data && res.data.session) location.replace('index.html');
+    if (res.data && res.data.session) {
+      // 🚨 加 100 毫秒延迟，给页面渲染的时间，防止瞬间死循环
+      setTimeout(function() { location.replace('index.html'); }, 100);
+    }
   });
   if (new URLSearchParams(location.search).get('mode') === 'otp') switchTab('otp');
 })();
+
+// 🚨 强制清理卡死的缓存并刷新
+window.forceLogout = function() {
+  if(confirm('确定要清理登录状态并重新登录吗？')) {
+    IECP.client.auth.signOut().then(function() {
+      localStorage.clear();
+      sessionStorage.clear();
+      location.href = 'login.html';
+    });
+  }
+};
 
 function switchTab(type) {
   const tabs = document.querySelectorAll('.auth-tab');
