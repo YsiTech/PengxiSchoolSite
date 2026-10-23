@@ -7,123 +7,89 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  .power-board {
-    background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(15,23,42,0.8));
-    border: 1px solid rgba(212,175,55,0.3);
-    border-radius: 16px; padding: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 20px;
-  }
+  .power-board { background: linear-gradient(135deg, rgba(212,175,55,0.1), rgba(15,23,42,0.8)); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 24px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 20px; }
   .power-stat { display: flex; flex-direction: column; gap: 6px; }
-  .power-stat span { font-size: 13px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
-  .power-stat b { font-size: 28px; color: var(--gold-2); font-family: var(--mono); font-weight: 900; text-shadow: 0 0 15px rgba(212,175,55,0.3); }
-
+  .power-stat span { font-size: 13px; color: var(--muted); text-transform: uppercase; }
+  .power-stat b { font-size: 28px; color: var(--gold-2); font-family: var(--mono); font-weight: 900; }
   .mil-tabs { display: flex; gap: 10px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
   .mil-tabs::-webkit-scrollbar { display: none; }
-  .mil-tab {
-    padding: 10px 24px; font-size: 14px; font-weight: 600; color: var(--muted);
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 10px; cursor: pointer; white-space: nowrap; transition: 0.2s; display: flex; align-items: center; gap: 8px;
-  }
-  .mil-tab:hover { background: rgba(255,255,255,0.08); color: var(--ink); }
-  .mil-tab.active { background: rgba(212,175,55,0.15); color: var(--gold-2); border-color: rgba(212,175,55,0.4); box-shadow: 0 4px 12px rgba(212,175,55,0.15); }
-
+  .mil-tab { padding: 10px 24px; font-size: 14px; font-weight: 600; color: var(--muted); background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .mil-tab.active { background: rgba(212,175,55,0.15); color: var(--gold-2); border-color: rgba(212,175,55,0.4); }
   .mil-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-bottom: 40px; }
-  .unit-card {
-    background: linear-gradient(150deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9));
-    border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; position: relative; overflow: hidden; transition: 0.3s;
-  }
-  .unit-card:hover { transform: translateY(-4px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-  .unit-card.defense-card:hover { border-color: var(--cyan); box-shadow: 0 10px 30px rgba(79,195,247,0.15); }
-  .unit-card.navy-card:hover { border-color: #3b82f6; box-shadow: 0 10px 30px rgba(59,130,246,0.15); }
-
+  .unit-card { background: linear-gradient(150deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9)); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; transition: 0.3s; }
+  .unit-card:hover { border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .unit-card.defense-card:hover { border-color: var(--cyan); }
+  .unit-card.navy-card:hover { border-color: #3b82f6; }
   .unit-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
-  .unit-icon {
-    width: 56px; height: 56px; border-radius: 14px; background: rgba(0,0,0,0.3);
-    display: grid; place-items: center; font-size: 26px; color: var(--gold); box-shadow: inset 0 0 10px rgba(212,175,55,0.2);
-  }
-  .defense-card .unit-icon { color: var(--cyan); box-shadow: inset 0 0 10px rgba(79,195,247,0.2); }
-  .navy-card .unit-icon { color: #3b82f6; box-shadow: inset 0 0 10px rgba(59,130,246,0.2); }
-  
-  .unit-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .unit-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(0,0,0,0.3); display: grid; place-items: center; font-size: 26px; color: var(--gold); flex-shrink: 0; overflow: hidden; }
+  .defense-card .unit-icon { color: var(--cyan); }
+  .navy-card .unit-icon { color: #3b82f6; }
+  .unit-icon img { width: 100%; height: 100%; object-fit: cover; }
+  .unit-title { font-size: 18px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px; }
   .unit-count { font-size: 13px; color: var(--muted); }
   .unit-count b { color: var(--cyan); font-family: var(--mono); font-size: 15px; }
-  
-  .unit-power { background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); color: var(--gold-2); font-size: 11px; padding: 2px 8px; border-radius: 6px; font-family: var(--mono); font-weight: bold; }
+  .unit-power { background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); color: var(--gold-2); font-size: 11px; padding: 2px 8px; border-radius: 6px; }
   .defense-card .unit-power { background: rgba(79,195,247,0.1); border-color: rgba(79,195,247,0.3); color: var(--cyan); }
-  .navy-card .unit-power { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: #60a5fa; }
-
   .unit-desc { font-size: 12px; color: var(--muted-2); margin-bottom: 16px; line-height: 1.5; }
-  
-  .unit-cost-box { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); }
+  .unit-cost-box { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); align-items: center;}
   .cost-item { display: flex; align-items: center; gap: 5px; color: var(--ink-2); }
   .cost-item i { color: var(--gold-2); font-size: 11px; }
   .cost-time { margin-left: auto; color: var(--cyan); font-family: var(--mono); font-weight: bold; }
-
   .build-row { display: flex; gap: 10px; margin-top: auto; }
   .build-row input { width: 80px; text-align: center; padding: 12px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--border-2); color: #fff; font-weight: bold; font-size: 16px; }
-
   .queue-panel { background: rgba(17, 24, 39, 0.7); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
-  .queue-panel h3 { font-size: 16px; color: var(--gold); margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-  .queue-list { display: flex; flex-direction: column; gap: 12px; }
-  .queue-item { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; }
-  .queue-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; z-index: 2; }
+  .queue-item { background: rgba(255,255,255,0.03); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden; margin-bottom: 12px; }
+  .queue-info { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; }
   .queue-name { font-size: 14px; font-weight: bold; color: #fff; display: flex; align-items: center; gap: 8px; }
-  .queue-name i { color: var(--gold); }
   .queue-time { font-family: var(--mono); font-size: 16px; color: var(--cyan); font-weight: bold; }
-  
   .queue-progress-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1; }
   .queue-progress-fill { height: 100%; background: linear-gradient(90deg, rgba(79,195,247,0.1), rgba(79,195,247,0.2)); width: 0%; transition: width 1s linear; }
 
+  .custom-form { background: rgba(30,41,59,0.5); padding: 20px; border-radius: 16px; border: 1px dashed var(--cyan); margin-bottom: 24px; }
+  .form-row { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 120px; display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; color: var(--cyan); }
+  .form-group input { padding: 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; }
+  .img-upload { display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px dashed var(--muted); cursor: pointer; overflow: hidden; flex-shrink: 0; }
+  .img-upload img { width: 100%; height: 100%; object-fit: cover; display: none; }
   @media (max-width: 768px) { .mil-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
+<header class="iecp-topbar"><div class="iecp-topbar-inner"><a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a><nav class="iecp-nav" id="iecp-nav"></nav><div class="iecp-user" id="iecp-user"></div></div></header>
 
-<header class="iecp-topbar">
-  <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
-    <nav class="iecp-nav" id="iecp-nav"></nav>
-    <div class="iecp-user" id="iecp-user"></div>
-  </div>
-</header>
-
-<section class="iecp-page-head">
-  <div class="iecp-page-head-inner">
-    <div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>军工厂</span></div>
-    <div><h1><i class="fa-solid fa-industry"></i> 军工与防御</h1><p>制造重装部队，建立不可逾越的防线</p></div>
-  </div>
-</section>
+<section class="iecp-page-head"><div class="iecp-page-head-inner"><div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>军工厂</span></div><div><h1><i class="fa-solid fa-industry"></i> 军工与防御</h1><p>制造重装部队或自定义特殊兵种</p></div></div></section>
 
 <main class="iecp-main">
-  
   <div class="power-board">
-    <div class="power-stat"><span><i class="fa-solid fa-bolt"></i> 综合军力评分</span><b id="totalPower">-</b></div>
-    <div class="power-stat"><span><i class="fa-solid fa-users"></i> 部队总规模</span><b id="totalTroops">-</b></div>
+    <div class="power-stat"><span><i class="fa-solid fa-bolt"></i> 综合军力</span><b id="totalPower">-</b></div>
+    <div class="power-stat"><span><i class="fa-solid fa-users"></i> 常规部队</span><b id="totalTroops">-</b></div>
     <div class="power-stat">
-      <span><i class="fa-solid fa-coins"></i> 当前战略资源</span>
-      <div style="display:flex; gap:16px; margin-top:8px;">
-        <div style="font-size:13px; color:var(--ink-2);"><i class="fa-solid fa-mountain" style="color:#a78bfa"></i> <span id="resIron">-</span></div>
-        <div style="font-size:13px; color:var(--ink-2);"><i class="fa-solid fa-oil-well" style="color:#f59e0b"></i> <span id="resOil">-</span></div>
-        <div style="font-size:13px; color:var(--ink-2);"><i class="fa-solid fa-atom" style="color:#4fc3f7"></i> <span id="resRare">-</span></div>
+      <span><i class="fa-solid fa-coins"></i> 战略资源</span>
+      <div style="display:flex; gap:16px; margin-top:8px; flex-wrap:wrap;">
+        <div style="font-size:13px;"><i class="fa-solid fa-mountain" style="color:#a78bfa"></i> <span id="resIron">-</span></div>
+        <div style="font-size:13px;"><i class="fa-solid fa-oil-well" style="color:#f59e0b"></i> <span id="resOil">-</span></div>
+        <div style="font-size:13px;"><i class="fa-solid fa-fire" style="color:#ef4444"></i> <span id="resGas">-</span></div>
+        <div style="font-size:13px;"><i class="fa-solid fa-atom" style="color:#4fc3f7"></i> <span id="resRare">-</span></div>
+        <div style="font-size:13px;"><i class="fa-solid fa-wheat-awn" style="color:#22c55e"></i> <span id="resFood">-</span></div>
       </div>
     </div>
   </div>
 
   <div class="queue-panel" id="queuePanel" style="display:none;">
-    <h3><i class="fa-solid fa-list-check"></i> 制造队列</h3>
-    <div class="queue-list" id="queueList"></div>
+    <h3 style="color:var(--gold); margin-bottom:15px;"><i class="fa-solid fa-list-check"></i> 制造队列</h3><div id="queueList"></div>
   </div>
 
   <div class="mil-tabs" id="milTabs">
-    <div class="mil-tab active" onclick="switchTab('all', this)"><i class="fa-solid fa-layer-group"></i> 全部兵种</div>
+    <div class="mil-tab active" onclick="switchTab('all', this)"><i class="fa-solid fa-layer-group"></i> 全部</div>
+    <div class="mil-tab" onclick="switchTab('custom', this)"><i class="fa-solid fa-wand-magic-sparkles"></i> 自定义兵种</div>
     <div class="mil-tab" onclick="switchTab('army', this)"><i class="fa-solid fa-person-rifle"></i> 陆军</div>
     <div class="mil-tab" onclick="switchTab('navy', this)"><i class="fa-solid fa-ship"></i> 海军</div>
     <div class="mil-tab" onclick="switchTab('air', this)"><i class="fa-solid fa-jet-fighter"></i> 空军</div>
-    <div class="mil-tab" onclick="switchTab('defense', this)"><i class="fa-solid fa-shield-halved"></i> 防御工事</div>
+    <div class="mil-tab" onclick="switchTab('defense', this)"><i class="fa-solid fa-shield-halved"></i> 防御</div>
   </div>
 
-  <div class="mil-grid" id="unitList">
-    <div class="loading-state" style="grid-column:1/-1;"><div class="spinner"></div><span>正在连接军工厂...</span></div>
-  </div>
+  <div class="mil-grid" id="unitList"></div>
 </main>
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -131,17 +97,9 @@
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
-  var I = IECP;
-  var profile = null;
-  var myRes = null;
-  var myMil = null;
-  var myQueue = [];
-  var timer = null;
-  var activeTab = 'all';
+  var I = IECP; var profile = null; var myRes = null; var myMil = null; var myQueue = []; var customUnits = {}; var timer = null; var activeTab = 'all';
 
-  // 🚨 全量兵种配置字典
   var UNITS = [
-    // --- 陆军 ---
     { type: 'scouts', name: '侦察兵', icon: 'fa-binoculars', category: 'army', power: 1, cost: { food: 5 }, desc: '基础侦察部队。', time: 2 },
     { type: 'infantry', name: '机械化步兵', icon: 'fa-person-rifle', category: 'army', power: 3, cost: { food: 10, iron_ore: 5 }, desc: '常规主力步兵。', time: 5 },
     { type: 'artillery', name: '自行火炮', icon: 'fa-bomb', category: 'army', power: 8, cost: { iron_ore: 20, oil: 10 }, desc: '远程火力支援。', time: 10 },
@@ -149,96 +107,128 @@
     { type: 'aav', name: '防空战车', icon: 'fa-crosshairs', category: 'army', power: 12, cost: { iron_ore: 30, oil: 20 }, desc: '克制空中单位。', time: 12 },
     { type: 'mechs', name: '机甲战士', icon: 'fa-robot', category: 'army', power: 35, cost: { rare_metal: 5, iron_ore: 50 }, desc: '未来科技装甲。', time: 25 },
     { type: 'missiles', name: '洲际导弹', icon: 'fa-rocket', category: 'army', power: 100, cost: { rare_metal: 20, oil: 50 }, desc: '毁灭级战略武器。', time: 40 },
-
-    // --- 海军 ---
     { type: 'patrol_boats', name: '巡逻艇', icon: 'fa-sailboat', category: 'navy', power: 5, cost: { iron_ore: 15, oil: 5 }, desc: '轻型巡逻单位。', time: 8 },
     { type: 'frigates', name: '导弹护卫舰', icon: 'fa-anchor', category: 'navy', power: 20, cost: { iron_ore: 40, oil: 20 }, desc: '多功能水面舰艇。', time: 20 },
-    { type: 'submarines', name: '攻击核潜艇', icon: 'fa-water', category: 'navy', power: 40, cost: { iron_ore: 60, oil: 40, rare_metal: 5 }, desc: '深海幽灵，致命打击。', time: 30 },
-    { type: 'destroyers', name: '驱逐舰', icon: 'fa-ship', category: 'navy', power: 50, cost: { iron_ore: 80, oil: 50 }, desc: '舰队防空与反潜核心。', time: 35 },
-    { type: 'cruisers', name: '导弹巡洋舰', icon: 'fa-shield-ship', category: 'navy', power: 80, cost: { iron_ore: 120, oil: 80, rare_metal: 10 }, desc: '重装水面打击平台。', time: 45 },
-    { type: 'amphibious', name: '两栖攻击舰', icon: 'fa-ship', category: 'navy', power: 120, cost: { iron_ore: 150, oil: 100 }, desc: '远洋投送兵力的巨兽。', time: 60 },
-    { type: 'carriers', name: '核动力航母', icon: 'fa-ship', category: 'navy', power: 300, cost: { iron_ore: 300, oil: 200, rare_metal: 50 }, desc: '绝对的海上霸主。', time: 120 },
-
-    // --- 空军 ---
+    { type: 'submarines', name: '攻击核潜艇', icon: 'fa-water', category: 'navy', power: 40, cost: { iron_ore: 60, oil: 40, rare_metal: 5 }, desc: '深海幽灵。', time: 30 },
+    { type: 'destroyers', name: '驱逐舰', icon: 'fa-ship', category: 'navy', power: 50, cost: { iron_ore: 80, oil: 50 }, desc: '舰队防空核心。', time: 35 },
+    { type: 'cruisers', name: '导弹巡洋舰', icon: 'fa-shield-ship', category: 'navy', power: 80, cost: { iron_ore: 120, oil: 80, rare_metal: 10 }, desc: '重装水面平台。', time: 45 },
+    { type: 'amphibious', name: '两栖攻击舰', icon: 'fa-ship', category: 'navy', power: 120, cost: { iron_ore: 150, oil: 100 }, desc: '远洋投送巨兽。', time: 60 },
+    { type: 'carriers', name: '核动力航母', icon: 'fa-ship', category: 'navy', power: 300, cost: { iron_ore: 300, oil: 200, rare_metal: 50 }, desc: '绝对海上霸主。', time: 120 },
     { type: 'drones', name: '侦察无人机', icon: 'fa-plane-up', category: 'air', power: 3, cost: { oil: 10, iron_ore: 5 }, desc: '低成本空中监视。', time: 5 },
     { type: 'fighters', name: '第四代战机', icon: 'fa-jet-fighter', category: 'air', power: 25, cost: { oil: 50, rare_metal: 15 }, desc: '空军中坚力量。', time: 30 },
-    { type: 'stealth_air', name: '第五代隐身战机', icon: 'fa-jet-fighter-up', category: 'air', power: 60, cost: { oil: 80, rare_metal: 30 }, desc: '雷达不可见的死神。', time: 45 },
-    { type: 'bombers', name: '战略轰炸机', icon: 'fa-plane', category: 'air', power: 90, cost: { oil: 120, iron_ore: 50 }, desc: '地毯式轰炸，毁天灭地。', time: 60 },
-    { type: 'ew_planes', name: '电子战机', icon: 'fa-satellite-dish', category: 'air', power: 70, cost: { oil: 100, rare_metal: 40 }, desc: '瘫痪敌方防空网络。', time: 50 },
-    { type: 'gunships', name: '重型炮艇机', icon: 'fa-plane-circle-check', category: 'air', power: 55, cost: { oil: 60, iron_ore: 40 }, desc: '地面部队的噩梦。', time: 40 },
-    { type: 'spaceplanes', name: '空天战机', icon: 'fa-meteor', category: 'air', power: 500, cost: { oil: 200, rare_metal: 100 }, desc: '来自外太空的降维打击。', time: 180 },
-
-    // --- 防御 ---
-    { type: 'trenches', name: '反坦克战壕', icon: 'fa-bars-staggered', category: 'defense', power: 2, cost: { food: 10 }, desc: '迟滞敌方装甲部队。', time: 5 },
-    { type: 'bunkers', name: '地下碉堡', icon: 'fa-torii-gate', category: 'defense', power: 8, cost: { iron_ore: 50, food: 20 }, desc: '坚固的防御掩体。', time: 20 },
-    { type: 'aaa', name: '防空导弹', icon: 'fa-rocket', category: 'defense', power: 20, cost: { iron_ore: 80, rare_metal: 10 }, desc: '拦截敌机与巡航导弹。', time: 25 },
-    { type: 'coastal_guns', name: '岸防巨炮', icon: 'fa-explosion', category: 'defense', power: 30, cost: { iron_ore: 100, oil: 30 }, desc: '封锁海岸线的重火力。', time: 30 },
-    { type: 'lasers', name: '高能激光塔', icon: 'fa-bolt', category: 'defense', power: 50, cost: { rare_metal: 20, oil: 50 }, desc: '光速打击，无法闪避。', time: 40 },
-    { type: 'railguns', name: '电磁轨道炮', icon: 'fa-atom', category: 'defense', power: 80, cost: { rare_metal: 50, iron_ore: 150 }, desc: '超视距动能打击。', time: 60 },
-    { type: 'shields', name: '战略护盾', icon: 'fa-shield', category: 'defense', power: 200, cost: { rare_metal: 100, oil: 200 }, desc: '笼罩整个国家的能量屏障。', time: 120 }
+    { type: 'stealth_air', name: '第五代隐身战机', icon: 'fa-jet-fighter-up', category: 'air', power: 60, cost: { oil: 80, rare_metal: 30 }, desc: '雷达不可见。', time: 45 },
+    { type: 'bombers', name: '战略轰炸机', icon: 'fa-plane', category: 'air', power: 90, cost: { oil: 120, iron_ore: 50 }, desc: '地毯式轰炸。', time: 60 },
+    { type: 'ew_planes', name: '电子战机', icon: 'fa-satellite-dish', category: 'air', power: 70, cost: { oil: 100, rare_metal: 40 }, desc: '瘫痪敌方网络。', time: 50 },
+    { type: 'gunships', name: '重型炮艇机', icon: 'fa-plane-circle-check', category: 'air', power: 55, cost: { oil: 60, iron_ore: 40 }, desc: '地面部队噩梦。', time: 40 },
+    { type: 'spaceplanes', name: '空天战机', icon: 'fa-meteor', category: 'air', power: 500, cost: { oil: 200, rare_metal: 100 }, desc: '太空降维打击。', time: 180 },
+    { type: 'trenches', name: '反坦克战壕', icon: 'fa-bars-staggered', category: 'defense', power: 2, cost: { food: 10 }, desc: '迟滞装甲部队。', time: 5 },
+    { type: 'bunkers', name: '地下碉堡', icon: 'fa-torii-gate', category: 'defense', power: 8, cost: { iron_ore: 50, food: 20 }, desc: '坚固的掩体。', time: 20 },
+    { type: 'aaa', name: '防空导弹', icon: 'fa-rocket', category: 'defense', power: 20, cost: { iron_ore: 80, rare_metal: 10 }, desc: '拦截敌机。', time: 25 },
+    { type: 'coastal_guns', name: '岸防巨炮', icon: 'fa-explosion', category: 'defense', power: 30, cost: { iron_ore: 100, oil: 30 }, desc: '封锁海岸线。', time: 30 },
+    { type: 'lasers', name: '高能激光塔', icon: 'fa-bolt', category: 'defense', power: 50, cost: { rare_metal: 20, oil: 50 }, desc: '光速打击。', time: 40 },
+    { type: 'railguns', name: '电磁轨道炮', icon: 'fa-atom', category: 'defense', power: 80, cost: { rare_metal: 50, iron_ore: 150 }, desc: '超视距打击。', time: 60 },
+    { type: 'shields', name: '战略护盾', icon: 'fa-shield', category: 'defense', power: 200, cost: { rare_metal: 100, oil: 200 }, desc: '能量屏障。', time: 120 }
   ];
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('military'); 
-    I.getProfile(true).then(function (p) {
-      profile = p;
-      loadData();
-      startTimer();
-    });
+    I.getProfile(true).then(function (p) { profile = p; loadData(); startTimer(); });
   });
 
   function loadData() {
     Promise.all([
       I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle(),
       I.client.from('military').select('*').eq('country_id', profile.id).maybeSingle(),
-      I.client.from('military_queue').select('*').eq('country_id', profile.id).order('end_time', { ascending: true })
+      I.client.from('military_queue').select('*').eq('country_id', profile.id).order('end_time', { ascending: true }),
+      I.client.from('custom_units').select('*')
     ]).then(function(results) {
-      myRes = results[0].data;
-      myMil = results[1].data;
-      myQueue = results[2].data || [];
-      renderBoard();
-      renderUnits();
-      renderQueue();
+      myRes = results[0].data || {}; myMil = results[1].data || {}; myQueue = results[2].data || [];
+      customUnits = {};
+      (results[3].data || []).forEach(u => { customUnits[u.id] = u; });
+      renderBoard(); renderUnits(); renderQueue();
     });
   }
 
   function renderBoard() {
     var totalPower = 0, totalTroops = 0;
-    UNITS.forEach(function(u) {
-      var owned = myMil[u.type] || 0;
-      totalPower += owned * u.power;
-      if (u.category !== 'defense') totalTroops += owned;
-    });
+    UNITS.forEach(function(u) { var owned = myMil[u.type] || 0; totalPower += owned * u.power; if (u.category !== 'defense') totalTroops += owned; });
+    var customInv = myMil.custom_troops || {};
+    for (var id in customInv) { if (customUnits[id]) { totalPower += customInv[id] * customUnits[id].power; totalTroops += customInv[id]; } }
 
-    I.$('#totalPower').innerHTML = `${I.fmtNumber(totalPower)} <span style="font-size:14px; color:var(--muted);">PWR</span>`;
+    I.$('#totalPower').innerHTML = `${I.fmtNumber(totalPower)} PWR`;
     I.$('#totalTroops').innerText = I.fmtNumber(totalTroops);
-    I.$('#resIron').innerText = I.fmtNumber(myRes.iron_ore);
-    I.$('#resOil').innerText = I.fmtNumber(myRes.oil);
-    I.$('#resRare').innerText = I.fmtNumber(myRes.rare_metal);
+    I.$('#resIron').innerText = I.fmtNumber(myRes.iron_ore || 0);
+    I.$('#resOil').innerText = I.fmtNumber(myRes.oil || 0);
+    I.$('#resGas').innerText = I.fmtNumber(myRes.gas || 0);
+    I.$('#resRare').innerText = I.fmtNumber(myRes.rare_metal || 0);
+    I.$('#resFood').innerText = I.fmtNumber(myRes.food || 0);
   }
 
   window.switchTab = function(cat, btn) {
-    activeTab = cat;
-    document.querySelectorAll('.mil-tab').forEach(el => el.classList.remove('active'));
-    btn.classList.add('active');
-    renderUnits();
+    activeTab = cat; document.querySelectorAll('.mil-tab').forEach(el => el.classList.remove('active')); btn.classList.add('active'); renderUnits();
   };
 
   function renderUnits() {
     var wrap = I.$('#unitList');
-    var filtered = UNITS.filter(u => activeTab === 'all' || u.category === activeTab);
-
     var html = '';
+
+    if (activeTab === 'custom') {
+      // 🚨 核心更新：自定义兵种支持所有资源输入
+      html += `
+        <div class="custom-form" style="grid-column: 1 / -1;">
+          <h3 style="color:var(--cyan); margin-bottom:15px;"><i class="fa-solid fa-flask"></i> 研发自定义兵种</h3>
+          <div class="form-row">
+            <div class="img-upload" onclick="document.getElementById('cImg').click()">
+              <i class="fa-solid fa-image" style="color:var(--muted);" id="cImgIcon"></i>
+              <img id="cImgPreview">
+              <input type="file" id="cImg" accept="image/*" style="display:none" onchange="previewImg(this)">
+            </div>
+            <div style="flex:1; min-width: 250px;">
+              <div class="form-group" style="margin-bottom:10px;"><label>兵种名称</label><input id="cName" placeholder="如：帝国禁卫军"></div>
+              <div class="form-row" style="margin-bottom:0;">
+                <div class="form-group"><label>耗油 (战力x2)</label><input type="number" id="cOil" value="10" min="0"></div>
+                <div class="form-group"><label>耗铁 (战力x3)</label><input type="number" id="cIron" value="10" min="0"></div>
+                <div class="form-group"><label>耗气 (战力x1.5)</label><input type="number" id="cGas" value="0" min="0"></div>
+                <div class="form-group"><label>耗稀 (战力x5)</label><input type="number" id="cRare" value="0" min="0"></div>
+                <div class="form-group"><label>耗粮 (战力x0.5)</label><input type="number" id="cFood" value="0" min="0"></div>
+                <div class="form-group"><label>耗资金 (时间加成)</label><input type="number" id="cMoney" value="1000" min="0"></div>
+              </div>
+            </div>
+          </div>
+          <div style="text-align:right; margin-top:10px;">
+            <button class="btn btn-cyan" onclick="createCustomUnit()"><i class="fa-solid fa-microchip"></i> 研发并生产</button>
+          </div>
+        </div>
+      `;
+
+      var customInv = myMil.custom_troops || {};
+      for (var id in customInv) {
+        var cu = customUnits[id]; if (!cu) continue;
+        html += `
+          <div class="unit-card">
+            <div class="unit-header">
+              <div class="unit-icon">${cu.image_url ? `<img src="${cu.image_url}">` : `<i class="fa-solid fa-robot"></i>`}</div>
+              <div><div class="unit-title">${I.escapeHtml(cu.name)} <span class="unit-power">战力 ${cu.power}</span></div><div class="unit-count">库存: <b>${customInv[id]}</b></div></div>
+            </div>
+            <div class="unit-cost-box"><span style="font-size:12px; color:var(--muted);">这是你独家研发的兵种，可前往交易行上架售卖。</span></div>
+            <div class="build-row"><button class="btn btn-gold" onclick="location.href='market.html'" style="flex:1;"><i class="fa-solid fa-store"></i> 去交易行售卖</button></div>
+          </div>
+        `;
+      }
+      wrap.innerHTML = html;
+      return;
+    }
+
+    var filtered = UNITS.filter(u => activeTab === 'all' || u.category === activeTab);
     filtered.forEach(function(u) {
       var owned = myMil[u.type] || 0;
-      var isDefense = u.category === 'defense';
-      var isNavy = u.category === 'navy';
+      var isDefense = u.category === 'defense'; var isNavy = u.category === 'navy';
       
       var costHtml = '';
       for (var key in u.cost) {
-        var resName = { food:'粮', iron_ore:'铁', oil:'油', rare_metal:'稀' }[key];
-        var resIcon = { food:'fa-wheat-awn', iron_ore:'fa-mountain', oil:'fa-oil-well', rare_metal:'fa-atom' }[key];
+        var resName = { food:'粮', iron_ore:'铁', oil:'油', gas:'气', rare_metal:'稀' }[key];
+        var resIcon = { food:'fa-wheat-awn', iron_ore:'fa-mountain', oil:'fa-oil-well', gas:'fa-fire', rare_metal:'fa-atom' }[key];
         costHtml += `<div class="cost-item"><i class="fa-solid ${resIcon}"></i> ${resName} ${u.cost[key]}</div>`;
       }
 
@@ -247,50 +237,116 @@
           <div class="unit-header">
             <div class="unit-icon"><i class="fa-solid ${u.icon}"></i></div>
             <div style="flex:1;">
-              <div class="unit-title">
-                ${u.name} 
-                <span class="unit-power"><i class="fa-solid fa-bolt"></i> 战力 ${u.power}</span>
-              </div>
+              <div class="unit-title">${u.name} <span class="unit-power"><i class="fa-solid fa-bolt"></i> 战力 ${u.power}</span></div>
               <div class="unit-count">库存: <b>${I.fmtNumber(owned)}</b></div>
             </div>
           </div>
-          
           <div class="unit-desc">${u.desc}</div>
-          
-          <div class="unit-cost-box">
-            ${costHtml}
-            <div class="cost-time"><i class="fa-regular fa-clock"></i> ${u.time}秒/个</div>
-          </div>
-          
-          <div class="build-row">
-            <input type="number" id="qty_${u.type}" value="1" min="1">
-            <button class="btn ${isDefense ? 'btn-cyan' : 'btn-gold'}" onclick="build('${u.type}')" style="flex:1; height: 48px; font-size: 15px;">
-              <i class="fa-solid fa-hammer"></i> 投入生产
-            </button>
-          </div>
+          <div class="unit-cost-box">${costHtml}<div class="cost-time"><i class="fa-regular fa-clock"></i> ${u.time}秒/个</div></div>
+          <div class="build-row"><input type="number" id="qty_${u.type}" value="1" min="1"><button class="btn ${isDefense ? 'btn-cyan' : 'btn-gold'}" onclick="build('${u.type}')" style="flex:1;">制造</button></div>
         </div>
       `;
     });
     wrap.innerHTML = html;
   }
 
+  window.previewImg = function(input) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) { I.$('#cImgPreview').src = e.target.result; I.$('#cImgPreview').style.display = 'block'; I.$('#cImgIcon').style.display = 'none'; };
+      reader.readAsDataURL(input.files[0]);
+    }
+  };
+
+  window.createCustomUnit = function() {
+    var name = I.$('#cName').value.trim();
+    var oil = parseInt(I.$('#cOil').value) || 0;
+    var iron = parseInt(I.$('#cIron').value) || 0;
+    var gas = parseInt(I.$('#cGas').value) || 0;
+    var rare = parseInt(I.$('#cRare').value) || 0;
+    var food = parseInt(I.$('#cFood').value) || 0;
+    var money = parseInt(I.$('#cMoney').value) || 0;
+    var file = I.$('#cImg').files[0];
+
+    if (!name) return I.toast('请填写兵种名称', 'error');
+    if (oil <= 0 && iron <= 0 && gas <= 0 && rare <= 0 && food <= 0) return I.toast('必须消耗至少一种战略资源', 'error');
+    if ((myRes.oil||0) < oil || (myRes.iron_ore||0) < iron || (myRes.gas||0) < gas || (myRes.rare_metal||0) < rare || (myRes.food||0) < food || profile.balance < money) return I.toast('资源或资金不足！', 'error');
+
+    var btn = event.target; btn.disabled = true; I.toast('正在生成图传...', 'success');
+
+    var uploadPromise = Promise.resolve(null);
+    if (file) {
+      var ext = file.name.split('.').pop(); var path = profile.id + '/custom_' + Date.now() + '.' + ext;
+      uploadPromise = I.client.storage.from('media').upload(path, file).then(r => I.client.storage.from('media').getPublicUrl(path).data.publicUrl);
+    }
+
+    uploadPromise.then(function(imgUrl) {
+      // 🚨 战力计算涵盖所有资源
+      var power = Math.floor((oil * 2) + (iron * 3) + (gas * 1.5) + (rare * 5) + (food * 0.5));
+      var build_time = Math.floor((oil + iron + gas + rare + food) * 1.5 + (money / 500)); 
+      if(build_time < 10) build_time = 10;
+
+      I.client.from('country_resources').update({ 
+        oil: (myRes.oil||0) - oil, 
+        iron_ore: (myRes.iron_ore||0) - iron,
+        gas: (myRes.gas||0) - gas,
+        rare_metal: (myRes.rare_metal||0) - rare,
+        food: (myRes.food||0) - food
+      }).eq('country_id', profile.id).then(function(){
+        I.client.rpc('add_balance', { uid: profile.id, amount: -money, note: '研发自定义兵种' }).then(function(){
+          I.client.from('custom_units').insert({
+            creator_id: profile.id, name: name, image_url: imgUrl, power: power,
+            cost_oil: oil, cost_iron: iron, cost_money: money, build_time: build_time
+          }).select().single().then(function(res) {
+            if (res.error) return I.toast('研发失败: ' + res.error.message, 'error');
+            var newId = res.data.id;
+            var endT = new Date(); endT.setSeconds(endT.getSeconds() + build_time);
+            I.client.from('military_queue').insert({ country_id: profile.id, unit_type: 'custom_' + newId, amount: 1, end_time: endT.toISOString() }).then(function(){
+              I.toast('研发成功，已加入队列！', 'success');
+              I.$('#cName').value = ''; I.$('#cImg').value = ''; I.$('#cImgPreview').style.display = 'none'; I.$('#cImgIcon').style.display = 'block';
+              loadData();
+            });
+          });
+        });
+      });
+    }).catch(function(err){ I.toast('上传图片失败', 'error'); btn.disabled = false; });
+  };
+
+  window.build = function(type) {
+    var qty = parseInt(I.$('#qty_' + type).value, 10);
+    if (!qty || qty < 1) return I.toast('数量错误', 'error');
+    I.client.rpc('start_training', { c_id: profile.id, u_type: type, u_amount: qty }).then(function(res) {
+      if (res.error) return I.toast('失败', 'error'); I.toast('已加入队列', 'success'); loadData(); 
+    });
+  };
+
   function renderQueue() {
-    var panel = I.$('#queuePanel');
-    var list = I.$('#queueList');
+    var panel = I.$('#queuePanel'); var list = I.$('#queueList');
     if (myQueue.length === 0) { panel.style.display = 'none'; return; }
     panel.style.display = 'block';
-
     var html = '';
     myQueue.forEach(function(q) {
-      var unit = UNITS.find(x => x.type === q.unit_type);
+      var isCustom = q.unit_type.startsWith('custom_');
+      var uName = '', uIcon = '';
+      if (isCustom) {
+        var cid = q.unit_type.replace('custom_', '');
+        var cu = customUnits[cid];
+        uName = cu ? cu.name : '未知自定义兵种';
+        uIcon = cu && cu.image_url ? `<img src="${cu.image_url}" style="width:20px;height:20px;border-radius:4px;">` : `<i class="fa-solid fa-robot"></i>`;
+      } else {
+        var u = UNITS.find(x => x.type === q.unit_type);
+        uName = u ? u.name : q.unit_type;
+        uIcon = u ? `<i class="fa-solid ${u.icon}"></i>` : '';
+      }
+
       html += `
         <div class="queue-item" id="qbox-${q.id}">
           <div class="queue-progress-bg"><div class="queue-progress-fill" id="qbar-${q.id}"></div></div>
           <div class="queue-info">
-            <div class="queue-name"><i class="fa-solid ${unit.icon}"></i> ${unit.name} × ${q.amount}</div>
+            <div class="queue-name">${uIcon} ${uName} × ${q.amount}</div>
             <div style="display:flex; align-items:center; gap:12px;">
-              <span class="queue-time" id="qtimer-${q.id}">计算中...</span>
-              <button class="btn btn-gold btn-sm" id="qbtn-${q.id}" onclick="claim('${q.id}')" style="display:none;">领取入库</button>
+              <span class="queue-time" id="qtimer-${q.id}">...</span>
+              <button class="btn btn-gold btn-sm" id="qbtn-${q.id}" onclick="claim('${q.id}', '${q.unit_type}', ${q.amount})" style="display:none;">领取</button>
             </div>
           </div>
         </div>
@@ -304,56 +360,36 @@
     timer = setInterval(function() {
       var now = new Date();
       myQueue.forEach(function(q) {
-        var end = new Date(q.end_time);
-        var timeEl = I.$('#qtimer-' + q.id);
-        var btnEl = I.$('#qbtn-' + q.id);
-        var barEl = I.$('#qbar-' + q.id);
+        var end = new Date(q.end_time); var timeEl = I.$('#qtimer-' + q.id); var btnEl = I.$('#qbtn-' + q.id); var barEl = I.$('#qbar-' + q.id);
         if (!timeEl || !btnEl) return;
-
         if (now >= end) {
-          timeEl.textContent = '已完成';
-          timeEl.style.color = '#22c55e';
-          btnEl.style.display = 'inline-block';
-          if (barEl) barEl.style.width = '100%';
+          timeEl.textContent = '已完成'; timeEl.style.color = '#22c55e'; btnEl.style.display = 'inline-block'; if (barEl) barEl.style.width = '100%';
         } else {
-          var start = new Date(q.created_at);
-          var total = end - start;
-          var current = now - start;
-          var pct = Math.max(0, Math.min(100, (current / total) * 100));
-          if (barEl) barEl.style.width = pct + '%';
-
-          var diff = Math.floor((end - now) / 1000);
-          var m = Math.floor(diff / 60);
-          var s = diff % 60;
-          timeEl.textContent = `${m}分 ${s}秒`;
+          var start = new Date(q.created_at); var total = end - start; var current = now - start;
+          if (barEl) barEl.style.width = Math.max(0, Math.min(100, (current / total) * 100)) + '%';
+          var diff = Math.floor((end - now) / 1000); timeEl.textContent = `${Math.floor(diff / 60)}分 ${diff % 60}秒`;
         }
       });
     }, 1000);
   }
 
-  window.build = function(type) {
-    var qty = parseInt(I.$('#qty_' + type).value, 10);
-    if (!qty || qty < 1) return I.toast('请输入正确数量', 'error');
-    I.toast('正在下达指令...', 'success', 1000);
-    
-    I.client.rpc('start_training', { c_id: profile.id, u_type: type, u_amount: qty }).then(function(res) {
-      if (res.error) return I.toast('失败：' + res.error.message, 'error');
-      if (!res.data.ok) return I.toast(res.data.msg, 'error');
-      
-      I.toast('已加入制造队列', 'success');
-      loadData(); 
-    });
+  window.claim = function(id, unitType, amount) {
+    if (unitType.startsWith('custom_')) {
+      var cid = unitType.replace('custom_', '');
+      I.client.from('military').select('custom_troops').eq('country_id', profile.id).single().then(function(res){
+        var inv = res.data.custom_troops || {};
+        inv[cid] = (inv[cid] || 0) + amount;
+        I.client.from('military').update({ custom_troops: inv }).eq('country_id', profile.id).then(function(r){
+          if(r.error) return I.toast('领取失败', 'error');
+          I.client.from('military_queue').delete().eq('id', id).then(function(){ I.toast('已入库', 'success'); loadData(); });
+        });
+      });
+    } else {
+      I.client.rpc('claim_training', { q_id: id }).then(function(res) {
+        if (res.error) return I.toast('失败', 'error'); I.toast('已入库', 'success'); loadData();
+      });
+    }
   };
-
-  window.claim = function(id) {
-    I.client.rpc('claim_training', { q_id: id }).then(function(res) {
-      if (res.error) return I.toast('领取失败', 'error');
-      if (!res.data.ok) return I.toast(res.data.msg, 'error');
-      I.toast('兵力已入库！', 'success');
-      loadData();
-    });
-  };
-
 })();
 </script>
 </body>

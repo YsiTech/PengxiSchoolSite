@@ -7,9 +7,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  /* 修复下拉框白底白字 */
   select, select option { background-color: #111827 !important; color: #fff !important; }
   .desc-box { font-size: 14.5px; line-height: 1.8; color: var(--ink-2); white-space: pre-wrap; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
+  .relation-tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 10px; font-weight: normal; vertical-align: middle; }
 </style>
 </head>
 <body>
@@ -29,11 +29,11 @@
   <div class="loading-state"><div class="spinner"></div><span>正在读取国家档案…</span></div>
 </main>
 
-<!-- 建交 / 宣战弹窗 -->
+<!-- 外交弹窗 -->
 <div class="iecp-modal" id="actionModal">
   <div class="iecp-modal-box glass-2">
     <h3 id="modalTitle"><i class="fa-solid fa-handshake"></i> 申请建交</h3>
-    <p class="modal-sub" id="modalSub">向对方发送建交申请，对方同意后即建立友好关系。</p>
+    <p class="modal-sub" id="modalSub">向对方发送申请。</p>
     <div class="field-group">
       <div class="field">
         <label>附加信息（可选）</label>
@@ -42,12 +42,12 @@
     </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
       <button class="btn btn-ghost" onclick="document.getElementById('actionModal').classList.remove('open')">取消</button>
-      <button class="btn btn-gold" id="modalConfirm"><i class="fa-solid fa-paper-plane"></i> 发送申请</button>
+      <button class="btn btn-gold" id="modalConfirm"><i class="fa-solid fa-paper-plane"></i> 确认发送</button>
     </div>
   </div>
 </div>
 
-<!-- 自己的国家：修改资料弹窗 -->
+<!-- 修改资料弹窗 -->
 <div class="iecp-modal" id="editModal">
   <div class="iecp-modal-box glass-2" style="max-width:600px">
     <h3><i class="fa-solid fa-pen" style="color:var(--gold)"></i> 修改国家档案</h3>
@@ -79,12 +79,12 @@
   var targetId = new URLSearchParams(location.search).get('id');
   var currentProfile = null;
   var targetProfile = null;
-  var actionType = 'ally';
+  var currentRelationType = 'neutral'; // 默认中立
+  var actionType = 'diplomatic';
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('countries');
-    
     if (!targetId) { location.replace('countries.html'); return; }
 
     I.getProfile(true).then(function (myProfile) {
@@ -93,11 +93,20 @@
         I.$('#countryWrap').innerHTML = `<div class="empty-state glass"><p>无法获取你的国家档案</p></div>`;
         return;
       }
-      return I.client.from('profiles').select('*').eq('id', targetId).maybeSingle().then(function (r) {
-        if (r.error || !r.data) throw new Error('该国家不存在或已注销。');
-        targetProfile = r.data;
+      
+      // 同时拉取目标国家信息 和 两国当前关系
+      return Promise.all([
+        I.client.from('profiles').select('*').eq('id', targetId).maybeSingle(),
+        I.client.from('relations').select('*').or(`and(country_a.eq.${currentProfile.id},country_b.eq.${targetId}),and(country_a.eq.${targetId},country_b.eq.${currentProfile.id})`).maybeSingle()
+      ]).then(function(res) {
+        if (res[0].error || !res[0].data) throw new Error('该国家不存在或已注销。');
+        targetProfile = res[0].data;
+        if (res[1].data) {
+          currentRelationType = res[1].data.relation_type;
+        }
         render();
       });
+
     }).catch(function (err) {
       I.$('#countryWrap').innerHTML = `<div class="empty-state glass"><p style="color:var(--red)">${err.message}</p></div>`;
     });
@@ -108,11 +117,20 @@
     var c = targetProfile;
     var isSelf = currentProfile.id === c.id;
 
+    // 关系标签样式
+    var relHtml = '';
+    if (!isSelf) {
+      if (currentRelationType === 'war') relHtml = `<span class="relation-tag" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">交战中</span>`;
+      else if (currentRelationType === 'ally') relHtml = `<span class="relation-tag" style="background:rgba(212,175,55,0.2); color:var(--gold); border:1px solid var(--gold);">盟友</span>`;
+      else if (currentRelationType === 'diplomatic') relHtml = `<span class="relation-tag" style="background:rgba(34,197,94,0.2); color:#22c55e; border:1px solid #22c55e;">已建交</span>`;
+      else relHtml = `<span class="relation-tag" style="background:rgba(148,163,184,0.2); color:#94a3b8; border:1px solid #94a3b8;">中立</span>`;
+    }
+
     wrap.innerHTML = `
       <section class="glass" style="padding:32px;margin-bottom:24px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">
         <img src="${I.escapeHtml(c.flag_url || I.avatarFallback(c.username))}" style="width:120px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-2)">
         <div style="flex:1;min-width:200px">
-          <h1 style="font-size:28px;letter-spacing:2px;margin:0 0 8px">${I.escapeHtml(c.username)}</h1>
+          <h1 style="font-size:28px;letter-spacing:2px;margin:0 0 8px; display:flex; align-items:center;">${I.escapeHtml(c.username)} ${relHtml}</h1>
           <p style="color:var(--muted);margin:0">${I.escapeHtml(c.social_system)}</p>
         </div>
         ${c.emblem_url ? `<img src="${I.escapeHtml(c.emblem_url)}" style="width:70px;height:70px;object-fit:contain;opacity:.9">` : ''}
@@ -138,16 +156,23 @@
       </section>
 
       <section class="glass" style="padding:28px;margin-bottom:24px">
-        <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-link" style="color:var(--gold)"></i> 外交关系</h3>
+        <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-link" style="color:var(--gold)"></i> 外交关系网</h3>
         <div id="relationsWrap"><div class="loading-state" style="padding:30px 0"><div class="spinner"></div></div></div>
       </section>
 
       ${isSelf ? '' : `
-        <section class="glass" style="padding:28px">
+        <section class="glass" style="padding:28px; border-color: ${currentRelationType === 'war' ? 'rgba(239,68,68,0.5)' : 'var(--border)'};">
           <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-bolt" style="color:var(--gold)"></i> 外交行动</h3>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <button class="btn btn-gold" onclick="openAction('ally')"><i class="fa-solid fa-handshake"></i> 申请建交</button>
-            <button class="btn btn-red" onclick="openAction('war')"><i class="fa-solid fa-shield-halved"></i> 宣战</button>
+            ${currentRelationType !== 'diplomatic' && currentRelationType !== 'ally' && currentRelationType !== 'war' ? 
+              `<button class="btn btn-cyan" onclick="openAction('diplomatic')"><i class="fa-solid fa-handshake"></i> 申请建交</button>` : ''}
+            
+            ${currentRelationType !== 'ally' && currentRelationType !== 'war' ? 
+              `<button class="btn btn-gold" onclick="openAction('ally')"><i class="fa-solid fa-shield-halved"></i> 申请结盟</button>` : ''}
+            
+            ${currentRelationType !== 'war' ? 
+              `<button class="btn btn-red" onclick="openAction('war')"><i class="fa-solid fa-triangle-exclamation"></i> 宣战</button>` : 
+              `<span style="color:var(--red); padding:10px; font-weight:bold;"><i class="fa-solid fa-crosshairs"></i> 正在交战中，请前往战争大厅</span>`}
           </div>
         </section>
       `}
@@ -204,8 +229,12 @@
             var otherId = r.country_a === targetId ? r.country_b : r.country_a;
             var o = map[otherId];
             if (!o) return;
-            var tag = r.relation_type === 'ally' ? '友好' : r.relation_type === 'war' ? '战争' : '中立';
-            var tagColor = r.relation_type === 'ally' ? 'var(--green)' : r.relation_type === 'war' ? 'var(--red)' : 'var(--muted)';
+            
+            var tag = '中立', tagColor = 'var(--muted)';
+            if (r.relation_type === 'ally') { tag = '盟友'; tagColor = 'var(--gold)'; }
+            else if (r.relation_type === 'diplomatic') { tag = '建交'; tagColor = '#22c55e'; }
+            else if (r.relation_type === 'war') { tag = '交战中'; tagColor = '#ef4444'; }
+
             html += `
               <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--glass);border-radius:10px;border:1px solid var(--border)">
                 <img src="${I.escapeHtml(o.flag_url || I.avatarFallback(o.username))}" style="width:36px;height:24px;object-fit:cover;border-radius:4px">
@@ -221,20 +250,28 @@
   }
 
   window.openAction = function (type) {
-    if (!currentProfile) { I.toast('请先登录并创建国家档案', 'error'); return; }
-    if (targetId === currentProfile.id) { I.toast('不能对自己发起外交行动', 'error'); return; }
+    if (!currentProfile) { I.toast('请先登录', 'error'); return; }
+    if (targetId === currentProfile.id) { I.toast('不能对自己发起行动', 'error'); return; }
     
     actionType = type;
     var t = I.$('#modalTitle');
     var s = I.$('#modalSub');
+    var btn = I.$('#modalConfirm');
     
-    if (type === 'ally') {
-      t.innerHTML = '<i class="fa-solid fa-handshake" style="color:var(--gold)"></i> 申请建交';
-      s.textContent = '向 ' + targetProfile.username + ' 发送建交申请，对方同意后即建立友好关系。';
-    } else {
-      t.innerHTML = '<i class="fa-solid fa-shield-halved" style="color:var(--red)"></i> 宣战';
-      s.textContent = '向 ' + targetProfile.username + ' 正式宣战。宣战将立即建立敌对关系，请三思。';
+    if (type === 'diplomatic') {
+      t.innerHTML = '<i class="fa-solid fa-handshake" style="color:#22c55e"></i> 申请建交';
+      s.textContent = '向 ' + targetProfile.username + ' 发送单纯的外交建交申请。双方将互不侵犯。';
+      btn.className = 'btn btn-cyan';
+    } else if (type === 'ally') {
+      t.innerHTML = '<i class="fa-solid fa-shield-halved" style="color:var(--gold)"></i> 申请结盟';
+      s.textContent = '向 ' + targetProfile.username + ' 发送军事结盟申请。盟友的地块将在地图上显示为绿色。';
+      btn.className = 'btn btn-gold';
+    } else if (type === 'war') {
+      t.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i> 宣战';
+      s.textContent = '向 ' + targetProfile.username + ' 正式宣战！宣战将立即中断当前关系，开启战争。请三思。';
+      btn.className = 'btn btn-red';
     }
+    
     I.$('#modalMessage').value = '';
     I.$('#actionModal').classList.add('open');
   };
@@ -242,59 +279,42 @@
   I.$('#modalConfirm').addEventListener('click', function () {
     if (!currentProfile || targetId === currentProfile.id) return;
     var btn = this; var msg = I.$('#modalMessage').value.trim();
-    btn.disabled = true; btn.textContent = '处理中…';
+    var originalText = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '处理中…';
 
-    I.client.from('diplomacy_requests').insert({
-      from_country: currentProfile.id, to_country: targetId,
-      request_type: actionType, message: msg || null
-    }).then(function (r) {
-      
-      var a = currentProfile.id < targetId ? currentProfile.id : targetId;
-      var b = currentProfile.id < targetId ? targetId : currentProfile.id;
+    var a = currentProfile.id < targetId ? currentProfile.id : targetId;
+    var b = currentProfile.id < targetId ? targetId : currentProfile.id;
 
-      I.client.from('relations').delete().match({ country_a: a, country_b: b }).then(function() {
-        
-        if (actionType === 'war') {
-          I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: 'war' }).then(function(rWar) {
-            if (rWar.error) {
-              I.toast('建立战争失败：' + rWar.error.message, 'error');
-              btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
-              return;
-            }
-            
-            // 🚨 发送宣战通知
+    if (actionType === 'war') {
+      // 🚨 宣战：直接生效，不走同意流程
+      I.client.from('relations').delete().or(`and(country_a.eq.${a},country_b.eq.${b}),and(country_a.eq.${b},country_b.eq.${a})`).then(function() {
+        I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: 'war' }).then(function(rWar) {
+          if (rWar.error) { I.toast('宣战失败：' + rWar.error.message, 'error'); btn.disabled = false; btn.innerHTML = originalText; return; }
+          
+          I.client.from('wars').insert({ attacker_id: currentProfile.id, defender_id: targetId, status: 'ongoing' }).then(function(){
+            // 发送通知
             I.client.rpc('send_notification', { 
               p_user_id: targetId, p_type: 'war', p_title: '遭遇宣战', 
-              p_content: `【${currentProfile.username}】已正式向你宣战！请立即做好防御准备。` 
+              p_content: `【${currentProfile.username}】已正式向你宣战！请立即做好防御准备。${msg ? '\n附言: '+msg : ''}` 
             });
-
-            // 顺便创建战争表记录
-            I.client.from('wars').insert({ attacker_id: currentProfile.id, defender_id: targetId, status: 'ongoing' }).then(function() {
-              I.toast('宣战成功，战役已开启', 'success');
-              I.$('#actionModal').classList.remove('open'); 
-              btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
-              loadRelations(); 
-            });
-          });
-        } else {
-          I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: 'ally' }).then(function(rAlly) {
-            if (rAlly.error) {
-               I.toast('建交失败：' + rAlly.error.message, 'error');
-            } else {
-               // 🚨 发送建交通知
-               I.client.rpc('send_notification', { 
-                 p_user_id: targetId, p_type: 'ally', p_title: '建立外交', 
-                 p_content: `【${currentProfile.username}】已向你发来建交申请并建立了友好关系。` 
-               });
-               I.toast('建交成功', 'success');
-            }
-            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> 发送申请';
+            I.toast('宣战成功，战争已开启', 'success');
             I.$('#actionModal').classList.remove('open');
-            loadRelations();
+            setTimeout(function(){ location.reload(); }, 800);
           });
-        }
+        });
       });
-    });
+    } else {
+      // 🚨 建交/结盟：发送请求，等待对方同意
+      I.client.from('diplomacy_requests').insert({
+        from_country: currentProfile.id, to_country: targetId,
+        request_type: actionType, message: msg || null
+      }).then(function(r) {
+        btn.disabled = false; btn.innerHTML = originalText;
+        if (r.error) return I.toast('发送失败：' + r.error.message, 'error');
+        I.toast('申请已发送，请等待对方处理', 'success');
+        I.$('#actionModal').classList.remove('open');
+      });
+    }
   });
 })();
 </script>
