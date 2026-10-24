@@ -7,77 +7,111 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  body { background-color: #05070a; overflow: hidden; }
+  body { background-color: #03050a; overflow: hidden; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  
+  .aurora-bg { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at 10% 80%, rgba(212, 175, 55, 0.12), transparent 40%), radial-gradient(circle at 90% 20%, rgba(79, 195, 247, 0.12), transparent 40%), radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 1) 0%, #03050a 100%); }
   #particleCanvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-  .aurora-bg {
-    position: fixed; inset: 0; z-index: -2;
-    background: radial-gradient(circle at 15% 50%, rgba(79, 195, 247, 0.15), transparent 50%), radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.15), transparent 50%);
-    filter: blur(80px); animation: auroraMove 15s ease-in-out infinite alternate;
-  }
-  @keyframes auroraMove { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.2) translate(-5%, 5%); } }
+  .auth-page { display: flex; width: 100vw; height: 100vh; }
 
-  .auth-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-  .auth-card {
-    width: 100%; max-width: 420px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(24px);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 40px;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05); position: relative; overflow: hidden;
-  }
-  .auth-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: scanline 3s linear infinite;
-  }
+  .visual-area { flex: 1.1; display: flex; align-items: center; justify-content: center; padding: 60px; position: relative; }
+  .visual-content { max-width: 520px; position: relative; z-index: 2; animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .tech-line { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .tech-line .line-bar { width: 60px; height: 2px; background: var(--gold); box-shadow: 0 0 10px var(--gold); }
+  .tech-line .line-text { font-size: 12px; color: var(--gold-2); letter-spacing: 4px; font-family: monospace; }
+  .visual-title { font-size: 56px; font-weight: 900; line-height: 1.15; margin: 0 0 24px; letter-spacing: 3px; background: linear-gradient(135deg, #fff 10%, #a7b5c9 40%, var(--gold) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 10px 40px rgba(212,175,55,0.2); }
+  .visual-subtitle { font-size: 16px; color: var(--muted); line-height: 1.8; letter-spacing: 1px; max-width: 90%; }
+  
+  /* 🚨 左侧 HUD 改为中文 */
+  .hud-panel { margin-top: 60px; display: flex; gap: 32px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 24px; }
+  .hud-item .hud-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
+  .hud-item .hud-val { font-size: 15px; color: var(--cyan); font-weight: bold; display: flex; align-items: center; gap: 6px; }
+
+  .form-area { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; position: relative; }
+  .auth-card { width: 100%; max-width: 440px; background: linear-gradient(145deg, rgba(20, 30, 50, 0.8), rgba(10, 15, 25, 0.9)); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.06); border-top: 1px solid rgba(255,255,255,0.15); border-left: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 48px 40px; box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.02), inset 0 0 40px rgba(79,195,247,0.05); position: relative; overflow: hidden; animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+  .auth-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), #fff, var(--gold), transparent); animation: scanline 4s linear infinite; box-shadow: 0 0 15px var(--gold); }
   @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-  .auth-header { text-align: center; margin-bottom: 30px; }
-  .auth-header img { width: 70px; height: 70px; margin-bottom: 16px; filter: drop-shadow(0 0 20px rgba(212,175,55,0.6)); }
-  .auth-header h2 { font-size: 26px; margin: 0 0 8px 0; letter-spacing: 3px; font-weight: 800; background: linear-gradient(135deg, #fff, #d4af37); -webkit-background-clip: text; color: transparent; }
-  .auth-header p { font-size: 14px; color: var(--muted); margin: 0; }
+  .auth-header { text-align: center; margin-bottom: 36px; position: relative; }
+  .logo-container { position: relative; width: 110px; height: 110px; margin: 0 auto 20px auto; display: grid; place-items: center; }
+  .logo-container::before { content: ''; position: absolute; inset: -5px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%); box-shadow: inset 0 0 20px rgba(79,195,247,0.2), 0 0 30px rgba(212,175,55,0.2); animation: pulseGlow 3s infinite alternate; }
+  @keyframes pulseGlow { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
+  .logo-container img { width: 90px; height: 90px; object-fit: contain; position: relative; z-index: 2; filter: brightness(1.3) contrast(1.1) drop-shadow(0 2px 0px rgba(255,255,255,0.1)) drop-shadow(0 4px 0px rgba(0,0,0,0.6)) drop-shadow(0 15px 25px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(212,175,55,0.5)); animation: floatLogo 4s ease-in-out infinite; }
+  @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-  .auth-tabs { display: flex; background: rgba(0,0,0,0.4); border-radius: 12px; padding: 4px; position: relative; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.05); }
-  .auth-tab-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: rgba(255,255,255,0.1); border-radius: 8px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
-  .auth-tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; color: var(--muted); font-weight: 600; cursor: pointer; z-index: 2; transition: color 0.3s; }
-  .auth-tab.active { color: #fff; }
+  .auth-header h2 { font-size: 26px; margin: 0 0 10px 0; letter-spacing: 3px; font-weight: 900; background: linear-gradient(to right, #fff, #d4af37, #fff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .auth-header p { font-size: 14px; color: var(--muted); margin: 0; letter-spacing: 1px; }
 
-  .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
-  .input-group label { font-size: 13px; color: var(--ink-2); font-weight: 600; margin-left: 4px; }
-  .input-wrap { position: relative; }
-  .input-wrap i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; transition: 0.3s; }
+  .auth-tabs { display: flex; background: rgba(0,0,0,0.6); border-radius: 14px; padding: 5px; position: relative; margin-bottom: 30px; box-shadow: inset 0 3px 8px rgba(0,0,0,0.6), 0 1px 0 rgba(255,255,255,0.05); }
+  .auth-tab-bg { position: absolute; top: 5px; left: 5px; width: calc(50% - 5px); height: calc(100% - 10px); background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02)); border-radius: 10px; transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); z-index: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2); }
+  .auth-tab { flex: 1; text-align: center; padding: 12px; font-size: 14px; color: var(--muted); font-weight: 600; cursor: pointer; z-index: 2; transition: color 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .auth-tab.active { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+  
+  /* 🚨 核心修改：Tab 图标极简扁平化 */
+  .icon-box { display: inline-grid; place-items: center; background: transparent; border: none; box-shadow: none; width: 20px; height: 20px; }
+  .icon-box i { font-size: 14px; color: inherit; transition: 0.3s; }
+  .auth-tab.active .icon-box i { color: var(--gold-2); text-shadow: 0 0 10px rgba(212,175,55,0.5); }
+
+  .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; position: relative; }
+  .input-group label { font-size: 13px; color: #cbd5e1; font-weight: 600; margin-left: 4px; letter-spacing: 1px; }
+  .input-wrap { position: relative; display: flex; align-items: center; }
+  
+  /* 🚨 核心修改：输入框图标极简扁平化 */
+  .input-icon { position: absolute; left: 18px; z-index: 2; width: 24px; height: 24px; display: grid; place-items: center; transition: 0.3s; background: transparent; border: none; box-shadow: none; }
+  .input-icon i { color: #64748b; font-size: 16px; transition: 0.3s; }
+  .input-wrap input:focus ~ .input-icon i { color: var(--cyan); text-shadow: 0 0 10px rgba(79,195,247,0.5); }
+
   .input-wrap input {
-    width: 100%; padding: 16px 18px 16px 48px;
-    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px; color: #fff; font-size: 15px; outline: none; transition: 0.3s; box-sizing: border-box;
+    width: 100%; padding: 18px 18px 18px 52px;
+    background: rgba(5, 10, 20, 0.8); border: 1px solid rgba(255,255,255,0.04);
+    border-top: 1px solid rgba(0,0,0,0.6); border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; color: #fff; font-size: 15px; outline: none; transition: all 0.3s; box-sizing: border-box;
+    box-shadow: inset 0 6px 12px rgba(0,0,0,0.6), inset 0 -2px 5px rgba(255,255,255,0.02);
   }
-  .input-wrap input:focus { border-color: var(--cyan); background: rgba(79, 195, 247, 0.05); box-shadow: 0 0 20px rgba(79,195,247,0.15); }
-  .input-wrap input:focus ~ i { color: var(--cyan); }
+  .input-wrap input::placeholder { color: #475569; font-weight: 500; }
+  .input-wrap input:focus { border-color: rgba(79, 195, 247, 0.4); background: rgba(10, 15, 25, 0.95); box-shadow: inset 0 6px 12px rgba(0,0,0,0.6), inset 0 0 20px rgba(79,195,247,0.15); }
+
+  .auth-code-row { display: flex; gap: 12px; position: relative; width: 100%; }
+  .auth-code-row .input-wrap { flex: 1; }
+  .btn-code { padding: 0 18px; background: linear-gradient(180deg, #1e293b, #0f172a); color: var(--cyan); border: 1px solid rgba(79,195,247,0.2); border-radius: 14px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 2px 2px rgba(255,255,255,0.1); }
+  .btn-code:hover:not(:disabled) { background: var(--cyan); color: #000; box-shadow: 0 0 20px rgba(79,195,247,0.4); border-color: var(--cyan); transform: translateY(-1px); }
+  .btn-code:active:not(:disabled) { transform: scale(0.96); }
+  .btn-code:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .btn-auth {
-    width: 100%; padding: 18px; border-radius: 14px; border: none;
-    background: linear-gradient(135deg, var(--gold), #b8860b);
-    color: #000; font-size: 17px; font-weight: 900; cursor: pointer; letter-spacing: 2px;
-    transition: 0.3s; margin-top: 10px; box-shadow: 0 10px 30px rgba(212,175,55,0.3);
+    width: 100%; padding: 18px; border-radius: 16px; border: none;
+    background: linear-gradient(180deg, #fcd34d, #d4af37, #b8860b);
+    color: #000; font-size: 17px; font-weight: 900; cursor: pointer; letter-spacing: 3px;
+    transition: all 0.2s; margin-top: 10px; 
+    box-shadow: 0 15px 30px rgba(212,175,55,0.2), inset 0 3px 3px rgba(255,255,255,0.6), inset 0 -4px 8px rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; overflow: hidden;
   }
-  .btn-auth:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(212,175,55,0.5); }
-  .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+  .btn-auth::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); transform: skewX(-20deg); transition: 0.5s; }
+  .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(212,175,55,0.3), inset 0 3px 3px rgba(255,255,255,0.7), inset 0 -4px 8px rgba(0,0,0,0.4); }
+  .btn-auth:hover::after { left: 200%; }
+  .btn-auth:active { transform: translateY(2px); box-shadow: 0 5px 15px rgba(212,175,55,0.2), inset 0 3px 5px rgba(0,0,0,0.4); }
+  .btn-auth:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
-  .auth-msg { text-align: center; font-size: 14px; font-weight: 600; margin-top: 16px; min-height: 20px; padding: 10px; border-radius: 8px; }
-  .auth-msg.error { color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
-  .auth-msg.success { color: #22c55e; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); }
+  .auth-msg { text-align: center; font-size: 13.5px; font-weight: 600; margin-top: 16px; min-height: 20px; padding: 10px; border-radius: 10px; transition: 0.3s; opacity: 0; }
+  .auth-msg.error { color: #fca5a5; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); opacity: 1; box-shadow: 0 4px 15px rgba(239,68,68,0.1); }
+  .auth-msg.success { color: #86efac; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); opacity: 1; box-shadow: 0 4px 15px rgba(34,197,94,0.1); }
 
-  .auth-links { text-align: center; margin-top: 24px; font-size: 13.5px; color: var(--muted); display: flex; justify-content: space-between; }
-  .auth-links a { color: var(--muted); text-decoration: none; transition: 0.2s; }
-  .auth-links a:hover { color: #fff; }
-  .auth-links a.highlight { color: var(--gold-2); font-weight: bold; }
+  .auth-links { text-align: center; margin-top: 32px; font-size: 13.5px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+  .auth-links a { color: #94a3b8; text-decoration: none; transition: 0.2s; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .auth-links a:hover { color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+  .auth-links a.highlight { color: var(--gold-2); }
+  .auth-links a.highlight:hover { text-shadow: 0 0 10px var(--gold); }
 
-  .auth-code-row { display: flex; gap: 10px; position: relative; }
-  .auth-code-row input { padding-left: 48px; }
-  .btn-code { padding: 0 16px; background: rgba(79,195,247,0.1); color: var(--cyan); border: 1px solid rgba(79,195,247,0.3); border-radius: 12px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }
-  .btn-code:hover:not(:disabled) { background: var(--cyan); color: #000; }
-  .btn-code:disabled { opacity: 0.5; cursor: not-allowed; }
   .hide { display: none !important; }
 
-  @media (max-width: 480px) {
-    .auth-card { padding: 30px 20px; border-radius: 20px; }
-    .auth-links { flex-direction: column; gap: 12px; }
+  @media (max-width: 900px) {
+    .visual-area { display: none; }
+    .form-area { padding: 20px; }
+    .auth-card { padding: 32px 24px; border-radius: 20px; margin-top: 5vh; }
+    .auth-header h2 { font-size: 22px; }
+    .input-wrap input { font-size: 16px; }
+    .btn-auth { padding: 16px; font-size: 16px; }
+    .auth-links { flex-direction: column; gap: 16px; }
   }
 </style>
 </head>
@@ -86,58 +120,102 @@
 <div class="aurora-bg"></div>
 <canvas id="particleCanvas"></canvas>
 
-<div class="auth-container">
-  <div class="auth-card">
-    <div class="auth-header">
-      <img src="photo/un.png" alt="IECP">
-      <h2>欢迎回来</h2>
-      <p>登录以继续管理你的国家</p>
-    </div>
-
-    <div class="auth-tabs">
-      <div class="auth-tab-bg" id="tabBg"></div>
-      <div class="auth-tab active" onclick="switchTab('password')">密码登录</div>
-      <div class="auth-tab" onclick="switchTab('otp')">验证码登录</div>
-    </div>
-
-    <!-- 密码登录表单 -->
-    <form id="formPassword" onsubmit="handlePasswordLogin(event)">
-      <div class="input-group">
-        <label>邮箱</label>
-        <div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="loginEmail" placeholder="请输入注册邮箱" required></div>
+<div class="auth-page">
+  <div class="visual-area">
+    <div class="visual-content">
+      <div class="tech-line">
+        <div class="line-bar"></div>
+        <div class="line-text">IECP 核心数据终端</div>
       </div>
-      <div class="input-group">
-        <label>密码</label>
-        <div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="loginPassword" placeholder="请输入密码" required></div>
-      </div>
-      <div class="auth-msg" id="msgPassword"></div>
-      <button type="submit" class="btn-auth" id="btnLoginPwd">登 录</button>
-    </form>
-
-    <!-- 验证码登录表单 -->
-    <form id="formOtp" class="hide" onsubmit="handleOtpLogin(event)">
-      <div class="input-group">
-        <label>邮箱</label>
-        <div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="otpEmail" placeholder="请输入注册邮箱" required></div>
-      </div>
-      <div class="input-group">
-        <label>验证码</label>
-        <div class="auth-code-row">
-          <div class="input-wrap" style="flex:1;"><i class="fa-solid fa-shield-halved"></i><input type="text" id="otpCode" placeholder="6位验证码" maxlength="6" required></div>
-          <button type="button" class="btn-code" id="btnSendOtp" onclick="sendLoginOtp()">获取验证码</button>
+      <h1 class="visual-title">联结文明<br>共享未来</h1>
+      <p class="visual-subtitle">IECP 国际交流与合作平台，在这里建立你的国家，参与全球外交、贸易与战略博弈。</p>
+      
+      <div class="hud-panel">
+        <div class="hud-item">
+          <div class="hud-label">网络状态</div>
+          <div class="hud-val"><i class="fa-solid fa-circle-check" style="font-size:14px;"></i> 核心节点已连接</div>
+        </div>
+        <div class="hud-item">
+          <div class="hud-label">数据传输</div>
+          <div class="hud-val"><i class="fa-solid fa-shield-halved" style="font-size:14px;"></i> 加密信道安全</div>
         </div>
       </div>
-      <div class="auth-msg" id="msgOtp"></div>
-      <button type="submit" class="btn-auth" id="btnLoginOtp">登 录</button>
-    </form>
-
-    <div class="auth-links">
-      <a href="forgot-password.html">忘记密码？</a>
-      <a href="register.html" class="highlight">注册新国家 <i class="fa-solid fa-arrow-right"></i></a>
     </div>
+  </div>
 
-    <div style="text-align: center; margin-top: 30px; font-size: 12px; color: var(--muted);">
-      页面卡住了？<span style="color: var(--cyan); cursor: pointer; text-decoration: underline;" onclick="forceLogout()">点此清理登录缓存</span>
+  <div class="form-area">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-container">
+          <img src="photo/un.png" alt="IECP">
+        </div>
+        <h2>欢迎回来</h2>
+        <p>接入国家核心数据网络</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab-bg" id="tabBg"></div>
+        <div class="auth-tab active" onclick="switchTab('password')">
+          <div class="icon-box"><i class="fa-solid fa-lock"></i></div> 密码登录
+        </div>
+        <div class="auth-tab" onclick="switchTab('otp')">
+          <div class="icon-box"><i class="fa-solid fa-shield-halved"></i></div> 验证码
+        </div>
+      </div>
+
+      <form id="formPassword" onsubmit="handlePasswordLogin(event)">
+        <div class="input-group">
+          <label>邮箱</label>
+          <div class="input-wrap">
+            <input type="email" id="loginEmail" placeholder="请输入注册邮箱" required>
+            <div class="input-icon"><i class="fa-regular fa-envelope"></i></div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>密码</label>
+          <div class="input-wrap">
+            <input type="password" id="loginPassword" placeholder="请输入密码" required>
+            <div class="input-icon"><i class="fa-solid fa-lock"></i></div>
+          </div>
+        </div>
+        <div class="auth-msg" id="msgPassword"></div>
+        <button type="submit" class="btn-auth" id="btnLoginPwd">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> 登 录
+        </button>
+      </form>
+
+      <form id="formOtp" class="hide" onsubmit="handleOtpLogin(event)">
+        <div class="input-group">
+          <label>邮箱</label>
+          <div class="input-wrap">
+            <input type="email" id="otpEmail" placeholder="请输入注册邮箱" required>
+            <div class="input-icon"><i class="fa-regular fa-envelope"></i></div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>验证码</label>
+          <div class="auth-code-row">
+            <div class="input-wrap">
+              <input type="text" id="otpCode" placeholder="6位验证码" maxlength="6" required>
+              <div class="input-icon"><i class="fa-solid fa-key"></i></div>
+            </div>
+            <button type="button" class="btn-code" id="btnSendOtp" onclick="sendLoginOtp()">获取验证码</button>
+          </div>
+        </div>
+        <div class="auth-msg" id="msgOtp"></div>
+        <button type="submit" class="btn-auth" id="btnLoginOtp">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i> 登 录
+        </button>
+      </form>
+
+      <div class="auth-links">
+        <a href="forgot-password.html"><i class="fa-solid fa-key"></i> 忘记密码？</a>
+        <a href="register.html" class="highlight"><i class="fa-solid fa-plus"></i> 注册新国家</a>
+      </div>
+
+      <div style="text-align: center; margin-top: 32px; font-size: 12px; color: #64748b;">
+        页面卡住了？<span style="color: var(--cyan); cursor: pointer; text-decoration: underline; display:inline-flex; align-items:center; gap:4px; transition: 0.2s;" onclick="forceLogout()"><i class="fa-solid fa-rotate-right"></i> 点此清理登录缓存</span>
+      </div>
     </div>
   </div>
 </div>
@@ -146,18 +224,17 @@
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
-// 粒子星空
 (function initParticles() {
   const canvas = document.getElementById('particleCanvas'); const ctx = canvas.getContext('2d');
   let width, height; let particles = [];
   function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
   window.addEventListener('resize', resize); resize();
   class Particle {
-    constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3; this.radius = Math.random() * 1.5 + 0.5; }
+    constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.2; this.vy = (Math.random() - 0.5) * 0.2; this.radius = Math.random() * 1.5 + 0.5; this.alpha = Math.random() * 0.5 + 0.1; }
     update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
-    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.fill(); }
+    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = `rgba(212, 175, 55, ${this.alpha})`; ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(212,175,55,0.5)'; ctx.fill(); ctx.shadowBlur = 0; }
   }
-  for (let i = 0; i < 70; i++) particles.push(new Particle());
+  for (let i = 0; i < 60; i++) particles.push(new Particle());
   function animate() {
     ctx.clearRect(0, 0, width, height);
     for (let i = 0; i < particles.length; i++) {
@@ -165,7 +242,7 @@
       for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 - dist / 1000})`; ctx.stroke(); }
+        if (dist < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(212, 175, 55, ${0.08 - dist / 1500})`; ctx.lineWidth = 0.5; ctx.stroke(); }
       }
     }
     requestAnimationFrame(animate);
@@ -176,16 +253,12 @@
 if (typeof IECP === 'undefined' || !IECP.client) { alert('网络波动，请刷新页面！'); throw new Error('SDK error'); }
 
 (function() {
-  IECP.client.auth.getSession().then(function(res) {
-    if (res.data && res.data.session) { setTimeout(function() { location.replace('index.html'); }, 100); }
-  });
+  IECP.client.auth.getSession().then(function(res) { if (res.data && res.data.session) { setTimeout(function() { location.replace('index.html'); }, 100); } });
   if (new URLSearchParams(location.search).get('mode') === 'otp') switchTab('otp');
 })();
 
 window.forceLogout = function() {
-  if(confirm('确定要清理卡死的登录状态吗？')) {
-    IECP.client.auth.signOut().then(function() { localStorage.clear(); sessionStorage.clear(); location.href = 'login.html'; });
-  }
+  if(confirm('确定要清理卡死的登录状态吗？')) { IECP.client.auth.signOut().then(function() { localStorage.clear(); sessionStorage.clear(); location.href = 'login.html'; }); }
 };
 
 function switchTab(type) {
@@ -195,16 +268,14 @@ function switchTab(type) {
   else { tabs[1].classList.add('active'); tabs[0].classList.remove('active'); tabBg.style.transform = 'translateX(100%)'; formOtp.classList.remove('hide'); formPassword.classList.add('hide'); }
 }
 
-function setMsg(id, text, type) {
-  const el = document.getElementById(id); el.innerText = text; el.className = 'auth-msg ' + type;
-}
+function setMsg(id, text, type) { const el = document.getElementById(id); el.innerText = text; el.className = 'auth-msg ' + type; }
 
 async function handlePasswordLogin(e) {
   e.preventDefault();
   const email = document.getElementById('loginEmail').value.trim(); const pwd = document.getElementById('loginPassword').value; const btn = document.getElementById('btnLoginPwd');
-  btn.disabled = true; btn.innerText = '登录中...'; setMsg('msgPassword', '', '');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 登录中...'; setMsg('msgPassword', '', '');
   const { error } = await IECP.client.auth.signInWithPassword({ email, password: pwd });
-  if (error) { setMsg('msgPassword', error.message === 'Invalid login credentials' ? '邮箱或密码错误' : error.message, 'error'); btn.disabled = false; btn.innerText = '登 录'; return; }
+  if (error) { setMsg('msgPassword', error.message === 'Invalid login credentials' ? '邮箱或密码错误' : error.message, 'error'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> 登 录'; return; }
   location.replace('index.html');
 }
 
@@ -221,9 +292,9 @@ async function sendLoginOtp() {
 async function handleOtpLogin(e) {
   e.preventDefault();
   const email = document.getElementById('otpEmail').value.trim(); const code = document.getElementById('otpCode').value.trim(); const btn = document.getElementById('btnLoginOtp');
-  btn.disabled = true; btn.innerText = '验证中...'; setMsg('msgOtp', '', '');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 验证中...'; setMsg('msgOtp', '', '');
   const { error } = await IECP.client.auth.verifyOtp({ email: email, token: code, type: 'email' });
-  if (error) { setMsg('msgOtp', '验证码错误或已过期', 'error'); btn.disabled = false; btn.innerText = '登 录'; return; }
+  if (error) { setMsg('msgOtp', '验证码错误或已过期', 'error'); btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> 登 录'; return; }
   location.replace('index.html');
 }
 </script>
