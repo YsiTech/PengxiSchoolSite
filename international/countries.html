@@ -1,53 +1,66 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <style>
-  /* 强制覆盖国家名显示规则 */
-  .country-card-head {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 16px;
-    width: 100%;
-    min-width: 0; /* 允许子元素收缩 */
-  }
-  
-  .country-name {
-    flex: 1 1 0%;
-    min-width: 0; /* 必须要有，防止内容撑破卡片 */
-    overflow: hidden;
-    position: relative;
-  }
-  
-  .country-name b {
-    display: inline-block; /* 只有 inline-block 才能应用 transform */
-    white-space: nowrap;
-    font-size: 16px;
-    color: var(--ink);
-    letter-spacing: .4px;
-    /* 默认单行省略号 */
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    vertical-align: bottom;
-  }
-
-  /* hover 时取消省略号，启动跑马灯 */
-  .country-name:hover b {
-    text-overflow: clip;
-    animation: marquee-scroll 4s linear infinite alternate;
-  }
-
-  @keyframes marquee-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(calc(-100% + 140px)); } /* 140px 是大致的可视宽度，超出部分向左滑动 */
-  }
-</style>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>国家列表 · IECP</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .page-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; }
+  .page-title { font-size: 28px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 12px; margin: 0 0 8px 0; }
+  .page-title i { color: var(--gold); }
+  .page-subtitle { color: var(--muted); font-size: 14px; margin: 0; }
+  
+  .toolbar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .search-box { position: relative; flex: 1; min-width: 250px; max-width: 400px; }
+  .search-box input { width: 100%; padding: 12px 16px 12px 42px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: #fff; font-size: 14px; outline: none; transition: 0.3s; }
+  .search-box input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(79,195,247,0.2); }
+  .search-box i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; }
+
+  .country-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; padding-bottom: 60px; }
+  
+  .country-card {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 20px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+  .country-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(212,175,55,0.5);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(212,175,55,0.05);
+  }
+
+  .card-header { position: relative; height: 120px; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,0.05); background: #0f172a; }
+  .card-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(8px) brightness(0.6); transform: scale(1.1); }
+  .card-flag { position: absolute; top: 20px; left: 24px; width: 80px; height: 54px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 10px 20px rgba(0,0,0,0.5); z-index: 2; }
+  .card-emblem { position: absolute; top: 20px; right: 24px; width: 48px; height: 48px; object-fit: contain; opacity: 0.8; z-index: 2; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
+  .card-level { position: absolute; bottom: 0; right: 24px; background: var(--gold); color: #000; padding: 4px 12px; border-radius: 12px 12px 0 0; font-size: 12px; font-weight: 800; z-index: 3; display: flex; align-items: center; gap: 6px; box-shadow: 0 -4px 10px rgba(0,0,0,0.3); }
+
+  .card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+  .card-title-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .country-name { font-size: 20px; font-weight: 800; color: #fff; margin: 0; }
+  .country-system { font-size: 12px; color: var(--gold-2); margin-top: 4px; display: flex; align-items: center; gap: 6px; }
+  
+  .info-list { display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .info-item { display: flex; align-items: center; gap: 8px; }
+  .info-item i { width: 16px; text-align: center; color: rgba(255,255,255,0.4); }
+  
+  .country-desc { font-size: 13px; line-height: 1.6; color: var(--ink-2); background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex: 1; }
+  
+  .card-actions { display: flex; gap: 10px; margin-top: auto; }
+  .btn-view { flex: 1; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.05); color: var(--ink); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: bold; text-align: center; transition: 0.2s; text-decoration: none; cursor: pointer; }
+  .btn-view:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .btn-diplomacy { flex: 1; padding: 10px; border-radius: 8px; background: linear-gradient(135deg, var(--gold), #b8860b); color: #000; border: none; font-size: 13px; font-weight: bold; text-align: center; transition: 0.2s; cursor: pointer; }
+  .btn-diplomacy:hover { background: var(--gold-2); box-shadow: 0 4px 15px rgba(212,175,55,0.4); }
+
+  @media (max-width: 768px) {
+    .country-grid { grid-template-columns: 1fr; }
+    .page-title { font-size: 24px; }
+  }
+</style>
 </head>
 <body>
 
@@ -62,74 +75,139 @@
   </div>
 </header>
 
-<section class="iecp-page-head">
-  <div class="iecp-page-head-inner">
-    <div class="iecp-breadcrumb">
-      <a href="index.html">首页</a>
-      <i class="fa-solid fa-chevron-right"></i>
-      <span>国家列表</span>
-    </div>
-    <h1><i class="fa-solid fa-globe"></i> 国家列表</h1>
-    <p>浏览平台上已建立的所有国家，点击查看详情并申请建交</p>
-  </div>
-</section>
-
 <main class="iecp-main">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><i class="fa-solid fa-earth-americas"></i> 全球主权国家图鉴</h1>
+      <p class="page-subtitle">探索世界版图上的文明与势力</p>
+    </div>
+    <div class="toolbar">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="搜索国家名称 / 首都..." oninput="filterCountries()">
+      </div>
+    </div>
+  </div>
+
   <div id="countriesWrap">
-    <div class="loading-state"><div class="spinner"></div><span>正在加载国家…</span></div>
+    <div class="loading-state"><div class="spinner"></div><span>正在接入全球数据网络...</span></div>
   </div>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
-<script src="assets/js/common.js"></script><script>
+<script src="assets/js/common.js"></script>
+<script>
 (function () {
   var I = IECP;
+  var myProfile = null;
+  var allCountries = [];
+
+  // 🚨 根据影响力计算评级
+  function getLevel(influence) {
+    var inf = influence || 0;
+    if (inf >= 5000) return { text: '世界霸主', icon: 'fa-crown', color: '#ef4444' };
+    if (inf >= 2000) return { text: '超级大国', icon: 'fa-star', color: '#f59e0b' };
+    if (inf >= 1000) return { text: '地区强国', icon: 'fa-shield-halved', color: '#a78bfa' };
+    if (inf >= 500) return { text: '新兴城邦', icon: 'fa-seedling', color: '#22c55e' };
+    return { text: '偏远聚落', icon: 'fa-house', color: '#94a3b8' };
+  }
+
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('countries');
-    loadCountries();
+    
+    I.getProfile(true).then(function (p) {
+      myProfile = p;
+      loadCountries();
+    });
   });
 
   function loadCountries() {
-    I.client.from('profiles').select('*').order('created_at', { ascending: false }).then(function (res) {
-      var wrap = I.$('#countriesWrap');
-      if (res.error) {
-        wrap.innerHTML = '<div class="empty-state"><p>加载失败</p></div>';
-        return;
-      }
-      var list = res.data || [];
-      if (!list.length) {
-        wrap.innerHTML = '<div class="empty-state"><i class="fa-solid fa-globe"></i><p>还没有国家</p></div>';
-        return;
-      }
-      
-      var html = '<div class="countries-grid">';
-      list.forEach(function (c) {
-        html +=
-          '<div class="country-card glass" onclick="location.href=\'country.html?id=' + c.id + '\'">' +
-            '<div class="country-card-head">' +
-              '<img class="country-flag" src="' + I.escapeHtml(c.flag_url || I.avatarFallback(c.username)) + '" alt="">' +
-              '<div class="country-name">' +
-                '<b>' + I.escapeHtml(c.username) + '</b>' +
-                '<span>' + I.escapeHtml(c.social_system || '—') + '</span>' +
-              '</div>' +
-              (c.emblem_url ? '<img class="country-emblem" src="' + I.escapeHtml(c.emblem_url) + '" alt="">' : '') +
-            '</div>' +
-            '<div class="country-meta">' +
-              '<div class="country-meta-row"><span>首都</span><b>' + I.escapeHtml(c.capital || '—') + '</b></div>' +
-              '<div class="country-meta-row"><span>官方语言</span><b>' + I.escapeHtml(c.official_language || '—') + '</b></div>' +
-              // 🚨 核心改动：隐藏余额
-              '<div class="country-meta-row"><span>国库</span><b style="color:var(--gold-2);font-family:var(--mono)">' + I.formatBalance(c.balance, c.id, true) + '</b></div>' +
-            '</div>' +
-          '</div>';
+    var wrap = I.$('#countriesWrap');
+    
+    // 🚨 只查询公开字段，绝对不拉取 balance、resources、military
+    I.client.from('profiles')
+      .select('id, username, flag_url, emblem_url, social_system, capital, description, influence, created_at')
+      .order('influence', { ascending: false })
+      .then(function (res) {
+        if (res.error) {
+          wrap.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red)"></i><p>网络异常，无法获取国家列表</p></div>`;
+          return;
+        }
+        allCountries = res.data || [];
+        renderList(allCountries);
       });
-      html += '</div>';
-      wrap.innerHTML = html;
-    });
   }
+
+  function renderList(list) {
+    var wrap = I.$('#countriesWrap');
+    if (!list.length) {
+      wrap.innerHTML = `<div class="empty-state"><i class="fa-solid fa-ghost" style="font-size:40px; color:var(--muted)"></i><p>未找到符合条件的主权国家</p></div>`;
+      return;
+    }
+
+    var html = '<div class="country-grid">';
+    list.forEach(function (c) {
+      var isSelf = myProfile && c.id === myProfile.id;
+      var flag = c.flag_url || I.avatarFallback(c.username);
+      var emblem = c.emblem_url || '';
+      var lvl = getLevel(c.influence);
+
+      // 如果是自己，给个特殊的金色描边
+      var cardBorder = isSelf ? 'border-color: rgba(212,175,55,0.8); box-shadow: 0 0 20px rgba(212,175,55,0.15);' : '';
+
+      html += `
+        <div class="country-card" style="${cardBorder}">
+          <div class="card-header">
+            <div class="card-bg" style="background-image: url('${flag}')"></div>
+            <img src="${flag}" class="card-flag">
+            ${emblem ? `<img src="${emblem}" class="card-emblem">` : ''}
+            <div class="card-level" style="color:${lvl.color}; background: rgba(0,0,0,0.6); border: 1px solid ${lvl.color};">
+              <i class="fa-solid ${lvl.icon}"></i> ${lvl.text}
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <div class="card-title-row">
+              <div>
+                <h3 class="country-name">${I.escapeHtml(c.username)} ${isSelf ? '<span style="font-size:12px; color:var(--gold);">(本国)</span>' : ''}</h3>
+                <div class="country-system"><i class="fa-solid fa-scale-balanced"></i> ${I.escapeHtml(c.social_system || '未知政体')}</div>
+              </div>
+            </div>
+
+            <div class="info-list">
+              <div class="info-item"><i class="fa-solid fa-city"></i> 首都：${I.escapeHtml(c.capital || '未设立')}</div>
+              <div class="info-item"><i class="fa-solid fa-chart-line"></i> 影响力：${I.fmtNumber(c.influence || 0)}</div>
+              <div class="info-item"><i class="fa-regular fa-calendar-days"></i> 建国时间：${I.fmtDate(c.created_at).split(' ')[0]}</div>
+            </div>
+
+            <div class="country-desc">
+              ${I.escapeHtml(c.description || '该国尚未向国际社会公开其国家介绍。')}
+            </div>
+
+            <div class="card-actions">
+              <a href="country.html?id=${c.id}" class="btn-view"><i class="fa-regular fa-address-card"></i> 查看档案</a>
+              ${isSelf ? '' : `<button class="btn-diplomacy" onclick="location.href='country.html?id=${c.id}'"><i class="fa-solid fa-handshake"></i> 发起外交</button>`}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  window.filterCountries = function () {
+    var kw = I.$('#searchInput').value.toLowerCase();
+    var filtered = allCountries.filter(function (c) {
+      var name = (c.username || '').toLowerCase();
+      var capital = (c.capital || '').toLowerCase();
+      return name.includes(kw) || capital.includes(kw);
+    });
+    renderList(filtered);
+  };
 })();
 </script>
-
 </body>
 </html>

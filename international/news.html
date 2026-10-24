@@ -7,7 +7,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; background: radial-gradient(circle at 15% 50%, rgba(79, 195, 247, 0.15), transparent 50%), radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.15), transparent 50%), radial-gradient(circle at 50% 80%, rgba(167, 139, 250, 0.1), transparent 50%); filter: blur(60px); animation: auroraMove 15s ease-in-out infinite alternate; }
+  body { background-color: #05070a; }
+  .aurora-bg { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at 15% 50%, rgba(79, 195, 247, 0.1), transparent 50%), radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.1), transparent 50%); filter: blur(60px); animation: auroraMove 15s ease-in-out infinite alternate; }
   @keyframes auroraMove { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.2) translate(-5%, 5%); } }
   #news-particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
 
@@ -34,7 +35,8 @@
   .news-card { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: 0.3s; }
   .news-card:hover { transform: translateY(-4px); border-color: rgba(212,175,55,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
   .nc-img { height: 160px; background: rgba(0,0,0,0.3); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .nc-img img { width: 100%; height: 100%; object-fit: cover; }
+  .nc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+  .news-card:hover .nc-img img { transform: scale(1.05); }
   .nc-fallback { font-size: 40px; color: rgba(255,255,255,0.05); }
   .nc-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
   .nc-title { font-size: 16px; color: #fff; font-weight: 700; margin: 0 0 8px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
@@ -47,31 +49,24 @@
   .manage-btn.edit:hover { color: var(--gold); background: rgba(212,175,55,0.15); }
   .manage-btn.delete:hover { color: var(--red); background: rgba(239,68,68,0.15); }
 
-  /* 🚨 全新上传控制台 */
+  /* 上传控制台 */
   .upload-console { background: rgba(0,0,0,0.2); border: 1px solid var(--border-2); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
   .upload-section-title { font-size: 13px; font-weight: bold; color: var(--gold-2); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 8px; }
   .upload-btn-wrap { position: relative; display: inline-block; }
   .upload-btn-wrap input[type="file"] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
-  
   .media-preview-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
   .media-preview-item { position: relative; width: 90px; height: 90px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: #000; display: flex; align-items: center; justify-content: center; }
   .media-preview-item img, .media-preview-item video { width: 100%; height: 100%; object-fit: cover; }
   .media-preview-item i.icon { font-size: 30px; color: var(--muted); }
-  
   .media-actions { position: absolute; inset: 0; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; opacity: 0; transition: 0.2s; }
   .media-preview-item:hover .media-actions { opacity: 1; }
   .media-btn { width: 28px; height: 28px; border-radius: 50%; border: none; cursor: pointer; display: grid; place-items: center; font-size: 12px; }
   .btn-insert { background: var(--gold); color: #000; }
   .btn-del { background: var(--red); color: #fff; }
-
   .cover-upload-box { display: flex; align-items: center; gap: 16px; }
   .cover-preview { width: 120px; height: 68px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border-2); background: rgba(0,0,0,0.5); display: grid; place-items: center; font-size: 24px; color: var(--muted); }
-
   select { background-color: rgba(0, 0, 0, 0.3) !important; color: var(--ink) !important; border: 1px solid var(--border-2) !important; border-radius: var(--r-sm); outline: none; cursor: pointer; padding: 12px 14px; }
-  select:focus { border-color: var(--gold) !important; }
-  select option { background-color: #111827 !important; color: #fff !important; }
 
-  /* 📱 移动端深度优化 */
   @media (max-width: 768px) {
     .carousel-section { padding: 20px 0; height: auto; min-height: 280px; }
     .carousel-container { height: 250px; }
@@ -85,7 +80,6 @@
     .cc-meta { font-size: 11px; gap: 8px; }
     .timeline-grid { grid-template-columns: 1fr; gap: 16px; margin-top: 20px; }
     .iecp-main { padding-left: 16px; padding-right: 16px; }
-    
     .media-preview-grid { justify-content: center; }
     .media-preview-item { width: 70px; height: 70px; }
     .media-actions { opacity: 1; background: transparent; }
@@ -145,41 +139,21 @@
           <input id="nTitle" type="text" placeholder="新闻标题" maxlength="100">
         </div>
         
-        <!-- 🚨 全新媒体控制台 -->
         <div class="upload-console">
-          <div class="upload-section-title">
-            <span><i class="fa-solid fa-image"></i> 专属封面（不传则默认展示正文第一张图）</span>
-          </div>
+          <div class="upload-section-title"><span><i class="fa-solid fa-image"></i> 专属封面（不传则默认展示正文第一张图）</span></div>
           <div class="cover-upload-box">
-            <div class="upload-btn-wrap">
-              <button type="button" class="btn btn-ghost btn-sm"><i class="fa-solid fa-upload"></i> 选择封面图</button>
-              <input type="file" id="coverFile" accept="image/*">
-            </div>
+            <div class="upload-btn-wrap"><button type="button" class="btn btn-ghost btn-sm"><i class="fa-solid fa-upload"></i> 选择封面图</button><input type="file" id="coverFile" accept="image/*"></div>
             <div class="cover-preview" id="coverPreview"><i class="fa-solid fa-image"></i></div>
           </div>
         </div>
 
         <div class="upload-console">
-          <div class="upload-section-title">
-            <span><i class="fa-solid fa-photo-film"></i> 附件媒体（支持插入正文指定位置）</span>
-          </div>
-          
+          <div class="upload-section-title"><span><i class="fa-solid fa-photo-film"></i> 附件媒体（支持插入正文指定位置）</span></div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <div class="upload-btn-wrap">
-              <button type="button" class="btn btn-ghost btn-sm"><i class="fa-solid fa-image"></i> 添加图片</button>
-              <input type="file" id="imgFiles" accept="image/*" multiple>
-            </div>
-            <div class="upload-btn-wrap">
-              <button type="button" class="btn btn-ghost btn-sm"><i class="fa-solid fa-video"></i> 添加视频</button>
-              <input type="file" id="videoFiles" accept="video/*" multiple>
-            </div>
-            <div class="upload-btn-wrap">
-              <button type="button" class="btn btn-ghost btn-sm"><i class="fa-solid fa-headphones"></i> 添加音频</button>
-              <input type="file" id="audioFiles" accept="audio/*" multiple>
-            </div>
+            <div class="upload-btn-wrap"><button type="button" class="btn btn-ghost btn-sm"><i class="fa-solid fa-image"></i> 添加图片</button><input type="file" id="imgFiles" accept="image/*" multiple></div>
+            <div class="upload-btn-wrap"><button type="button" class="btn btn-ghost btn-sm"><i class="fa-solid fa-video"></i> 添加视频</button><input type="file" id="videoFiles" accept="video/*" multiple></div>
+            <div class="upload-btn-wrap"><button type="button" class="btn btn-ghost btn-sm"><i class="fa-solid fa-headphones"></i> 添加音频</button><input type="file" id="audioFiles" accept="audio/*" multiple></div>
           </div>
-
-          <!-- 预览区 -->
           <div class="media-preview-grid" id="mediaPreviewGrid"></div>
         </div>
 
@@ -210,9 +184,9 @@
   class Particle {
     constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4; this.radius = Math.random() * 1.5 + 0.5; }
     update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
-    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.fill(); }
+    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(212, 175, 55, 0.2)'; ctx.fill(); }
   }
-  for (let i = 0; i < 80; i++) particles.push(new Particle());
+  for (let i = 0; i < 60; i++) particles.push(new Particle());
   function animate() { ctx.clearRect(0, 0, width, height); for (let i = 0; i < particles.length; i++) { particles[i].update(); particles[i].draw(); for (let j = i + 1; j < particles.length; j++) { const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y; const dist = Math.sqrt(dx * dx + dy * dy); if (dist < 120) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(212, 175, 55, ${0.1 - dist / 1200})`; ctx.stroke(); } } } requestAnimationFrame(animate); }
   animate();
 })();
@@ -220,14 +194,36 @@
 (function () {
   var I = IECP;
   var profile = null;
+  var isAuth = false;
   var editMode = false;
   var currentEditId = null;
   var carouselData = [];
   var currentIndex = 0;
 
-  // 🚨 全局媒体队列
   var coverFile = null;
-  var mediaQueue = []; // { file: File, type: 'image'|'video'|'audio', objUrl: string, id: string }
+  var mediaQueue = []; 
+
+  function checkAuth() {
+    if (!isAuth) {
+      I.toast('该操作需要登录后才能进行', 'error');
+      return false;
+    }
+    return true;
+  }
+
+  I.client.auth.getSession().then(function(res) {
+    if (res.data && res.data.session) {
+      isAuth = true;
+      I.getProfile(true).then(function (p) {
+        profile = p;
+        loadNews();
+      });
+    } else {
+      loadNews(); // 未登录直接加载
+    }
+  });
+
+  I.initTopbar('news');
 
   function getValidCover(n) {
     var cover = n.cover_url;
@@ -235,16 +231,13 @@
       var imgItem = n.media_list.find(m => m.type === 'image');
       if (imgItem) cover = imgItem.url;
     }
-    if (!cover && n.media_url && n.media_type === 'image') {
-      cover = n.media_url;
-    }
-    if (cover && typeof cover === 'string' && cover.startsWith('http')) {
-      return cover;
-    }
+    if (!cover && n.media_url && n.media_type === 'image') cover = n.media_url;
+    if (cover && typeof cover === 'string' && cover.startsWith('http')) return cover;
     return null;
   }
 
   window.openPublishModal = function() {
+    if (!checkAuth()) return;
     editMode = false; currentEditId = null;
     I.$('#modalTitle').innerHTML = '<i class="fa-solid fa-pen-nib" style="color:var(--gold)"></i> 发布新闻';
     I.$('#newsForm').reset();
@@ -255,23 +248,18 @@
     I.$('#publishModal').classList.add('open');
   };
 
-  window.closePublishModal = function() {
-    I.$('#publishModal').classList.remove('open');
-  };
+  window.closePublishModal = function() { I.$('#publishModal').classList.remove('open'); };
 
-  // 封面选择
+  I.$('#openPublishBtn').addEventListener('click', window.openPublishModal);
+
   I.$('#coverFile').addEventListener('change', function() {
-    var file = this.files[0];
-    if (!file) return;
+    var file = this.files[0]; if (!file) return;
     coverFile = file;
     var reader = new FileReader();
-    reader.onload = function(e) {
-      I.$('#coverPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`;
-    };
+    reader.onload = function(e) { I.$('#coverPreview').innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">`; };
     reader.readAsDataURL(file);
   });
 
-  // 附件媒体选择
   function handleMediaSelect(inputId, type) {
     I.$('#' + inputId).addEventListener('change', function() {
       var files = Array.from(this.files);
@@ -280,103 +268,58 @@
         var objUrl = URL.createObjectURL(file);
         mediaQueue.push({ file: file, type: type, objUrl: objUrl, id: id });
       });
-      this.value = ''; // 清空 input 允许重复选择同一文件
-      renderMediaPreview();
+      this.value = ''; renderMediaPreview();
     });
   }
   handleMediaSelect('imgFiles', 'image');
   handleMediaSelect('videoFiles', 'video');
   handleMediaSelect('audioFiles', 'audio');
 
-  // 渲染媒体预览控制台
   function renderMediaPreview() {
-    var grid = I.$('#mediaPreviewGrid');
-    grid.innerHTML = '';
-    if (mediaQueue.length === 0) {
-      grid.innerHTML = '<div style="color:var(--muted); font-size:12px; width:100%; text-align:center; padding:10px;">暂无附件</div>';
-      return;
-    }
-    
+    var grid = I.$('#mediaPreviewGrid'); grid.innerHTML = '';
+    if (mediaQueue.length === 0) { grid.innerHTML = '<div style="color:var(--muted); font-size:12px; width:100%; text-align:center; padding:10px;">暂无附件</div>'; return; }
     mediaQueue.forEach((item, index) => {
-      var div = document.createElement('div');
-      div.className = 'media-preview-item';
-      
+      var div = document.createElement('div'); div.className = 'media-preview-item';
       var mediaHtml = '';
       if (item.type === 'image') mediaHtml = `<img src="${item.objUrl}">`;
       else if (item.type === 'video') mediaHtml = `<video src="${item.objUrl}"></video>`;
       else mediaHtml = `<i class="fa-solid fa-music icon" style="color:var(--cyan);"></i>`;
-
-      div.innerHTML = `
-        ${mediaHtml}
-        <div class="media-actions">
-          <button type="button" class="media-btn btn-insert" title="插入正文" onclick="insertMediaToText('${item.id}')"><i class="fa-solid fa-arrow-down"></i></button>
-          <button type="button" class="media-btn btn-del" title="删除" onclick="removeMediaFromQueue('${item.id}')"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      `;
+      div.innerHTML = `${mediaHtml}<div class="media-actions"><button type="button" class="media-btn btn-insert" title="插入正文" onclick="insertMediaToText('${item.id}')"><i class="fa-solid fa-arrow-down"></i></button><button type="button" class="media-btn btn-del" title="删除" onclick="removeMediaFromQueue('${item.id}')"><i class="fa-solid fa-trash"></i></button></div>`;
       grid.appendChild(div);
     });
   }
 
-  // 插入正文逻辑
   window.insertMediaToText = function(id) {
-    var item = mediaQueue.find(x => x.id === id);
-    if (!item) return;
-    
+    if (!checkAuth()) return;
+    var item = mediaQueue.find(x => x.id === id); if (!item) return;
     var typeName = item.type === 'image' ? '图片' : item.type === 'video' ? '视频' : '音频';
     var placeholder = `\n[${typeName}: ${item.id}]\n`;
-    
     var textarea = I.$('#nContent');
-    var startPos = textarea.selectionStart;
-    var endPos = textarea.selectionEnd;
-    var text = textarea.value;
-    
+    var startPos = textarea.selectionStart; var endPos = textarea.selectionEnd; var text = textarea.value;
     textarea.value = text.substring(0, startPos) + placeholder + text.substring(endPos, text.length);
-    
-    // 恢复光标位置
     textarea.selectionStart = textarea.selectionEnd = startPos + placeholder.length;
     textarea.focus();
   };
 
-  // 从队列删除
-  window.removeMediaFromQueue = function(id) {
-    mediaQueue = mediaQueue.filter(x => x.id !== id);
-    renderMediaPreview();
-  };
+  window.removeMediaFromQueue = function(id) { mediaQueue = mediaQueue.filter(x => x.id !== id); renderMediaPreview(); };
 
   function loadNews() {
     I.client.from('news').select('*, profiles(id, username, flag_url)').order('created_at', { ascending: false }).limit(50).then(function (res) {
       var list = res.data || [];
+      if (!list.length) { I.$('#newsList').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-satellite"></i><p>还没有新闻，快来抢首发吧</p></div>'; return; }
       
-      if (!list.length) {
-        I.$('#newsList').innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-satellite"></i><p>还没有新闻，快来抢首发吧</p></div>';
-        return;
-      }
-
-      carouselData = list.slice(0, 5);
-      currentIndex = 0;
-      window.renderCarousel();
+      carouselData = list.slice(0, 5); currentIndex = 0; window.renderCarousel();
 
       var html = '';
       list.forEach(function (n) {
-        var cover = getValidCover(n);
-        var media = '';
-        
-        if (cover) {
-          media = `<div class="nc-img"><img src="${cover}" alt=""></div>`;
-        } else {
-          media = `<div class="nc-img"><i class="fa-solid fa-newspaper nc-fallback"></i></div>`;
-        }
+        var cover = getValidCover(n); var media = '';
+        if (cover) media = `<div class="nc-img"><img src="${cover}" alt=""></div>`;
+        else media = `<div class="nc-img"><i class="fa-solid fa-newspaper nc-fallback"></i></div>`;
 
-        var author = n.profiles || {};
-        var avatar = author.flag_url || I.avatarFallback(author.username || '?');
-        var isAuthor = (author.id === profile.id);
+        var author = n.profiles || {}; var avatar = author.flag_url || I.avatarFallback(author.username || '?');
+        var isAuthor = (isAuth && author.id === profile.id);
 
-        var manageBtns = isAuthor ? `
-          <div class="manage-btns">
-            <button class="manage-btn edit" title="编辑新闻" onclick="editNews(event, '${n.id}')"><i class="fa-solid fa-pen"></i></button>
-            <button class="manage-btn delete" title="删除新闻" onclick="deleteNews(event, '${n.id}')"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        ` : '';
+        var manageBtns = isAuthor ? `<div class="manage-btns"><button class="manage-btn edit" title="编辑新闻" onclick="editNews(event, '${n.id}')"><i class="fa-solid fa-pen"></i></button><button class="manage-btn delete" title="删除新闻" onclick="deleteNews(event, '${n.id}')"><i class="fa-solid fa-trash"></i></button></div>` : '';
 
         html += `
           <article class="news-card" onclick="location.href='news-detail.html?id=${n.id}'">
@@ -385,10 +328,7 @@
               <h3 class="nc-title">${I.escapeHtml(n.title)}</h3>
               <p class="nc-desc">${I.escapeHtml(n.content.replace(/\[.*?\]/g, ''))}</p>
               <div class="nc-footer">
-                <div class="nc-author">
-                  <img src="${I.escapeHtml(avatar)}">
-                  <span>${I.escapeHtml(author.username || '未知')}</span>
-                </div>
+                <div class="nc-author"><img src="${I.escapeHtml(avatar)}"><span>${I.escapeHtml(author.username || '未知')}</span></div>
                 ${manageBtns}
               </div>
             </div>
@@ -400,9 +340,7 @@
   }
 
   window.renderCarousel = function() {
-    var container = I.$('#carouselContainer');
-    I.$('#carouselSection').style.display = 'block';
-    var html = '';
+    var container = I.$('#carouselContainer'); I.$('#carouselSection').style.display = 'block'; var html = '';
     carouselData.forEach(function(n, idx) {
       var diff = idx - currentIndex;
       var stateClass = '';
@@ -412,22 +350,15 @@
       else stateClass = 'hidden';
 
       var cover = getValidCover(n);
-      var bgImg = cover 
-        ? `<img src="${cover}" class="cc-img">` 
-        : `<div class="cc-fallback"><i class="fa-solid fa-satellite-dish"></i></div>`;
-        
+      var bgImg = cover ? `<img src="${cover}" class="cc-img">` : `<div class="cc-fallback"><i class="fa-solid fa-satellite-dish"></i></div>`;
       var author = n.profiles || {};
       html += `
         <div class="carousel-card ${stateClass}" onclick="if('${stateClass}'==='active') location.href='news-detail.html?id=${n.id}'; else setCarouselIndex(${idx})">
-          ${bgImg}
-          <div class="cc-overlay"></div>
+          ${bgImg}<div class="cc-overlay"></div>
           <div class="cc-content">
             <span class="cc-tag">最新快讯</span>
             <h2 class="cc-title">${I.escapeHtml(n.title)}</h2>
-            <div class="cc-meta">
-              <span><i class="fa-solid fa-user"></i> ${I.escapeHtml(author.username || '未知')}</span>
-              <span><i class="fa-regular fa-clock"></i> ${I.relativeTime(n.created_at)}</span>
-            </div>
+            <div class="cc-meta"><span><i class="fa-solid fa-user"></i> ${I.escapeHtml(author.username || '未知')}</span><span><i class="fa-regular fa-clock"></i> ${I.relativeTime(n.created_at)}</span></div>
           </div>
         </div>
       `;
@@ -436,60 +367,38 @@
   };
 
   window.slideCarousel = function(dir) {
-    currentIndex += dir;
-    if (currentIndex < 0) currentIndex = carouselData.length - 1;
+    currentIndex += dir; if (currentIndex < 0) currentIndex = carouselData.length - 1;
     if (currentIndex >= carouselData.length) currentIndex = 0;
     window.renderCarousel();
   };
-
-  window.setCarouselIndex = function(idx) {
-    currentIndex = idx;
-    window.renderCarousel();
-  };
+  window.setCarouselIndex = function(idx) { currentIndex = idx; window.renderCarousel(); };
 
   window.editNews = function(e, id) {
-    e.stopPropagation();
+    e.stopPropagation(); if (!checkAuth()) return;
     I.client.from('news').select('*').eq('id', id).maybeSingle().then(function(res) {
       if (res.error || !res.data) return I.toast('获取失败', 'error');
       var n = res.data;
-      
-      editMode = true; currentEditId = id;
-      coverFile = null;
+      editMode = true; currentEditId = id; coverFile = null;
       I.$('#coverPreview').innerHTML = '<i class="fa-solid fa-image"></i>';
-      mediaQueue = [];
-      renderMediaPreview();
-      
+      mediaQueue = []; renderMediaPreview();
       I.$('#modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square" style="color:var(--gold)"></i> 编辑新闻';
-      I.$('#nTitle').value = n.title;
-      I.$('#nContent').value = n.content || '';
-      
+      I.$('#nTitle').value = n.title; I.$('#nContent').value = n.content || '';
       I.$('#publishModal').classList.add('open');
     });
   };
 
   window.deleteNews = function(e, id) {
-    e.stopPropagation();
+    e.stopPropagation(); if (!checkAuth()) return;
     if (!confirm('⚠️ 确定要彻底删除这条新闻吗？')) return;
     I.toast('正在删除...', 'success', 1000);
     I.client.from('news').delete().eq('id', id).then(function(res) {
       if (res.error) return I.toast('删除失败', 'error');
-      I.toast('新闻已删除', 'success');
-      loadNews();
+      I.toast('新闻已删除', 'success'); loadNews();
     });
   };
 
-  I.requireAuth().then(function (ok) {
-    if (!ok) return;
-    I.initTopbar('news');
-    I.$('#openPublishBtn').addEventListener('click', window.openPublishModal);
-    I.getProfile(true).then(function (p) {
-      profile = p;
-      loadNews();
-    });
-  });
-
   I.$('#newsForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+    e.preventDefault(); if (!checkAuth()) return;
     var btn = I.$('#newsSubmit'); var hint = I.$('#newsHint');
     var title = I.$('#nTitle').value.trim(); var content = I.$('#nContent').value.trim();
 
@@ -498,16 +407,11 @@
 
     btn.disabled = true; hint.textContent = '正在处理媒体文件...';
 
-    function resetForm() {
-      I.$('#newsForm').reset(); I.$('#publishModal').classList.remove('open');
-    }
+    function resetForm() { I.$('#newsForm').reset(); I.$('#publishModal').classList.remove('open'); }
 
     try {
-      var coverUrl = null;
-      var mediaList = [];
-      var idMap = {}; // id -> 最终URL
+      var coverUrl = null; var mediaList = []; var idMap = {};
 
-      // 1. 上传封面
       if (coverFile) {
         var cExt = (coverFile.name.split('.').pop() || 'png').toLowerCase();
         var cPath = profile.id + '/cover_' + Date.now() + '.' + cExt;
@@ -515,14 +419,12 @@
         if (!cRes.error) coverUrl = I.client.storage.from('media').getPublicUrl(cPath).data.publicUrl;
       }
 
-      // 2. 上传媒体
       if (mediaQueue.length > 0) {
         var uploadPromises = mediaQueue.map(async (item, index) => {
           var ext = (item.file.name.split('.').pop() || 'bin').toLowerCase();
           var path = profile.id + '/' + Date.now() + '_' + index + '.' + ext;
           var { error } = await I.client.storage.from('media').upload(path, item.file);
           if (error) throw error;
-          
           var url = I.client.storage.from('media').getPublicUrl(path).data.publicUrl;
           mediaList.push({ id: item.id, type: item.type, url: url });
           idMap[item.id] = url;
@@ -534,27 +436,20 @@
 
       if (editMode) {
         var updateData = { title: title, content: content };
-        // 编辑时如果传了新封面或新图，则覆盖
         if (coverUrl) updateData.cover_url = coverUrl;
         if (mediaList.length > 0) updateData.media_list = mediaList;
-        
         await I.client.from('news').update(updateData).eq('id', currentEditId);
         I.toast('新闻已更新', 'success');
       } else {
         await I.client.from('news').insert({
-          author_id: profile.id, title: title, content: content,
-          cover_url: coverUrl, media_list: mediaList
+          author_id: profile.id, title: title, content: content, cover_url: coverUrl, media_list: mediaList
         });
         I.toast('新闻已发布', 'success');
       }
-      
-      btn.disabled = false; 
-      resetForm(); 
-      loadNews();
+      btn.disabled = false; resetForm(); loadNews();
 
     } catch (err) {
-      btn.disabled = false;
-      hint.textContent = err.message || '上传失败';
+      btn.disabled = false; hint.textContent = err.message || '上传失败';
     }
   });
 })();

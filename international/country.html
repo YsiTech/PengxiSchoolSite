@@ -8,8 +8,62 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
   select, select option { background-color: #111827 !important; color: #fff !important; }
-  .desc-box { font-size: 14.5px; line-height: 1.8; color: var(--ink-2); white-space: pre-wrap; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 8px; border: 1px solid var(--border); margin-top: 10px; }
-  .relation-tag { font-size: 12px; padding: 2px 8px; border-radius: 4px; margin-left: 10px; font-weight: normal; vertical-align: middle; }
+  
+  /* 档案头部横幅 */
+  .profile-banner { position: relative; width: 100%; border-radius: 20px; overflow: hidden; background: #0f172a; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  .profile-bg { position: absolute; inset: 0; background-size: cover; background-position: center; filter: blur(15px) brightness(0.4); transform: scale(1.2); z-index: 1; }
+  .profile-banner-content { position: relative; z-index: 2; padding: 40px; display: flex; align-items: center; gap: 30px; flex-wrap: wrap; background: linear-gradient(90deg, rgba(15,23,42,0.8) 0%, rgba(15,23,42,0.4) 100%); }
+  .banner-flag { width: 140px; height: 90px; object-fit: cover; border-radius: 12px; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+  .banner-info { flex: 1; min-width: 250px; }
+  .banner-name { font-size: 32px; font-weight: 900; color: #fff; margin: 0 0 10px 0; letter-spacing: 2px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .banner-sub { color: var(--gold-2); font-size: 15px; display: flex; align-items: center; gap: 8px; margin: 0; }
+  .banner-emblem { width: 90px; height: 90px; object-fit: contain; opacity: 0.9; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); }
+
+  /* 标签样式 */
+  .rel-tag { font-size: 13px; padding: 4px 14px; border-radius: 99px; font-weight: 800; letter-spacing: 1px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent; }
+  .rel-war { background: rgba(239,68,68,0.15); color: #ef4444; border-color: rgba(239,68,68,0.5); box-shadow: 0 0 15px rgba(239,68,68,0.2); }
+  .rel-ally { background: rgba(212,175,55,0.15); color: var(--gold); border-color: rgba(212,175,55,0.5); box-shadow: 0 0 15px rgba(212,175,55,0.2); }
+  .rel-diplo { background: rgba(34,197,94,0.15); color: #22c55e; border-color: rgba(34,197,94,0.5); box-shadow: 0 0 15px rgba(34,197,94,0.2); }
+  .rel-neutral { background: rgba(148,163,184,0.15); color: #94a3b8; border-color: rgba(148,163,184,0.5); }
+
+  /* 高级玻璃面板 */
+  .hud-panel { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 28px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+  .hud-title { font-size: 16px; font-weight: 800; color: #fff; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 16px; margin-bottom: 20px; letter-spacing: 1px; }
+  .hud-title i { color: var(--gold); margin-right: 6px; }
+  
+  .desc-box { font-size: 14.5px; line-height: 1.8; color: var(--ink-2); white-space: pre-wrap; background: rgba(0,0,0,0.3); padding: 20px; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); }
+
+  /* 数据网格 */
+  .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+  .data-item { display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+  .data-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(212,175,55,0.1); color: var(--gold); display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+  .data-content { display: flex; flex-direction: column; gap: 4px; }
+  .data-label { font-size: 12px; color: var(--muted); }
+  .data-value { font-size: 15px; font-weight: 800; color: #fff; }
+
+  /* 外交按钮 */
+  .action-btn { flex: 1; min-width: 140px; padding: 14px 20px; border-radius: 12px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .action-btn:hover { transform: translateY(-3px); }
+  .action-btn:active { transform: translateY(0); }
+  .btn-act-cyan { background: linear-gradient(135deg, #4fc3f7, #0288d1); color: #000; box-shadow: 0 5px 15px rgba(79,195,247,0.3); }
+  .btn-act-cyan:hover { box-shadow: 0 8px 25px rgba(79,195,247,0.5); }
+  .btn-act-gold { background: linear-gradient(135deg, var(--gold), #b8860b); color: #000; box-shadow: 0 5px 15px rgba(212,175,55,0.3); }
+  .btn-act-gold:hover { box-shadow: 0 8px 25px rgba(212,175,55,0.5); }
+  .btn-act-red { background: linear-gradient(135deg, #ef4444, #b91c1c); color: #fff; box-shadow: 0 5px 15px rgba(239,68,68,0.3); }
+  .btn-act-red:hover { box-shadow: 0 8px 25px rgba(239,68,68,0.5); }
+
+  /* 关系列表 */
+  .rel-item { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); transition: 0.2s; margin-bottom: 10px; }
+  .rel-item:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+
+  @media (max-width: 768px) {
+    .profile-banner-content { padding: 24px; gap: 20px; }
+    .banner-flag { width: 100px; height: 64px; }
+    .banner-name { font-size: 24px; }
+    .banner-emblem { display: none; }
+    .data-grid { grid-template-columns: 1fr; }
+    .action-btn { width: 100%; }
+  }
 </style>
 </head>
 <body>
@@ -29,6 +83,7 @@
   <div class="loading-state"><div class="spinner"></div><span>正在读取国家档案…</span></div>
 </main>
 
+<!-- 外交动作弹窗 -->
 <div class="iecp-modal" id="actionModal">
   <div class="iecp-modal-box glass-2">
     <h3 id="modalTitle"><i class="fa-solid fa-handshake"></i> 申请建交</h3>
@@ -46,6 +101,7 @@
   </div>
 </div>
 
+<!-- 修改资料弹窗 -->
 <div class="iecp-modal" id="editModal">
   <div class="iecp-modal-box glass-2" style="max-width:600px">
     <h3><i class="fa-solid fa-pen" style="color:var(--gold)"></i> 修改国家档案</h3>
@@ -80,6 +136,16 @@
   var currentRelationType = 'neutral';
   var actionType = 'diplomatic';
 
+  // 🚨 评级系统 (与列表页保持一致)
+  function getLevel(influence) {
+    var inf = influence || 0;
+    if (inf >= 5000) return { text: '世界霸主', icon: 'fa-crown', color: '#ef4444' };
+    if (inf >= 2000) return { text: '超级大国', icon: 'fa-star', color: '#f59e0b' };
+    if (inf >= 1000) return { text: '地区强国', icon: 'fa-shield-halved', color: '#a78bfa' };
+    if (inf >= 500) return { text: '新兴城邦', icon: 'fa-seedling', color: '#22c55e' };
+    return { text: '偏远聚落', icon: 'fa-house', color: '#94a3b8' };
+  }
+
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('countries');
@@ -87,33 +153,19 @@
 
     I.getProfile(true).then(function (myProfile) {
       currentProfile = myProfile;
-      if (!currentProfile) {
-        I.$('#countryWrap').innerHTML = `<div class="empty-state glass"><p>无法获取你的国家档案</p></div>`;
-        return;
-      }
+      if (!currentProfile) { I.$('#countryWrap').innerHTML = `<div class="empty-state glass"><p>无法获取你的档案</p></div>`; return; }
       
       return I.client.from('profiles').select('*').eq('id', targetId).maybeSingle().then(function(res) {
         if (res.error || !res.data) throw new Error('该国家不存在或已注销。');
         targetProfile = res.data;
 
-        // 🚨 核心修复：查出当前用户的所有关系，然后在 JS 里找有没有目标国家
         return I.client.from('relations').select('*').or(`country_a.eq.${currentProfile.id},country_b.eq.${currentProfile.id}`).then(function(relRes) {
           var allRels = relRes.data || [];
-          var targetRel = allRels.find(function(r) { 
-            return r.country_a === targetId || r.country_b === targetId; 
-          });
-          
-          if (targetRel) {
-            currentRelationType = targetRel.relation_type;
-          }
-          
-          // 方便你在控制台排查问题
-          console.log("【外交数据拉取】当前关系列表:", allRels, "匹配到的关系:", targetRel);
-
+          var targetRel = allRels.find(function(r) { return r.country_a === targetId || r.country_b === targetId; });
+          if (targetRel) currentRelationType = targetRel.relation_type;
           render();
         });
       });
-
     }).catch(function (err) {
       I.$('#countryWrap').innerHTML = `<div class="empty-state glass"><p style="color:var(--red)">${err.message}</p></div>`;
     });
@@ -123,68 +175,141 @@
     var wrap = I.$('#countryWrap');
     var c = targetProfile;
     var isSelf = currentProfile.id === c.id;
+    var lvl = getLevel(c.influence);
+    var flag = c.flag_url || I.avatarFallback(c.username);
 
+    // 关系标签
     var relHtml = '';
     if (!isSelf) {
-      if (currentRelationType === 'war') relHtml = `<span class="relation-tag" style="background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid #ef4444;">交战中</span>`;
-      else if (currentRelationType === 'ally') relHtml = `<span class="relation-tag" style="background:rgba(212,175,55,0.2); color:var(--gold); border:1px solid var(--gold);">盟友</span>`;
-      else if (currentRelationType === 'diplomatic') relHtml = `<span class="relation-tag" style="background:rgba(34,197,94,0.2); color:#22c55e; border:1px solid #22c55e;">已建交</span>`;
-      else relHtml = `<span class="relation-tag" style="background:rgba(148,163,184,0.2); color:#94a3b8; border:1px solid #94a3b8;">中立</span>`;
+      if (currentRelationType === 'war') relHtml = `<span class="rel-tag rel-war"><i class="fa-solid fa-crosshairs"></i> 交战中</span>`;
+      else if (currentRelationType === 'ally') relHtml = `<span class="rel-tag rel-ally"><i class="fa-solid fa-shield-halved"></i> 盟友</span>`;
+      else if (currentRelationType === 'diplomatic') relHtml = `<span class="rel-tag rel-diplo"><i class="fa-solid fa-handshake"></i> 已建交</span>`;
+      else relHtml = `<span class="rel-tag rel-neutral"><i class="fa-solid fa-circle-nodes"></i> 中立</span>`;
     }
 
+    // 外交区域边框颜色
+    var borderColor = 'rgba(255,255,255,0.08)';
+    if (currentRelationType === 'war') borderColor = 'rgba(239,68,68,0.4)';
+    else if (currentRelationType === 'ally') borderColor = 'rgba(212,175,55,0.4)';
+    else if (currentRelationType === 'diplomatic') borderColor = 'rgba(34,197,94,0.4)';
+
     wrap.innerHTML = `
-      <section class="glass" style="padding:32px;margin-bottom:24px;display:flex;gap:28px;align-items:center;flex-wrap:wrap">
-        <img src="${I.escapeHtml(c.flag_url || I.avatarFallback(c.username))}" style="width:120px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border-2)">
-        <div style="flex:1;min-width:200px">
-          <h1 style="font-size:28px;letter-spacing:2px;margin:0 0 8px; display:flex; align-items:center;">${I.escapeHtml(c.username)} ${relHtml}</h1>
-          <p style="color:var(--muted);margin:0">${I.escapeHtml(c.social_system)}</p>
+      <!-- 顶部档案横幅 -->
+      <div class="profile-banner">
+        <div class="profile-bg" style="background-image: url('${flag}')"></div>
+        <div class="profile-banner-content">
+          <img src="${flag}" class="banner-flag">
+          <div class="banner-info">
+            <h1 class="banner-name">
+              ${I.escapeHtml(c.username)}
+              <span style="font-size:12px; padding:4px 10px; border-radius:6px; background:rgba(0,0,0,0.6); border:1px solid ${lvl.color}; color:${lvl.color};">
+                <i class="fa-solid ${lvl.icon}"></i> ${lvl.text}
+              </span>
+              ${relHtml}
+            </h1>
+            <p class="banner-sub"><i class="fa-solid fa-scale-balanced"></i> ${I.escapeHtml(c.social_system || '未知政体')}</p>
+          </div>
+          ${c.emblem_url ? `<img src="${I.escapeHtml(c.emblem_url)}" class="banner-emblem">` : ''}
         </div>
-        ${c.emblem_url ? `<img src="${I.escapeHtml(c.emblem_url)}" style="width:70px;height:70px;object-fit:contain;opacity:.9">` : ''}
-      </section>
+      </div>
 
-      <section class="glass" style="padding:28px;margin-bottom:24px">
-        <h3 style="font-size:16px;margin:0 0 10px;letter-spacing:1px; display:flex; justify-content:space-between; align-items:center;">
-          <span><i class="fa-solid fa-scroll" style="color:var(--gold)"></i> 国家介绍</span>
-          ${isSelf ? `<button class="btn btn-ghost btn-sm" onclick="openEditModal()" style="font-size:12px; padding:4px 12px;"><i class="fa-solid fa-pen"></i> 修改档案</button>` : ''}
-        </h3>
-        <div class="desc-box">${I.escapeHtml(c.description || '该国暂未编写国家介绍。')}</div>
-      </section>
-
-      <section class="glass" style="padding:28px;margin-bottom:24px">
-        <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-circle-info" style="color:var(--gold)"></i> 基本档案</h3>
-        <div class="country-meta" style="gap:14px;font-size:14px">
-          <div class="country-meta-row"><span>社会性质</span><b>${I.escapeHtml(c.social_system)}</b></div>
-          <div class="country-meta-row"><span>首都</span><b>${I.escapeHtml(c.capital)}</b></div>
-          <div class="country-meta-row"><span>官方语言</span><b>${I.escapeHtml(c.official_language)}</b></div>
-          <div class="country-meta-row"><span>国库余额</span><b>${I.formatBalance(c.balance, c.id)}</b></div>
-          <div class="country-meta-row"><span>加入时间</span><b>${I.fmtDate(c.created_at)}</b></div>
+      <!-- 国家介绍 -->
+      <div class="hud-panel">
+        <div class="hud-title">
+          <span><i class="fa-solid fa-scroll"></i> 国家介绍</span>
+          ${isSelf ? `<button class="btn btn-ghost btn-sm" onclick="openEditModal()" style="font-size:12px; padding:4px 12px; border-radius:6px;"><i class="fa-solid fa-pen"></i> 修改档案</button>` : ''}
         </div>
-      </section>
+        <div class="desc-box">${I.escapeHtml(c.description || '该国暂未向国际社会公开其国家介绍。')}</div>
+      </div>
 
-      <section class="glass" style="padding:28px;margin-bottom:24px">
-        <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-link" style="color:var(--gold)"></i> 外交关系网</h3>
-        <div id="relationsWrap"><div class="loading-state" style="padding:30px 0"><div class="spinner"></div></div></div>
-      </section>
+      <!-- 数据终端 (基本档案) -->
+      <div class="hud-panel">
+        <div class="hud-title"><span><i class="fa-solid fa-database"></i> 核心数据终端</span></div>
+        <div class="data-grid">
+          <div class="data-item">
+            <div class="data-icon"><i class="fa-solid fa-city"></i></div>
+            <div class="data-content"><span class="data-label">首都</span><span class="data-value">${I.escapeHtml(c.capital || '未设立')}</span></div>
+          </div>
+          <div class="data-item">
+            <div class="data-icon"><i class="fa-solid fa-language"></i></div>
+            <div class="data-content"><span class="data-label">官方语言</span><span class="data-value">${I.escapeHtml(c.official_language || '未公开')}</span></div>
+          </div>
+          <div class="data-item">
+            <div class="data-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="data-content"><span class="data-label">国际影响力</span><span class="data-value">${I.fmtNumber(c.influence || 0)}</span></div>
+          </div>
+          <div class="data-item">
+            <div class="data-icon"><i class="fa-regular fa-calendar-days"></i></div>
+            <div class="data-content"><span class="data-label">建国时间</span><span class="data-value">${I.fmtDate(c.created_at).split(' ')[0]}</span></div>
+          </div>
+        </div>
+      </div>
 
+      <!-- 外交关系网 -->
+      <div class="hud-panel">
+        <div class="hud-title"><span><i class="fa-solid fa-link"></i> 外交关系网</span></div>
+        <div id="relationsWrap"><div class="loading-state" style="padding:20px 0"><div class="spinner"></div></div></div>
+      </div>
+
+      <!-- 外交行动 -->
       ${isSelf ? '' : `
-        <section class="glass" style="padding:28px; border-color: ${currentRelationType === 'war' ? 'rgba(239,68,68,0.5)' : 'var(--border)'};">
-          <h3 style="font-size:16px;margin:0 0 20px;letter-spacing:1px"><i class="fa-solid fa-bolt" style="color:var(--gold)"></i> 外交行动</h3>
-          <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div class="hud-panel" style="border-color: ${borderColor}; box-shadow: 0 0 20px ${borderColor.replace('0.4', '0.1')};">
+          <div class="hud-title"><span><i class="fa-solid fa-satellite-dish"></i> 外交行动指令</span></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
             ${currentRelationType !== 'diplomatic' && currentRelationType !== 'ally' && currentRelationType !== 'war' ? 
-              `<button class="btn btn-cyan" onclick="openAction('diplomatic')"><i class="fa-solid fa-handshake"></i> 申请建交</button>` : ''}
+              `<button class="action-btn btn-act-cyan" onclick="openAction('diplomatic')"><i class="fa-solid fa-handshake"></i> 申请建交</button>` : ''}
             
             ${currentRelationType !== 'ally' && currentRelationType !== 'war' ? 
-              `<button class="btn btn-gold" onclick="openAction('ally')"><i class="fa-solid fa-shield-halved"></i> 申请结盟</button>` : ''}
+              `<button class="action-btn btn-act-gold" onclick="openAction('ally')"><i class="fa-solid fa-shield-halved"></i> 申请结盟</button>` : ''}
             
             ${currentRelationType !== 'war' ? 
-              `<button class="btn btn-red" onclick="openAction('war')"><i class="fa-solid fa-triangle-exclamation"></i> 宣战</button>` : 
-              `<span style="color:var(--red); padding:10px; font-weight:bold;"><i class="fa-solid fa-crosshairs"></i> 正在交战中，请前往战争大厅</span>`}
+              `<button class="action-btn btn-act-red" onclick="openAction('war')"><i class="fa-solid fa-triangle-exclamation"></i> 正式宣战</button>` : 
+              `<div style="flex:1; min-width:200px; display:flex; align-items:center; gap:10px; color:#ef4444; font-weight:bold; padding:10px; background:rgba(239,68,68,0.1); border-radius:12px;">
+                 <i class="fa-solid fa-crosshairs fa-fade"></i> 两国正处于交战状态，请前往战争大厅。
+               </div>`}
           </div>
-        </section>
+        </div>
       `}
     `;
 
     loadRelations();
+  }
+
+  // 加载该国的关系网
+  function loadRelations() {
+    I.client.from('relations').select('*').or('country_a.eq.' + targetId + ',country_b.eq.' + targetId).then(function (res) {
+      var wrap = I.$('#relationsWrap');
+      var list = (res.data || []);
+      if (!list.length) {
+        wrap.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted); font-size:13px;"><i class="fa-solid fa-circle-nodes" style="font-size:24px; margin-bottom:8px; opacity:0.5;"></i><br>该国暂未与他国建立公开联系</div>';
+        return;
+      }
+      var otherIds = list.map(r => r.country_a === targetId ? r.country_b : r.country_a);
+      I.client.from('profiles').select('id, username, flag_url').in('id', otherIds).then(function (r2) {
+        var map = {};
+        (r2.data || []).forEach(p => { map[p.id] = p; });
+        var html = '';
+        list.forEach(function (r) {
+          var otherId = r.country_a === targetId ? r.country_b : r.country_a;
+          var o = map[otherId];
+          if (!o) return;
+          
+          var tag = '中立', tagColor = 'var(--muted)', bgColor = 'rgba(148,163,184,0.1)';
+          if (r.relation_type === 'ally') { tag = '盟友'; tagColor = 'var(--gold)'; bgColor = 'rgba(212,175,55,0.15)'; }
+          else if (r.relation_type === 'diplomatic') { tag = '建交'; tagColor = '#22c55e'; bgColor = 'rgba(34,197,94,0.15)'; }
+          else if (r.relation_type === 'war') { tag = '交战中'; tagColor = '#ef4444'; bgColor = 'rgba(239,68,68,0.15)'; }
+
+          html += `
+            <div class="rel-item">
+              <img src="${I.escapeHtml(o.flag_url || I.avatarFallback(o.username))}" style="width:48px;height:32px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.1);">
+              <a href="country.html?id=${o.id}" style="flex:1;color:#fff;font-weight:bold;text-decoration:none;">${I.escapeHtml(o.username)}</a>
+              <span style="color:${tagColor}; font-size:12px; font-weight:bold; padding:4px 12px; border-radius:99px; background:${bgColor};">${tag}</span>
+            </div>
+          `;
+        });
+        wrap.innerHTML = html;
+      });
+    });
   }
 
   window.openEditModal = function() {
@@ -215,46 +340,6 @@
     });
   });
 
-  function loadRelations() {
-    I.client.from('relations')
-      .select('*')
-      .or('country_a.eq.' + targetId + ',country_b.eq.' + targetId)
-      .then(function (res) {
-        var wrap = I.$('#relationsWrap');
-        var list = (res.data || []);
-        if (!list.length) {
-          wrap.innerHTML = '<div class="empty-state" style="padding:30px 0"><i class="fa-solid fa-circle-nodes" style="font-size:32px"></i><p>暂无外交关系</p></div>';
-          return;
-        }
-        var otherIds = list.map(r => r.country_a === targetId ? r.country_b : r.country_a);
-        I.client.from('profiles').select('id, username, flag_url').in('id', otherIds).then(function (r2) {
-          var map = {};
-          (r2.data || []).forEach(p => { map[p.id] = p; });
-          var html = '<div style="display:flex;flex-direction:column;gap:12px">';
-          list.forEach(function (r) {
-            var otherId = r.country_a === targetId ? r.country_b : r.country_a;
-            var o = map[otherId];
-            if (!o) return;
-            
-            var tag = '中立', tagColor = 'var(--muted)';
-            if (r.relation_type === 'ally') { tag = '盟友'; tagColor = 'var(--gold)'; }
-            else if (r.relation_type === 'diplomatic') { tag = '建交'; tagColor = '#22c55e'; }
-            else if (r.relation_type === 'war') { tag = '交战中'; tagColor = '#ef4444'; }
-
-            html += `
-              <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--glass);border-radius:10px;border:1px solid var(--border)">
-                <img src="${I.escapeHtml(o.flag_url || I.avatarFallback(o.username))}" style="width:36px;height:24px;object-fit:cover;border-radius:4px">
-                <a href="country.html?id=${o.id}" style="flex:1;color:var(--ink)">${I.escapeHtml(o.username)}</a>
-                <span style="color:${tagColor};font-size:12px;letter-spacing:1px;padding:3px 12px;border-radius:99px;background:var(--glass-2);border:1px solid var(--border)">${tag}</span>
-              </div>
-            `;
-          });
-          html += '</div>';
-          wrap.innerHTML = html;
-        });
-      });
-  }
-
   window.openAction = function (type) {
     if (!currentProfile) { I.toast('请先登录', 'error'); return; }
     if (targetId === currentProfile.id) { I.toast('不能对自己发起行动', 'error'); return; }
@@ -266,15 +351,15 @@
     
     if (type === 'diplomatic') {
       t.innerHTML = '<i class="fa-solid fa-handshake" style="color:#22c55e"></i> 申请建交';
-      s.textContent = '向 ' + targetProfile.username + ' 发送单纯的外交建交申请。双方将互不侵犯。';
+      s.textContent = '向 ' + targetProfile.username + ' 发送单纯的外交建交申请。';
       btn.className = 'btn btn-cyan';
     } else if (type === 'ally') {
       t.innerHTML = '<i class="fa-solid fa-shield-halved" style="color:var(--gold)"></i> 申请结盟';
-      s.textContent = '向 ' + targetProfile.username + ' 发送军事结盟申请。盟友的地块将在地图上显示为绿色。';
+      s.textContent = '向 ' + targetProfile.username + ' 发送军事结盟申请。';
       btn.className = 'btn btn-gold';
     } else if (type === 'war') {
       t.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color:#ef4444"></i> 宣战';
-      s.textContent = '向 ' + targetProfile.username + ' 正式宣战！宣战将立即中断当前关系，开启战争。请三思。';
+      s.textContent = '向 ' + targetProfile.username + ' 正式宣战！宣战将立即中断当前关系，开启战争。';
       btn.className = 'btn btn-red';
     }
     
@@ -299,7 +384,7 @@
           I.client.from('wars').insert({ attacker_id: currentProfile.id, defender_id: targetId, status: 'ongoing' }).then(function(){
             I.client.rpc('send_notification', { 
               p_user_id: targetId, p_type: 'war', p_title: '遭遇宣战', 
-              p_content: `【${currentProfile.username}】已正式向你宣战！请立即做好防御准备。${msg ? '\n附言: '+msg : ''}` 
+              p_content: `【${currentProfile.username}】已正式向你宣战！${msg ? '\n附言: '+msg : ''}` 
             });
             I.toast('宣战成功，战争已开启', 'success');
             I.$('#actionModal').classList.remove('open');

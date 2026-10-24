@@ -7,23 +7,40 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
+  body { background-color: #05070a; }
   #news-particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
-  
+
+  /* 顶部扫描光效 */
+  .glass { position: relative; overflow: hidden; }
+  .glass::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation: scanline 3s linear infinite; opacity: 0.6;
+  }
+  @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+  /* 富文本渲染 */
+  .rich-content { font-size: 16px; line-height: 1.9; color: var(--ink-2); white-space: pre-wrap; word-wrap: break-word; }
+  .rich-content img, .rich-content video { max-width: 100%; border-radius: 12px; margin: 16px 0; border: 1px solid var(--border); display: block; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+  .rich-content audio { width: 100%; margin: 16px 0; outline: none; }
+
+  /* 操作栏 */
   .detail-actions { display: flex; gap: 16px; align-items: center; border-top: 1px solid var(--border); padding-top: 24px; margin-top: 30px; }
-  .detail-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border-radius: 24px; background: var(--glass-2); border: 1px solid var(--border); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-  .detail-btn:hover { background: var(--glass-3); color: var(--ink); border-color: var(--border-2); }
+  .detail-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border-radius: 24px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; white-space: nowrap; }
+  .detail-btn:hover { background: rgba(255,255,255,0.08); color: var(--ink); border-color: var(--border-2); transform: translateY(-2px); }
   .detail-btn.liked { color: #ef4444; border-color: rgba(239,68,68,0.4); background: rgba(239,68,68,0.1); }
   .detail-btn i { font-size: 16px; }
 
-  .comment-box { background: var(--glass-2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
-  .comment-input-wrapper { background: rgba(0,0,0,0.2); border: 1px solid var(--border-2); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
-  .comment-input-wrapper:focus-within { border-color: var(--gold); }
+  /* 评论区 */
+  .comment-box { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 24px; }
+  .comment-input-wrapper { background: rgba(0,0,0,0.3); border: 1px solid var(--border-2); border-radius: 8px; overflow: hidden; transition: border-color 0.2s; }
+  .comment-input-wrapper:focus-within { border-color: var(--gold); box-shadow: 0 0 15px rgba(212,175,55,0.1); }
   .comment-input-wrapper textarea { width: 100%; min-height: 80px; background: transparent; border: none; padding: 12px; color: var(--ink); font-size: 14px; resize: vertical; outline: none; display: block; }
   .comment-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.1); }
   .comment-toolbar .img-btn { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 13px; cursor: pointer; transition: color 0.2s; padding: 4px; }
   .comment-toolbar .img-btn:hover { color: var(--cyan); }
   
-  .comment-item { display: flex; gap: 12px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border); position: relative; }
+  .comment-item { display: flex; gap: 12px; padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
   .comment-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
   .comment-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-2); flex-shrink: 0; }
   .comment-content-box { flex: 1; min-width: 0; }
@@ -32,7 +49,6 @@
   .comment-name { font-size: 14px; font-weight: 600; color: var(--gold-2); }
   .comment-time { font-size: 12px; color: var(--muted); }
   
-  /* 操作小按钮 */
   .comment-ops { display: flex; gap: 12px; opacity: 0; transition: opacity 0.2s; }
   .comment-item:hover .comment-ops { opacity: 1; }
   .op-btn { font-size: 12px; color: var(--muted); cursor: pointer; transition: 0.2s; }
@@ -41,80 +57,24 @@
 
   .comment-text { font-size: 14px; color: var(--ink-2); line-height: 1.6; white-space: pre-wrap; margin-bottom: 8px; word-break: break-all; }
   .comment-text .at-user { color: var(--cyan); font-weight: bold; }
-  .comment-img { max-width: 200px; border-radius: 8px; cursor: zoom-in; border: 1px solid var(--border); }
+  .comment-img { max-width: 200px; border-radius: 8px; cursor: zoom-in; border: 1px solid var(--border); transition: transform 0.2s; }
+  .comment-img:hover { transform: scale(1.02); }
 
-  /* 富文本渲染 */
-  .rich-content { font-size: 16px; line-height: 1.9; color: var(--ink-2); white-space: pre-wrap; word-wrap: break-word; }
-  .rich-content img, .rich-content video { max-width: 100%; border-radius: 12px; margin: 16px 0; border: 1px solid var(--border); display: block; }
-  .rich-content audio { width: 100%; margin: 16px 0; outline: none; }
-
-  /* ============================================================
-     📱 移动端深度优化
-     ============================================================ */
+  /* 移动端优化 */
   @media (max-width: 768px) {
-    /* 容器内边距收紧，释放阅读空间 */
-    .iecp-main {
-      padding: 16px 12px 40px !important;
-      margin: 0 auto !important;
-    }
+    .iecp-main { padding: 16px 12px 40px !important; }
+    .glass { padding: 20px 16px !important; }
+    .glass h1 { font-size: 22px !important; line-height: 1.4 !important; }
     
-    /* 新闻内容卡片内边距缩小 */
-    .glass {
-      padding: 20px 16px !important;
-    }
+    .detail-actions { gap: 8px !important; padding-top: 20px !important; margin-top: 20px !important; justify-content: space-between !important; }
+    .detail-btn { flex: 1 !important; padding: 8px 0 !important; font-size: 12px !important; gap: 4px !important; border-radius: 12px !important; }
+    .detail-btn i { font-size: 14px !important; }
 
-    /* 标题字号微调 */
-    .glass h1 {
-      font-size: 22px !important;
-      line-height: 1.4 !important;
-    }
-
-    /* 🚨 操作栏强制单行，防挤压换行 */
-    .detail-actions {
-      gap: 8px !important;
-      padding-top: 20px !important;
-      margin-top: 20px !important;
-      justify-content: space-between !important;
-    }
-    
-    .detail-btn {
-      flex: 1 !important;
-      padding: 8px 0 !important;
-      font-size: 12px !important;
-      gap: 4px !important;
-      border-radius: 12px !important;
-    }
-    
-    .detail-btn i {
-      font-size: 14px !important;
-    }
-
-    /* 评论操作按钮在手机上默认显示，不依赖 hover */
-    .comment-ops {
-      opacity: 1 !important;
-    }
-
-    /* 评论区输入框优化 */
-    .comment-box {
-      padding: 12px !important;
-    }
-    .comment-input-wrapper textarea {
-      font-size: 16px !important; /* 防止 iOS 自动放大输入框 */
-    }
-
-    /* 评论头像稍微缩小 */
-    .comment-avatar {
-      width: 32px !important;
-      height: 32px !important;
-    }
-
-    /* 编辑/删除按钮布局 */
-    div[style*="display:flex; gap:10px; margin-left:auto;"] {
-      margin-left: 0 !important;
-      margin-top: 10px !important;
-      width: 100% !important;
-      justify-content: flex-end !important;
-    }
+    .comment-ops { opacity: 1 !important; }
+    .comment-box { padding: 12px !important; }
+    .comment-input-wrapper textarea { font-size: 16px !important; }
+    .comment-avatar { width: 32px !important; height: 32px !important; }
+    div[style*="display:flex; gap:10px; margin-left:auto;"] { margin-left: 0 !important; margin-top: 10px !important; width: 100% !important; justify-content: flex-end !important; }
   }
 </style>
 </head>
@@ -138,6 +98,7 @@
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
+// 粒子背景
 (function initParticles() {
   const canvas = document.getElementById('news-particle-canvas'); const ctx = canvas.getContext('2d');
   let width, height; let particles = [];
@@ -149,7 +110,21 @@
     draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(212, 175, 55, 0.2)'; ctx.fill(); }
   }
   for (let i = 0; i < 60; i++) particles.push(new Particle());
-  function animate() { ctx.clearRect(0, 0, width, height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animate); }
+  function animate() { 
+    ctx.clearRect(0, 0, width, height); 
+    for (let i = 0; i < particles.length; i++) { 
+      particles[i].update(); particles[i].draw(); 
+      for (let j = i + 1; j < particles.length; j++) { 
+        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y; 
+        const dist = Math.sqrt(dx * dx + dy * dy); 
+        if (dist < 120) { 
+          ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); 
+          ctx.strokeStyle = `rgba(212, 175, 55, ${0.1 - dist / 1200})`; ctx.stroke(); 
+        } 
+      } 
+    } 
+    requestAnimationFrame(animate); 
+  }
   animate();
 })();
 
@@ -159,17 +134,24 @@
   var profile = null;
   var currentCommentImgUrl = null; 
 
-  I.requireAuth().then(function (ok) {
-    if (!ok) return;
-    I.initTopbar('news');
-    if (!newsId) { location.replace('news.html'); return; }
+  I.initTopbar('news');
+  if (!newsId) { location.replace('news.html'); return; }
 
-    I.getProfile(true).then(function(p) {
+  // 🚨 取消强制登录，改为检测 Session
+  I.client.auth.getSession().then(function (res) {
+    var hasSession = !!(res.data && res.data.session);
+    var profilePromise = hasSession ? I.getProfile(true) : Promise.resolve(null);
+
+    profilePromise.then(function (p) {
       profile = p;
       
+      var likePromise = profile 
+        ? I.client.from('news_likes').select('id').eq('news_id', newsId).eq('user_id', profile.id).maybeSingle()
+        : Promise.resolve({ data: null });
+
       Promise.all([
         I.client.from('news').select('*, profiles(id, username, flag_url, social_system)').eq('id', newsId).maybeSingle(),
-        I.client.from('news_likes').select('id').eq('news_id', newsId).eq('user_id', profile.id).maybeSingle(),
+        likePromise,
         I.client.from('news_comments').select('*, profiles(username, flag_url)').eq('news_id', newsId).order('created_at', { ascending: true })
       ]).then(function(results) {
         var newsRes = results[0], likeRes = results[1], commentsRes = results[2];
@@ -183,7 +165,7 @@
     });
   });
 
-  // 🚨 解析富文本中的占位符
+  // 解析富文本中的占位符
   function renderRichContent(text, mediaList) {
     if (!text) return '';
     var safeText = I.escapeHtml(text);
@@ -205,7 +187,7 @@
   function renderNews(n, isLiked) {
     var author = n.profiles || {};
     var avatar = author.flag_url || I.avatarFallback(author.username || '?');
-    var isAuthor = author.id === profile.id;
+    var isAuthor = profile && author.id === profile.id;
     var contentHtml = renderRichContent(n.content, n.media_list);
 
     var unplacedMediaHtml = '';
@@ -228,10 +210,35 @@
 
     var authorActions = isAuthor ? `
       <div style="display:flex; gap:10px; margin-left:auto;">
-        <button class="btn btn-ghost btn-sm" onclick="location.href='news.html'"><i class="fa-solid fa-pen"></i> 去主页编辑</button>
+        <button class="btn btn-ghost btn-sm" onclick="location.href='news.html'"><i class="fa-solid fa-pen"></i> 编辑</button>
         <button class="btn btn-red btn-sm" onclick="deleteCurrentNews()"><i class="fa-solid fa-trash"></i> 删除</button>
       </div>
     ` : '';
+
+    // 🚨 评论框：未登录显示引导按钮，已登录显示输入框
+    var commentBoxHtml = !profile ? `
+      <div class="comment-box" style="text-align:center; padding: 30px; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-2);">
+        <p style="color: var(--muted); margin-bottom: 16px; font-size: 14px;">参与国际讨论，分享您的观点</p>
+        <a href="login.html" class="btn btn-gold" style="padding: 10px 30px; border-radius: 8px;"><i class="fa-solid fa-arrow-right-to-bracket"></i> 登录后发表评论</a>
+      </div>
+    ` : `
+      <div class="comment-box">
+        <div class="comment-input-wrapper">
+          <textarea id="commentInput" placeholder="发表你的看法，支持附带图片..."></textarea>
+          <div class="comment-toolbar">
+            <label class="img-btn" for="commentImgFile">
+              <i class="fa-solid fa-image"></i> 添加图片
+              <input type="file" id="commentImgFile" accept="image/*" style="display:none">
+            </label>
+            <button class="btn btn-gold btn-sm" id="submitCommentBtn" onclick="submitComment()" style="padding:6px 16px; font-size:12px; border-radius:6px;"><i class="fa-solid fa-paper-plane"></i> 发送</button>
+          </div>
+        </div>
+        <div id="commentImgPreviewWrap" style="display: none; margin-top: 12px; position: relative; width: fit-content;">
+          <img id="commentImgPreview" style="height:80px; border-radius:6px; border:1px solid var(--border); display: block;">
+          <i class="fa-solid fa-circle-xmark" onclick="removeCommentImg()" style="position:absolute; top:-8px; right:-8px; color:#ef4444; font-size:18px; cursor:pointer; background:#0a0e1a; border-radius:50%;"></i>
+        </div>
+      </div>
+    `;
 
     I.$('#detailWrap').innerHTML = `
       <div style="margin-bottom:20px;">
@@ -239,7 +246,7 @@
       </div>
       
       <div class="glass" style="padding:40px;">
-        <h1 style="font-size:28px; line-height:1.4; margin-bottom:20px; color:var(--ink);">${I.escapeHtml(n.title)}</h1>
+        <h1 style="font-size:28px; line-height:1.4; margin-bottom:20px; color:var(--ink); font-weight:800;">${I.escapeHtml(n.title)}</h1>
         
         <div style="display:flex; align-items:center; gap:16px; padding-bottom:24px; border-bottom:1px solid var(--border); margin-bottom:30px; flex-wrap: wrap;">
           <img src="${I.escapeHtml(avatar)}" style="width:48px;height:32px;object-fit:cover;border-radius:4px;border:1px solid var(--border-2);">
@@ -268,46 +275,33 @@
       </div>
 
       <div class="glass" style="padding: 30px; margin-top: 24px;">
-        <h3 style="margin-bottom: 20px; font-size: 18px; color: var(--ink);"><i class="fa-solid fa-comments" style="color:var(--gold);"></i> 评论区</h3>
+        <h3 style="margin-bottom: 20px; font-size: 18px; color: var(--ink);"><i class="fa-solid fa-comments" style="color:var(--gold);"></i> 国际评论</h3>
         
-        <div class="comment-box">
-          <div class="comment-input-wrapper">
-            <textarea id="commentInput" placeholder="发表你的看法，支持附带图片..."></textarea>
-            <div class="comment-toolbar">
-              <label class="img-btn" for="commentImgFile">
-                <i class="fa-solid fa-image"></i> 添加图片
-                <input type="file" id="commentImgFile" accept="image/*" style="display:none">
-              </label>
-              <button class="btn btn-gold btn-sm" id="submitCommentBtn" onclick="submitComment()" style="padding:6px 16px; font-size:12px; border-radius:6px;"><i class="fa-solid fa-paper-plane"></i> 发送</button>
-            </div>
-          </div>
-          <div id="commentImgPreviewWrap" style="display: none; margin-top: 12px; position: relative; width: fit-content;">
-            <img id="commentImgPreview" style="height:80px; border-radius:6px; border:1px solid var(--border); display: block;">
-            <i class="fa-solid fa-circle-xmark" onclick="removeCommentImg()" style="position:absolute; top:-8px; right:-8px; color:#ef4444; font-size:18px; cursor:pointer; background:#0a0e1a; border-radius:50%;"></i>
-          </div>
-        </div>
+        ${commentBoxHtml}
 
         <div id="commentList" style="display: flex; flex-direction: column;"></div>
       </div>
     `;
 
-    I.$('#commentImgFile').addEventListener('change', function() {
-      var file = this.files[0];
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) { I.toast('图片不能超过 5MB', 'error'); return; }
-      
-      I.toast('正在上传图片...', 'success', 1000);
-      var ext = (file.name.split('.').pop() || 'png').toLowerCase();
-      var path = profile.id + '/comments/' + Date.now() + '.' + ext;
-      
-      I.client.storage.from('media').upload(path, file).then(function(r) {
-        if (r.error) { I.toast('上传失败：' + r.error.message, 'error'); return; }
-        var url = I.client.storage.from('media').getPublicUrl(path).data.publicUrl;
-        currentCommentImgUrl = url;
-        I.$('#commentImgPreview').src = url;
-        I.$('#commentImgPreviewWrap').style.display = 'block'; 
+    if (profile) {
+      I.$('#commentImgFile').addEventListener('change', function() {
+        var file = this.files[0];
+        if (!file) return;
+        if (file.size > 5 * 1024 * 1024) { I.toast('图片不能超过 5MB', 'error'); return; }
+        
+        I.toast('正在上传图片...', 'success', 1000);
+        var ext = (file.name.split('.').pop() || 'png').toLowerCase();
+        var path = profile.id + '/comments/' + Date.now() + '.' + ext;
+        
+        I.client.storage.from('media').upload(path, file).then(function(r) {
+          if (r.error) { I.toast('上传失败：' + r.error.message, 'error'); return; }
+          var url = I.client.storage.from('media').getPublicUrl(path).data.publicUrl;
+          currentCommentImgUrl = url;
+          I.$('#commentImgPreview').src = url;
+          I.$('#commentImgPreviewWrap').style.display = 'block'; 
+        });
       });
-    });
+    }
   }
 
   window.removeCommentImg = function() {
@@ -328,7 +322,7 @@
       var avatar = p.flag_url || I.avatarFallback(p.username || '?');
       var imgHtml = c.image_url ? `<div style="margin-top:8px;"><img src="${c.image_url}" class="comment-img" onclick="window.open(this.src)"></div>` : '';
       
-      var isMyComment = (c.user_id === profile.id);
+      var isMyComment = profile && (c.user_id === profile.id);
       var formattedContent = I.escapeHtml(c.content).replace(/@([a-zA-Z0-9_\u4e00-\u9fa5]+)/g, '<span class="at-user">@$1</span>');
 
       html += `
@@ -341,7 +335,7 @@
                 <span class="comment-time">${I.relativeTime(c.created_at)}</span>
               </div>
               <div class="comment-ops">
-                <span class="op-btn" onclick="replyTo('${I.escapeHtml(p.username)}')"><i class="fa-solid fa-reply"></i> 回复</span>
+                ${profile ? `<span class="op-btn" onclick="replyTo('${I.escapeHtml(p.username)}')"><i class="fa-solid fa-reply"></i> 回复</span>` : ''}
                 ${isMyComment ? `<span class="op-btn del" onclick="deleteComment('${c.id}')"><i class="fa-solid fa-trash"></i> 删除</span>` : ''}
               </div>
             </div>
@@ -355,7 +349,9 @@
   }
 
   window.replyTo = function(username) {
+    if (!profile) return I.toast('请先登录后再操作', 'error');
     var input = I.$('#commentInput');
+    if (!input) return;
     var prefix = '@' + username + ' ';
     if (!input.value.startsWith('@')) { input.value = prefix + input.value; } 
     else { input.value = prefix; }
@@ -365,6 +361,7 @@
   };
 
   window.deleteComment = function(commentId) {
+    if (!profile) return I.toast('请先登录后再操作', 'error');
     if (!confirm('⚠️ 确定要删除这条评论吗？')) return;
     I.toast('正在删除...', 'success', 1000);
     I.client.from('news_comments').delete().eq('id', commentId).then(function(r) {
@@ -379,6 +376,7 @@
   };
 
   window.deleteCurrentNews = function() {
+    if (!profile) return I.toast('请先登录后再操作', 'error');
     if (!confirm('⚠️ 确定要彻底删除这条新闻吗？')) return;
     I.client.from('news').delete().eq('id', newsId).then(function(r) {
       if (r.error) return I.toast('删除失败：' + r.error.message, 'error');
@@ -388,6 +386,7 @@
   };
 
   window.toggleLikeDetail = function(el) {
+    if (!profile) return I.toast('请先登录后再点赞', 'error');
     var icon = el.querySelector('i');
     var span = I.$('#likeCount');
     var currentCount = parseInt(span.textContent) || 0;
@@ -408,6 +407,7 @@
   };
 
   window.shareDetail = function(el) {
+    if (!profile) return I.toast('请先登录后再分享', 'error');
     if (el.style.pointerEvents === 'none') return;
     navigator.clipboard.writeText(location.href).then(function() {
       I.toast('链接已复制到剪贴板', 'success');
@@ -421,7 +421,9 @@
   };
 
   window.submitComment = function() {
+    if (!profile) return I.toast('请先登录后再评论', 'error');
     var input = I.$('#commentInput');
+    if (!input) return;
     var content = input.value.trim();
     if (!content && !currentCommentImgUrl) { I.toast('请输入评论或上传图片', 'error'); return; }
     var btn = I.$('#submitCommentBtn');

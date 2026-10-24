@@ -2,278 +2,230 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>登录 · IECP 国际交流与合作平台</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
-<link rel="stylesheet" href="assets/css/auth.css">
+<style>
+  body { background-color: #05070a; overflow: hidden; }
+  #particleCanvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+  .aurora-bg {
+    position: fixed; inset: 0; z-index: -2;
+    background: radial-gradient(circle at 15% 50%, rgba(79, 195, 247, 0.15), transparent 50%), radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.15), transparent 50%);
+    filter: blur(80px); animation: auroraMove 15s ease-in-out infinite alternate;
+  }
+  @keyframes auroraMove { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.2) translate(-5%, 5%); } }
+
+  .auth-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+  .auth-card {
+    width: 100%; max-width: 420px; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 40px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05); position: relative; overflow: hidden;
+  }
+  .auth-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: scanline 3s linear infinite;
+  }
+  @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+  .auth-header { text-align: center; margin-bottom: 30px; }
+  .auth-header img { width: 70px; height: 70px; margin-bottom: 16px; filter: drop-shadow(0 0 20px rgba(212,175,55,0.6)); }
+  .auth-header h2 { font-size: 26px; margin: 0 0 8px 0; letter-spacing: 3px; font-weight: 800; background: linear-gradient(135deg, #fff, #d4af37); -webkit-background-clip: text; color: transparent; }
+  .auth-header p { font-size: 14px; color: var(--muted); margin: 0; }
+
+  .auth-tabs { display: flex; background: rgba(0,0,0,0.4); border-radius: 12px; padding: 4px; position: relative; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.05); }
+  .auth-tab-bg { position: absolute; top: 4px; left: 4px; width: calc(50% - 4px); height: calc(100% - 8px); background: rgba(255,255,255,0.1); border-radius: 8px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
+  .auth-tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; color: var(--muted); font-weight: 600; cursor: pointer; z-index: 2; transition: color 0.3s; }
+  .auth-tab.active { color: #fff; }
+
+  .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .input-group label { font-size: 13px; color: var(--ink-2); font-weight: 600; margin-left: 4px; }
+  .input-wrap { position: relative; }
+  .input-wrap i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; transition: 0.3s; }
+  .input-wrap input {
+    width: 100%; padding: 16px 18px 16px 48px;
+    background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; color: #fff; font-size: 15px; outline: none; transition: 0.3s; box-sizing: border-box;
+  }
+  .input-wrap input:focus { border-color: var(--cyan); background: rgba(79, 195, 247, 0.05); box-shadow: 0 0 20px rgba(79,195,247,0.15); }
+  .input-wrap input:focus ~ i { color: var(--cyan); }
+
+  .btn-auth {
+    width: 100%; padding: 18px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, var(--gold), #b8860b);
+    color: #000; font-size: 17px; font-weight: 900; cursor: pointer; letter-spacing: 2px;
+    transition: 0.3s; margin-top: 10px; box-shadow: 0 10px 30px rgba(212,175,55,0.3);
+  }
+  .btn-auth:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(212,175,55,0.5); }
+  .btn-auth:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+  .auth-msg { text-align: center; font-size: 14px; font-weight: 600; margin-top: 16px; min-height: 20px; padding: 10px; border-radius: 8px; }
+  .auth-msg.error { color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+  .auth-msg.success { color: #22c55e; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); }
+
+  .auth-links { text-align: center; margin-top: 24px; font-size: 13.5px; color: var(--muted); display: flex; justify-content: space-between; }
+  .auth-links a { color: var(--muted); text-decoration: none; transition: 0.2s; }
+  .auth-links a:hover { color: #fff; }
+  .auth-links a.highlight { color: var(--gold-2); font-weight: bold; }
+
+  .auth-code-row { display: flex; gap: 10px; position: relative; }
+  .auth-code-row input { padding-left: 48px; }
+  .btn-code { padding: 0 16px; background: rgba(79,195,247,0.1); color: var(--cyan); border: 1px solid rgba(79,195,247,0.3); border-radius: 12px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+  .btn-code:hover:not(:disabled) { background: var(--cyan); color: #000; }
+  .btn-code:disabled { opacity: 0.5; cursor: not-allowed; }
+  .hide { display: none !important; }
+
+  @media (max-width: 480px) {
+    .auth-card { padding: 30px 20px; border-radius: 20px; }
+    .auth-links { flex-direction: column; gap: 12px; }
+  }
+</style>
 </head>
 <body>
 
-<div class="auth-page">
-  <!-- 粒子背景 -->
-  <canvas id="particleCanvas"></canvas>
+<div class="aurora-bg"></div>
+<canvas id="particleCanvas"></canvas>
 
-  <!-- 左侧视觉区 -->
-  <div class="auth-visual">
-    <div class="auth-visual-content">
-      <h1>联结文明<br>共享未来</h1>
-      <p>IECP 国际交流与合作平台，在这里建立你的国家，参与全球外交、贸易与战略博弈。</p>
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <img src="photo/un.png" alt="IECP">
+      <h2>欢迎回来</h2>
+      <p>登录以继续管理你的国家</p>
     </div>
-  </div>
 
-  <!-- 右侧表单区 -->
-  <div class="auth-form-container">
-    <div class="auth-box">
-      <div class="auth-header">
-        <img src="photo/un.png" alt="IECP">
-        <h2>欢迎回来</h2>
-        <p>登录以继续管理你的国家</p>
+    <div class="auth-tabs">
+      <div class="auth-tab-bg" id="tabBg"></div>
+      <div class="auth-tab active" onclick="switchTab('password')">密码登录</div>
+      <div class="auth-tab" onclick="switchTab('otp')">验证码登录</div>
+    </div>
+
+    <!-- 密码登录表单 -->
+    <form id="formPassword" onsubmit="handlePasswordLogin(event)">
+      <div class="input-group">
+        <label>邮箱</label>
+        <div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="loginEmail" placeholder="请输入注册邮箱" required></div>
       </div>
-
-      <!-- Tab 切换 -->
-      <div class="auth-tabs">
-        <div class="auth-tab-bg" id="tabBg"></div>
-        <div class="auth-tab active" onclick="switchTab('password')">密码登录</div>
-        <div class="auth-tab" onclick="switchTab('otp')">验证码登录</div>
+      <div class="input-group">
+        <label>密码</label>
+        <div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="loginPassword" placeholder="请输入密码" required></div>
       </div>
+      <div class="auth-msg" id="msgPassword"></div>
+      <button type="submit" class="btn-auth" id="btnLoginPwd">登 录</button>
+    </form>
 
-      <!-- 密码登录表单 -->
-      <form id="formPassword" onsubmit="handlePasswordLogin(event)">
-        <div class="auth-input-group">
-          <label>邮箱</label>
-          <i class="fa-regular fa-envelope icon"></i>
-          <input type="email" id="loginEmail" placeholder="请输入注册邮箱" required>
-        </div>
-        <div class="auth-input-group">
-          <label>密码</label>
-          <i class="fa-solid fa-lock icon"></i>
-          <input type="password" id="loginPassword" placeholder="请输入密码" required>
-        </div>
-        <div class="auth-msg" id="msgPassword"></div>
-        <button type="submit" class="btn-auth" id="btnLoginPwd">登 录</button>
-      </form>
-
-      <!-- 验证码登录表单 -->
-      <form id="formOtp" class="hide" onsubmit="handleOtpLogin(event)">
-        <div class="auth-input-group">
-          <label>邮箱</label>
-          <i class="fa-regular fa-envelope icon"></i>
-          <input type="email" id="otpEmail" placeholder="请输入注册邮箱" required>
-        </div>
-        <div class="auth-input-group">
-          <label>验证码</label>
-          <i class="fa-solid fa-shield-halved icon"></i>
-          <div class="auth-code-row">
-            <input type="text" id="otpCode" placeholder="6位验证码" maxlength="6" required>
-            <button type="button" class="btn-code" id="btnSendOtp" onclick="sendLoginOtp()">获取验证码</button>
-          </div>
-        </div>
-        <div class="auth-msg" id="msgOtp"></div>
-        <button type="submit" class="btn-auth" id="btnLoginOtp">登 录</button>
-      </form>
-
-      <div class="auth-links">
-        <a href="forgot-password.html">忘记密码？</a>
-        <a href="register.html" style="color: var(--gold-2);">注册新国家 <i class="fa-solid fa-arrow-right"></i></a>
+    <!-- 验证码登录表单 -->
+    <form id="formOtp" class="hide" onsubmit="handleOtpLogin(event)">
+      <div class="input-group">
+        <label>邮箱</label>
+        <div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="otpEmail" placeholder="请输入注册邮箱" required></div>
       </div>
-
-      <!-- 紧急逃生出口（防止手机端缓存死循环） -->
-      <div style="text-align: center; margin-top: 25px; font-size: 12px; color: var(--muted);">
-        页面卡住了？<span style="color: var(--cyan); cursor: pointer; text-decoration: underline;" onclick="forceLogout()">点此清理登录缓存</span>
+      <div class="input-group">
+        <label>验证码</label>
+        <div class="auth-code-row">
+          <div class="input-wrap" style="flex:1;"><i class="fa-solid fa-shield-halved"></i><input type="text" id="otpCode" placeholder="6位验证码" maxlength="6" required></div>
+          <button type="button" class="btn-code" id="btnSendOtp" onclick="sendLoginOtp()">获取验证码</button>
+        </div>
       </div>
+      <div class="auth-msg" id="msgOtp"></div>
+      <button type="submit" class="btn-auth" id="btnLoginOtp">登 录</button>
+    </form>
+
+    <div class="auth-links">
+      <a href="forgot-password.html">忘记密码？</a>
+      <a href="register.html" class="highlight">注册新国家 <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px; font-size: 12px; color: var(--muted);">
+      页面卡住了？<span style="color: var(--cyan); cursor: pointer; text-decoration: underline;" onclick="forceLogout()">点此清理登录缓存</span>
     </div>
   </div>
 </div>
 
-<!-- 🚨 核心修复：将 jsdelivr 替换为国内可稳定访问的 unpkg -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
-// 🚨 防呆提示：如果 CDN 被墙导致核心库没加载出来，阻止后续报错
-if (typeof IECP === 'undefined' || !IECP.client) {
-  alert('网络波动，核心组件未加载成功。请刷新页面或检查您的网络！');
-  throw new Error('IECP SDK not loaded');
-}
+// 粒子星空
+(function initParticles() {
+  const canvas = document.getElementById('particleCanvas'); const ctx = canvas.getContext('2d');
+  let width, height; let particles = [];
+  function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+  class Particle {
+    constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3; this.radius = Math.random() * 1.5 + 0.5; }
+    update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
+    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.fill(); }
+  }
+  for (let i = 0; i < 70; i++) particles.push(new Particle());
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    for (let i = 0; i < particles.length; i++) {
+      particles[i].update(); particles[i].draw();
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(212, 175, 55, ${0.15 - dist / 1000})`; ctx.stroke(); }
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
 
-// ==========================================
-// 1. 登录状态自动检测与跳转
-// ==========================================
+if (typeof IECP === 'undefined' || !IECP.client) { alert('网络波动，请刷新页面！'); throw new Error('SDK error'); }
+
 (function() {
   IECP.client.auth.getSession().then(function(res) {
-    if (res.data && res.data.session) {
-      // 加 100 毫秒延迟，给页面渲染的时间，防止瞬间死循环
-      setTimeout(function() { location.replace('index.html'); }, 100);
-    }
+    if (res.data && res.data.session) { setTimeout(function() { location.replace('index.html'); }, 100); }
   });
   if (new URLSearchParams(location.search).get('mode') === 'otp') switchTab('otp');
 })();
 
-// 🚨 强制清理卡死的缓存并刷新
 window.forceLogout = function() {
-  if(confirm('确定要清理卡死的登录状态并重新登录吗？')) {
-    IECP.client.auth.signOut().then(function() {
-      localStorage.clear();
-      sessionStorage.clear();
-      location.href = 'login.html';
-    });
+  if(confirm('确定要清理卡死的登录状态吗？')) {
+    IECP.client.auth.signOut().then(function() { localStorage.clear(); sessionStorage.clear(); location.href = 'login.html'; });
   }
 };
 
 function switchTab(type) {
-  const tabs = document.querySelectorAll('.auth-tab');
-  const tabBg = document.getElementById('tabBg');
-  const formPassword = document.getElementById('formPassword');
-  const formOtp = document.getElementById('formOtp');
-
-  if (type === 'password') {
-    tabs[0].classList.add('active'); tabs[1].classList.remove('active');
-    tabBg.style.transform = 'translateX(0)';
-    formPassword.classList.remove('hide'); formOtp.classList.add('hide');
-  } else {
-    tabs[1].classList.add('active'); tabs[0].classList.remove('active');
-    tabBg.style.transform = 'translateX(100%)';
-    formOtp.classList.remove('hide'); formPassword.classList.add('hide');
-  }
+  const tabs = document.querySelectorAll('.auth-tab'); const tabBg = document.getElementById('tabBg');
+  const formPassword = document.getElementById('formPassword'); const formOtp = document.getElementById('formOtp');
+  if (type === 'password') { tabs[0].classList.add('active'); tabs[1].classList.remove('active'); tabBg.style.transform = 'translateX(0)'; formPassword.classList.remove('hide'); formOtp.classList.add('hide'); }
+  else { tabs[1].classList.add('active'); tabs[0].classList.remove('active'); tabBg.style.transform = 'translateX(100%)'; formOtp.classList.remove('hide'); formPassword.classList.add('hide'); }
 }
 
 function setMsg(id, text, type) {
-  const el = document.getElementById(id);
-  el.innerText = text;
-  el.className = 'auth-msg ' + type;
+  const el = document.getElementById(id); el.innerText = text; el.className = 'auth-msg ' + type;
 }
 
 async function handlePasswordLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
-  const pwd = document.getElementById('loginPassword').value;
-  const btn = document.getElementById('btnLoginPwd');
-
-  btn.disabled = true; btn.innerText = '登录中...';
-  setMsg('msgPassword', '', '');
-
+  const email = document.getElementById('loginEmail').value.trim(); const pwd = document.getElementById('loginPassword').value; const btn = document.getElementById('btnLoginPwd');
+  btn.disabled = true; btn.innerText = '登录中...'; setMsg('msgPassword', '', '');
   const { error } = await IECP.client.auth.signInWithPassword({ email, password: pwd });
-
-  if (error) {
-    setMsg('msgPassword', error.message === 'Invalid login credentials' ? '邮箱或密码错误' : error.message, 'error');
-    btn.disabled = false; btn.innerText = '登 录';
-    return;
-  }
+  if (error) { setMsg('msgPassword', error.message === 'Invalid login credentials' ? '邮箱或密码错误' : error.message, 'error'); btn.disabled = false; btn.innerText = '登 录'; return; }
   location.replace('index.html');
 }
 
 let countdown = 0;
 async function sendLoginOtp() {
-  const email = document.getElementById('otpEmail').value.trim();
-  if (!email) return setMsg('msgOtp', '请先输入邮箱', 'error');
-
-  const btn = document.getElementById('btnSendOtp');
-  btn.disabled = true; btn.innerText = '发送中...';
-  setMsg('msgOtp', '', '');
-
-  const { error } = await IECP.client.auth.signInWithOtp({
-    email: email, options: { shouldCreateUser: false }
-  });
-
-  if (error) {
-    setMsg('msgOtp', '发送失败：' + error.message, 'error');
-    btn.disabled = false; btn.innerText = '获取验证码';
-    return;
-  }
-
-  setMsg('msgOtp', '验证码已发送至邮箱', 'success');
-  countdown = 60; btn.innerText = `${countdown}s 后重试`;
-  const timer = setInterval(() => {
-    countdown--; btn.innerText = `${countdown}s 后重试`;
-    if (countdown <= 0) {
-      clearInterval(timer); btn.disabled = false; btn.innerText = '获取验证码';
-    }
-  }, 1000);
+  const email = document.getElementById('otpEmail').value.trim(); if (!email) return setMsg('msgOtp', '请先输入邮箱', 'error');
+  const btn = document.getElementById('btnSendOtp'); btn.disabled = true; btn.innerText = '发送中...'; setMsg('msgOtp', '', '');
+  const { error } = await IECP.client.auth.signInWithOtp({ email: email, options: { shouldCreateUser: false } });
+  if (error) { setMsg('msgOtp', '发送失败：' + error.message, 'error'); btn.disabled = false; btn.innerText = '获取验证码'; return; }
+  setMsg('msgOtp', '验证码已发送至邮箱', 'success'); countdown = 60; btn.innerText = `${countdown}s 后重试`;
+  const timer = setInterval(() => { countdown--; btn.innerText = `${countdown}s 后重试`; if (countdown <= 0) { clearInterval(timer); btn.disabled = false; btn.innerText = '获取验证码'; } }, 1000);
 }
 
 async function handleOtpLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('otpEmail').value.trim();
-  const code = document.getElementById('otpCode').value.trim();
-  const btn = document.getElementById('btnLoginOtp');
-
-  btn.disabled = true; btn.innerText = '验证中...';
-  setMsg('msgOtp', '', '');
-
-  const { error } = await IECP.client.auth.verifyOtp({
-    email: email, token: code, type: 'email'
-  });
-
-  if (error) {
-    setMsg('msgOtp', '验证码错误或已过期', 'error');
-    btn.disabled = false; btn.innerText = '登 录';
-    return;
-  }
+  const email = document.getElementById('otpEmail').value.trim(); const code = document.getElementById('otpCode').value.trim(); const btn = document.getElementById('btnLoginOtp');
+  btn.disabled = true; btn.innerText = '验证中...'; setMsg('msgOtp', '', '');
+  const { error } = await IECP.client.auth.verifyOtp({ email: email, token: code, type: 'email' });
+  if (error) { setMsg('msgOtp', '验证码错误或已过期', 'error'); btn.disabled = false; btn.innerText = '登 录'; return; }
   location.replace('index.html');
 }
-
-// ==========================================
-// 2. 粒子星链特效
-// ==========================================
-const canvas = document.getElementById('particleCanvas');
-const ctx = canvas.getContext('2d');
-let width, height;
-let particles = [];
-
-function initCanvas() {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', initCanvas);
-initCanvas();
-
-class Particle {
-  constructor() {
-    this.x = Math.random() * width;
-    this.y = Math.random() * height;
-    this.vx = (Math.random() - 0.5) * 0.5;
-    this.vy = (Math.random() - 0.5) * 0.5;
-    this.radius = Math.random() * 1.5 + 0.5;
-  }
-  update() {
-    this.x += this.vx;
-    this.y += this.vy;
-    if (this.x < 0 || this.x > width) this.vx *= -1;
-    if (this.y < 0 || this.y > height) this.vy *= -1;
-  }
-  draw() {
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(79, 195, 247, 0.6)';
-    ctx.fill();
-  }
-}
-
-for (let i = 0; i < 80; i++) particles.push(new Particle());
-
-function animate() {
-  ctx.clearRect(0, 0, width, height);
-  for (let i = 0; i < particles.length; i++) {
-    particles[i].update();
-    particles[i].draw();
-    for (let j = i + 1; j < particles.length; j++) {
-      const dx = particles[i].x - particles[j].x;
-      const dy = particles[i].y - particles[j].y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 120) {
-        ctx.beginPath();
-        ctx.moveTo(particles[i].x, particles[i].y);
-        ctx.lineTo(particles[j].x, particles[j].y);
-        ctx.strokeStyle = `rgba(79, 195, 247, ${0.15 - dist/800})`;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
-  }
-  requestAnimationFrame(animate);
-}
-animate();
 </script>
 </body>
 </html>
