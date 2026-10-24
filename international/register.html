@@ -7,113 +7,81 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  body { background-color: #03050a; overflow-x: hidden; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-  .aurora-bg { position: fixed; inset: 0; z-index: -2; background: radial-gradient(circle at 10% 80%, rgba(212, 175, 55, 0.12), transparent 40%), radial-gradient(circle at 90% 20%, rgba(79, 195, 247, 0.12), transparent 40%), radial-gradient(circle at 50% 50%, rgba(15, 23, 42, 1) 0%, #03050a 100%); }
+  body { background-color: #05070a; overflow-x: hidden; }
   #particleCanvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-  .auth-page { display: flex; min-height: 100vh; width: 100vw; }
+  .aurora-bg {
+    position: fixed; inset: 0; z-index: -2;
+    background: radial-gradient(circle at 15% 50%, rgba(79, 195, 247, 0.15), transparent 50%), radial-gradient(circle at 85% 30%, rgba(212, 175, 55, 0.15), transparent 50%), radial-gradient(circle at 50% 80%, rgba(167, 139, 250, 0.1), transparent 50%);
+    filter: blur(80px); animation: auroraMove 15s ease-in-out infinite alternate;
+  }
+  @keyframes auroraMove { 0% { transform: scale(1) translate(0, 0); } 100% { transform: scale(1.2) translate(-5%, 5%); } }
 
-  .visual-area { flex: 1.1; display: flex; align-items: center; justify-content: center; padding: 60px; position: sticky; top: 0; height: 100vh; background: radial-gradient(circle at center, rgba(15,23,42,0.4) 0%, transparent 70%); }
-  .visual-content { max-width: 520px; position: relative; z-index: 2; animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
-  .tech-line { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-  .tech-line .line-bar { width: 60px; height: 2px; background: var(--gold); box-shadow: 0 0 10px var(--gold); }
-  .tech-line .line-text { font-size: 12px; color: var(--gold-2); letter-spacing: 4px; font-family: monospace; }
-  .visual-title { font-size: 52px; font-weight: 900; line-height: 1.15; margin: 0 0 24px; letter-spacing: 3px; background: linear-gradient(135deg, #fff 10%, #a7b5c9 40%, var(--gold) 90%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 10px 40px rgba(212,175,55,0.2); }
-  .visual-subtitle { font-size: 16px; color: var(--muted); line-height: 1.8; letter-spacing: 1px; max-width: 90%; }
-  
-  /* 🚨 左侧 HUD 改为中文 */
-  .hud-panel { margin-top: 60px; display: flex; gap: 32px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 24px; }
-  .hud-item .hud-label { font-size: 12px; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; }
-  .hud-item .hud-val { font-size: 15px; color: var(--cyan); font-weight: bold; display: flex; align-items: center; gap: 6px; }
-
-  .form-area { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 40px; position: relative; min-height: 100vh; box-sizing: border-box; }
-  .auth-card { width: 100%; max-width: 700px; background: linear-gradient(145deg, rgba(20, 30, 50, 0.8), rgba(10, 15, 25, 0.9)); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.06); border-top: 1px solid rgba(255,255,255,0.15); border-left: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 48px 40px; box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.02), inset 0 0 40px rgba(79,195,247,0.05); position: relative; overflow: hidden; animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both; margin: auto 0; }
-  @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-  .auth-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), #fff, var(--gold), transparent); animation: scanline 4s linear infinite; box-shadow: 0 0 15px var(--gold); }
+  .auth-container { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; box-sizing: border-box; }
+  .auth-card {
+    width: 100%; max-width: 680px; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 40px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.05); position: relative; overflow: hidden;
+  }
+  .auth-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent); animation: scanline 3s linear infinite;
+  }
   @keyframes scanline { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
-  .auth-header { text-align: center; margin-bottom: 36px; position: relative; }
-  .logo-container { position: relative; width: 110px; height: 110px; margin: 0 auto 20px auto; display: grid; place-items: center; }
-  .logo-container::before { content: ''; position: absolute; inset: -5px; border-radius: 50%; background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, transparent 70%); box-shadow: inset 0 0 20px rgba(79,195,247,0.2), 0 0 30px rgba(212,175,55,0.2); animation: pulseGlow 3s infinite alternate; }
-  @keyframes pulseGlow { 0% { transform: scale(0.95); opacity: 0.8; } 100% { transform: scale(1.05); opacity: 1; } }
-  .logo-container img { width: 90px; height: 90px; object-fit: contain; position: relative; z-index: 2; filter: brightness(1.3) contrast(1.1) drop-shadow(0 2px 0px rgba(255,255,255,0.1)) drop-shadow(0 4px 0px rgba(0,0,0,0.6)) drop-shadow(0 15px 25px rgba(0,0,0,0.8)) drop-shadow(0 0 20px rgba(212,175,55,0.5)); animation: floatLogo 4s ease-in-out infinite; }
-  @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-
-  .auth-header h2 { font-size: 26px; margin: 0 0 10px 0; letter-spacing: 3px; font-weight: 900; background: linear-gradient(to right, #fff, #d4af37, #fff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .auth-header { text-align: center; margin-bottom: 30px; }
+  .auth-header img { width: 70px; height: 70px; margin-bottom: 16px; filter: drop-shadow(0 0 20px rgba(212,175,55,0.6)); }
+  .auth-header h2 { font-size: 26px; color: #fff; margin: 0 0 8px 0; letter-spacing: 3px; font-weight: 800; background: linear-gradient(135deg, #fff, #d4af37); -webkit-background-clip: text; color: transparent; }
   .auth-header p { font-size: 14px; color: var(--muted); margin: 0; letter-spacing: 1px; }
 
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; position: relative; }
-  .input-group label { font-size: 13px; color: #cbd5e1; font-weight: 600; margin-left: 4px; letter-spacing: 1px; }
-  .input-wrap { position: relative; display: flex; align-items: center; }
-  
-  /* 🚨 核心修改：输入框图标极简扁平化 */
-  .input-icon { position: absolute; left: 18px; z-index: 2; width: 24px; height: 24px; display: grid; place-items: center; transition: 0.3s; background: transparent; border: none; box-shadow: none; }
-  .input-icon i { color: #64748b; font-size: 16px; transition: 0.3s; }
-  .input-wrap input:focus ~ .input-icon i { color: var(--cyan); text-shadow: 0 0 10px rgba(79,195,247,0.5); }
-
+  .input-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .input-group label { font-size: 13px; color: var(--ink-2); font-weight: 600; margin-left: 4px; }
+  .input-wrap { position: relative; }
+  .input-wrap i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; transition: 0.3s; }
   .input-wrap input, .input-wrap textarea {
-    width: 100%; padding: 18px 18px 18px 52px;
-    background: rgba(5, 10, 20, 0.8); border: 1px solid rgba(255,255,255,0.04);
-    border-top: 1px solid rgba(0,0,0,0.6); border-bottom: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px; color: #fff; font-size: 15px; outline: none; transition: all 0.3s; box-sizing: border-box;
-    box-shadow: inset 0 6px 12px rgba(0,0,0,0.6), inset 0 -2px 5px rgba(255,255,255,0.02); font-family: inherit;
+    width: 100%; padding: 16px 18px 16px 48px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px; color: #fff; font-size: 14.5px; outline: none; transition: 0.3s; box-sizing: border-box; font-family: inherit;
   }
   .input-wrap textarea { padding-left: 18px; min-height: 90px; resize: vertical; }
-  .input-wrap input::placeholder, .input-wrap textarea::placeholder { color: #475569; font-weight: 500; }
-  .input-wrap input:focus, .input-wrap textarea:focus { border-color: rgba(79, 195, 247, 0.4); background: rgba(10, 15, 25, 0.95); box-shadow: inset 0 6px 12px rgba(0,0,0,0.6), inset 0 0 20px rgba(79,195,247,0.15); }
+  .input-wrap input:focus, .input-wrap textarea:focus { border-color: var(--cyan); background: rgba(79, 195, 247, 0.05); box-shadow: 0 0 20px rgba(79,195,247,0.15); }
+  .input-wrap input:focus ~ i { color: var(--cyan); }
 
   .upload-box {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 100%; min-height: 110px; padding: 16px;
-    background: rgba(5, 10, 20, 0.8); border: 1.5px dashed rgba(255,255,255,0.15);
-    border-radius: 16px; cursor: pointer; transition: 0.3s; text-align: center; position: relative; overflow: hidden; box-sizing: border-box;
-    box-shadow: inset 0 6px 12px rgba(0,0,0,0.6);
+    width: 100%; min-height: 100px; padding: 16px; background: rgba(0,0,0,0.3); border: 1.5px dashed rgba(255,255,255,0.15);
+    border-radius: 14px; cursor: pointer; transition: 0.3s; text-align: center; position: relative; overflow: hidden; box-sizing: border-box;
   }
-  .upload-box:hover { border-color: var(--gold); background: rgba(212,175,55,0.05); box-shadow: inset 0 6px 12px rgba(0,0,0,0.6), 0 0 20px rgba(212,175,55,0.1); }
-  .upload-box > i { font-size: 28px; color: var(--gold); margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(212,175,55,0.5)); }
-  .upload-box > span { font-size: 13px; color: var(--muted); font-weight: bold; letter-spacing: 1px; }
-  
-  .upload-preview { display: none; align-items: center; gap: 16px; width: 100%; text-align: left; z-index: 2; }
-  .upload-preview img { width: 64px; height: 44px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .upload-box:hover { border-color: var(--gold); background: rgba(212,175,55,0.05); box-shadow: 0 0 20px rgba(212,175,55,0.1); }
+  .upload-box i { font-size: 26px; color: var(--gold); margin-bottom: 8px; }
+  .upload-box span { font-size: 13px; color: var(--muted); }
+  .upload-preview { display: none; align-items: center; gap: 14px; width: 100%; text-align: left; z-index: 2; }
+  .upload-preview img { width: 56px; height: 38px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); }
   .upload-preview .file-info { flex: 1; min-width: 0; }
-  .upload-preview .file-name { font-size: 14px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .upload-preview .file-status { font-size: 12px; color: var(--cyan); margin-top: 4px; }
-  
-  .upload-box.has-file { border-style: solid; border-color: var(--cyan); background: rgba(79,195,247,0.08); box-shadow: inset 0 6px 12px rgba(0,0,0,0.6), 0 0 20px rgba(79,195,247,0.15); }
+  .upload-preview .file-name { font-size: 13px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .upload-preview .file-status { font-size: 11px; color: var(--cyan); margin-top: 4px; }
+  .upload-box.has-file { border-style: solid; border-color: var(--cyan); background: rgba(79,195,247,0.08); }
   .upload-box.has-file > i, .upload-box.has-file > span { display: none; }
   .upload-box.has-file .upload-preview { display: flex; }
 
   .btn-auth {
-    width: 100%; padding: 18px; border-radius: 16px; border: none;
-    background: linear-gradient(180deg, #fcd34d, #d4af37, #b8860b);
-    color: #000; font-size: 17px; font-weight: 900; cursor: pointer; letter-spacing: 3px;
-    transition: all 0.2s; margin-top: 10px; 
-    box-shadow: 0 15px 30px rgba(212,175,55,0.2), inset 0 3px 3px rgba(255,255,255,0.6), inset 0 -4px 8px rgba(0,0,0,0.4);
-    display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; overflow: hidden;
+    width: 100%; padding: 18px; border-radius: 14px; border: none; background: linear-gradient(135deg, var(--gold), #b8860b);
+    color: #000; font-size: 17px; font-weight: 900; cursor: pointer; letter-spacing: 2px; transition: 0.3s; margin-top: 15px; box-shadow: 0 10px 30px rgba(212,175,55,0.3);
   }
-  .btn-auth::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); transform: skewX(-20deg); transition: 0.5s; }
-  .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(212,175,55,0.3), inset 0 3px 3px rgba(255,255,255,0.7), inset 0 -4px 8px rgba(0,0,0,0.4); }
-  .btn-auth:hover::after { left: 200%; }
-  .btn-auth:active { transform: translateY(2px); box-shadow: 0 5px 15px rgba(212,175,55,0.2), inset 0 3px 5px rgba(0,0,0,0.4); }
+  .btn-auth:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(212,175,55,0.5); }
   .btn-auth:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
-  .auth-msg { text-align: center; font-size: 13.5px; font-weight: 600; margin-top: 16px; min-height: 20px; padding: 10px; border-radius: 10px; transition: 0.3s; opacity: 0; }
-  .auth-msg.error { color: #fca5a5; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); opacity: 1; box-shadow: 0 4px 15px rgba(239,68,68,0.1); }
-  .auth-msg.success { color: #86efac; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); opacity: 1; box-shadow: 0 4px 15px rgba(34,197,94,0.1); }
+  .auth-msg { text-align: center; font-size: 14px; font-weight: 600; margin-top: 16px; min-height: 20px; padding: 10px; border-radius: 8px; }
+  .auth-msg.error { color: #ef4444; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); }
+  .auth-msg.success { color: #22c55e; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.3); }
 
-  .auth-links { text-align: center; margin-top: 32px; font-size: 14px; color: var(--muted); }
-  .auth-links a { color: var(--gold-2); text-decoration: none; font-weight: bold; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+  .auth-links { text-align: center; margin-top: 24px; font-size: 14px; color: var(--muted); }
+  .auth-links a { color: var(--gold-2); text-decoration: none; margin-left: 5px; font-weight: bold; transition: 0.2s; }
   .auth-links a:hover { color: #fff; text-shadow: 0 0 10px var(--gold); }
 
-  @media (max-width: 900px) {
-    .auth-page { flex-direction: column; }
-    .visual-area { display: none; }
-    .form-area { padding: 20px; min-height: auto; }
-    .auth-card { padding: 32px 24px; border-radius: 20px; margin-top: 5vh; }
+  @media (max-width: 640px) {
+    .auth-container { padding: 20px 15px; align-items: flex-start; }
+    .auth-card { padding: 30px 20px; border-radius: 20px; margin-top: 10px; }
     .form-grid { grid-template-columns: 1fr; gap: 0; }
-    .auth-header h2 { font-size: 22px; }
-    .input-wrap input, .input-wrap textarea { font-size: 16px; }
-    .btn-auth { padding: 16px; font-size: 16px; }
   }
 </style>
 </head>
@@ -122,133 +90,94 @@
 <div class="aurora-bg"></div>
 <canvas id="particleCanvas"></canvas>
 
-<div class="auth-page">
-  <div class="visual-area">
-    <div class="visual-content">
-      <div class="tech-line"><div class="line-bar"></div><div class="line-text">IECP 建国协议终端</div></div>
-      <h1 class="visual-title">建立你的国家<br>加入全球版图</h1>
-      <p class="visual-subtitle">填写国家档案，升起属于你的国旗，开启从偏远聚落到世界霸主的崛起之路。</p>
-      <div class="hud-panel">
-        <div class="hud-item"><div class="hud-label">建造准备</div><div class="hud-val"><i class="fa-solid fa-circle-check" style="font-size:14px;"></i> 系统就绪</div></div>
-        <div class="hud-item"><div class="hud-label">安全协议</div><div class="hud-val"><i class="fa-solid fa-shield-halved" style="font-size:14px;"></i> 高等级加密</div></div>
-      </div>
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <img src="photo/un.png" alt="IECP">
+      <h2>建立你的国家</h2>
+      <p>填写国家信息，开启你的国际博弈之旅</p>
     </div>
-  </div>
 
-  <div class="form-area">
-    <div class="auth-card">
-      <div class="auth-header">
-        <div class="logo-container">
-          <img src="photo/un.png" alt="IECP">
+    <form id="formRegister" onsubmit="handleRegister(event)">
+      <div class="form-grid">
+        <div class="input-group">
+          <label>登录邮箱 <span style="color:var(--red)">*</span></label>
+          <div class="input-wrap"><i class="fa-regular fa-envelope"></i><input type="email" id="regEmail" placeholder="用于登录" required></div>
         </div>
-        <h2>建立你的国家</h2>
-        <p>填写国家信息，开启你的国际博弈之旅</p>
-      </div>
-
-      <form id="formRegister" onsubmit="handleRegister(event)">
-        <div class="form-grid">
-          <div class="input-group">
-            <label>登录邮箱 <span style="color:var(--red)">*</span></label>
-            <div class="input-wrap">
-              <input type="email" id="regEmail" placeholder="用于登录" required>
-              <div class="input-icon"><i class="fa-regular fa-envelope"></i></div>
-            </div>
-          </div>
-          <div class="input-group">
-            <label>国家名 <span style="color:var(--red)">*</span></label>
-            <div class="input-wrap">
-              <input type="text" id="regUsername" placeholder="如：亚斯共和国" required>
-              <div class="input-icon"><i class="fa-solid fa-landmark-flag"></i></div>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label>密码 <span style="color:var(--red)">*</span></label>
-            <div class="input-wrap">
-              <input type="password" id="regPassword" placeholder="至少6位" required>
-              <div class="input-icon"><i class="fa-solid fa-lock"></i></div>
-            </div>
-          </div>
-          <div class="input-group">
-            <label>确认密码 <span style="color:var(--red)">*</span></label>
-            <div class="input-wrap">
-              <input type="password" id="regPassword2" placeholder="再次输入" required>
-              <div class="input-icon"><i class="fa-solid fa-lock"></i></div>
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label>社会性质 <span style="color:var(--red)">*</span></label>
-            <div class="input-wrap">
-              <input type="text" id="regSocial" placeholder="如：社会主义共和国" required>
-              <div class="input-icon"><i class="fa-solid fa-scale-balanced"></i></div>
-            </div>
-          </div>
-          <div class="input-group">
-            <label>首都 <span style="color:var(--red)">*</span></label>
-            <div class="input-wrap">
-              <input type="text" id="regCapital" placeholder="如：蓬溪格勒" required>
-              <div class="input-icon"><i class="fa-solid fa-city"></i></div>
-            </div>
-          </div>
+        <div class="input-group">
+          <label>国家名 <span style="color:var(--red)">*</span></label>
+          <div class="input-wrap"><i class="fa-solid fa-landmark-flag"></i><input type="text" id="regUsername" placeholder="如：亚斯共和国" required></div>
         </div>
 
         <div class="input-group">
-          <label>官方语言 <span style="color:var(--red)">*</span></label>
-          <div class="input-wrap">
-            <input type="text" id="regLanguage" placeholder="如：亚斯语、俄语" required>
-            <div class="input-icon"><i class="fa-solid fa-language"></i></div>
-          </div>
+          <label>密码 <span style="color:var(--red)">*</span></label>
+          <div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="regPassword" placeholder="至少6位" required></div>
+        </div>
+        <div class="input-group">
+          <label>确认密码 <span style="color:var(--red)">*</span></label>
+          <div class="input-wrap"><i class="fa-solid fa-lock"></i><input type="password" id="regPassword2" placeholder="再次输入" required></div>
         </div>
 
         <div class="input-group">
-          <label>国家介绍 <span style="color:var(--muted); font-weight:normal;">(选填)</span></label>
-          <div class="input-wrap">
-            <textarea id="regDescription" placeholder="向世界介绍你的国家历史、文化或现状..."></textarea>
-          </div>
+          <label>社会性质 <span style="color:var(--red)">*</span></label>
+          <div class="input-wrap"><i class="fa-solid fa-scale-balanced"></i><input type="text" id="regSocial" placeholder="如：社会主义共和国" required></div>
         </div>
-
-        <div class="form-grid" style="margin-top: 10px;">
-          <div class="input-group">
-            <label>上传国旗 <span style="color:var(--red)">*</span></label>
-            <label class="upload-box" for="regFlag">
-              <i class="fa-regular fa-image"></i><span>点击上传国旗</span>
-              <div class="upload-preview">
-                <img id="flagImgPreview" src="" alt="">
-                <div class="file-info"><div class="file-name" id="flagName">已选择</div><div class="file-status">点击重新选择</div></div>
-              </div>
-              <input type="file" id="regFlag" accept="image/*" required style="display:none;">
-            </label>
-          </div>
-          <div class="input-group">
-            <label>上传国徽 <span style="color:var(--red)">*</span></label>
-            <label class="upload-box" for="regEmblem">
-              <i class="fa-regular fa-image"></i><span>点击上传国徽</span>
-              <div class="upload-preview">
-                <img id="emblemImgPreview" src="" alt="">
-                <div class="file-info"><div class="file-name" id="emblemName">已选择</div><div class="file-status">点击重新选择</div></div>
-              </div>
-              <input type="file" id="regEmblem" accept="image/*" required style="display:none;">
-            </label>
-          </div>
+        <div class="input-group">
+          <label>首都 <span style="color:var(--red)">*</span></label>
+          <div class="input-wrap"><i class="fa-solid fa-city"></i><input type="text" id="regCapital" placeholder="如：蓬溪格勒" required></div>
         </div>
+      </div>
 
-        <div class="auth-msg" id="msgReg"></div>
-        <button type="submit" class="btn-auth" id="btnRegister"><i class="fa-solid fa-flag"></i> 立即建国</button>
+      <div class="input-group">
+        <label>官方语言 <span style="color:var(--red)">*</span></label>
+        <div class="input-wrap"><i class="fa-solid fa-language"></i><input type="text" id="regLanguage" placeholder="如：亚斯语、俄语" required></div>
+      </div>
 
-        <div class="auth-links">
-          已有账号？<a href="login.html"><i class="fa-solid fa-arrow-left"></i> 返回登录</a>
+      <div class="input-group">
+        <label>国家介绍 <span style="color:var(--muted); font-weight:normal;">(选填)</span></label>
+        <div class="input-wrap"><textarea id="regDescription" placeholder="向世界介绍你的国家历史、文化或现状..."></textarea></div>
+      </div>
+
+      <div class="form-grid" style="margin-top: 10px;">
+        <div class="input-group">
+          <label>上传国旗 <span style="color:var(--red)">*</span></label>
+          <label class="upload-box" for="regFlag">
+            <i class="fa-regular fa-image"></i><span>点击上传国旗</span>
+            <div class="upload-preview">
+              <img id="flagImgPreview" src="" alt="">
+              <div class="file-info"><div class="file-name" id="flagName">已选择</div><div class="file-status">点击重新选择</div></div>
+            </div>
+            <input type="file" id="regFlag" accept="image/*" required style="display:none;">
+          </label>
         </div>
-      </form>
-    </div>
+        <div class="input-group">
+          <label>上传国徽 <span style="color:var(--red)">*</span></label>
+          <label class="upload-box" for="regEmblem">
+            <i class="fa-regular fa-image"></i><span>点击上传国徽</span>
+            <div class="upload-preview">
+              <img id="emblemImgPreview" src="" alt="">
+              <div class="file-info"><div class="file-name" id="emblemName">已选择</div><div class="file-status">点击重新选择</div></div>
+            </div>
+            <input type="file" id="regEmblem" accept="image/*" required style="display:none;">
+          </label>
+        </div>
+      </div>
+
+      <div class="auth-msg" id="msgReg"></div>
+      <button type="submit" class="btn-auth" id="btnRegister">立即建国</button>
+
+      <div class="auth-links">
+        已有账号？<a href="login.html">返回登录 <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </form>
   </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
-// 粒子动态背景 (同上)
+// 粒子星空
 (function initParticles() {
   const canvas = document.getElementById('particleCanvas'); const ctx = canvas.getContext('2d');
   let width, height; let particles = [];
@@ -275,19 +204,37 @@
   animate();
 })();
 
-// 文件预览 (同上)
+// 文件预览
 document.getElementById('regFlag').addEventListener('change', function() {
-  var file = this.files[0]; if (file) { this.parentNode.classList.add('has-file'); document.getElementById('flagName').innerText = file.name; var reader = new FileReader(); reader.onload = function(e) { document.getElementById('flagImgPreview').src = e.target.result; }; reader.readAsDataURL(file); }
+  var file = this.files[0];
+  if (file) {
+    this.parentNode.classList.add('has-file');
+    document.getElementById('flagName').innerText = file.name;
+    var reader = new FileReader();
+    reader.onload = function(e) { document.getElementById('flagImgPreview').src = e.target.result; };
+    reader.readAsDataURL(file);
+  }
 });
 document.getElementById('regEmblem').addEventListener('change', function() {
-  var file = this.files[0]; if (file) { this.parentNode.classList.add('has-file'); document.getElementById('emblemName').innerText = file.name; var reader = new FileReader(); reader.onload = function(e) { document.getElementById('emblemImgPreview').src = e.target.result; }; reader.readAsDataURL(file); }
+  var file = this.files[0];
+  if (file) {
+    this.parentNode.classList.add('has-file');
+    document.getElementById('emblemName').innerText = file.name;
+    var reader = new FileReader();
+    reader.onload = function(e) { document.getElementById('emblemImgPreview').src = e.target.result; };
+    reader.readAsDataURL(file);
+  }
 });
 
-function setMsg(text, type) { var el = document.getElementById('msgReg'); el.innerText = text; el.className = 'auth-msg ' + (type || ''); }
+function setMsg(text, type) {
+  var el = document.getElementById('msgReg');
+  el.innerText = text;
+  el.className = 'auth-msg ' + (type || '');
+}
 
 async function handleRegister(e) {
   e.preventDefault();
-  if (!window.IECP || !IECP.client) return setMsg('核心组件未加载，请刷新页面', 'error');
+  if (!window.IECP || !IECP.client) return setMsg('核心组件未加载，请检查网络并刷新页面', 'error');
 
   const email = document.getElementById('regEmail').value.trim();
   const username = document.getElementById('regUsername').value.trim();
@@ -305,44 +252,63 @@ async function handleRegister(e) {
   if (!flagFile || !emblemFile) return setMsg('请上传国旗和国徽', 'error');
 
   const btn = document.getElementById('btnRegister');
-  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 正在建立国家...'; setMsg('', '');
+  btn.disabled = true; btn.innerText = '正在建立国家...';
+  setMsg('', '');
 
   try {
-    const { data: authData, error: authErr } = await IECP.client.auth.signUp({ email: email, password: pwd, options: { data: { nickname: username } } });
+    // 🚨 核心逻辑优化：先尝试注册或登录
+    let { data: authData, error: authErr } = await IECP.client.auth.signUp({ email: email, password: pwd, options: { data: { nickname: username } } });
 
     if (authErr) {
-      if (authErr.message.includes('User already registered') || authErr.message.includes('already exists')) { throw new Error('该邮箱已被注册！请直接点击下方 "返回登录" 进行登录。'); }
-      throw new Error(authErr.message);
+      // 如果被拦截，可能是老用户，尝试直接登录
+      let loginRes = await IECP.client.auth.signInWithPassword({ email, password: pwd });
+      if (loginRes.error) {
+         throw new Error('该邮箱已被注册，且密码不正确！请直接返回登录。');
+      }
+      authData = loginRes.data;
+      setMsg('检测到旧账号残留，正在为您补全国家档案...', 'success');
+    } else {
+      setMsg('正在上传国旗与国徽...', 'success');
     }
-    if (!authData.user) throw new Error('注册失败，请重试');
-    if (!authData.session) throw new Error('注册成功，但需前往邮箱点击验证链接后才能登录。');
 
+    if (!authData.user) throw new Error('无法获取用户信息');
     const userId = authData.user.id;
+
+    // 检查是否已有 profiles 记录
+    let profileCheck = await IECP.client.from('profiles').select('id').eq('id', userId).maybeSingle();
+    if (profileCheck.data) {
+       throw new Error('该账号已经建立过国家了！请返回登录。');
+    }
+
+    // 上传图片
     const uploadFile = async (bucket, file, prefix) => {
-      const ext = file.name.split('.').pop(); const path = `${userId}/${prefix}-${Date.now()}.${ext}`;
+      const ext = file.name.split('.').pop();
+      const path = `${userId}/${prefix}-${Date.now()}.${ext}`;
       const { error } = await IECP.client.storage.from(bucket).upload(path, file);
-      if (error) throw new Error('图片上传失败：' + error.message);
+      if (error) throw new Error(`${prefix} 上传失败：${error.message}`);
       return IECP.client.storage.from(bucket).getPublicUrl(path).data.publicUrl;
     };
 
-    setMsg('正在上传国旗与国徽...', 'success');
     const flagUrl = await uploadFile('flags', flagFile, 'flag');
     const emblemUrl = await uploadFile('emblems', emblemFile, 'emblem');
 
-    setMsg('正在建立国家档案...', 'success');
+    setMsg('正在写入国家数据终端...', 'success');
+
+    // 写入档案
     const { error: dbErr } = await IECP.client.from('profiles').insert({
       id: userId, username: username, social_system: social, capital: capital,
-      official_language: lang, description: desc || null, flag_url: flagUrl, emblem_url: emblemUrl
+      official_language: lang, description: desc || null, flag_url: flagUrl, emblem_url: emblemUrl,
+      balance: 100000, influence: 0 // 给点初始启动资金
     });
 
-    if (dbErr) throw new Error('写入档案失败：' + dbErr.message);
+    if (dbErr) throw new Error('档案写入失败：' + dbErr.message);
 
     setMsg('建立成功！正在跳转...', 'success');
     setTimeout(() => location.replace('index.html'), 1000);
 
   } catch (err) {
     setMsg(err.message, 'error');
-    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-flag"></i> 立即建国';
+    btn.disabled = false; btn.innerText = '立即建国';
   }
 }
 </script>

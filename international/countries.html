@@ -66,10 +66,7 @@
 
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
@@ -94,16 +91,22 @@
   </div>
 </main>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- 🚨 核心修复：把 unpkg 换成国内更稳定的 jsdelivr -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
+  // 🚨 防呆：如果网络原因导致 SDK 没加载，提示用户而不是直接崩溃
+  if (typeof IECP === 'undefined' || !IECP.client) {
+    document.getElementById('countriesWrap').innerHTML = `<div class="empty-state"><p style="color:var(--red)">网络请求失败，请刷新页面重试</p></div>`;
+    return;
+  }
+
   var I = IECP;
   var myProfile = null;
   var allCountries = [];
 
-  // 🚨 根据影响力计算评级
   function getLevel(influence) {
     var inf = influence || 0;
     if (inf >= 5000) return { text: '世界霸主', icon: 'fa-crown', color: '#ef4444' };
@@ -126,7 +129,6 @@
   function loadCountries() {
     var wrap = I.$('#countriesWrap');
     
-    // 🚨 只查询公开字段，绝对不拉取 balance、resources、military
     I.client.from('profiles')
       .select('id, username, flag_url, emblem_url, social_system, capital, description, influence, created_at')
       .order('influence', { ascending: false })
@@ -154,7 +156,6 @@
       var emblem = c.emblem_url || '';
       var lvl = getLevel(c.influence);
 
-      // 如果是自己，给个特殊的金色描边
       var cardBorder = isSelf ? 'border-color: rgba(212,175,55,0.8); box-shadow: 0 0 20px rgba(212,175,55,0.15);' : '';
 
       html += `

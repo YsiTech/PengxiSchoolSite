@@ -8,11 +8,7 @@
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/profile.css">
 <style>
-  .emblem-upload-wrap {
-    position: relative; width: 100px; height: 100px; margin-top: 8px;
-    border-radius: 50%; border: 2px dashed var(--border-2); background: var(--glass-2);
-    cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
-  }
+  .emblem-upload-wrap { position: relative; width: 100px; height: 100px; margin-top: 8px; border-radius: 50%; border: 2px dashed var(--border-2); background: var(--glass-2); cursor: pointer; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
   .emblem-upload-wrap:hover { border-color: var(--gold); background: var(--glass-3); }
   .emblem-upload-wrap img { width: 100%; height: 100%; object-fit: contain; background: rgba(0,0,0,0.2); transition: transform 0.2s; }
   .emblem-upload-wrap:hover img { transform: scale(1.05); opacity: 0.3; }
@@ -20,7 +16,6 @@
   .emblem-upload-wrap:hover .emblem-overlay { opacity: 1; }
   .emblem-overlay i { font-size: 20px; color: var(--gold); }
   .emblem-overlay span { font-size: 11px; letter-spacing: 1px; }
-
   .bc-holder { display: flex !important; flex-direction: column !important; gap: 4px !important; text-align: left !important; }
   .res-name-row { font-size: 13px !important; margin-bottom: 8px !important; }
   .res-bar { height: 6px !important; border-radius: 99px !important; background: rgba(255,255,255,0.08) !important; box-shadow: inset 0 1px 3px rgba(0,0,0,0.5) !important; }
@@ -47,10 +42,7 @@
 
 <header class="iecp-topbar">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
     <nav class="iecp-nav" id="iecp-nav"></nav>
     <div class="iecp-user" id="iecp-user"></div>
   </div>
@@ -64,28 +56,25 @@
   <div class="funds-modal-mask" data-close></div>
   <div class="funds-modal-panel">
     <div class="funds-modal-head">
-      <div>
-        <h3><i class="fa-solid fa-file-invoice-dollar"></i> 资金明细</h3>
-        <p>National Treasury · 收支流水</p>
-      </div>
-      <button class="funds-close" id="fundsClose" aria-label="关闭">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
+      <div><h3><i class="fa-solid fa-file-invoice-dollar"></i> 资金明细</h3><p>National Treasury · 收支流水</p></div>
+      <button class="funds-close" id="fundsClose" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="funds-modal-body" id="fundsBody">
-      <div class="funds-loading"><div class="spinner"></div><span>正在调取国库账本…</span></div>
-    </div>
-    <div class="funds-modal-foot">
-      <button class="btn btn-ghost" id="fundsLoadMore" style="display:none">加载更多</button>
-    </div>
+    <div class="funds-modal-body" id="fundsBody"><div class="funds-loading"><div class="spinner"></div><span>正在调取国库账本…</span></div></div>
+    <div class="funds-modal-foot"><button class="btn btn-ghost" id="fundsLoadMore" style="display:none">加载更多</button></div>
   </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<!-- 🚨 把 unpkg 换成 jsdelivr -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
+  if (typeof IECP === 'undefined' || !IECP.client) {
+    document.getElementById('profileWrap').innerHTML = `<div class="empty-state"><p style="color:var(--red)">网络波动，核心组件未加载，请刷新重试</p></div>`;
+    return;
+  }
+
   var I = IECP;
   var profile = null;
   var fundsState = { page: 0, pageSize: 20, loading: false, done: false };
@@ -95,7 +84,6 @@
     m.classList.add('open'); m.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
     if (fundsState.page === 0) loadFunds(true);
   }
-
   function closeFunds() {
     var m = I.$('#fundsModal'); if (!m) return;
     m.classList.remove('open'); m.setAttribute('aria-hidden', 'true'); document.body.style.overflow = '';
@@ -104,44 +92,25 @@
   function loadFunds(reset) {
     if (fundsState.loading) return;
     if (!reset && fundsState.done) return;
-
-    if (reset) {
-      fundsState.page = 0; fundsState.done = false;
-      I.$('#fundsBody').innerHTML = '<div class="funds-loading"><div class="spinner"></div><span>正在调取国库账本…</span></div>';
-      I.$('#fundsLoadMore').style.display = 'none';
-    }
-
+    if (reset) { fundsState.page = 0; fundsState.done = false; I.$('#fundsBody').innerHTML = '<div class="funds-loading"><div class="spinner"></div><span>正在调取国库账本…</span></div>'; I.$('#fundsLoadMore').style.display = 'none'; }
+    
     fundsState.loading = true;
-    var from = fundsState.page * fundsState.pageSize;
-    var to = from + fundsState.pageSize - 1;
+    var from = fundsState.page * fundsState.pageSize; var to = from + fundsState.pageSize - 1;
 
     I.client.from('balance_logs').select('*').eq('user_id', profile.id).order('created_at', { ascending: false }).range(from, to).then(function (r) {
       fundsState.loading = false;
       var body = I.$('#fundsBody');
-
-      if (r.error) {
-        if (reset) body.innerHTML = '<div class="funds-empty" style="color:#ef4444; text-align:center; padding:20px;"><i class="fa-solid fa-triangle-exclamation"></i> 加载失败：' + I.escapeHtml(r.error.message) + '</div>';
-        return;
-      }
-
-      var rows = r.data || [];
-      if (rows.length < fundsState.pageSize) fundsState.done = true;
-      fundsState.page++;
-
+      if (r.error) { if (reset) body.innerHTML = '<div class="funds-empty" style="color:#ef4444; text-align:center; padding:20px;"><i class="fa-solid fa-triangle-exclamation"></i> 加载失败</div>'; return; }
+      
+      var rows = r.data || []; if (rows.length < fundsState.pageSize) fundsState.done = true; fundsState.page++;
       if (reset) body.innerHTML = '';
-      if (reset && rows.length === 0) {
-        body.innerHTML = '<div class="funds-empty" style="text-align:center; color:var(--muted); padding:30px;"><i class="fa-solid fa-receipt" style="font-size:32px; margin-bottom:10px; opacity:0.5;"></i><br>暂无资金流水记录</div>';
-        return;
-      }
-
+      if (reset && rows.length === 0) { body.innerHTML = '<div class="funds-empty" style="text-align:center; color:var(--muted); padding:30px;"><i class="fa-solid fa-receipt" style="font-size:32px; margin-bottom:10px; opacity:0.5;"></i><br>暂无资金流水记录</div>'; return; }
+      
       var html = '';
       rows.forEach(function (log) {
         var amt = Number(log.delta !== undefined ? log.delta : (log.amount || 0));
-        var isIncome = amt > 0; 
-        var cls = isIncome ? 'in' : 'out';
-        var sign = isIncome ? '+' : '−';
+        var isIncome = amt > 0; var cls = isIncome ? 'in' : 'out'; var sign = isIncome ? '+' : '−';
         var note = log.note ? I.escapeHtml(log.note) : (isIncome ? '资金收入' : '资金支出');
-        
         var icon = 'fa-circle-info';
         if (note.includes('汇款')) icon = 'fa-money-bill-transfer';
         else if (note.includes('购买') || note.includes('交易') || note.includes('售出')) icon = 'fa-cart-shopping';
@@ -150,16 +119,7 @@
         else if (note.includes('领土')) icon = 'fa-earth-americas';
         else if (note.includes('官方') || note.includes('空投')) icon = 'fa-gift';
 
-        html += '<div class="funds-item">' +
-          '<div class="funds-icon ' + cls + '"><i class="fa-solid ' + icon + '"></i></div>' +
-          '<div class="funds-info">' +
-            '<div class="funds-title">' + note + '</div>' +
-            '<div class="funds-meta"><i class="fa-regular fa-clock"></i> ' + I.fmtDate(log.created_at) + '</div>' +
-          '</div>' +
-          '<div class="funds-amt ' + cls + '">' + sign + I.fmtNumber(Math.abs(amt)) + ' ₽' +
-            '<span class="funds-after">余额 ' + I.fmtNumber(log.balance_after || 0) + ' ₽</span>' +
-          '</div>' +
-        '</div>';
+        html += '<div class="funds-item"><div class="funds-icon ' + cls + '"><i class="fa-solid ' + icon + '"></i></div><div class="funds-info"><div class="funds-title">' + note + '</div><div class="funds-meta"><i class="fa-regular fa-clock"></i> ' + I.fmtDate(log.created_at) + '</div></div><div class="funds-amt ' + cls + '">' + sign + I.fmtNumber(Math.abs(amt)) + ' ₽<span class="funds-after">余额 ' + I.fmtNumber(log.balance_after || 0) + ' ₽</span></div></div>';
       });
       body.insertAdjacentHTML('beforeend', html);
       I.$('#fundsLoadMore').style.display = fundsState.done ? 'none' : 'inline-flex';
@@ -169,10 +129,11 @@
   I.requireAuth().then(function (ok) {
     if (!ok) return;
     I.initTopbar('profile');
-    
     I.getProfile(true).then(function (p) {
       if (!p) throw new Error('未找到国家档案。');
-      profile = p; render(); loadResources();
+      profile = p;
+      render();
+      loadResources();
     }).catch(function (err) {
       I.$('#profileWrap').innerHTML = `<div class="empty-state glass" style="margin:40px auto;max-width:600px"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red);font-size:40px;margin-bottom:15px"></i><p style="font-size:18px;font-weight:bold;color:var(--ink)">无法读取国家数据</p><p style="color:var(--red);margin:10px 0">${err.message || '网络请求超时'}</p><div style="margin-top:20px"><button class="btn btn-ghost" onclick="location.reload()">刷新重试</button><button class="btn btn-ghost" onclick="IECP.logout()">退出登录</button></div></div>`;
     });
@@ -180,6 +141,17 @@
 
   function render() {
     var wrap = I.$('#profileWrap');
+    // 🚨 核心修复：动态计算等级和影响力进度条
+    var inf = profile.influence || 0;
+    var maxInf = 500; // 阶段上限
+    var level = 1;
+    if (inf >= 5000) { level = 5; maxInf = 10000; }
+    else if (inf >= 2000) { level = 4; maxInf = 5000; }
+    else if (inf >= 1000) { level = 3; maxInf = 2000; }
+    else if (inf >= 500) { level = 2; maxInf = 1000; }
+    
+    var pct = Math.min(100, (inf / maxInf) * 100);
+
     wrap.innerHTML = `
       <div class="profile-grid">
         <aside class="profile-side">
@@ -192,9 +164,11 @@
             <h2 class="profile-name">${I.escapeHtml(profile.username)}</h2>
             <p class="profile-email">${I.escapeHtml(profile.social_system)}</p>
             <div style="margin-bottom:14px"><span class="role-tag"><i class="fa-solid fa-shield-halved"></i> 主权国家</span></div>
+            
+            <!-- 🚨 动态进度条 -->
             <div class="exp-bar-wrap">
-              <div class="exp-text"><span>Lv.<span>1</span></span><span>国际影响力 <span>${I.fmtNumber(profile.influence || 100)}</span> / 500</span></div>
-              <div class="exp-track"><div class="exp-fill" style="width: 20%;"></div></div>
+              <div class="exp-text"><span>Lv.<span>${level}</span></span><span>国际影响力 <span>${I.fmtNumber(inf)}</span> / ${I.fmtNumber(maxInf)}</span></div>
+              <div class="exp-track"><div class="exp-fill" style="width: ${pct}%;"></div></div>
             </div>
             <p class="profile-hint">加入时间：${I.fmtDate(profile.created_at).split(' ')[0]}</p>
           </div>
@@ -203,10 +177,7 @@
             <div class="bc-hint"><i class="fa-solid fa-list-ul"></i> 明细</div>
             <div class="bc-top"><div class="bc-emblem">₽</div><div class="bc-title-group"><div class="bc-title">国库储备</div><div class="bc-subtitle">National Treasury</div></div></div>
             <div class="bc-amount-group"><div class="bc-amount">${I.fmtNumber(profile.balance)}</div><div class="bc-amount-unit">亚斯卢布 · АСР ₽</div></div>
-            <div class="bc-bottom">
-              <div class="bc-holder"><span class="bc-holder-label">国家元首 / 户名</span><span class="bc-holder-value">${I.escapeHtml(profile.username)}</span></div>
-              <img src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" style="width:38px;height:38px;object-fit:contain;opacity:0.8;border-radius:50%;">
-            </div>
+            <div class="bc-bottom"><div class="bc-holder"><span class="bc-holder-label">国家元首 / 户名</span><span class="bc-holder-value">${I.escapeHtml(profile.username)}</span></div><img src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" style="width:38px;height:38px;object-fit:contain;opacity:0.8;border-radius:50%;"></div>
             <div class="bc-shine"></div>
           </div>
 
@@ -235,14 +206,7 @@
               <div class="field"><label>首都</label><input id="pCapital" type="text" value="${I.escapeHtml(profile.capital)}" maxlength="40"></div>
               <div class="field full"><label>官方语言</label><input id="pLanguage" type="text" value="${I.escapeHtml(profile.official_language)}" maxlength="80"></div>
               <div class="field full"><label>国家介绍</label><textarea id="pDescription" placeholder="向世界介绍你的国家历史、文化或现状..." style="min-height: 120px; line-height: 1.6; resize: vertical;">${I.escapeHtml(profile.description || '')}</textarea></div>
-              <div class="field full">
-                <label>更换国徽</label>
-                <div class="emblem-upload-wrap" id="emblemBtn" title="点击上传新国徽">
-                  <img id="emblemPreview" src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" alt="国徽">
-                  <div class="emblem-overlay"><i class="fa-solid fa-camera"></i><span>点击更换</span></div>
-                </div>
-                <input id="pEmblem" type="file" accept="image/*" style="display:none">
-              </div>
+              <div class="field full"><label>更换国徽</label><div class="emblem-upload-wrap" id="emblemBtn" title="点击上传新国徽"><img id="emblemPreview" src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" alt="国徽"><div class="emblem-overlay"><i class="fa-solid fa-camera"></i><span>点击更换</span></div></div><input id="pEmblem" type="file" accept="image/*" style="display:none"></div>
             </div>
             <div class="profile-actions"><button class="btn btn-gold" id="saveProfileBtn"><i class="fa-solid fa-floppy-disk"></i> 保存修改</button></div>
           </div>
@@ -266,33 +230,18 @@
       </div>
     `;
 
-    I.client.auth.getUser().then(function (res) {
-      var u = res.data && res.data.user; if (u) I.$('#pEmail').value = u.email || '';
-    });
-
-    I.$('#pFlag').addEventListener('change', function() {
-      var file = this.files[0]; if (file) { var reader = new FileReader(); reader.onload = function(e) { I.$('#avatarDisplay').innerHTML = `<img src="${e.target.result}" alt="">`; }; reader.readAsDataURL(file); }
-    });
+    I.client.auth.getUser().then(function (res) { var u = res.data && res.data.user; if (u) I.$('#pEmail').value = u.email || ''; });
+    
+    I.$('#pFlag').addEventListener('change', function() { var file = this.files[0]; if (file) { var reader = new FileReader(); reader.onload = function(e) { I.$('#avatarDisplay').innerHTML = `<img src="${e.target.result}" alt="">`; }; reader.readAsDataURL(file); } });
     I.$('#emblemBtn').addEventListener('click', function() { I.$('#pEmblem').click(); });
-    I.$('#pEmblem').addEventListener('change', function() {
-      var file = this.files[0]; if (file) { var reader = new FileReader(); reader.onload = function(e) { I.$('#emblemPreview').src = e.target.result; I.$('#emblemPreview').style.opacity = '1'; }; reader.readAsDataURL(file); }
-    });
+    I.$('#pEmblem').addEventListener('change', function() { var file = this.files[0]; if (file) { var reader = new FileReader(); reader.onload = function(e) { I.$('#emblemPreview').src = e.target.result; I.$('#emblemPreview').style.opacity = '1'; }; reader.readAsDataURL(file); } });
 
     I.$('#saveProfileBtn').addEventListener('click', function () {
       var btn = this; btn.disabled = true;
       var data = { username: I.$('#pUsername').value.trim(), social_system: I.$('#pSocial').value.trim(), capital: I.$('#pCapital').value.trim(), official_language: I.$('#pLanguage').value.trim(), description: I.$('#pDescription').value.trim() };
       var flagFile = I.$('#pFlag').files[0]; var emblemFile = I.$('#pEmblem').files[0];
 
-      function up(bucket, file, field) {
-        if (!file) return Promise.resolve();
-        var ext = (file.name.split('.').pop() || 'png').toLowerCase();
-        var path = profile.id + '/' + field + '-' + Date.now() + '.' + ext;
-        return I.client.storage.from(bucket).upload(path, file, { upsert: true }).then(function (r) {
-          if (r.error) throw r.error;
-          var pub = I.client.storage.from(bucket).getPublicUrl(path);
-          data[field === 'flag' ? 'flag_url' : 'emblem_url'] = pub.data.publicUrl;
-        });
-      }
+      function up(bucket, file, field) { if (!file) return Promise.resolve(); var ext = (file.name.split('.').pop() || 'png').toLowerCase(); var path = profile.id + '/' + field + '-' + Date.now() + '.' + ext; return I.client.storage.from(bucket).upload(path, file, { upsert: true }).then(function (r) { if (r.error) throw r.error; var pub = I.client.storage.from(bucket).getPublicUrl(path); data[field === 'flag' ? 'flag_url' : 'emblem_url'] = pub.data.publicUrl; }); }
 
       up('flags', flagFile, 'flag').then(function () { return up('emblems', emblemFile, 'emblem'); }).then(function () { return I.client.from('profiles').update(data).eq('id', profile.id); }).then(function (r) {
         btn.disabled = false; if (r && r.error) { I.toast(r.error.message, 'error'); return; }
