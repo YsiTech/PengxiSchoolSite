@@ -42,8 +42,8 @@
   .unit-count b { color: var(--cyan); font-family: var(--mono); font-size: 15px; }
   .unit-power { background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); color: var(--gold-2); font-size: 11px; padding: 2px 8px; border-radius: 6px; }
   
-  .unit-desc { font-size: 12px; color: var(--muted-2); margin-bottom: 8px; line-height: 1.5; min-height: 36px; }
-  .unit-buff { font-size: 12px; color: #fbbf24; background: rgba(251, 191, 36, 0.1); padding: 6px 10px; border-radius: 6px; margin-bottom: 12px; border: 1px dashed rgba(251, 191, 36, 0.3); display: flex; align-items: center; gap: 6px; }
+  .unit-desc { font-size: 13px; color: #94a3b8; margin-bottom: 10px; line-height: 1.6; min-height: 42px; }
+  .unit-buff { font-size: 12px; color: #fbbf24; background: rgba(251, 191, 36, 0.1); padding: 8px 10px; border-radius: 6px; margin-bottom: 12px; border: 1px dashed rgba(251, 191, 36, 0.3); display: flex; align-items: center; gap: 8px; font-weight: 500;}
   
   .unit-cost-box { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05); align-items: center;}
   .cost-item { display: flex; align-items: center; gap: 5px; color: var(--ink-2); }
@@ -118,57 +118,58 @@
   <div class="mil-grid" id="unitList"></div>
 </main>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
 (function () {
   var I = IECP; var profile = null; var myRes = null; var myMil = null; var myQueue = []; var customUnits = {}; var timer = null; var activeTab = 'all';
 
+  // 🚨 全面扩充的兵种特色与详细描述
   var UNITS = [
-    { type: 'scouts', name: '侦察兵', icon: 'fa-binoculars', category: 'army', power: 2, cost: { food: 5 }, desc: '前沿侦察与目标指示。', time: 3, buff: '视野扩展' },
-    { type: 'infantry', name: '机械化步兵', icon: 'fa-person-rifle', category: 'army', power: 5, cost: { food: 10, iron_ore: 10 }, desc: '现代主力步兵。', time: 8, buff: '高性价比' },
-    { type: 'ifv', name: '步兵战车', icon: 'fa-truck-pickup', category: 'army', power: 12, cost: { iron_ore: 30, oil: 15 }, desc: '伴随坦克作战。', time: 15, buff: '掩护步兵' },
-    { type: 'tanks', name: '主战坦克', icon: 'fa-truck-monster', category: 'army', power: 30, cost: { iron_ore: 60, oil: 30 }, desc: '陆战之王。', time: 25, buff: '攻坚破阵' },
-    { type: 'spg', name: '自行火炮', icon: 'fa-bomb', category: 'army', power: 25, cost: { iron_ore: 50, oil: 25 }, desc: '超视距火力支援。', time: 20, buff: '远程压制' },
-    { type: 'mlrs', name: '多管火箭炮', icon: 'fa-meteor', category: 'army', power: 40, cost: { iron_ore: 80, oil: 50 }, desc: '大面积火力覆盖。', time: 35, buff: '克制步兵群' },
-    { type: 'spaag', name: '自行高炮', icon: 'fa-crosshairs', category: 'army', power: 22, cost: { iron_ore: 45, oil: 20 }, desc: '伴随防空。', time: 18, buff: '拦截低空目标' },
-    { type: 'spec_ops', name: '特种部队', icon: 'fa-user-ninja', category: 'army', power: 55, cost: { food: 100, iron_ore: 30, rare_metal: 5 }, desc: '敌后破坏。', time: 40, buff: '掠夺收益 +5%' },
-    { type: 'tel', name: '战术导弹车', icon: 'fa-rocket', category: 'army', power: 100, cost: { rare_metal: 30, oil: 80 }, desc: '精确打击高价值目标。', time: 60, buff: '克制重装甲' },
-    { type: 'mechs', name: '机甲战士', icon: 'fa-robot', category: 'army', power: 180, cost: { rare_metal: 80, iron_ore: 200 }, desc: '近未来双足机甲。', time: 90, buff: '极高单兵破坏力' },
+    { type: 'scouts', name: '侦察兵', icon: 'fa-binoculars', category: 'army', power: 2, cost: { food: 5 }, desc: '配备轻型全地形载具，深入前线获取敌方部署与地形信息。', time: 3, buff: '视野扩展：提高战场先手与暴击率' },
+    { type: 'infantry', name: '机械化步兵', icon: 'fa-person-rifle', category: 'army', power: 5, cost: { food: 10, iron_ore: 10 }, desc: '装备现代化单兵武器与轻型装甲车，战场的中坚力量。', time: 8, buff: '高性价比：适合快速成建制并维持战线' },
+    { type: 'ifv', name: '步兵战车', icon: 'fa-truck-pickup', category: 'army', power: 12, cost: { iron_ore: 30, oil: 15 }, desc: '兼具机动与火力，搭载速射炮，随时为步兵提供直接火力掩护。', time: 15, buff: '机动掩护：大幅降低伴随步兵的战损' },
+    { type: 'tanks', name: '主战坦克', icon: 'fa-truck-monster', category: 'army', power: 30, cost: { iron_ore: 60, oil: 30 }, desc: '拥有复合装甲与120mm滑膛炮的重装铁拳，陆战无可争议的王者。', time: 25, buff: '攻坚破阵：对轻型装甲和步兵有毁灭性打击' },
+    { type: 'spg', name: '自行火炮', icon: 'fa-bomb', category: 'army', power: 25, cost: { iron_ore: 50, oil: 25 }, desc: '搭载155mm榴弹炮的履带底盘，能在超视距外倾泻致命火力。', time: 20, buff: '远程压制：开战前造成敌方前排减员' },
+    { type: 'mlrs', name: '多管火箭炮', icon: 'fa-meteor', category: 'army', power: 40, cost: { iron_ore: 80, oil: 50 }, desc: '装备大面积杀伤子母弹，瞬间将整片区域化为火海。', time: 35, buff: '火力覆盖：极大克制密集步兵群' },
+    { type: 'spaag', name: '自行高炮', icon: 'fa-crosshairs', category: 'army', power: 22, cost: { iron_ore: 45, oil: 20 }, desc: '双联装35mm高射炮配合雷达锁定，为装甲集群撑起低空保护伞。', time: 18, buff: '近程防空：有效拦截武装直升机与无人机' },
+    { type: 'spec_ops', name: '特种部队', icon: 'fa-user-ninja', category: 'army', power: 55, cost: { food: 100, iron_ore: 30, rare_metal: 5 }, desc: '经过严酷训练的精锐，擅长敌后渗透、破坏关键设施与斩首行动。', time: 40, buff: '敌后破坏：掠夺收益大幅增加 (+5%)' },
+    { type: 'tel', name: '战术导弹车', icon: 'fa-rocket', category: 'army', power: 100, cost: { rare_metal: 30, oil: 80 }, desc: '搭载高精度弹道导弹，只需一发即可抹平敌方坚固的指挥堡垒。', time: 60, buff: '精确打击：无视部分掩体，重创高价值目标' },
+    { type: 'mechs', name: '机甲战士', icon: 'fa-robot', category: 'army', power: 180, cost: { rare_metal: 80, iron_ore: 200 }, desc: '融合尖端科技的双足作战平台，配备电磁炮与能量护盾，未来战场的主宰。', time: 90, buff: '绝对压制：极高单兵破坏力与生存能力' },
     
-    { type: 'patrol_boats', name: '巡逻艇', icon: 'fa-sailboat', category: 'navy', power: 8, cost: { iron_ore: 20, oil: 10 }, desc: '海防警戒。', time: 10, buff: '低成本编制' },
-    { type: 'missile_boat', name: '导弹快艇', icon: 'fa-ship', category: 'navy', power: 25, cost: { iron_ore: 40, oil: 30 }, desc: '近海突袭。', time: 15, buff: '狼群战术' },
-    { type: 'frigates', name: '导弹护卫舰', icon: 'fa-anchor', category: 'navy', power: 40, cost: { iron_ore: 80, oil: 40 }, desc: '防空反潜均衡。', time: 30, buff: '海军中坚' },
-    { type: 'ssk', name: '常规潜艇', icon: 'fa-water', category: 'navy', power: 45, cost: { iron_ore: 70, oil: 40 }, desc: '海峡伏击。', time: 35, buff: '隐蔽伏击' },
-    { type: 'ssn', name: '攻击核潜艇', icon: 'fa-water', category: 'navy', power: 90, cost: { iron_ore: 150, oil: 80, rare_metal: 20 }, desc: '深海杀手。', time: 60, buff: '掠夺资源 +3%' },
-    { type: 'destroyers', name: '驱逐舰', icon: 'fa-ship', category: 'navy', power: 70, cost: { iron_ore: 120, oil: 70 }, desc: '区域防空核心。', time: 50, buff: '保护舰队' },
-    { type: 'lhd', name: '两栖攻击舰', icon: 'fa-ship', category: 'navy', power: 140, cost: { iron_ore: 200, oil: 120 }, desc: '远洋投送。', time: 80, buff: '提高陆军效率' },
-    { type: 'cruisers', name: '导弹巡洋舰', icon: 'fa-shield-ship', category: 'navy', power: 180, cost: { iron_ore: 250, oil: 150, rare_metal: 40 }, desc: '重装打击平台。', time: 100, buff: '火力武库' },
-    { type: 'supply', name: '综合补给舰', icon: 'fa-boxes-packing', category: 'navy', power: 10, cost: { iron_ore: 80, food: 100 }, desc: '舰队补给。', time: 40, buff: '缩短制造时间 10%' },
-    { type: 'carriers', name: '核动力航母', icon: 'fa-ship', category: 'navy', power: 500, cost: { iron_ore: 600, oil: 400, rare_metal: 150 }, desc: '海上霸主。', time: 180, buff: '提升全军战力 2%' },
+    { type: 'patrol_boats', name: '巡逻艇', icon: 'fa-sailboat', category: 'navy', power: 8, cost: { iron_ore: 20, oil: 10 }, desc: '吃水浅、速度快，负责近海警戒与反走私巡逻。', time: 10, buff: '海域警戒：低成本维护领海安全' },
+    { type: 'missile_boat', name: '导弹快艇', icon: 'fa-ship', category: 'navy', power: 25, cost: { iron_ore: 40, oil: 30 }, desc: '采用隐身设计，搭载反舰导弹，以“狼群战术”对大型舰艇发起饱和攻击。', time: 15, buff: '近海突袭：小艇扛大炮，突防能力极强' },
+    { type: 'frigates', name: '导弹护卫舰', icon: 'fa-anchor', category: 'navy', power: 40, cost: { iron_ore: 80, oil: 40 }, desc: '吨位适中，兼顾防空、反潜与反舰，是航母编队的贴身侍卫。', time: 30, buff: '多面手：海战属性均衡，无明显短板' },
+    { type: 'ssk', name: '常规潜艇', icon: 'fa-water', category: 'navy', power: 45, cost: { iron_ore: 70, oil: 40 }, desc: '依靠AIP系统在深海静默潜伏，随时准备对敌方舰队发出致命一击。', time: 35, buff: '大洋黑洞：隐蔽伏击，首轮攻击伤害翻倍' },
+    { type: 'ssn', name: '攻击核潜艇', icon: 'fa-water', category: 'navy', power: 90, cost: { iron_ore: 150, oil: 80, rare_metal: 20 }, desc: '拥有无限续航能力，配备重型鱼雷与巡航导弹，是深海中最致命的猎手。', time: 60, buff: '深海猎杀：掠夺海上资源 (+3%)，克制大型水面舰艇' },
+    { type: 'destroyers', name: '驱逐舰', icon: 'fa-ship', category: 'navy', power: 70, cost: { iron_ore: 120, oil: 70 }, desc: '装备相控阵雷达与垂直发射系统，是舰队防空与反导的绝对核心。', time: 50, buff: '区域防空：保护己方舰队免受空中打击' },
+    { type: 'lhd', name: '两栖攻击舰', icon: 'fa-ship', category: 'navy', power: 140, cost: { iron_ore: 200, oil: 120 }, desc: '具备全通甲板与坞舱，可搭载直升机与气垫船，实施远洋立体登陆。', time: 80, buff: '力量投送：大幅提高陆军跨海作战效率' },
+    { type: 'cruisers', name: '导弹巡洋舰', icon: 'fa-shield-ship', category: 'navy', power: 180, cost: { iron_ore: 250, oil: 150, rare_metal: 40 }, desc: '万吨级的海上武库舰，搭载数百枚各型导弹，可对陆海空目标实施毁灭性打击。', time: 100, buff: '火力武库：海战中的移动火力堡垒' },
+    { type: 'supply', name: '综合补给舰', icon: 'fa-boxes-packing', category: 'navy', power: 10, cost: { iron_ore: 80, food: 100 }, desc: '舰队的“超级奶妈”，提供燃油、弹药和补给，极大延伸舰队作战半径。', time: 40, buff: '后勤保障：缩短全军制造时间 10%' },
+    { type: 'carriers', name: '核动力航母', icon: 'fa-ship', category: 'navy', power: 500, cost: { iron_ore: 600, oil: 400, rare_metal: 150 }, desc: '国家力量的终极象征，搭载大量舰载机，将空军基地直接搬到敌国家门口。', time: 180, buff: '海上霸主：提升全军攻击力 2%' },
     
-    { type: 'drones', name: '侦察无人机', icon: 'fa-plane-up', category: 'air', power: 5, cost: { oil: 15, iron_ore: 10 }, desc: '全天候情报。', time: 8, buff: '提供视野' },
-    { type: 'ucav', name: '察打一体无人机', icon: 'fa-plane-departure', category: 'air', power: 20, cost: { oil: 40, rare_metal: 10 }, desc: '发现即摧毁。', time: 20, buff: '对地支援' },
-    { type: 'fighters', name: '第四代战机', icon: 'fa-jet-fighter', category: 'air', power: 50, cost: { oil: 100, rare_metal: 30 }, desc: '争夺制空权。', time: 40, buff: '拦截战机' },
-    { type: 'bombers', name: '战略轰炸机', icon: 'fa-plane', category: 'air', power: 150, cost: { oil: 200, iron_ore: 100 }, desc: '战略威慑。', time: 70, buff: '轰炸收益 +5%' },
-    { type: 'ew_planes', name: '电子战机', icon: 'fa-satellite-dish', category: 'air', power: 70, cost: { oil: 150, rare_metal: 60 }, desc: '强电磁干扰。', time: 55, buff: '削弱敌方防空 10%' },
-    { type: 'tactical_transport', name: '战术运输机', icon: 'fa-plane-arrival', category: 'air', power: 15, cost: { oil: 80, iron_ore: 40 }, desc: '快速空运。', time: 30, buff: '缩短制造时间 5%' },
-    { type: 'gunships', name: '重型炮艇机', icon: 'fa-plane-circle-check', category: 'air', power: 90, cost: { oil: 120, iron_ore: 80 }, desc: '侧射火力。', time: 45, buff: '克制步兵' },
-    { type: 'stealth_air', name: '第五代隐身战机', icon: 'fa-jet-fighter-up', category: 'air', power: 130, cost: { oil: 180, rare_metal: 80 }, desc: '雷达盲区突袭。', time: 65, buff: '无视部分防空' },
-    { type: 'awacs', name: '预警机', icon: 'fa-radar', category: 'air', power: 80, cost: { oil: 200, rare_metal: 100 }, desc: '空中指挥枢纽。', time: 75, buff: '防守时增加拦截率' },
-    { type: 'spaceplanes', name: '空天战机', icon: 'fa-meteor', category: 'air', power: 800, cost: { oil: 500, rare_metal: 300 }, desc: '近地轨道打击。', time: 240, buff: '无视常规防空' },
+    { type: 'drones', name: '侦察无人机', icon: 'fa-plane-up', category: 'air', power: 5, cost: { oil: 15, iron_ore: 10 }, desc: '体积小巧，难以被雷达发现，全天候执行战场监视与目标指引。', time: 8, buff: '全天候情报：提供持续视野' },
+    { type: 'ucav', name: '察打一体无人机', icon: 'fa-plane-departure', category: 'air', power: 20, cost: { oil: 40, rare_metal: 10 }, desc: '高空长航时，发现即摧毁，减少飞行员伤亡的最佳利器。', time: 20, buff: '发现即摧毁：精准对地支援' },
+    { type: 'fighters', name: '第四代战机', icon: 'fa-jet-fighter', category: 'air', power: 50, cost: { oil: 100, rare_metal: 30 }, desc: '高机动性多用途战斗机，兼具制空与对地打击能力，是空军的中坚力量。', time: 40, buff: '争夺制空权：有效拦截敌方空中力量' },
+    { type: 'bombers', name: '战略轰炸机', icon: 'fa-plane', category: 'air', power: 150, cost: { oil: 200, iron_ore: 100 }, desc: '载弹量巨大，航程远，能在防区外发射巡航导弹，实施毁灭性战略威慑。', time: 70, buff: '战略威慑：轰炸模式收益提升 (+5%)' },
+    { type: 'ew_planes', name: '电子战机', icon: 'fa-satellite-dish', category: 'air', power: 70, cost: { oil: 150, rare_metal: 60 }, desc: '携带大功率电子干扰吊舱，压制敌方雷达与通讯，使其防空网变成瞎子。', time: 55, buff: '电磁压制：削弱敌方防空火力 10%' },
+    { type: 'tactical_transport', name: '战术运输机', icon: 'fa-plane-arrival', category: 'air', power: 15, cost: { oil: 80, iron_ore: 40 }, desc: '快速空运兵员与物资，是实施空降作战和快速反应部署的关键。', time: 30, buff: '快速空运：缩短制造时间 5%' },
+    { type: 'gunships', name: '重型炮艇机', icon: 'fa-plane-circle-check', category: 'air', power: 90, cost: { oil: 120, iron_ore: 80 }, desc: '由运输机改装，侧舷装备多门重炮，在战场上空盘旋倾泻弹雨。', time: 45, buff: '侧射火力：如同空中死神，极度克制步兵' },
+    { type: 'stealth_air', name: '第五代隐身战机', icon: 'fa-jet-fighter-up', category: 'air', power: 130, cost: { oil: 180, rare_metal: 80 }, desc: '具备超音速巡航与隐身能力，能在敌方雷达毫无察觉的情况下完成突袭。', time: 65, buff: '隐身突袭：无视部分防空导弹锁定' },
+    { type: 'awacs', name: '预警机', icon: 'fa-radar', category: 'air', power: 80, cost: { oil: 200, rare_metal: 100 }, desc: '空军的“千里眼”，拥有巨型雷达圆盘，负责指挥调度与预警探测。', time: 75, buff: '空中指挥：防守时大幅增加拦截率' },
+    { type: 'spaceplanes', name: '空天战机', icon: 'fa-meteor', category: 'air', power: 800, cost: { oil: 500, rare_metal: 300 }, desc: '穿梭于大气层边缘的终极武器，从近地轨道投掷动能武器，防不胜防。', time: 240, buff: '降维打击：无视常规防空系统' },
     
-    { type: 'trenches', name: '反坦克战壕', icon: 'fa-bars-staggered', category: 'defense', power: 5, cost: { food: 10 }, desc: '迟滞推进。', time: 5, buff: '减速' },
-    { type: 'minefield', name: '地雷阵', icon: 'fa-bomb', category: 'defense', power: 15, cost: { iron_ore: 30, food: 10 }, desc: '智能地雷。', time: 12, buff: '步兵战损' },
-    { type: 'bunkers', name: '地下碉堡', icon: 'fa-torii-gate', category: 'defense', power: 25, cost: { iron_ore: 60, food: 30 }, desc: '混凝土掩体。', time: 20, buff: '保护资源' },
-    { type: 'ciws', name: '近防炮系统', icon: 'fa-shield-halved', category: 'defense', power: 35, cost: { iron_ore: 80, rare_metal: 20 }, desc: '末端拦截。', time: 25, buff: '拦截火箭弹' },
-    { type: 'sam', name: '防空导弹连', icon: 'fa-rocket', category: 'defense', power: 50, cost: { iron_ore: 100, rare_metal: 30 }, desc: '中远程防空。', time: 35, buff: '削弱轰炸伤害' },
-    { type: 'coastal_guns', name: '岸防巨炮', icon: 'fa-explosion', category: 'defense', power: 60, cost: { iron_ore: 150, oil: 50 }, desc: '超视距火炮。', time: 40, buff: '反登陆' },
-    { type: 'lasers', name: '高能激光塔', icon: 'fa-bolt', category: 'defense', power: 80, cost: { rare_metal: 60, oil: 100 }, desc: '光速打击。', time: 55, buff: '锁定拦截' },
-    { type: 'cyber_defense', name: '网络防御中心', icon: 'fa-network-wired', category: 'defense', power: 100, cost: { rare_metal: 80, iron_ore: 100 }, desc: '网络安全枢纽。', time: 65, buff: '保护资金不被抢' },
-    { type: 'railguns', name: '电磁轨道炮', icon: 'fa-atom', category: 'defense', power: 180, cost: { rare_metal: 150, iron_ore: 300 }, desc: '电磁力发射。', time: 90, buff: '超视距摧毁' },
-    { type: 'shields', name: '战略护盾', icon: 'fa-shield', category: 'defense', power: 500, cost: { rare_metal: 300, oil: 500 }, desc: '能量屏障。', time: 180, buff: '绝对防御' }
+    { type: 'trenches', name: '反坦克战壕', icon: 'fa-bars-staggered', category: 'defense', power: 5, cost: { food: 10 }, desc: '深挖的战壕与路障，能迟滞敌方装甲部队的推进速度。', time: 5, buff: '迟滞推进：减缓敌军行军速度' },
+    { type: 'minefield', name: '地雷阵', icon: 'fa-bomb', category: 'defense', power: 15, cost: { iron_ore: 30, food: 10 }, desc: '密布智能感应地雷的区域，专炸步兵与轻型车辆。', time: 12, buff: '步兵坟场：大量杀伤敌方步兵战损' },
+    { type: 'bunkers', name: '地下碉堡', icon: 'fa-torii-gate', category: 'defense', power: 25, cost: { iron_ore: 60, food: 30 }, desc: '加固的钢筋混凝土掩体，保护后方设施与战略资源免遭摧毁。', time: 20, buff: '坚韧壁垒：有效保护资源和资金' },
+    { type: 'ciws', name: '近防炮系统', icon: 'fa-shield-halved', category: 'defense', power: 35, cost: { iron_ore: 80, rare_metal: 20 }, desc: '每分钟射速上千发的“密集阵”，是拦截末端火箭弹与导弹的最后一关。', time: 25, buff: '末端拦截：拦截高速火箭弹' },
+    { type: 'sam', name: '防空导弹连', icon: 'fa-rocket', category: 'defense', power: 50, cost: { iron_ore: 100, rare_metal: 30 }, desc: '中远程地对空导弹阵地，构成了要地防空的核心火力网。', time: 35, buff: '防空火力：削弱敌方战略轰炸伤害' },
+    { type: 'coastal_guns', name: '岸防巨炮', icon: 'fa-explosion', category: 'defense', power: 60, cost: { iron_ore: 150, oil: 50 }, desc: '口径惊人的超级岸炮，任何试图靠近海岸线的敌舰都会被瞬间撕碎。', time: 40, buff: '拒敌于海：强力反登陆作战' },
+    { type: 'lasers', name: '高能激光塔', icon: 'fa-bolt', category: 'defense', power: 80, cost: { rare_metal: 60, oil: 100 }, desc: '利用高能光束瞬间烧毁目标，指哪打哪，不受弹药限制。', time: 55, buff: '光速打击：精准锁定并拦截目标' },
+    { type: 'cyber_defense', name: '网络防御中心', icon: 'fa-network-wired', category: 'defense', power: 100, cost: { rare_metal: 80, iron_ore: 100 }, desc: '顶级的黑客团队与防火墙，保护国家金融系统不被敌国黑客窃取。', time: 65, buff: '数字壁垒：保护资金不被敌方掠夺' },
+    { type: 'railguns', name: '电磁轨道炮', icon: 'fa-atom', category: 'defense', power: 180, cost: { rare_metal: 150, iron_ore: 300 }, desc: '利用电磁力将金属弹丸加速至极高音速，以纯粹的动能摧毁一切。', time: 90, buff: '超视距摧毁：射程极远的重型防御武器' },
+    { type: 'shields', name: '战略护盾', icon: 'fa-shield', category: 'defense', power: 500, cost: { rare_metal: 300, oil: 500 }, desc: '倾尽国力打造的电磁能量屏障，将整个首都笼罩在不可穿透的穹顶之下。', time: 180, buff: '绝对防御：让整个国家的防御力翻倍' }
   ];
 
   var CAT_MAP = { 'army': '陆军', 'navy': '海军', 'air': '空军', 'defense_ground': '对地防御', 'defense_air': '对空防御' };
@@ -288,6 +289,7 @@
 
       var customInv = myMil.custom_troops || {};
       for (var id in customInv) {
+        if (customInv[id] <= 0) continue; // 🚨 核心修改：如果库存为 0，直接跳过不渲染
         var cu = customUnits[id]; if (!cu) continue;
         var catName = CAT_MAP[cu.category] || '未知';
         var isDef = cu.category.indexOf('defense') !== -1;
@@ -296,13 +298,17 @@
           <div class="unit-card ${isDef ? 'defense-card' : ''}">
             <div class="unit-header">
               <div class="unit-icon">${cu.image_url ? `<img src="${cu.image_url}">` : `<i class="fa-solid fa-robot"></i>`}</div>
-              <div>
-                <div class="unit-title">${I.escapeHtml(cu.name)} <span class="unit-power">战力 ${cu.power}</span></div>
+              <div style="flex:1;">
+                <div class="unit-title">${I.escapeHtml(cu.name)} <span class="unit-power"><i class="fa-solid fa-bolt"></i> 战力 ${cu.power}</span></div>
                 <div class="unit-count">分类: ${catName} | 库存: <b>${customInv[id]}</b></div>
               </div>
             </div>
-            <div class="unit-cost-box"><span style="font-size:12px; color:var(--muted);">独家研发，可前往交易行售卖。</span></div>
-            <div class="build-row"><button class="btn btn-gold" onclick="location.href='market.html'" style="flex:1;"><i class="fa-solid fa-store"></i> 去交易行售卖</button></div>
+            <div class="unit-desc">由最高统帅部亲自批准设立的专属 ${catName} 特殊作战单位，具备超越常规部队的战场适应性。</div>
+            <div class="unit-buff"><i class="fa-solid fa-star" style="color:var(--cyan)"></i> 专属特色：独一无二的定制外观与核心战力，可在交易行作为战略物资流通。</div>
+            
+            <div class="build-row" style="margin-top:16px;">
+              <button class="btn btn-gold" onclick="location.href='market.html'" style="flex:1;"><i class="fa-solid fa-store"></i> 前往交易行售卖</button>
+            </div>
           </div>
         `;
       }
