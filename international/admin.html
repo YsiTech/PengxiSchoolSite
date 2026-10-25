@@ -7,8 +7,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
-  #particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #05070a; }
-  .admin-container { max-width: 1200px; margin: 40px auto; position: relative; z-index: 10; padding: 0 20px; }
+  #particle-canvas { position: fixed; inset: 0; z-index: -1; background: #05070a; }
+  .admin-container { max-width: 1300px; margin: 40px auto; position: relative; z-index: 10; padding: 0 20px; }
   .admin-tabs { display: flex; gap: 10px; margin-bottom: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 16px; overflow-x: auto; }
   .admin-tab { background: transparent; border: none; color: var(--muted); font-size: 15px; padding: 10px 20px; cursor: pointer; border-radius: 8px; transition: 0.3s; font-weight: bold; white-space: nowrap; }
   .admin-tab:hover { color: #fff; background: rgba(255,255,255,0.05); }
@@ -18,7 +18,7 @@
   .admin-panel.active { display: block; animation: fadeIn 0.4s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  .panel-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 30px; margin-bottom: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+  .panel-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; margin-bottom: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
   .panel-card h3 { margin: 0 0 20px; font-size: 18px; color: #fff; border-left: 4px solid var(--gold); padding-left: 12px; display: flex; justify-content: space-between; align-items: center;}
 
   .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
@@ -26,28 +26,37 @@
   .stat-box b { display: block; font-size: 28px; color: var(--gold-2); font-family: var(--mono); margin-bottom: 6px; }
   .stat-box span { font-size: 12.5px; color: var(--muted); letter-spacing: 1px; }
 
-  .form-row { display: flex; gap: 16px; margin-bottom: 16px; }
-  .form-row > * { flex: 1; }
-  .input-control { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 12px 16px; color: #fff; outline: none; font-family: inherit; transition: 0.2s; box-sizing: border-box; }
+  .input-control { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px 14px; color: #fff; outline: none; font-family: inherit; transition: 0.2s; box-sizing: border-box; font-size: 13px; }
   .input-control:focus { border-color: var(--gold); }
   .input-control option { background: #111827; color: #fff; }
 
   .admin-table { width: 100%; border-collapse: collapse; text-align: left; }
   .admin-table th { padding: 12px; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: normal; }
-  .admin-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+  .admin-table td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; font-size: 13.5px;}
   .admin-table tr:hover td { background: rgba(255,255,255,0.02); }
 
   .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
-
+  
+  /* 资源标签 */
+  .res-tags { display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px; font-family: var(--mono); }
+  .res-tag { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
+  
+  /* 战争卡片 */
+  .war-card { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .war-vs { font-size: 24px; font-weight: 900; color: #ef4444; font-family: var(--mono); }
+  .war-side { flex: 1; min-width: 200px; text-align: center; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; }
+  .war-side b { display: block; font-size: 16px; color: #fff; margin-bottom: 8px; }
+  .war-troops { font-size: 12px; color: var(--muted); text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  
+  /* 弹窗 */
   .admin-modal { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; }
   .admin-modal.show { display: flex; }
-  .admin-modal-box { width: 100%; max-width: 450px; background: #0f172a; border: 1px solid var(--border-2); border-radius: 16px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); animation: popIn 0.2s ease; }
-  @keyframes popIn { from{transform:scale(0.9); opacity:0;} to{transform:scale(1); opacity:1;} }
-  .admin-modal-box h3 { margin-top: 0; color: #fff; font-size: 18px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-bottom: 16px;}
+  .admin-modal-box { width: 100%; max-width: 500px; background: #0f172a; border: 1px solid var(--border-2); border-radius: 16px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
   
-  .multi-res-item { display: flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; margin-bottom: 8px; }
-  .multi-res-item label { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 13px; width: 100px; cursor: pointer; }
-  .multi-res-item input[type="number"] { flex: 1; padding: 6px 10px; }
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .war-card { flex-direction: column; }
+  }
 </style>
 </head>
 <body>
@@ -56,10 +65,7 @@
 
 <header class="iecp-topbar" id="adminHeader" style="background:rgba(5,7,10,0.8);">
   <div class="iecp-topbar-inner">
-    <a class="iecp-logo" href="index.html">
-      <img src="photo/un.png" alt="IECP">
-      <div class="iecp-logo-text"><b>IECP</b><span style="color:var(--red);">SYS_CORE</span></div>
-    </a>
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span style="color:var(--red);">SYS_CORE</span></div></a>
     <div style="margin-left:auto; color:var(--red); font-weight:bold; letter-spacing:2px;">
       <i class="fa-solid fa-satellite-dish fa-fade"></i> 最高权限指挥中心
     </div>
@@ -70,11 +76,65 @@
   <div class="loading-state"><div class="spinner"></div><span>正在验证最高权限...</span></div>
 </main>
 
+<!-- 发资源/道具弹窗 -->
+<div class="admin-modal" id="giveModal">
+  <div class="admin-modal-box">
+    <h3 id="giveTitle" style="color:var(--gold); border-bottom:1px solid var(--border); padding-bottom:10px;">发放物资</h3>
+    <input type="hidden" id="giveTargetId">
+    
+    <div style="margin-top:16px;">
+      <label style="font-size:12px; color:var(--muted);">发放资金 (₽)</label>
+      <input type="number" id="giveMoney" class="input-control" placeholder="留空或填0则不发" value="0">
+    </div>
+    
+    <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div>
+        <label style="font-size:12px; color:var(--muted);">资源类型</label>
+        <select id="giveResType" class="input-control">
+          <option value="">-- 不发资源 --</option>
+          <option value="oil">原油</option>
+          <option value="gas">天然气</option>
+          <option value="iron_ore">铁矿石</option>
+          <option value="rare_metal">稀有金属</option>
+          <option value="food">粮食</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--muted);">资源数量</label>
+        <input type="number" id="giveResAmount" class="input-control" placeholder="数量">
+      </div>
+    </div>
+
+    <div style="margin-top:12px; display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+      <div>
+        <label style="font-size:12px; color:var(--muted);">道具名称</label>
+        <select id="giveItemName" class="input-control">
+          <option value="">-- 不发道具 --</option>
+          <option value="间谍卫星">间谍卫星</option>
+          <option value="初级影响力包">初级影响力包</option>
+          <option value="中级影响力包">中级影响力包</option>
+          <option value="高级影响力包">高级影响力包</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:12px; color:var(--muted);">道具数量</label>
+        <input type="number" id="giveItemQty" class="input-control" placeholder="数量">
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+      <button class="btn btn-ghost" onclick="document.getElementById('giveModal').classList.remove('show')">取消</button>
+      <button class="btn btn-gold" onclick="submitGive()">确认发放</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
 var I = IECP; var profile = null; 
+var allUsers = []; var allResources = {}; var allMilitaries = {}; var allWars = [];
 
 I.requireAuth().then(function(ok) {
   if (!ok) return;
@@ -93,6 +153,7 @@ function renderLayout() {
     <div class="admin-tabs">
       <button class="admin-tab active" onclick="switchTab(this, 'tab-dash')"><i class="fa-solid fa-chart-pie"></i> 系统总览</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-users')"><i class="fa-solid fa-users-gear"></i> 国家管理</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-wars')"><i class="fa-solid fa-crosshairs"></i> 战争监控</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-shop')"><i class="fa-solid fa-crown"></i> 官方上架</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-shop-mgr')"><i class="fa-solid fa-list-check"></i> 官方商品管理</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-broadcast')"><i class="fa-solid fa-rocket"></i> 全服空投</button>
@@ -121,87 +182,77 @@ function renderLayout() {
       </div>
     </div>
 
-    <!-- 2. 国家管理 -->
+    <!-- 2. 国家管理 (新增银行卡、资源、单发功能) -->
     <div id="tab-users" class="admin-panel">
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-          <h3 style="margin:0; border:none; padding:0;">国家列表与直接操作</h3>
+          <h3 style="margin:0; border:none; padding:0;">国家档案与物资操作</h3>
           <input type="text" id="userSearchInput" class="input-control" placeholder="搜索国家名称..." style="max-width:250px;" oninput="filterUserTable()">
         </div>
-        <div style="max-height: 600px; overflow-y: auto;">
+        <div style="max-height: 600px; overflow-y: auto; overflow-x: auto;">
           <table class="admin-table">
-            <thead><tr><th>国家</th><th>国库余额</th><th>影响力</th><th>身份</th><th style="text-align:right;">管理操作</th></tr></thead>
+            <thead><tr><th>国家 / 银行信息</th><th>国库余额 / 影响力</th><th>战略资源</th><th style="text-align:right;">管理操作</th></tr></thead>
             <tbody id="userTableBody"></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- 3. 官方上架 -->
+    <!-- 3. 战争监控 -->
+    <div id="tab-wars" class="admin-panel">
+      <div class="panel-card">
+        <h3><i class="fa-solid fa-radar" style="color:var(--red);"></i> 交战双方兵力实时对比</h3>
+        <div id="warMonitorWrap"></div>
+      </div>
+    </div>
+
+    <!-- 4. 官方上架 -->
     <div id="tab-shop" class="admin-panel">
       <div class="panel-card">
         <h3><i class="fa-solid fa-store" style="color:var(--gold);"></i> 官方商城上架</h3>
-        
-        <div class="form-row">
-          <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">商品类型</label>
+        <div style="display:flex; gap:16px; margin-bottom:16px;">
+          <div style="flex:1;">
+            <label style="font-size:12px; color:var(--muted);">商品类型</label>
             <select id="shopType" class="input-control" onchange="toggleShopFields()">
               <option value="resource">战略资源包</option>
-              <option value="influence">国际影响力道具</option>
+              <option value="influence">影响力道具</option>
               <option value="spy">间谍卫星</option>
             </select>
           </div>
-          <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">商品标题</label>
+          <div style="flex:2;">
+            <label style="font-size:12px; color:var(--muted);">商品标题</label>
             <input type="text" id="shopTitle" class="input-control" placeholder="如：官方特惠原油包">
           </div>
         </div>
 
-        <!-- 多资源捆绑包区 -->
         <div id="shopResRow" style="margin-bottom:16px;">
           <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">选择包含的资源 (可多选)</label>
-          <div class="multi-res-item"><label><input type="checkbox" id="cbOil"> 原油 (吨)</label><input type="number" id="amtOil" class="input-control" placeholder="数量"></div>
-          <div class="multi-res-item"><label><input type="checkbox" id="cbGas"> 天然气 (m³)</label><input type="number" id="amtGas" class="input-control" placeholder="数量"></div>
-          <div class="multi-res-item"><label><input type="checkbox" id="cbIron"> 铁矿石 (吨)</label><input type="number" id="amtIron" class="input-control" placeholder="数量"></div>
-          <div class="multi-res-item"><label><input type="checkbox" id="cbRare"> 稀有金属 (吨)</label><input type="number" id="amtRare" class="input-control" placeholder="数量"></div>
-          <div class="multi-res-item"><label><input type="checkbox" id="cbFood"> 粮食 (吨)</label><input type="number" id="amtFood" class="input-control" placeholder="数量"></div>
+          <div style="display:flex; gap:10px; margin-bottom:8px;"><label><input type="checkbox" id="cbOil"> 原油</label><input type="number" id="amtOil" class="input-control" style="width:100px;" placeholder="数量"></div>
+          <div style="display:flex; gap:10px; margin-bottom:8px;"><label><input type="checkbox" id="cbGas"> 天然气</label><input type="number" id="amtGas" class="input-control" style="width:100px;" placeholder="数量"></div>
+          <div style="display:flex; gap:10px; margin-bottom:8px;"><label><input type="checkbox" id="cbIron"> 铁矿石</label><input type="number" id="amtIron" class="input-control" style="width:100px;" placeholder="数量"></div>
+          <div style="display:flex; gap:10px; margin-bottom:8px;"><label><input type="checkbox" id="cbRare"> 稀有金属</label><input type="number" id="amtRare" class="input-control" style="width:100px;" placeholder="数量"></div>
+          <div style="display:flex; gap:10px; margin-bottom:8px;"><label><input type="checkbox" id="cbFood"> 粮食</label><input type="number" id="amtFood" class="input-control" style="width:100px;" placeholder="数量"></div>
         </div>
 
-        <!-- 影响力道具专属 -->
-        <div class="form-row" id="shopInfluenceRow" style="display:none;">
-          <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">影响力等级</label>
-            <select id="shopInfLevel" class="input-control">
-              <option value="初级">初级影响力包 (+100)</option>
-              <option value="中级">中级影响力包 (+500)</option>
-              <option value="高级">高级影响力包 (+2000)</option>
-            </select>
-          </div>
+        <div id="shopInfluenceRow" style="display:none; margin-bottom:16px;">
+          <label style="font-size:12px; color:var(--muted);">影响力等级</label>
+          <select id="shopInfLevel" class="input-control">
+            <option value="初级">初级影响力包 (+100)</option>
+            <option value="中级">中级影响力包 (+500)</option>
+            <option value="高级">高级影响力包 (+2000)</option>
+          </select>
         </div>
 
-        <div class="form-row">
-          <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">单价 (₽)</label>
-            <input type="number" id="shopPrice" class="input-control" placeholder="如：50000">
-          </div>
-          <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">库存数量 (份)</label>
-            <input type="number" id="shopQty" class="input-control" placeholder="如：10">
-          </div>
-        </div>
-        
-        <div class="form-row">
-          <div>
-            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">商品图片 (可选)</label>
-            <input type="file" id="shopImageFile" class="input-control" accept="image/*" style="padding:8px;">
-          </div>
+        <div style="display:flex; gap:16px; margin-bottom:16px;">
+          <div style="flex:1;"><label style="font-size:12px; color:var(--muted);">单价 (₽)</label><input type="number" id="shopPrice" class="input-control" placeholder="如：50000"></div>
+          <div style="flex:1;"><label style="font-size:12px; color:var(--muted);">库存数量 (份)</label><input type="number" id="shopQty" class="input-control" placeholder="如：10"></div>
         </div>
 
-        <button class="btn btn-gold" style="margin-top:15px; padding:12px 30px;" onclick="publishOfficialItem()"><i class="fa-solid fa-cloud-arrow-up"></i> 立即官方上架</button>
+        <button class="btn btn-gold" onclick="publishOfficialItem()"><i class="fa-solid fa-cloud-arrow-up"></i> 立即官方上架</button>
       </div>
     </div>
 
-    <!-- 4. 官方商品管理 -->
+    <!-- 5. 官方商品管理 -->
     <div id="tab-shop-mgr" class="admin-panel">
       <div class="panel-card">
         <h3>在售官方商品</h3>
@@ -212,64 +263,68 @@ function renderLayout() {
       </div>
     </div>
 
-    <!-- 5. 全服空投 -->
+    <!-- 6. 全服空投 (加入降灾) -->
     <div id="tab-broadcast" class="admin-panel">
       <div class="panel-card">
         <h3>全服物资空投</h3>
-        <div class="form-row">
-          <div><label style="font-size:12px; color:var(--muted);">发放资金 (₽)</label><input type="number" id="bcMoney" class="input-control" placeholder="如：10000"></div>
-          <div>
+        <div style="display:flex; gap:16px; margin-bottom:16px;">
+          <div style="flex:1;"><label style="font-size:12px; color:var(--muted);">发放资金 (₽)</label><input type="number" id="bcMoney" class="input-control" placeholder="如：10000"></div>
+          <div style="flex:1;">
             <label style="font-size:12px; color:var(--muted);">发放战略资源</label>
             <div style="display:flex; gap:10px;">
               <select id="bcResType" class="input-control" style="flex:1;">
-                <option value="">-- 不发资源 --</option>
-                <option value="oil">原油 (吨)</option>
-                <option value="gas">天然气 (m³)</option>
-                <option value="iron_ore">铁矿石 (吨)</option>
-                <option value="rare_metal">稀有金属 (吨)</option>
-                <option value="food">粮食 (吨)</option>
+                <option value="">-- 不发 --</option>
+                <option value="oil">原油</option>
+                <option value="gas">天然气</option>
+                <option value="iron_ore">铁矿石</option>
+                <option value="rare_metal">稀有金属</option>
+                <option value="food">粮食</option>
               </select>
               <input type="number" id="bcResAmount" class="input-control" placeholder="数量" style="flex:1;">
             </div>
           </div>
         </div>
-        <div class="form-row">
-          <div>
+        <div style="display:flex; gap:16px; margin-bottom:16px;">
+          <div style="flex:1;">
             <label style="font-size:12px; color:var(--muted);">发放全服道具</label>
             <select id="bcItemSelect" class="input-control">
-              <option value="">-- 不发道具 --</option>
-              <option value="间谍卫星">🛰️ 间谍卫星</option>
-              <option value="初级影响力包">🧠 初级影响力包</option>
-              <option value="中级影响力包">🧠 中级影响力包</option>
-              <option value="高级影响力包">🧠 高级影响力包</option>
+              <option value="">-- 不发 --</option>
+              <option value="间谍卫星">间谍卫星</option>
+              <option value="初级影响力包">初级影响力包</option>
+              <option value="中级影响力包">中级影响力包</option>
+              <option value="高级影响力包">高级影响力包</option>
             </select>
           </div>
-          <div>
-            <label style="font-size:12px; color:var(--muted);">每人数量</label>
-            <input type="number" id="bcItemQty" class="input-control" placeholder="如：1" min="1">
-          </div>
+          <div style="flex:1;"><label style="font-size:12px; color:var(--muted);">每人数量</label><input type="number" id="bcItemQty" class="input-control" placeholder="如：1" min="1"></div>
         </div>
-        <button class="btn btn-gold" style="margin-top:15px; padding:12px 30px;" onclick="doBroadcast()"><i class="fa-solid fa-rocket"></i> 执行全服空投</button>
+        <div style="display:flex; gap:16px;">
+          <button class="btn btn-gold" style="flex:1;" onclick="doBroadcast()"><i class="fa-solid fa-rocket"></i> 执行全服空投</button>
+          <button class="btn btn-red" style="flex:1;" onclick="triggerGlobalDisaster()"><i class="fa-solid fa-cloud-bolt"></i> 降下全服灾害 (扣30%资源)</button>
+        </div>
       </div>
     </div>
 
-    <!-- 6. 全服通知 -->
+    <!-- 7. 全服通知 -->
     <div id="tab-notify" class="admin-panel">
       <div class="panel-card">
         <h3>发送全服系统通知</h3>
-        <div class="form-row"><div><input type="text" id="sysNotifTitle" class="input-control" placeholder="通知标题"></div></div>
-        <div class="form-row"><div><textarea id="sysNotifContent" class="input-control" style="min-height:100px;" placeholder="通知内容"></textarea></div></div>
+        <input type="text" id="sysNotifTitle" class="input-control" placeholder="通知标题" style="margin-bottom:12px;">
+        <textarea id="sysNotifContent" class="input-control" style="min-height:100px; margin-bottom:12px;" placeholder="通知内容"></textarea>
         <button class="btn btn-gold" onclick="sendSysNotif()"><i class="fa-solid fa-paper-plane"></i> 发送通知</button>
       </div>
     </div>
 
-    <!-- 7. 灾害设置 -->
+    <!-- 8. 灾害设置 -->
     <div id="tab-disaster" class="admin-panel">
       <div class="panel-card">
         <h3>全服灾害概率与损失比例</h3>
-        <div class="form-row"><div><label>火灾概率</label><input type="number" id="cfgFire" class="input-control" step="0.01"></div><div><label>洪灾概率</label><input type="number" id="cfgFlood" class="input-control" step="0.01"></div></div>
-        <div class="form-row"><div><label>地震概率</label><input type="number" id="cfgEarth" class="input-control" step="0.01"></div><div><label>旱灾概率</label><input type="number" id="cfgDrought" class="input-control" step="0.01"></div></div>
-        <div class="form-row"><div><label>单次最大资源损失比例</label><input type="number" id="cfgLossPct" class="input-control" step="0.01"></div></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
+          <div><label>火灾概率</label><input type="number" id="cfgFire" class="input-control" step="0.01"></div>
+          <div><label>洪灾概率</label><input type="number" id="cfgFlood" class="input-control" step="0.01"></div>
+          <div><label>地震概率</label><input type="number" id="cfgEarth" class="input-control" step="0.01"></div>
+          <div><label>旱灾概率</label><input type="number" id="cfgDrought" class="input-control" step="0.01"></div>
+        </div>
+        <div style="margin-bottom:16px;"><label>单次最大资源损失比例</label><input type="number" id="cfgLossPct" class="input-control" step="0.01"></div>
         <button class="btn btn-gold" onclick="saveDisasterCfg()">保存设置</button>
       </div>
     </div>
@@ -281,7 +336,7 @@ window.switchTab = function(btn, tabId) {
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(tabId).classList.add('active');
-  if (tabId === 'tab-dash') loadData();
+  if (tabId === 'tab-dash' || tabId === 'tab-users' || tabId === 'tab-wars') loadData();
   if (tabId === 'tab-shop-mgr') loadOfficialItems();
   if (tabId === 'tab-disaster') loadDisasterCfg();
 };
@@ -289,153 +344,127 @@ window.switchTab = function(btn, tabId) {
 window.toggleShopFields = function() {
   var type = I.$('#shopType').value;
   I.$('#shopResRow').style.display = type === 'resource' ? 'block' : 'none';
-  I.$('#shopInfluenceRow').style.display = type === 'influence' ? 'flex' : 'none';
+  I.$('#shopInfluenceRow').style.display = type === 'influence' ? 'block' : 'none';
 };
 
-// 🚨 核心对接：官方上架 (支持多资源 + 图片)
-window.publishOfficialItem = async function() {
-  var type = I.$('#shopType').value;
-  var title = I.$('#shopTitle').value.trim();
-  var price = parseInt(I.$('#shopPrice').value, 10);
-  var qty = parseInt(I.$('#shopQty').value, 10);
-  var file = I.$('#shopImageFile').files[0];
-
-  if (!title || !price || !qty) return I.toast('请完整填写标题、价格和数量', 'error');
-
-  var p_data = {};
-  var p_type = 'other';
-  var p_unit = '份';
-  var p_desc = '';
-  var imgUrl = null;
-
-  if (type === 'resource') {
-    var resObj = {};
-    if (I.$('#cbOil').checked && I.$('#amtOil').value) resObj.oil = parseInt(I.$('#amtOil').value);
-    if (I.$('#cbGas').checked && I.$('#amtGas').value) resObj.gas = parseInt(I.$('#amtGas').value);
-    if (I.$('#cbIron').checked && I.$('#amtIron').value) resObj.iron_ore = parseInt(I.$('#amtIron').value);
-    if (I.$('#cbRare').checked && I.$('#amtRare').value) resObj.rare_metal = parseInt(I.$('#amtRare').value);
-    if (I.$('#cbFood').checked && I.$('#amtFood').value) resObj.food = parseInt(I.$('#amtFood').value);
-    
-    if (Object.keys(resObj).length === 0) return I.toast('请至少勾选并填写一种资源', 'error');
-
-    p_data = { effect: 'resource', resources: resObj };
-    p_type = 'resource';
-    p_desc = `官方特供战略资源包，包含多种珍贵物资。`;
-  } else if (type === 'influence') {
-    var infLevel = I.$('#shopInfLevel').value;
-    p_data = { effect: infLevel === '初级' ? 'influence_low' : infLevel === '中级' ? 'influence_mid' : 'influence_high' };
-    p_unit = '个';
-    p_desc = `使用后可增加${infLevel}国际影响力。`;
-  } else if (type === 'spy') {
-    p_data = { effect: 'spy' };
-    p_unit = '个';
-    p_desc = `使用后可获取敌国详细资产情报。`;
-  }
-
-  I.toast('正在处理...', 'success', 1000);
-
-  if (file) {
-    var ext = (file.name.split('.').pop() || 'png').toLowerCase();
-    var path = profile.id + '/shop/' + Date.now() + '.' + ext;
-    var { error: upErr } = await I.client.storage.from('media').upload(path, file);
-    if (upErr) return I.toast('图片上传失败', 'error');
-    imgUrl = I.client.storage.from('media').getPublicUrl(path).data.publicUrl;
-  }
-
-  var { data, error } = await I.client.rpc('admin_publish_item', {
-    p_title: title, p_price: price, p_quantity: qty, p_unit: p_unit, p_desc: p_desc, p_type: p_type, p_data: p_data, p_image_url: imgUrl
-  });
-
-  if (error) return I.toast('上架失败：' + error.message, 'error');
-  if (!data.ok) return I.toast(data.msg, 'error');
-
-  I.toast('官方商品上架成功', 'success');
-  I.$('#shopTitle').value = ''; I.$('#shopPrice').value = ''; I.$('#shopQty').value = '';
-};
-
-// 🚨 核心：加载和下架官方商品
-async function loadOfficialItems() {
-  var tbody = I.$('#officialShopBody');
-  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">加载中...</td></tr>';
-  
-  var { data } = await I.client.from('market_items').select('*').eq('is_admin_post', true).eq('status', 'on_sale').order('created_at', { ascending: false });
-  
-  if (!data || !data.length) {
-    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">暂无在售的官方商品</td></tr>';
-    return;
-  }
-
-  tbody.innerHTML = data.map(item => `
-    <tr>
-      <td>
-        <div style="display:flex; align-items:center; gap:10px;">
-          ${item.image_url ? `<img src="${item.image_url}" style="width:40px;height:30px;object-fit:cover;border-radius:4px;">` : `<div style="width:40px;height:30px;background:#333;border-radius:4px;"></div>`}
-          <span style="color:#fff;">${I.escapeHtml(item.title)}</span>
-        </div>
-      </td>
-      <td style="color:var(--gold-2);">${I.fmtNumber(item.price)} ₽</td>
-      <td style="color:var(--cyan);">${item.quantity}</td>
-      <td style="text-align:right;">
-        <button class="btn btn-red btn-sm" onclick="removeOfficialItem('${item.id}')"><i class="fa-solid fa-arrow-down"></i> 下架</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-window.removeOfficialItem = async function(id) {
-  if (!confirm('确认下架该官方商品？')) return;
-  var { error } = await I.client.from('market_items').update({ status: 'removed' }).eq('id', id);
-  if (error) return I.toast(error.message, 'error');
-  I.toast('已下架', 'success');
-  loadOfficialItems();
-};
-
-// 其他基础功能保持不变...
 async function loadData() {
-  const [usersRes, warsRes, txRes] = await Promise.all([
+  // 拉取所有需要的数据
+  const [usersRes, resourcesRes, milRes, warsRes, txRes] = await Promise.all([
     I.client.from('profiles').select('*').order('created_at', { ascending: false }),
-    I.client.from('wars').select('*', { count: 'exact', head: true }).eq('status', 'ongoing'),
+    I.client.from('country_resources').select('*'),
+    I.client.from('military').select('*'),
+    I.client.from('wars').select('*').eq('status', 'ongoing'),
     I.client.from('transfers').select('*', { count: 'exact', head: true })
   ]);
-  var allUsers = usersRes.data || [];
+  
+  allUsers = usersRes.data || [];
+  var resources = resourcesRes.data || [];
+  allMilitaries = milRes.data || [];
+  allWars = warsRes.data || [];
+  
+  // 整理资源映射
+  allResources = {};
+  resources.forEach(r => { allResources[r.country_id] = r; });
+
+  var milMap = {};
+  allMilitaries.forEach(m => { milMap[m.country_id] = m; });
+
   var totalMoney = 0;
   allUsers.forEach(u => totalMoney += (u.balance || 0));
   
   if(I.$('#statTotalUsers')) {
     I.$('#statTotalUsers').innerText = allUsers.length;
     I.$('#statTotalMoney').innerText = I.fmtNumber(totalMoney);
-    I.$('#statTotalWars').innerText = warsRes.count || 0;
+    I.$('#statTotalWars').innerText = allWars.length;
     I.$('#statTotalTransfers').innerText = txRes.count || 0;
   }
 
+  // 财富榜
   var topRichList = I.$('#topRichList');
   if (topRichList) {
     const topUsers = [...allUsers].sort((a,b) => (b.balance||0) - (a.balance||0)).slice(0, 3);
     topRichList.innerHTML = topUsers.map((u, i) => `
       <li style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px 16px; border-radius:8px; border-left:3px solid ${i===0?'var(--gold)':i===1?'silver':i===2?'#cd7f32':'#fff'};">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <span style="font-size:18px; font-weight:bold; color:var(--muted);">${i+1}</span>
-          <span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span>
-        </div>
+        <div style="display:flex; align-items:center; gap:12px;"><span style="font-size:18px; font-weight:bold; color:var(--muted);">${i+1}</span><span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span></div>
         <span style="color:var(--gold-2); font-family:var(--mono); font-size:16px;">${I.fmtNumber(u.balance)} ₽</span>
       </li>
     `).join('');
   }
 
+  // 国家管理表格
   var tbody = I.$('#userTableBody');
   if (tbody) {
-    tbody.innerHTML = allUsers.map(u => `
+    tbody.innerHTML = allUsers.map(u => {
+      var r = allResources[u.id] || {};
+      var resHtml = `
+        <div class="res-tags">
+          <span class="res-tag">油:${I.fmtNumber(r.oil||0)}</span>
+          <span class="res-tag">气:${I.fmtNumber(r.gas||0)}</span>
+          <span class="res-tag">铁:${I.fmtNumber(r.iron_ore||0)}</span>
+          <span class="res-tag">稀:${I.fmtNumber(r.rare_metal||0)}</span>
+          <span class="res-tag">粮:${I.fmtNumber(r.food||0)}</span>
+        </div>
+      `;
+      return `
       <tr class="user-row" data-name="${I.escapeHtml(u.username).toLowerCase()}">
-        <td><span style="color:#fff; font-weight:bold;">${I.escapeHtml(u.username)}</span></td>
-        <td style="color:var(--gold-2);">${I.fmtNumber(u.balance)} ₽</td>
-        <td style="color:var(--cyan);">${u.influence || 0}</td>
-        <td>${u.role === 'admin' ? '管理员' : '普通'}</td>
+        <td>
+          <div style="color:#fff; font-weight:bold; margin-bottom:4px;">${I.escapeHtml(u.username)}</div>
+          <div style="color:var(--muted); font-size:11px;">银行: ${I.escapeHtml(u.bank_name || '未绑定')}</div>
+          <div style="color:var(--cyan); font-size:12px; font-family:var(--mono);">卡号: ${I.escapeHtml(u.bank_card || '未绑定')}</div>
+        </td>
+        <td>
+          <div style="color:var(--gold-2); font-weight:bold;">${I.fmtNumber(u.balance)} ₽</div>
+          <div style="color:var(--purple); font-size:12px;">影响力: ${u.influence || 0}</div>
+          <div style="color:${u.role==='admin'?'#ef4444':'#94a3b8'}; font-size:11px;">${u.role === 'admin' ? '管理员' : '普通'}</div>
+        </td>
+        <td>${resHtml}</td>
         <td style="text-align:right;">
-          <button class="btn btn-gold btn-sm" onclick="promptEditMoney('${u.id}', '${u.balance}')">改钱</button>
-          <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')">抹除</button>
+          <button class="btn btn-cyan btn-sm" onclick="openGiveModal('${u.id}', '${I.escapeHtml(u.username)}')" style="margin-bottom:4px;"><i class="fa-solid fa-gift"></i> 发物资</button>
+          <button class="btn btn-gold btn-sm" onclick="promptEditMoney('${u.id}', '${u.balance}')" style="margin-bottom:4px;"><i class="fa-solid fa-pen"></i> 改钱</button>
+          <button class="btn btn-red btn-sm" onclick="deleteUser('${u.id}')"><i class="fa-solid fa-trash"></i> 抹除</button>
         </td>
       </tr>
-    `).join('');
+      `;
+    }).join('');
+  }
+
+  // 战争监控列表
+  var warWrap = I.$('#warMonitorWrap');
+  if (warWrap) {
+    if (!allWars.length) {
+      warWrap.innerHTML = '<div style="text-align:center; padding:40px; color:var(--green);"><i class="fa-solid fa-dove" style="font-size:30px; margin-bottom:10px;"></i><p>目前世界和平，无交战国家。</p></div>';
+    } else {
+      warWrap.innerHTML = allWars.map(w => {
+        var atk = allUsers.find(u => u.id === w.attacker_id) || { username: '未知' };
+        var def = allUsers.find(u => u.id === w.defender_id) || { username: '未知' };
+        var atkMil = milMap[w.attacker_id] || {};
+        var defMil = milMap[w.defender_id] || {};
+
+        function renderTroops(mil) {
+          var html = '';
+          for (var k in mil) {
+            if (k !== 'id' && k !== 'country_id' && k !== 'custom_troops' && mil[k] > 0) {
+              html += `<span>${k}: ${mil[k]}</span>`;
+            }
+          }
+          return html || '<span>无驻军</span>';
+        }
+
+        return `
+          <div class="war-card">
+            <div class="war-side" style="border:1px solid rgba(239,68,68,0.3);">
+              <b style="color:#ef4444;">⚔️ 攻方: ${I.escapeHtml(atk.username)}</b>
+              <div class="war-troops">${renderTroops(atkMil)}</div>
+            </div>
+            <div class="war-vs">VS</div>
+            <div class="war-side" style="border:1px solid rgba(79,195,247,0.3);">
+              <b style="color:#4fc3f7;">🛡️ 守方: ${I.escapeHtml(def.username)}</b>
+              <div class="war-troops">${renderTroops(defMil)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 }
 
@@ -445,6 +474,42 @@ window.filterUserTable = function() {
     var name = tr.getAttribute('data-name') || '';
     tr.style.display = name.includes(kw) ? '' : 'none';
   });
+};
+
+window.openGiveModal = function(id, name) {
+  I.$('#giveTargetId').value = id;
+  I.$('#giveTitle').innerText = `为【${name}】发放物资`;
+  I.$('#giveMoney').value = 0;
+  I.$('#giveResType').value = '';
+  I.$('#giveResAmount').value = '';
+  I.$('#giveItemName').value = '';
+  I.$('#giveItemQty').value = '';
+  I.$('#giveModal').classList.add('show');
+};
+
+window.submitGive = async function() {
+  var targetId = I.$('#giveTargetId').value;
+  var money = parseInt(I.$('#giveMoney').value, 10) || 0;
+  var resType = I.$('#giveResType').value;
+  var resAmount = parseFloat(I.$('#giveResAmount').value) || 0;
+  var itemName = I.$('#giveItemName').value;
+  var itemQty = parseInt(I.$('#giveItemQty').value, 10) || 0;
+
+  if (money === 0 && !resType && !itemName) return I.toast('请填写要发放的物资', 'error');
+
+  var { error } = await I.client.rpc('admin_give_single', {
+    p_target_id: targetId,
+    p_money: money,
+    p_res_type: resType || null,
+    p_res_amount: resAmount,
+    p_item_name: itemName || null,
+    p_item_qty: itemQty
+  });
+
+  if (error) return I.toast('发放失败：' + error.message, 'error');
+  I.toast('发放成功！', 'success');
+  I.$('#giveModal').classList.remove('show');
+  loadData();
 };
 
 window.promptEditMoney = async function(userId, currentBalance) {
@@ -467,6 +532,14 @@ window.forcePeace = async function() {
   if (!confirm('强制全服停战？')) return;
   await I.client.rpc('admin_force_peace');
   I.toast('已恢复和平', 'success'); loadData();
+};
+
+window.triggerGlobalDisaster = async function() {
+  if (!confirm('⚠️ 警告：此操作将扣除全服所有国家 30% 的资源，确定降灾吗？')) return;
+  I.toast('正在执行天灾...', 'success', 1000);
+  var { error } = await I.client.rpc('admin_trigger_disaster', { p_loss_pct: 0.3 });
+  if (error) return I.toast('降灾失败：' + error.message, 'error');
+  I.toast('全服灾害已执行', 'success'); loadData();
 };
 
 window.doBroadcast = async function() {
@@ -492,6 +565,66 @@ window.sendSysNotif = async function() {
   var notifs = users.map(u => ({ user_id: u.id, type: 'system', title: t, content: c }));
   await I.client.from('notifications').insert(notifs);
   I.toast('通知已发送', 'success');
+};
+
+window.publishOfficialItem = async function() {
+  var type = I.$('#shopType').value;
+  var title = I.$('#shopTitle').value.trim();
+  var price = parseInt(I.$('#shopPrice').value, 10);
+  var qty = parseInt(I.$('#shopQty').value, 10);
+
+  if (!title || !price || !qty) return I.toast('请完整填写标题、价格和数量', 'error');
+
+  var p_data = {}; var p_type = 'other'; var p_unit = '份'; var p_desc = '';
+
+  if (type === 'resource') {
+    var resObj = {};
+    if (I.$('#cbOil').checked && I.$('#amtOil').value) resObj.oil = parseInt(I.$('#amtOil').value);
+    if (I.$('#cbGas').checked && I.$('#amtGas').value) resObj.gas = parseInt(I.$('#amtGas').value);
+    if (I.$('#cbIron').checked && I.$('#amtIron').value) resObj.iron_ore = parseInt(I.$('#amtIron').value);
+    if (I.$('#cbRare').checked && I.$('#amtRare').value) resObj.rare_metal = parseInt(I.$('#amtRare').value);
+    if (I.$('#cbFood').checked && I.$('#amtFood').value) resObj.food = parseInt(I.$('#amtFood').value);
+    if (Object.keys(resObj).length === 0) return I.toast('请至少勾选并填写一种资源', 'error');
+    p_data = { effect: 'resource', resources: resObj }; p_type = 'resource'; p_desc = `官方特供战略资源包。`;
+  } else if (type === 'influence') {
+    var infLevel = I.$('#shopInfLevel').value;
+    p_data = { effect: infLevel === '初级' ? 'influence_low' : infLevel === '中级' ? 'influence_mid' : 'influence_high' };
+    p_unit = '个'; p_desc = `使用后可增加${infLevel}国际影响力。`;
+  } else if (type === 'spy') {
+    p_data = { effect: 'spy' }; p_unit = '个'; p_desc = `使用后可获取敌国详细资产情报。`;
+  }
+
+  var { data, error } = await I.client.rpc('admin_publish_item', {
+    p_title: title, p_price: price, p_quantity: qty, p_unit: p_unit, p_desc: p_desc, p_type: p_type, p_data: p_data, p_image_url: null
+  });
+
+  if (error) return I.toast('上架失败：' + error.message, 'error');
+  if (!data.ok) return I.toast(data.msg, 'error');
+  I.toast('官方商品上架成功', 'success');
+  I.$('#shopTitle').value = ''; I.$('#shopPrice').value = ''; I.$('#shopQty').value = '';
+};
+
+async function loadOfficialItems() {
+  var tbody = I.$('#officialShopBody');
+  tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">加载中...</td></tr>';
+  var { data } = await I.client.from('market_items').select('*').eq('is_admin_post', true).eq('status', 'on_sale').order('created_at', { ascending: false });
+  
+  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--muted);">暂无在售的官方商品</td></tr>'; return; }
+  tbody.innerHTML = data.map(item => `
+    <tr>
+      <td><span style="color:#fff;">${I.escapeHtml(item.title)}</span></td>
+      <td style="color:var(--gold-2);">${I.fmtNumber(item.price)} ₽</td>
+      <td style="color:var(--cyan);">${item.quantity}</td>
+      <td style="text-align:right;"><button class="btn btn-red btn-sm" onclick="removeOfficialItem('${item.id}')"><i class="fa-solid fa-arrow-down"></i> 下架</button></td>
+    </tr>
+  `).join('');
+}
+
+window.removeOfficialItem = async function(id) {
+  if (!confirm('确认下架该官方商品？')) return;
+  var { error } = await I.client.from('market_items').update({ status: 'removed' }).eq('id', id);
+  if (error) return I.toast(error.message, 'error');
+  I.toast('已下架', 'success'); loadOfficialItems();
 };
 
 async function loadDisasterCfg() {
