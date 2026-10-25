@@ -62,27 +62,19 @@
   .target-item img { width: 48px; height: 32px; object-fit: cover; border-radius: 4px; margin-bottom: 8px; border: 1px solid rgba(255,255,255,0.2); }
   .target-item span { display: block; font-size: 12px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* 🚨 手机端排版大修复 */
+  /* 手机端排版 */
   @media (max-width: 768px) {
     .iecp-main { padding: 0 12px; }
-    
-    /* 工具栏变成单列，搜索框铺满，按钮沉底靠右 */
     .wh-toolbar { flex-direction: column; align-items: stretch; gap: 12px; }
     .wh-search { width: 100%; }
     .wh-toolbar > div:last-child { justify-content: space-between; }
     .wh-toolbar > div:last-child .btn-red { width: 100%; display: flex; justify-content: center; align-items: center;}
-
-    /* 网格变单列 */
     .inv-grid { grid-template-columns: 1fr; gap: 16px; }
     .inv-img-box { height: 130px; }
     .inv-body { padding: 16px; }
-
-    /* 按钮布局调整：上架回收平分，删除独立方框 */
     .card-actions { gap: 8px; }
     .c-btn { font-size: 12px; padding: 10px 0; gap: 4px; }
     .c-btn-drop { flex: 0 0 44px; }
-    
-    /* 隐藏主按钮里的文字，只留图标（如果太挤的话，这里保留文字但缩小字号） */
     .c-btn i { font-size: 14px; }
   }
 </style>
@@ -154,7 +146,7 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -241,8 +233,8 @@
     }
 
     var qty = 1;
-    if (isResource && maxQty > 1) {
-      var input = prompt(`请输入要开箱的数量 (1 - ${maxQty}):`, "1");
+    if (maxQty > 1) {
+      var input = prompt(`请输入要使用的数量 (1 - ${maxQty}):`, "1");
       if (!input) return;
       qty = parseInt(input, 10);
       if (isNaN(qty) || qty < 1 || qty > maxQty) return I.toast('数量错误', 'error');
@@ -257,7 +249,7 @@
       alert(`📦 开箱成功！\n\n获得物资明细：\n${data.summary}`);
       loadInventory();
     } else {
-      var { data, error } = await I.client.rpc('use_special_item', { p_item_id: id });
+      var { data, error } = await I.client.rpc('use_special_item', { p_item_id: id, p_amount: qty });
       if (error) return alert('使用失败：' + error.message);
       if (!data.ok) return alert(data.msg);
       
@@ -277,14 +269,21 @@
     listWrap.innerHTML = data.map(u => `<div class="target-item" onclick="selectTarget('${u.id}', '${I.escapeHtml(u.username)}')"><img src="${u.flag_url || I.avatarFallback(u.username)}"><span title="${I.escapeHtml(u.username)}">${I.escapeHtml(u.username)}</span></div>`).join('');
   }
 
+  // 🚨 核心：卫星使用后提示并跳转情报局
   window.selectTarget = function(targetId, targetName) {
     I.$('#targetModal').classList.remove('open');
     if (confirm(`确认使用卫星透视【${targetName}】吗？`)) { 
-      I.client.rpc('use_special_item', { p_item_id: currentSpyItemId, p_target_id: targetId }).then(function(res) {
+      I.client.rpc('use_special_item', { p_item_id: currentSpyItemId, p_target_id: targetId, p_amount: 1 }).then(function(res) {
         if (res.error) return alert('侦察失败：' + res.error.message);
         if (!res.data.ok) return alert(res.data.msg);
-        alert(`🛰️ 卫星锁定成功！\n\n成功截获【${res.data.spy_target}】的国家情报：\n\n💰 国库余额：${I.fmtNumber(res.data.spy_balance)} ₽`);
+        
+        I.toast('情报已生成，正在转入情报局...', 'success', 2000);
         loadInventory();
+        
+        // 延迟 1 秒后自动跳转
+        setTimeout(function() {
+          location.href = 'intelligence.html';
+        }, 1000);
       });
     }
   };

@@ -131,7 +131,9 @@
       { id:'research', icon:'fa-flask', text:'研究所', href:'research.html' },
       { id:'forecast', icon:'fa-cloud-bolt', text:'灾害预报', href:'forecast.html' }
     ];
-    var endItems = [ { id:'wars', icon:'fa-shield-halved', text:'战争系统', href:'wars.html' } ];
+    var endItems = [
+    { id:'intelligence', icon:'fa-user-secret', text:'资料情报', href:'intelligence.html' },
+     { id:'wars', icon:'fa-shield-halved', text:'战争系统', href:'wars.html' } ];
     
     var isMobile = window.innerWidth <= 768;
     var html = '';

@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>国家资料情报局 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  body { background-color: #05070a; background-image: radial-gradient(circle at 50% 0%, rgba(239, 68, 68, 0.08) 0%, transparent 70%); }
+  
+  .intel-header { text-align: center; margin-bottom: 30px; position: relative; }
+  .intel-header h1 { font-size: 32px; font-weight: 900; color: #fff; letter-spacing: 4px; text-shadow: 0 0 20px rgba(239,68,68,0.5); margin: 0 0 10px 0; font-family: var(--mono); }
+  .intel-header h1 i { color: #ef4444; }
+  .intel-header p { color: #ef4444; font-size: 13px; letter-spacing: 2px; margin: 0; font-weight: bold; opacity: 0.8; }
+
+  .alert-banner { background: linear-gradient(90deg, rgba(239,68,68,0.2), transparent); border-left: 4px solid #ef4444; padding: 12px 20px; border-radius: 8px; color: #fca5a5; font-size: 14px; margin-bottom: 24px; display: none; align-items: center; gap: 10px; animation: alertPulse 2s infinite; }
+  @keyframes alertPulse { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+
+  .intel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 24px; padding-bottom: 60px; }
+  .intel-card { background: linear-gradient(145deg, rgba(20, 25, 35, 0.95), rgba(10, 14, 26, 1)); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; position: relative; overflow: hidden; transition: all 0.3s; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+  .intel-card::before { content: 'TOP SECRET'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 80px; font-weight: 900; color: rgba(239,68,68,0.03); pointer-events: none; white-space: nowrap; font-family: var(--mono); z-index: 0; }
+  .intel-card:hover { border-color: rgba(239,68,68,0.4); transform: translateY(-4px); }
+  .intel-card.expired { opacity: 0.5; filter: grayscale(1); }
+
+  .card-head { padding: 16px 20px; border-bottom: 1px dashed rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; }
+  .target-info { display: flex; align-items: center; gap: 12px; }
+  .target-info img { width: 48px; height: 32px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); object-fit: cover; }
+  .target-name { font-size: 18px; font-weight: 800; color: #fff; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px #22c55e; animation: pulseGreen 2s infinite; margin-right: 6px; display: inline-block; }
+  @keyframes pulseGreen { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+  .card-body { padding: 20px; position: relative; z-index: 1; }
+  .overview-box { background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; margin-bottom: 16px; }
+  .overview-label { font-size: 12px; color: var(--muted); }
+  .overview-val { font-size: 20px; font-family: var(--mono); font-weight: bold; color: var(--gold-2); }
+
+  .intel-accordion { border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+  .accordion-head { background: rgba(0,0,0,0.3); padding: 10px 14px; font-size: 13px; font-weight: bold; color: var(--cyan); display: flex; justify-content: space-between; cursor: pointer; user-select: none; }
+  .accordion-head:hover { background: rgba(255,255,255,0.05); }
+  .accordion-body { padding: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; display: none; }
+  .accordion-body.open { display: grid; }
+  
+  .data-item { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; font-size: 13px; }
+  .data-name { color: var(--muted); display: flex; align-items: center; gap: 6px; }
+  .data-val { font-family: var(--mono); font-weight: bold; color: #fff; }
+  .data-val.blurred { color: #a78bfa; font-style: italic; font-size: 12px;}
+
+  .history-diff { margin-top: 16px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; font-size: 12px; border-left: 3px solid var(--cyan); color: var(--ink-2); }
+  .diff-up { color: #ef4444; font-weight: bold; }
+  .diff-down { color: #22c55e; font-weight: bold; }
+
+  .card-actions { padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 10px; background: rgba(0,0,0,0.2); z-index: 1; position: relative;}
+  .btn-intel { flex: 1; padding: 10px 0; font-size: 13px; border-radius: 6px; cursor: pointer; text-align: center; text-decoration: none; transition: 0.2s; font-weight: bold; border: none; display:flex; align-items:center; justify-content:center; gap:6px;}
+  .btn-war { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+  .btn-war:hover { background: #ef4444; color: #fff; }
+  .btn-burn { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid rgba(255,255,255,0.1); }
+  .btn-burn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+  .empty-intel { text-align: center; padding: 80px 20px; background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; }
+  .empty-intel i { font-size: 60px; color: rgba(239,68,68,0.2); margin-bottom: 20px; }
+  .empty-intel h3 { color: #fff; font-size: 20px; margin: 0 0 10px 0; font-family: var(--mono); }
+  .empty-intel p { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+
+  @media (max-width: 768px) { .intel-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<main class="iecp-main">
+  <div class="intel-header">
+    <h1><i class="fa-solid fa-user-secret"></i> 国家资料情报局</h1>
+    <p>NATIONAL INTELLIGENCE AGENCY · TOP SECRET</p>
+  </div>
+
+  <div class="alert-banner" id="alertBanner">
+    <i class="fa-solid fa-triangle-exclamation"></i> 
+    <span id="alertText"></span>
+  </div>
+
+  <div id="intelWrap">
+    <div class="loading-state"><div class="spinner"></div><span>正在解密机密档案...</span></div>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP; var profile = null; var allReports = []; var timerInterval = null;
+
+  var RES_MAP = { oil: '原油 (吨)', gas: '天然气 (m³)', iron_ore: '铁矿石 (吨)', rare_metal: '稀有金属 (吨)', food: '粮食 (吨)' };
+  var MIL_MAP = {
+    infantry: '机械化步兵', tanks: '主战坦克', artillery: '自行火炮', ifv: '步兵战车', aav: '防空战车', mechs: '机甲战士', missiles: '洲际导弹', scouts: '侦察兵',
+    carriers: '核动力航母', destroyers: '驱逐舰', cruisers: '导弹巡洋舰', submarines: '核潜艇', frigates: '导弹护卫舰', patrol_boats: '巡逻艇', amphibious: '两栖攻击舰', missile_boat: '导弹快艇', ssk: '常规潜艇', lhd: '两栖舰', supply: '补给舰',
+    fighters: '第四代战机', bombers: '战略轰炸机', stealth_air: '第五代隐身战机', drones: '侦察无人机', ucav: '察打无人机', ew_planes: '电子战机', gunships: '重型炮艇机', awacs: '预警机', tactical_transport: '战术运输机', spaceplanes: '空天战机',
+    trenches: '反坦克战壕', bunkers: '地下碉堡', aaa: '防空导弹', coastal_guns: '岸防巨炮', lasers: '高能激光塔', railguns: '电磁轨道炮', shields: '战略护盾', spaag: '自行高炮', ciws: '近防炮', sam: '防空导弹连', cyber_defense: '网络防御中心'
+  };
+
+  // 🚨 核心：模糊估值算法
+  function getBlurMoney(val) {
+    if (val === 0) return '0 ₽';
+    if (val < 100000) return '＜10万 ₽';
+    if (val < 500000) return '10万 - 50万 ₽';
+    if (val < 1000000) return '50万 - 100万 ₽';
+    if (val < 5000000) return '100万 - 500万 ₽';
+    if (val < 10000000) return '500万 - 1000万 ₽';
+    return '＞千万 ₽';
+  }
+
+  function getBlurRes(val) {
+    if (val === 0) return '无';
+    if (val < 2000) return '极少量';
+    if (val < 10000) return '少量';
+    if (val < 50000) return '中等';
+    if (val < 200000) return '大量';
+    return '极其丰厚';
+  }
+
+  function getBlurMil(val) {
+    if (val === 0) return '无';
+    if (val < 50) return '极少';
+    if (val < 200) return '少量';
+    if (val < 500) return '中等';
+    if (val < 1000) return '大量';
+    return '极多';
+  }
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('intelligence');
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      checkIncomingSpies();
+      loadReports();
+    });
+  });
+
+  function checkIncomingSpies() {
+    I.client.from('spy_reports')
+      .select('*, spy:profiles!spy_reports_spy_id_fkey(username)')
+      .eq('target_id', profile.id)
+      .gt('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      .then(function(res) {
+        if (res.data && res.data.length > 0) {
+          var names = res.data.map(r => r.spy.username).join(', ');
+          I.$('#alertText').innerText = `警告：${names} 正在对你进行情报渗透，请注意信息保密！`;
+          I.$('#alertBanner').style.display = 'flex';
+        }
+      });
+  }
+
+  function loadReports() {
+    var wrap = I.$('#intelWrap');
+    I.client.from('spy_reports')
+      .select('*, target:profiles!spy_reports_target_id_fkey(id, username, flag_url)')
+      .eq('spy_id', profile.id)
+      .order('created_at', { ascending: false })
+      .then(function (res) {
+        if (res.error) { wrap.innerHTML = `<div class="empty-intel"><p style="color:var(--red)">获取情报失败：${res.error.message}</p></div>`; return; }
+        allReports = res.data || [];
+        renderReports();
+        startTimer();
+      });
+  }
+
+  window.toggleAccordion = function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  };
+
+  function renderReports() {
+    var wrap = I.$('#intelWrap');
+    if (!allReports.length) {
+      wrap.innerHTML = `
+        <div class="empty-intel">
+          <i class="fa-solid fa-folder-open"></i>
+          <h3>NO RECORDS FOUND</h3>
+          <p>情报局暂无你的侦察记录。请前往国家仓库使用【间谍卫星】。</p>
+          <a href="inventory.html" class="btn btn-gold" style="padding:10px 24px; border-radius:8px;"><i class="fa-solid fa-box-open"></i> 前往国家仓库</a>
+        </div>
+      `;
+      return;
+    }
+
+    var grouped = {};
+    allReports.forEach(function(r) {
+      if (!grouped[r.target_id]) grouped[r.target_id] = [];
+      grouped[r.target_id].push(r);
+    });
+
+    var html = '<div class="intel-grid">';
+    for (var tid in grouped) {
+      var history = grouped[tid]; 
+      var latest = history[0];
+      var target = latest.target || {};
+      
+      var isExpired = (new Date().getTime() - new Date(latest.created_at).getTime()) > 24 * 60 * 60 * 1000;
+      var isBlurred = latest.is_blurred || isExpired;
+      
+      var resJson = latest.snap_res_json || {};
+      var milJson = latest.snap_mil_json || {};
+
+      var diffHtml = '';
+      if (history.length > 1 && !isExpired && !latest.is_blurred && !history[1].is_blurred) {
+        var dBal = latest.snap_balance - history[1].snap_balance;
+        if (dBal !== 0) {
+          var color = dBal > 0 ? '#ef4444' : '#22c55e';
+          var sign = dBal > 0 ? '+' : '';
+          diffHtml = `<div class="history-diff"><i class="fa-solid fa-arrow-trend-up" style="color:${color}"></i> 相较上次侦察，该国国库 <span class="${dBal>0?'diff-up':'diff-down'}">${sign}${I.fmtNumber(dBal)} ₽</span>。</div>`;
+        }
+      }
+
+      var flag = target.flag_url || I.avatarFallback(target.username);
+
+      // 生成资源格子
+      var resGridHtml = '';
+      for (var rKey in RES_MAP) {
+        var rVal = Number(resJson[rKey]) || 0;
+        // 模糊状态下，如果数量为0就不占位置了
+        if (isBlurred && rVal === 0) continue; 
+        var rDisplay = isBlurred ? getBlurRes(rVal) : I.fmtNumber(rVal);
+        var rClass = isBlurred ? 'blurred' : '';
+        resGridHtml += `
+          <div class="data-item">
+            <div class="data-name"><i class="fa-solid fa-cubes"></i> ${RES_MAP[rKey]}</div>
+            <div class="data-val ${rClass}">${rDisplay}</div>
+          </div>
+        `;
+      }
+      if (!resGridHtml) resGridHtml = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:10px;">无战略资源储备</div>';
+
+      // 生成兵力格子
+      var milGridHtml = '';
+      var hasMil = false;
+
+      if (isBlurred) {
+        // 🚨 模糊状态：不再罗列兵种，只展示总兵力评价
+        var totalMil = 0;
+        for (var mKey in MIL_MAP) {
+          totalMil += (Number(milJson[mKey]) || 0);
+        }
+        if (totalMil > 0) {
+          hasMil = true;
+          milGridHtml = `
+            <div class="data-item" style="grid-column: 1 / -1; justify-content: center; padding: 16px; background: rgba(167, 139, 250, 0.05); border: 1px solid rgba(167, 139, 250, 0.2);">
+              <div class="data-name" style="font-size: 14px; color: #a78bfa;">
+                <i class="fa-solid fa-satellite-dish fa-fade" style="font-size: 18px; margin-right: 8px;"></i> 
+                综合武装力量：<b style="font-size: 16px;">${getBlurMil(totalMil)}</b>
+              </div>
+            </div>
+          `;
+        }
+      } else {
+        // 🚨 精确状态：正常展示详细兵种
+        for (var mKey in MIL_MAP) {
+          var mVal = Number(milJson[mKey]) || 0;
+          if (mVal > 0) { 
+            hasMil = true;
+            milGridHtml += `
+              <div class="data-item">
+                <div class="data-name"><i class="fa-solid fa-shield-halved"></i> ${MIL_MAP[mKey]}</div>
+                <div class="data-val">${I.fmtNumber(mVal)}</div>
+              </div>
+            `;
+          }
+        }
+      }
+
+      if (!hasMil) {
+        milGridHtml = '<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:10px;">未探测到任何兵力部署</div>';
+      }
+
+      var moneyDisplay = isBlurred ? getBlurMoney(latest.snap_balance) : I.fmtNumber(latest.snap_balance) + ' ₽';
+      var moneyClass = isBlurred ? 'blurred' : '';
+      var moneyStyle = isBlurred ? 'color:#a78bfa; font-size:14px;' : '';
+
+      html += `
+        <div class="intel-card ${isExpired ? 'expired' : ''}">
+          <div class="card-head">
+            <div class="target-info">
+              <img src="${flag}" alt="">
+              <div class="target-name">
+                ${!isExpired ? '<span class="status-dot"></span>' : '<i class="fa-solid fa-lock" style="color:#64748b; margin-right:6px;"></i>'}
+                ${I.escapeHtml(target.username || '未知')}
+              </div>
+            </div>
+            <div style="font-size:11px; font-family:var(--mono); color:var(--muted);" id="timer-${latest.id}">计算中...</div>
+          </div>
+          
+          <div class="card-body">
+            <div class="overview-box">
+              <div>
+                <div class="overview-label">国库总储备 ${isBlurred && !isExpired ? '<span style="color:#ef4444; font-size:10px; font-weight:normal;">(受信号干扰)</span>' : ''}</div>
+                <div class="overview-val ${moneyClass}" style="${moneyStyle}">${moneyDisplay}</div>
+              </div>
+            </div>
+
+            <div class="intel-accordion">
+              <div class="accordion-head" onclick="toggleAccordion('res-${latest.id}')">
+                <span><i class="fa-solid fa-cubes-stacked"></i> 战略资源明细</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="accordion-body open" id="res-${latest.id}">
+                ${resGridHtml}
+              </div>
+            </div>
+
+            <div class="intel-accordion">
+              <div class="accordion-head" onclick="toggleAccordion('mil-${latest.id}')">
+                <span><i class="fa-solid fa-users-gear"></i> 军事部署明细</span>
+                <i class="fa-solid fa-chevron-down"></i>
+              </div>
+              <div class="accordion-body" id="mil-${latest.id}">
+                ${milGridHtml}
+              </div>
+            </div>
+
+            ${diffHtml}
+          </div>
+
+          <div class="card-actions">
+            ${isExpired 
+              ? `<button class="btn-intel btn-burn" onclick="burnReport('${latest.id}')"><i class="fa-solid fa-fire"></i> 焚毁档案</button>`
+              : `<a href="wars.html" class="btn-intel btn-war"><i class="fa-solid fa-crosshairs"></i> 针对性发动战争</a>
+                 <a href="country.html?id=${target.id}" class="btn-intel btn-burn" style="flex:0.5;"><i class="fa-solid fa-eye"></i> 档案</a>`
+            }
+          </div>
+        </div>
+      `;
+    }
+    html += '</div>';
+    wrap.innerHTML = html;
+  }
+
+  function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(function () {
+      var now = new Date().getTime();
+      var needRefresh = false;
+      allReports.forEach(function (r) {
+        var timerEl = I.$('#timer-' + r.id);
+        if (!timerEl) return;
+
+        var diff = now - new Date(r.created_at).getTime();
+        var remainingMs = (24 * 60 * 60 * 1000) - diff;
+
+        if (remainingMs > 0) {
+          var h = Math.floor(remainingMs / (1000 * 60 * 60));
+          var m = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+          var s = Math.floor((remainingMs % (1000 * 60)) / 1000);
+          timerEl.innerHTML = `<i class="fa-regular fa-clock"></i> ${h}h ${m}m ${s}s 后过期`;
+          timerEl.style.color = '#22c55e';
+        } else {
+          if (!timerEl.classList.contains('expired')) needRefresh = true;
+        }
+      });
+      if (needRefresh) renderReports();
+    }, 1000);
+  }
+
+  window.burnReport = function(id) {
+    if (!confirm('确认焚毁该情报档案吗？此操作不可恢复。')) return;
+    I.client.from('spy_reports').delete().eq('id', id).then(function(r) {
+      if (r.error) return I.toast('焚毁失败', 'error');
+      I.toast('档案已化为灰烬', 'success');
+      loadReports();
+    });
+  };
+})();
+</script>
+</body>
+</html>
