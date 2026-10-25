@@ -37,18 +37,15 @@
 
   .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
   
-  /* 资源标签 */
   .res-tags { display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px; font-family: var(--mono); }
   .res-tag { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; }
   
-  /* 战争卡片 */
   .war-card { background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
   .war-vs { font-size: 24px; font-weight: 900; color: #ef4444; font-family: var(--mono); }
   .war-side { flex: 1; min-width: 200px; text-align: center; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; }
   .war-side b { display: block; font-size: 16px; color: #fff; margin-bottom: 8px; }
   .war-troops { font-size: 12px; color: var(--muted); text-align: left; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
   
-  /* 弹窗 */
   .admin-modal { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; }
   .admin-modal.show { display: flex; }
   .admin-modal-box { width: 100%; max-width: 500px; background: #0f172a; border: 1px solid var(--border-2); border-radius: 16px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
@@ -537,10 +534,55 @@ window.promptEditMoney = async function(userId, currentBalance) {
   I.toast('修改成功', 'success'); loadData();
 };
 
+// 核心修改：彻底增强删除逻辑与错误提示
 window.deleteUser = async function(userId) {
-  if (!confirm('确定彻底删除该国家？')) return;
-  await I.client.from('profiles').delete().eq('id', userId);
-  I.toast('已抹除', 'success'); loadData();
+  if (!confirm('警告：确定彻底删除该国家吗？这将会清除与其相关的所有数据（军队、外交、商品等），且不可恢复！')) return;
+  
+  I.toast('正在清理关联数据...', 'info', 2000);
+  
+  // 尝试在删除主表前，清理关联表的数据（防止外键冲突导致静默失败）
+  const tablesToDelete = [
+    { table: 'notifications', col: 'user_id' },
+    { table: 'balance_logs', col: 'country_id' },
+    { table: 'transfers', col: 'sender_id' },
+    { table: 'transfers', col: 'receiver_id' },
+    { table: 'market_items', col: 'seller_id' },
+    { table: 'news', col: 'author_id' },
+    { table: 'news_comments', col: 'user_id' },
+    { table: 'news_likes', col: 'user_id' },
+    { table: 'spy_reports', col: 'owner_id' },
+    { table: 'spy_reports', col: 'target_id' },
+    { table: 'territories', col: 'owner_id' },
+    { table: 'forecasts', col: 'country_id' },
+    { table: 'military_queue', col: 'country_id' },
+    { table: 'custom_units', col: 'country_id' },
+    { table: 'military', col: 'country_id' },
+    { table: 'resource_buildings', col: 'country_id' },
+    { table: 'country_resources', col: 'country_id' },
+    { table: 'diplomacy_requests', col: 'sender_id' },
+    { table: 'diplomacy_requests', col: 'receiver_id' },
+    { table: 'relations', col: 'country1_id' },
+    { table: 'relations', col: 'country2_id' },
+    { table: 'wars', col: 'attacker_id' },
+    { table: 'wars', col: 'defender_id' }
+  ];
+
+  // 循环删除关联数据（如果某表没权限或不存在，忽略报错）
+  for (let i = 0; i < tablesToDelete.length; i++) {
+    var t = tablesToDelete[i];
+    await I.client.from(t.table).delete().eq(t.col, userId);
+  }
+
+  // 最后删除主表
+  const { error } = await I.client.from('profiles').delete().eq('id', userId);
+  
+  if (error) {
+    console.error("删除报错:", error);
+    I.toast('删除失败：' + error.message, 'error', 5000);
+  } else {
+    I.toast('国家及所有关联数据已彻底抹除', 'success');
+    loadData();
+  }
 };
 
 window.forcePeace = async function() {
@@ -602,7 +644,6 @@ window.triggerGlobalDisaster = async function() {
           I.client.from('country_resources').update(updateObj).eq('country_id', r.country_id)
         );
         
-        // 收集通知数据
         notifList.push({
           user_id: r.country_id,
           type: 'disaster',
@@ -623,14 +664,27 @@ window.triggerGlobalDisaster = async function() {
       console.error('降灾部分失败', errs);
       I.toast('部分降灾失败：' + errs[0].error.message, 'error');
     } else {
-      // 批量插入通知（分批插入防止超长）
+      var notifSuccess = true;
+      var notifErrMsg = '';
+      
       if (notifList.length > 0) {
         for (let i = 0; i < notifList.length; i += 500) {
           const batch = notifList.slice(i, i + 500);
-          await I.client.from('notifications').insert(batch);
+          const { error: nErr } = await I.client.from('notifications').insert(batch);
+          if (nErr) {
+            notifSuccess = false;
+            notifErrMsg = nErr.message;
+            console.error('通知插入失败：', nErr);
+            break;
+          }
         }
       }
-      I.toast('全服天灾已降临，通知已发送', 'success');
+      
+      if (!notifSuccess) {
+        I.toast('资源已扣除，但通知发送失败：' + notifErrMsg, 'error', 5000);
+      } else {
+        I.toast('全服天灾已降临，通知已发送至仓库。请去首页或其它页面查看铃铛。', 'success', 4000);
+      }
       loadData(); 
     }
   } catch (err) {

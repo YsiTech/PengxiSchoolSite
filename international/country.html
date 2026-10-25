@@ -124,7 +124,7 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -135,16 +135,6 @@
   var targetProfile = null;
   var currentRelationType = 'neutral';
   var actionType = 'diplomatic';
-
-  // 🚨 评级系统 (与列表页保持一致)
-  function getLevel(influence) {
-    var inf = influence || 0;
-    if (inf >= 5000) return { text: '世界霸主', icon: 'fa-crown', color: '#ef4444' };
-    if (inf >= 2000) return { text: '超级大国', icon: 'fa-star', color: '#f59e0b' };
-    if (inf >= 1000) return { text: '地区强国', icon: 'fa-shield-halved', color: '#a78bfa' };
-    if (inf >= 500) return { text: '新兴城邦', icon: 'fa-seedling', color: '#22c55e' };
-    return { text: '偏远聚落', icon: 'fa-house', color: '#94a3b8' };
-  }
 
   I.requireAuth().then(function (ok) {
     if (!ok) return;
@@ -175,7 +165,8 @@
     var wrap = I.$('#countryWrap');
     var c = targetProfile;
     var isSelf = currentProfile.id === c.id;
-    var lvl = getLevel(c.influence);
+    // 🚨 统一使用全局无限等级计算
+    var lvlInfo = I.getLevelInfo(c.influence || 0);
     var flag = c.flag_url || I.avatarFallback(c.username);
 
     // 关系标签
@@ -202,8 +193,8 @@
           <div class="banner-info">
             <h1 class="banner-name">
               ${I.escapeHtml(c.username)}
-              <span style="font-size:12px; padding:4px 10px; border-radius:6px; background:rgba(0,0,0,0.6); border:1px solid ${lvl.color}; color:${lvl.color};">
-                <i class="fa-solid ${lvl.icon}"></i> ${lvl.text}
+              <span style="font-size:12px; padding:4px 10px; border-radius:6px; background:rgba(0,0,0,0.6); border:1px solid ${lvlInfo.color}; color:${lvlInfo.color};">
+                <i class="fa-solid ${lvlInfo.icon}"></i> Lv.${lvlInfo.level} ${lvlInfo.title}
               </span>
               ${relHtml}
             </h1>
