@@ -129,7 +129,7 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -178,11 +178,11 @@ function renderLayout() {
       </div>
       <div class="panel-card" style="border-color: rgba(239,68,68,0.3);">
         <h3 style="color:var(--red); border-left-color:var(--red);">紧急干预</h3>
-        <button class="btn btn-red" onclick="forcePeace()">一键强制全服停战</button>
+        <button class="btn btn-red" onclick="forcePeace()"><i class="fa-solid fa-dove"></i> 一键强制全服停战</button>
       </div>
     </div>
 
-    <!-- 2. 国家管理 (新增银行卡、资源、单发功能) -->
+    <!-- 2. 国家管理 -->
     <div id="tab-users" class="admin-panel">
       <div class="panel-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
@@ -263,7 +263,7 @@ function renderLayout() {
       </div>
     </div>
 
-    <!-- 6. 全服空投 (加入降灾) -->
+    <!-- 6. 全服空投 -->
     <div id="tab-broadcast" class="admin-panel">
       <div class="panel-card">
         <h3>全服物资空投</h3>
@@ -297,9 +297,29 @@ function renderLayout() {
           </div>
           <div style="flex:1;"><label style="font-size:12px; color:var(--muted);">每人数量</label><input type="number" id="bcItemQty" class="input-control" placeholder="如：1" min="1"></div>
         </div>
-        <div style="display:flex; gap:16px;">
-          <button class="btn btn-gold" style="flex:1;" onclick="doBroadcast()"><i class="fa-solid fa-rocket"></i> 执行全服空投</button>
-          <button class="btn btn-red" style="flex:1;" onclick="triggerGlobalDisaster()"><i class="fa-solid fa-cloud-bolt"></i> 降下全服灾害 (扣30%资源)</button>
+        
+        <div style="display:flex; gap:16px; flex-direction:column; margin-top:16px;">
+          <button class="btn btn-gold" style="width:100%; padding:12px;" onclick="doBroadcast()"><i class="fa-solid fa-rocket"></i> 执行全服空投</button>
+        </div>
+
+        <hr style="border-color:rgba(255,255,255,0.1); margin:24px 0;">
+        
+        <h3 style="margin-bottom:16px; border-left-color:var(--red); color:var(--red);"><i class="fa-solid fa-triangle-exclamation"></i> 降下全服天灾</h3>
+        <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="flex:1; min-width:150px;">
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">灾害类型</label>
+            <select id="disasterType" class="input-control">
+              <option value="fire"><i class="fa-solid fa-fire"></i> 火灾 (损失原油)</option>
+              <option value="flood"><i class="fa-solid fa-water"></i> 洪水 (损失稀有金属)</option>
+              <option value="earthquake"><i class="fa-solid fa-house-crack"></i> 地震 (损失铁矿石)</option>
+              <option value="drought"><i class="fa-solid fa-sun"></i> 旱灾 (损失粮食)</option>
+            </select>
+          </div>
+          <div style="flex:1; min-width:150px;">
+            <label style="font-size:12px; color:var(--muted); display:block; margin-bottom:6px;">基础损失比例 (0.01 - 1)</label>
+            <input type="number" id="disasterPct" class="input-control" placeholder="如：0.3" value="0.3" step="0.05" min="0.01" max="1">
+          </div>
+          <button class="btn btn-red" style="flex:1; min-width:120px; height:42px;" onclick="triggerGlobalDisaster()"><i class="fa-solid fa-cloud-bolt"></i> 降下天灾</button>
         </div>
       </div>
     </div>
@@ -317,7 +337,7 @@ function renderLayout() {
     <!-- 8. 灾害设置 -->
     <div id="tab-disaster" class="admin-panel">
       <div class="panel-card">
-        <h3>全服灾害概率与损失比例</h3>
+        <h3>全服自动灾害概率与损失比例</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px;">
           <div><label>火灾概率</label><input type="number" id="cfgFire" class="input-control" step="0.01"></div>
           <div><label>洪灾概率</label><input type="number" id="cfgFlood" class="input-control" step="0.01"></div>
@@ -348,7 +368,6 @@ window.toggleShopFields = function() {
 };
 
 async function loadData() {
-  // 拉取所有需要的数据
   const [usersRes, resourcesRes, milRes, warsRes, txRes] = await Promise.all([
     I.client.from('profiles').select('*').order('created_at', { ascending: false }),
     I.client.from('country_resources').select('*'),
@@ -362,7 +381,6 @@ async function loadData() {
   allMilitaries = milRes.data || [];
   allWars = warsRes.data || [];
   
-  // 整理资源映射
   allResources = {};
   resources.forEach(r => { allResources[r.country_id] = r; });
 
@@ -379,7 +397,6 @@ async function loadData() {
     I.$('#statTotalTransfers').innerText = txRes.count || 0;
   }
 
-  // 财富榜
   var topRichList = I.$('#topRichList');
   if (topRichList) {
     const topUsers = [...allUsers].sort((a,b) => (b.balance||0) - (a.balance||0)).slice(0, 3);
@@ -391,7 +408,6 @@ async function loadData() {
     `).join('');
   }
 
-  // 国家管理表格
   var tbody = I.$('#userTableBody');
   if (tbody) {
     tbody.innerHTML = allUsers.map(u => {
@@ -428,7 +444,6 @@ async function loadData() {
     }).join('');
   }
 
-  // 战争监控列表
   var warWrap = I.$('#warMonitorWrap');
   if (warWrap) {
     if (!allWars.length) {
@@ -453,12 +468,12 @@ async function loadData() {
         return `
           <div class="war-card">
             <div class="war-side" style="border:1px solid rgba(239,68,68,0.3);">
-              <b style="color:#ef4444;">⚔️ 攻方: ${I.escapeHtml(atk.username)}</b>
+              <b style="color:#ef4444;"><i class="fa-solid fa-crosshairs"></i> 攻方: ${I.escapeHtml(atk.username)}</b>
               <div class="war-troops">${renderTroops(atkMil)}</div>
             </div>
             <div class="war-vs">VS</div>
             <div class="war-side" style="border:1px solid rgba(79,195,247,0.3);">
-              <b style="color:#4fc3f7;">🛡️ 守方: ${I.escapeHtml(def.username)}</b>
+              <b style="color:#4fc3f7;"><i class="fa-solid fa-shield-halved"></i> 守方: ${I.escapeHtml(def.username)}</b>
               <div class="war-troops">${renderTroops(defMil)}</div>
             </div>
           </div>
@@ -535,11 +550,92 @@ window.forcePeace = async function() {
 };
 
 window.triggerGlobalDisaster = async function() {
-  if (!confirm('⚠️ 警告：此操作将扣除全服所有国家 30% 的资源，确定降灾吗？')) return;
-  I.toast('正在执行天灾...', 'success', 1000);
-  var { error } = await I.client.rpc('admin_trigger_disaster', { p_loss_pct: 0.3 });
-  if (error) return I.toast('降灾失败：' + error.message, 'error');
-  I.toast('全服灾害已执行', 'success'); loadData();
+  var type = I.$('#disasterType').value;
+  var pct = parseFloat(I.$('#disasterPct').value);
+  
+  if (isNaN(pct) || pct <= 0 || pct > 1) return I.toast('请输入 0.01 到 1 之间的损失比例', 'error');
+  
+  var typeName = { fire: '火灾', flood: '洪水', earthquake: '地震', drought: '旱灾' }[type] || type;
+  var resName = { fire: '原油', flood: '稀有金属', earthquake: '铁矿石', drought: '粮食' }[type] || '资源';
+  
+  if (!confirm(`警告：此操作将扣除全服所有国家的基础比例 ${(pct * 100).toFixed(0)}% 的【${resName}】（受各国预报系统减免），确定降下【${typeName}】吗？`)) return;
+  
+  I.toast('正在计算并执行天灾...', 'info', 1500);
+  
+  try {
+    const { data: forecasts, error: fErr } = await I.client.from('forecasts').select('*');
+    if (fErr) throw fErr;
+    
+    const { data: resources, error: rErr } = await I.client.from('country_resources').select('*');
+    if (rErr) throw rErr;
+    
+    var forecastMap = {};
+    if (forecasts) {
+      forecasts.forEach(function(f) {
+        forecastMap[f.country_id] = f;
+      });
+    }
+    
+    var updatePromises = [];
+    var notifList = []; 
+    var resCol = type === 'fire' ? 'oil' : type === 'flood' ? 'rare_metal' : type === 'earthquake' ? 'iron_ore' : 'food';
+    
+    resources.forEach(function(r) {
+      var f = forecastMap[r.country_id] || {};
+      var lvl = 0;
+      if (type === 'fire') lvl = f.fire_lvl || 0;
+      else if (type === 'flood') lvl = f.flood_lvl || 0;
+      else if (type === 'earthquake') lvl = f.earthquake_lvl || 0;
+      else if (type === 'drought') lvl = f.drought_lvl || 0;
+      
+      var reduction = Math.min(lvl * 0.1, 0.5); 
+      var actualLoss = pct * (1 - reduction);   
+      
+      var currentVal = r[resCol] || 0;
+      var newVal = Math.max(0, currentVal * (1 - actualLoss));
+      var lostAmount = currentVal - newVal;
+      
+      if (newVal < currentVal) {
+        var updateObj = {};
+        updateObj[resCol] = newVal;
+        updatePromises.push(
+          I.client.from('country_resources').update(updateObj).eq('country_id', r.country_id)
+        );
+        
+        // 收集通知数据
+        notifList.push({
+          user_id: r.country_id,
+          type: 'disaster',
+          title: `天灾预警：全服${typeName}降临`,
+          content: `一场突如其来的【${typeName}】席卷了您的国家。由于您的预警系统等级为 Lv.${lvl}（减伤 ${(reduction*100).toFixed(0)}%），您共损失了 ${I.fmtNumber(lostAmount)} 单位【${resName}】。请尽快重建家园、补充物资。`
+        });
+      }
+    });
+    
+    if (updatePromises.length === 0) {
+      return I.toast('所有国家的对应资源均为 0，无需降灾', 'info');
+    }
+    
+    var results = await Promise.all(updatePromises);
+    var errs = results.filter(function(res) { return res.error; });
+    
+    if (errs.length > 0) {
+      console.error('降灾部分失败', errs);
+      I.toast('部分降灾失败：' + errs[0].error.message, 'error');
+    } else {
+      // 批量插入通知（分批插入防止超长）
+      if (notifList.length > 0) {
+        for (let i = 0; i < notifList.length; i += 500) {
+          const batch = notifList.slice(i, i + 500);
+          await I.client.from('notifications').insert(batch);
+        }
+      }
+      I.toast('全服天灾已降临，通知已发送', 'success');
+      loadData(); 
+    }
+  } catch (err) {
+    I.toast('降灾执行出错：' + err.message, 'error');
+  }
 };
 
 window.doBroadcast = async function() {

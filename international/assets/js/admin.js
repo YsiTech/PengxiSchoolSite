@@ -180,7 +180,7 @@
   });
 
   window.deleteCountry = function(id, name) {
-    if (!confirm(`🚨 警告：你确定要彻底删除国家【${name}】吗？\n\n该操作将清空该国的国库、外交关系、新闻、商品等所有关联数据，且不可恢复！`)) return;
+    if (!confirm(`警告：你确定要彻底删除国家【${name}】吗？\n\n该操作将清空该国的国库、外交关系、新闻、商品等所有关联数据，且不可恢复！`)) return;
 
     I.client.from('profiles').delete().eq('id', id).then(function(res) {
       if (res.error) {
