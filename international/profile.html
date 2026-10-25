@@ -36,6 +36,48 @@
   .funds-amt.in { color: #22c55e; }
   .funds-amt.out { color: #ef4444; }
   .funds-after { display: block; font-size: 11px; color: var(--muted); font-weight: normal; margin-top: 4px; }
+
+  /* 🚨 高级签到卡片样式（紧凑版） */
+  .checkin-card { position: relative; background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(5,7,10,0.95)); border: 1px solid rgba(212,175,55,0.3); border-radius: 16px; padding: 16px 20px; margin-bottom: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(212,175,55,0.05); width: 100%; }
+  .checkin-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(212,175,55,0.1) 0%, transparent 60%); pointer-events: none; z-index: 0; }
+  #checkinParticles { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+  
+  .checkin-content { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 12px; }
+  
+  .checkin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; }
+  .checkin-title { font-size: 15px; font-weight: 900; color: #fff; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
+  .checkin-title i { color: var(--gold); text-shadow: 0 0 10px rgba(212,175,55,0.5); }
+  .checkin-reward-tag { font-size: 12px; color: var(--gold-2); background: rgba(212,175,55,0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(212,175,55,0.3); }
+  
+  /* 左右分栏 */
+  .checkin-body { display: flex; gap: 20px; align-items: center; }
+  .checkin-calendar-box { flex: 1.5; }
+  .checkin-action-box { flex: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+
+  /* 迷你日历网格 */
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+  .calendar-head { font-size: 10px; color: var(--muted); margin-bottom: 4px; font-weight: bold; }
+  .calendar-day { position: relative; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-family: var(--mono); color: #cbd5e1; border-radius: 4px; background: rgba(255,255,255,0.02); border: 1px solid transparent; }
+  .calendar-day.empty { background: transparent; border: none; }
+  .calendar-day.today { border-color: rgba(255,255,255,0.3); color: #fff; font-weight: bold; }
+  .calendar-day.checked { background: rgba(212,175,55,0.15); color: var(--gold); border-color: rgba(212,175,55,0.4); box-shadow: inset 0 0 8px rgba(212,175,55,0.2); }
+  .calendar-day.checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; font-size: 8px; position: absolute; bottom: 1px; right: 2px; color: var(--gold); opacity: 0.8; }
+  .calendar-day.today.checked { background: var(--gold); color: #000; box-shadow: 0 0 10px rgba(212,175,55,0.5); border-color: var(--gold); }
+  .calendar-day.today.checked::after { color: #000; }
+  
+  /* 签到操作区 */
+  .checkin-info { font-size: 12px; color: var(--muted); line-height: 1.4; text-align: right; }
+  .checkin-info b { color: var(--gold-2); font-size: 14px; }
+  .checkin-btn { width: 100%; padding: 10px 16px; border-radius: 8px; background: linear-gradient(135deg, var(--gold), #b8860b); color: #000; font-weight: 900; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(212,175,55,0.3); white-space: nowrap; }
+  .checkin-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,175,55,0.6); }
+  .checkin-btn:disabled { background: rgba(255,255,255,0.05); color: var(--muted); cursor: not-allowed; box-shadow: none; border: 1px solid rgba(255,255,255,0.1); }
+  
+  @media (max-width: 768px) {
+    .checkin-body { flex-direction: column; align-items: stretch; gap: 16px; }
+    .checkin-action-box { align-items: stretch; }
+    .checkin-info { text-align: left; }
+    .checkin-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  }
 </style>
 </head>
 <body>
@@ -138,10 +180,258 @@
     });
   });
 
+  // 🚨 签到状态计算
+  function getCheckInStatus() {
+    var today = new Date();
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var dd = String(today.getDate()).padStart(2, '0');
+    var todayStr = `${yyyy}-${mm}-${dd}`;
+
+    var yesterday = new Date(today.getTime() - 86400000);
+    var y_yyyy = yesterday.getFullYear();
+    var y_mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+    var y_dd = String(yesterday.getDate()).padStart(2, '0');
+    var yesterdayStr = `${y_yyyy}-${y_mm}-${y_dd}`;
+
+    var lastDate = profile.last_checkin_date;
+    var currentStreak = profile.checkin_streak || 0;
+    
+    var isCheckedInToday = (lastDate === todayStr);
+    var newStreak = 1;
+
+    if (isCheckedInToday) {
+      newStreak = currentStreak;
+    } else if (lastDate === yesterdayStr) {
+      newStreak = currentStreak + 1;
+    } else {
+      newStreak = 1;
+    }
+
+    var rewardMoney = Math.min(5000 + (newStreak - 1) * 1000, 10000);
+
+    return {
+      todayStr: todayStr,
+      isCheckedInToday: isCheckedInToday,
+      streak: newStreak,
+      rewardMoney: rewardMoney
+    };
+  }
+
+  // 🚨 渲染紧凑版日历
+  function renderCalendar(status) {
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = now.getMonth();
+    var todayDate = now.getDate();
+    
+    var firstDay = new Date(year, month, 1).getDay();
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    var html = '';
+    var weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+    weekdays.forEach(function(d) { html += `<div class="calendar-head">${d}</div>`; });
+    
+    for (var i = 0; i < firstDay; i++) {
+      html += `<div class="calendar-day empty"></div>`;
+    }
+    
+    var checkedDates = [];
+    if (profile.last_checkin_date) {
+      var baseDate = status.isCheckedInToday ? new Date() : new Date(now.getTime() - 86400000);
+      if (profile.last_checkin_date === baseDate.toISOString().split('T')[0] || status.isCheckedInToday) {
+         for (var s = 0; s < status.streak; s++) {
+             var d = new Date(baseDate.getTime() - s * 86400000);
+             if (d.getMonth() === month) {
+                 checkedDates.push(d.getDate());
+             }
+         }
+      }
+    }
+    
+    for (var d = 1; d <= daysInMonth; d++) {
+      var isToday = (d === todayDate);
+      var isChecked = checkedDates.includes(d);
+      
+      var cls = 'calendar-day';
+      if (isToday) cls += ' today';
+      if (isChecked) cls += ' checked';
+      
+      html += `<div class="${cls}">${d}</div>`;
+    }
+    return html;
+  }
+
+  // 🚨 Canvas 粒子系统
+  var canvas, ctx, particles = [];
+  function initParticles() {
+    canvas = document.getElementById('checkinParticles');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    
+    function resize() {
+      var rect = canvas.parentElement.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    for (var i = 0; i < 20; i++) {
+      particles.push({
+        x: Math.random() * canvas.width / window.devicePixelRatio,
+        y: Math.random() * canvas.height / window.devicePixelRatio,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        size: Math.random() * 1.5 + 0.5,
+        alpha: Math.random() * 0.5 + 0.1,
+        color: '212, 175, 55'
+      });
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width / window.devicePixelRatio, canvas.height / window.devicePixelRatio);
+      
+      particles.forEach(function(p, index) {
+        p.x += p.vx;
+        p.y += p.vy;
+        
+        if (p.x < 0) p.x = canvas.width / window.devicePixelRatio;
+        if (p.x > canvas.width / window.devicePixelRatio) p.x = 0;
+        if (p.y < 0) p.y = canvas.height / window.devicePixelRatio;
+        if (p.y > canvas.height / window.devicePixelRatio) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.color}, ${p.alpha})`;
+        ctx.fill();
+
+        if (p.isBurst) {
+          p.x += p.vx * 5;
+          p.y += p.vy * 5;
+          p.alpha -= 0.03;
+          p.size *= 0.96;
+          if (p.alpha <= 0) particles.splice(index, 1);
+        }
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+
+  window.triggerParticleBurst = function() {
+    if (!canvas || !ctx) return;
+    var rect = canvas.parentElement.getBoundingClientRect();
+    var cx = rect.width / 2;
+    var cy = rect.height / 2;
+    for (var i = 0; i < 40; i++) {
+      var angle = Math.random() * Math.PI * 2;
+      var speed = Math.random() * 3 + 1;
+      particles.push({
+        x: cx,
+        y: cy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: Math.random() * 2.5 + 1,
+        alpha: 1,
+        color: '255, 215, 0',
+        isBurst: true
+      });
+    }
+  };
+
+  window.doCheckIn = function() {
+    var status = getCheckInStatus();
+    if (status.isCheckedInToday) return I.toast('您今天已经签到过了', 'info');
+
+    var btn = I.$('#btnCheckIn');
+    btn.disabled = true; btn.innerHTML = '正在连接...';
+
+    triggerParticleBurst();
+
+    var newBalance = (profile.balance || 0) + status.rewardMoney;
+    var newInfluence = (profile.influence || 0) + 100;
+
+    I.client.from('profiles').update({
+      balance: newBalance,
+      influence: newInfluence,
+      last_checkin_date: status.todayStr,
+      checkin_streak: status.streak
+    }).eq('id', profile.id).then(function(res) {
+      if (res.error) {
+        btn.disabled = false; btn.innerHTML = '立即签到';
+        return I.toast('签到失败：' + res.error.message, 'error');
+      }
+
+      I.toast(`签到成功！获得 ${I.fmtNumber(status.rewardMoney)} ₽ 和 100 影响力`, 'success');
+      setTimeout(function() { location.reload(); }, 1200);
+    });
+  };
+
+  // 🚨 响应式卡片移动函数
+  function moveCheckinCard() {
+    var isMobile = window.innerWidth <= 768;
+    var checkin = I.$('#checkinCardWrapper');
+    var balance = I.$('#balanceCard');
+    var content = I.$('.profile-content');
+    
+    if (!checkin || !balance || !content) return;
+
+    if (isMobile) {
+      // 移动端：插在国库储备卡片的上面
+      if (checkin.parentNode !== balance.parentNode) {
+        balance.parentNode.insertBefore(checkin, balance);
+      }
+    } else {
+      // 电脑端：放在右侧内容区最前面
+      if (checkin.parentNode !== content) {
+        content.insertBefore(checkin, content.firstChild);
+      }
+    }
+  }
+
   function render() {
     var wrap = I.$('#profileWrap');
-    // 🚨 核心修复：调用全局统一的无限等级计算
     var lvlInfo = I.getLevelInfo(profile.influence || 0);
+    
+    var checkIn = getCheckInStatus();
+    var btnText = checkIn.isCheckedInToday ? '今日已签到' : `立即签到`;
+    var btnDisabled = checkIn.isCheckedInToday ? 'disabled' : '';
+    var calendarHtml = renderCalendar(checkIn);
+
+    // 生成签到卡片的 HTML
+    var checkinHtml = `
+      <div id="checkinCardWrapper" style="width:100%;">
+        <div class="checkin-card">
+          <canvas id="checkinParticles"></canvas>
+          <div class="checkin-content">
+            <div class="checkin-header">
+              <div class="checkin-title"><i class="fa-solid fa-calendar-star"></i> 每日签到</div>
+              <div class="checkin-reward-tag">明日可获得:  ${I.fmtNumber(Math.min(5000 + checkIn.streak * 1000, 10000))} ₽</div>
+            </div>
+            
+            <div class="checkin-body">
+              <div class="checkin-calendar-box">
+                <div class="calendar-grid">
+                  ${calendarHtml}
+                </div>
+              </div>
+              
+              <div class="checkin-action-box">
+                <div class="checkin-info">
+                  连续签到: <b>${checkIn.streak}</b> 天<br>
+                  今日可获得: <b>${I.fmtNumber(checkIn.rewardMoney)} ₽</b><br>+100 影响力
+                </div>
+                <button class="checkin-btn" id="btnCheckIn" onclick="doCheckIn()" ${btnDisabled}>
+                  ${btnText}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
 
     wrap.innerHTML = `
       <div class="profile-grid">
@@ -156,7 +446,6 @@
             <p class="profile-email">${I.escapeHtml(profile.social_system)}</p>
             <div style="margin-bottom:14px"><span class="role-tag"><i class="fa-solid fa-shield-halved"></i> 主权国家</span></div>
             
-            <!-- 🚨 动态进度条 (统一算法) -->
             <div class="exp-bar-wrap">
               <div class="exp-text">
                 <span style="color:${lvlInfo.color}; font-weight:bold;">Lv.${lvlInfo.level} ${lvlInfo.title}</span>
@@ -171,7 +460,7 @@
             <div class="bc-hint"><i class="fa-solid fa-list-ul"></i> 明细</div>
             <div class="bc-top"><div class="bc-emblem">₽</div><div class="bc-title-group"><div class="bc-title">国库储备</div><div class="bc-subtitle">National Treasury</div></div></div>
             <div class="bc-amount-group"><div class="bc-amount">${I.fmtNumber(profile.balance)}</div><div class="bc-amount-unit">亚斯卢布 · АСР ₽</div></div>
-            <div class="bc-bottom"><div class="bc-holder"><span class="bc-holder-label">国家元首 / 户名</span><span class="bc-holder-value">${I.escapeHtml(profile.username)}</span></div><img src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" style="width:38px;height:38px;object-fit:contain;opacity:0.8;border-radius:50%;"></div>
+            <div class="bc-bottom"><div class="bc-holder"><span class="bc-holder-label">国家账户 / 户名</span><span class="bc-holder-value">${I.escapeHtml(profile.username)}</span></div><img src="${I.escapeHtml(profile.emblem_url || I.avatarFallback(profile.username))}" style="width:38px;height:38px;object-fit:contain;opacity:0.8;border-radius:50%;"></div>
             <div class="bc-shine"></div>
           </div>
 
@@ -192,6 +481,9 @@
         </aside>
 
         <section class="profile-content">
+          <!-- 初始统一渲染在这里，随后 JS 会判断屏幕宽度进行移动 -->
+          ${checkinHtml}
+
           <div class="card glass">
             <div class="card-head"><h3><i class="fa-solid fa-pen-to-square" style="color:var(--gold)"></i> 编辑国家档案</h3></div>
             <div class="form-grid two">
@@ -224,6 +516,12 @@
       </div>
     `;
 
+    // 🚨 核心：页面生成后，立刻执行位置判断移动
+    moveCheckinCard();
+
+    // 初始化粒子引擎
+    initParticles();
+
     I.client.auth.getUser().then(function (res) { var u = res.data && res.data.user; if (u) I.$('#pEmail').value = u.email || ''; });
     
     I.$('#pFlag').addEventListener('change', function() { var file = this.files[0]; if (file) { var reader = new FileReader(); reader.onload = function(e) { I.$('#avatarDisplay').innerHTML = `<img src="${e.target.result}" alt="">`; }; reader.readAsDataURL(file); } });
@@ -255,6 +553,9 @@
     I.$('#fundsLoadMore').addEventListener('click', function () { loadFunds(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && I.$('#fundsModal').classList.contains('open')) closeFunds(); });
   }
+
+  // 🚨 监听屏幕尺寸变化，自动调整顺序
+  window.addEventListener('resize', moveCheckinCard);
 
   function loadResources() {
     I.client.from('country_resources').select('*').eq('country_id', profile.id).maybeSingle().then(function(res) {
