@@ -72,7 +72,16 @@
         <h2 style="margin:0; font-size:18px; color:var(--ink); display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-comments" style="color:var(--gold);"></i> 国际交流大厅</h2>
         <p style="margin:4px 0 0 0; font-size:12px; color:var(--muted);">遵守国际法，文明发言，支持多媒体传输</p>
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="openDiploModal()" style="flex-shrink:0"><i class="fa-solid fa-bell"></i> 外交事务 <span id="diploBadge" style="background:var(--red);color:#fff;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:4px;display:none;">0</span></button>
+      
+      <div style="display: flex; gap: 8px; flex-shrink: 0;">
+        <a href="treaty.html" class="btn btn-ghost btn-sm" style="text-decoration: none;">
+          <i class="fa-solid fa-file-contract" style="color: var(--gold);"></i> 国际条约
+        </a>
+        <button class="btn btn-ghost btn-sm" onclick="openDiploModal()">
+          <i class="fa-solid fa-bell"></i> 外交事务 <span id="diploBadge" style="background:var(--red);color:#fff;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:4px;display:none;">0</span>
+        </button>
+      </div>
+      
     </div>
     <div class="chat-messages" id="chatMessages">
       <div class="loading-state"><div class="spinner"></div><span>正在接入国际频道...</span></div>
@@ -102,7 +111,7 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
 <script>
@@ -278,26 +287,24 @@
       return;
     }
     if (type === 'ally' || type === 'diplomatic') {
-      // 先更新请求状态
+      // 1. 更新请求状态为已接受
       I.client.from('diplomacy_requests').update({ status: 'accepted' }).eq('id', reqId).then(function () {
         var a = profile.id < fromId ? profile.id : fromId; 
         var b = profile.id < fromId ? fromId : profile.id;
         
-        // 暴力清理旧关系，加错误捕获防止静默失败
-        I.client.from('relations').delete().or(`country_a.eq.${a},country_b.eq.${a}`).then(function(delRes) {
+        // 🚨 核心修复：只精准删除这两个国家之间的旧外交关系，绝对不影响与其他国家的关系
+        I.client.from('relations').delete().or(`and(country_a.eq.${a},country_b.eq.${b}),and(country_a.eq.${b},country_b.eq.${a})`).then(function(delRes) {
           if(delRes.error) console.error("清理旧关系失败", delRes.error);
           
-          I.client.from('relations').delete().or(`country_a.eq.${b},country_b.eq.${b}`).then(function() {
-             // 插入新关系，严格检查 error
-             I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: type }).then(function (insRes) {
-               if (insRes.error) {
-                 console.error("建交写入失败", insRes.error);
-                 I.toast('建交失败（数据库拦截）：' + insRes.error.message, 'error');
-               } else {
-                 I.toast(type === 'ally' ? '已结为同盟！' : '已建立外交关系', 'success');
-               }
-               loadDiplomacy();
-             });
+          // 2. 插入新关系
+          I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: type }).then(function (insRes) {
+            if (insRes.error) {
+              console.error("建交写入失败", insRes.error);
+              I.toast('建交失败（数据库拦截）：' + insRes.error.message, 'error');
+            } else {
+              I.toast(type === 'ally' ? '已结为同盟！' : '已建立外交关系', 'success');
+            }
+            loadDiplomacy();
           });
         });
       });

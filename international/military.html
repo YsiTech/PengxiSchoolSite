@@ -125,7 +125,6 @@
 (function () {
   var I = IECP; var profile = null; var myRes = null; var myMil = null; var myQueue = []; var customUnits = {}; var timer = null; var activeTab = 'all';
 
-  // 🚨 全面扩充的兵种特色与详细描述
   var UNITS = [
     { type: 'scouts', name: '侦察兵', icon: 'fa-binoculars', category: 'army', power: 2, cost: { food: 5 }, desc: '配备轻型全地形载具，深入前线获取敌方部署与地形信息。', time: 3, buff: '视野扩展：提高战场先手与暴击率' },
     { type: 'infantry', name: '机械化步兵', icon: 'fa-person-rifle', category: 'army', power: 5, cost: { food: 10, iron_ore: 10 }, desc: '装备现代化单兵武器与轻型装甲车，战场的中坚力量。', time: 8, buff: '高性价比：适合快速成建制并维持战线' },
@@ -289,7 +288,7 @@
 
       var customInv = myMil.custom_troops || {};
       for (var id in customInv) {
-        if (customInv[id] <= 0) continue; // 🚨 核心修改：如果库存为 0，直接跳过不渲染
+        if (customInv[id] <= 0) continue; 
         var cu = customUnits[id]; if (!cu) continue;
         var catName = CAT_MAP[cu.category] || '未知';
         var isDef = cu.category.indexOf('defense') !== -1;
@@ -421,9 +420,35 @@
   window.build = function(type) {
     var qty = parseInt(I.$('#qty_' + type).value, 10);
     if (!qty || qty < 1) return I.toast('数量错误', 'error');
-    I.client.rpc('start_training', { c_id: profile.id, u_type: type, u_amount: qty }).then(function(res) {
-      if (res.error) return I.toast('失败', 'error'); I.toast('已加入队列', 'success'); loadData(); 
-    });
+    
+    // 🚨 判断兵种是否为进攻型
+    var targetUnit = UNITS.find(u => u.type === type);
+    var isOffensive = targetUnit && targetUnit.category !== 'defense';
+
+    if (isOffensive) {
+      // 检查是否受到限制进攻条约的约束
+      I.client.from('treaties').select('*')
+        .eq('receiver_id', profile.id)
+        .eq('status', 'signed')
+        .then(function(checkRes) {
+          var treaties = checkRes.data || [];
+          var hasLimit = treaties.some(t => t.terms && t.terms.limit_offense === true);
+          
+          if (hasLimit) {
+            return I.toast('受已签署条约限制，你目前无法制造进攻型兵种！', 'error');
+          }
+
+          // 原本的造兵逻辑
+          I.client.rpc('start_training', { c_id: profile.id, u_type: type, u_amount: qty }).then(function(res) {
+            if (res.error) return I.toast('失败', 'error'); I.toast('已加入队列', 'success'); loadData(); 
+          });
+        });
+    } else {
+      // 防御型兵种直接制造
+      I.client.rpc('start_training', { c_id: profile.id, u_type: type, u_amount: qty }).then(function(res) {
+        if (res.error) return I.toast('失败', 'error'); I.toast('已加入队列', 'success'); loadData(); 
+      });
+    }
   };
 
   function renderQueue() {

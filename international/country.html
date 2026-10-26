@@ -165,11 +165,9 @@
     var wrap = I.$('#countryWrap');
     var c = targetProfile;
     var isSelf = currentProfile.id === c.id;
-    // 🚨 统一使用全局无限等级计算
     var lvlInfo = I.getLevelInfo(c.influence || 0);
     var flag = c.flag_url || I.avatarFallback(c.username);
 
-    // 关系标签
     var relHtml = '';
     if (!isSelf) {
       if (currentRelationType === 'war') relHtml = `<span class="rel-tag rel-war"><i class="fa-solid fa-crosshairs"></i> 交战中</span>`;
@@ -178,14 +176,12 @@
       else relHtml = `<span class="rel-tag rel-neutral"><i class="fa-solid fa-circle-nodes"></i> 中立</span>`;
     }
 
-    // 外交区域边框颜色
     var borderColor = 'rgba(255,255,255,0.08)';
     if (currentRelationType === 'war') borderColor = 'rgba(239,68,68,0.4)';
     else if (currentRelationType === 'ally') borderColor = 'rgba(212,175,55,0.4)';
     else if (currentRelationType === 'diplomatic') borderColor = 'rgba(34,197,94,0.4)';
 
     wrap.innerHTML = `
-      <!-- 顶部档案横幅 -->
       <div class="profile-banner">
         <div class="profile-bg" style="background-image: url('${flag}')"></div>
         <div class="profile-banner-content">
@@ -204,7 +200,6 @@
         </div>
       </div>
 
-      <!-- 国家介绍 -->
       <div class="hud-panel">
         <div class="hud-title">
           <span><i class="fa-solid fa-scroll"></i> 国家介绍</span>
@@ -213,7 +208,6 @@
         <div class="desc-box">${I.escapeHtml(c.description || '该国暂未向国际社会公开其国家介绍。')}</div>
       </div>
 
-      <!-- 数据终端 (基本档案) -->
       <div class="hud-panel">
         <div class="hud-title"><span><i class="fa-solid fa-database"></i> 核心数据终端</span></div>
         <div class="data-grid">
@@ -236,13 +230,11 @@
         </div>
       </div>
 
-      <!-- 外交关系网 -->
       <div class="hud-panel">
         <div class="hud-title"><span><i class="fa-solid fa-link"></i> 外交关系网</span></div>
         <div id="relationsWrap"><div class="loading-state" style="padding:20px 0"><div class="spinner"></div></div></div>
       </div>
 
-      <!-- 外交行动 -->
       ${isSelf ? '' : `
         <div class="hud-panel" style="border-color: ${borderColor}; box-shadow: 0 0 20px ${borderColor.replace('0.4', '0.1')};">
           <div class="hud-title"><span><i class="fa-solid fa-satellite-dish"></i> 外交行动指令</span></div>
@@ -266,7 +258,6 @@
     loadRelations();
   }
 
-  // 加载该国的关系网
   function loadRelations() {
     I.client.from('relations').select('*').or('country_a.eq.' + targetId + ',country_b.eq.' + targetId).then(function (res) {
       var wrap = I.$('#relationsWrap');
@@ -368,21 +359,37 @@
     var b = currentProfile.id < targetId ? targetId : currentProfile.id;
 
     if (actionType === 'war') {
-      I.client.from('relations').delete().or(`and(country_a.eq.${a},country_b.eq.${b}),and(country_a.eq.${b},country_b.eq.${a})`).then(function() {
-        I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: 'war' }).then(function(rWar) {
-          if (rWar.error) { I.toast('宣战失败：' + rWar.error.message, 'error'); btn.disabled = false; btn.innerHTML = originalText; return; }
+      // 🚨 检查是否签署了互不侵犯条约
+      I.client.from('treaties').select('*')
+        .or(`and(proposer_id.eq.${currentProfile.id},receiver_id.eq.${targetId}),and(proposer_id.eq.${targetId},receiver_id.eq.${currentProfile.id})`)
+        .eq('status', 'signed')
+        .then(function(checkRes) {
+          var treaties = checkRes.data || [];
+          var hasNoWar = treaties.some(t => t.terms && t.terms.no_war === true);
           
-          I.client.from('wars').insert({ attacker_id: currentProfile.id, defender_id: targetId, status: 'ongoing' }).then(function(){
-            I.client.rpc('send_notification', { 
-              p_user_id: targetId, p_type: 'war', p_title: '遭遇宣战', 
-              p_content: `【${currentProfile.username}】已正式向你宣战！${msg ? '\n附言: '+msg : ''}` 
+          if (hasNoWar) {
+            I.toast('你与该国签署了《互不侵犯条约》，无法宣战！', 'error');
+            btn.disabled = false; btn.innerHTML = originalText;
+            return;
+          }
+
+          // 原本的宣战逻辑
+          I.client.from('relations').delete().or(`and(country_a.eq.${a},country_b.eq.${b}),and(country_a.eq.${b},country_b.eq.${a})`).then(function() {
+            I.client.from('relations').insert({ country_a: a, country_b: b, relation_type: 'war' }).then(function(rWar) {
+              if (rWar.error) { I.toast('宣战失败：' + rWar.error.message, 'error'); btn.disabled = false; btn.innerHTML = originalText; return; }
+              
+              I.client.from('wars').insert({ attacker_id: currentProfile.id, defender_id: targetId, status: 'ongoing' }).then(function(){
+                I.client.rpc('send_notification', { 
+                  p_user_id: targetId, p_type: 'war', p_title: '遭遇宣战', 
+                  p_content: `【${currentProfile.username}】已正式向你宣战！${msg ? '\n附言: '+msg : ''}` 
+                });
+                I.toast('宣战成功，战争已开启', 'success');
+                I.$('#actionModal').classList.remove('open');
+                setTimeout(function(){ location.reload(); }, 800);
+              });
             });
-            I.toast('宣战成功，战争已开启', 'success');
-            I.$('#actionModal').classList.remove('open');
-            setTimeout(function(){ location.reload(); }, 800);
           });
         });
-      });
     } else {
       I.client.from('diplomacy_requests').insert({
         from_country: currentProfile.id, to_country: targetId,

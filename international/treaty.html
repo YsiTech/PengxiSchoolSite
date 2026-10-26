@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>外交条约中心 · IECP</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .treaty-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 40px; }
+  @media (max-width: 768px) { .treaty-grid { grid-template-columns: 1fr; } }
+
+  .treaty-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; margin-bottom: 16px; position: relative; overflow: hidden; transition: 0.3s; }
+  .treaty-card:hover { border-color: var(--gold); }
+  .treaty-card.pending { border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 0 15px rgba(245, 158, 11, 0.1); }
+  .treaty-card.signed { border-color: rgba(34, 197, 94, 0.4); }
+  
+  .treaty-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 12px; }
+  .treaty-title { font-size: 18px; font-weight: 800; color: #fff; margin: 0; }
+  .treaty-status { font-size: 12px; padding: 4px 10px; border-radius: 6px; font-weight: bold; white-space: nowrap; }
+  .treaty-status.pending { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .treaty-status.signed { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+  
+  .treaty-parties { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); margin-bottom: 16px; flex-wrap: wrap; }
+  .treaty-parties b { color: var(--gold-2); }
+  
+  .treaty-terms { background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+  .treaty-terms div { margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .treaty-terms i { color: var(--cyan); }
+
+  /* 🚨 修复后的附加条款复选框样式 */
+  .term-checkbox { display: flex; align-items: flex-start; gap: 12px; background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 12px; cursor: pointer; transition: 0.2s; user-select: none; }
+  .term-checkbox:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.2); }
+  .term-checkbox input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--gold); cursor: pointer; margin-top: 2px; flex-shrink: 0; }
+  .term-content { flex: 1; }
+  .term-title { font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px; }
+  .term-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  
+  /* 赔款输入框样式 */
+  .indemnity-input-wrap { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-left: 32px; }
+  .indemnity-input-wrap input { width: 120px; padding: 8px 12px; border-radius: 6px; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: var(--gold-2); font-weight: bold; font-family: var(--mono); outline: none; transition: 0.2s; }
+  .indemnity-input-wrap input:focus { border-color: var(--gold); }
+  .indemnity-input-wrap input:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* 🚨 手机端弹窗表单优化 */
+  @media (max-width: 768px) {
+    .iecp-modal-box { padding: 20px !important; max-height: 90vh; overflow-y: auto; }
+    .term-checkbox { padding: 12px; }
+    .term-title { font-size: 13px; }
+    .term-desc { font-size: 11px; }
+    .indemnity-input-wrap { padding-left: 0; margin-top: 8px; }
+    .indemnity-input-wrap input { width: 100%; }
+    .treaty-header { flex-direction: column; gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="iecp-topbar">
+  <div class="iecp-topbar-inner">
+    <a class="iecp-logo" href="index.html"><img src="photo/un.png" alt="IECP"><div class="iecp-logo-text"><b>IECP</b><span>Exchange &amp; Cooperation</span></div></a>
+    <nav class="iecp-nav" id="iecp-nav"></nav>
+    <div class="iecp-user" id="iecp-user"></div>
+  </div>
+</header>
+
+<section class="iecp-page-head">
+  <div class="iecp-page-head-inner">
+    <div class="iecp-breadcrumb"><a href="index.html">首页</a><i class="fa-solid fa-chevron-right"></i><span>条约中心</span></div>
+    <div><h1><i class="fa-solid fa-file-contract"></i> 国际条约签署中心</h1><p>与其他国家签订具有强制约束力的双边条约。</p></div>
+  </div>
+</section>
+
+<main class="iecp-main">
+  <div class="treaty-grid">
+    <!-- 左侧：收到的条约 -->
+    <div>
+      <h3 style="color:#fff; margin-bottom:16px;"><i class="fa-solid fa-inbox" style="color:var(--cyan);"></i> 收到的条约草案</h3>
+      <div id="receivedList"><div class="loading-state"><div class="spinner"></div></div></div>
+    </div>
+    
+    <!-- 右侧：我发起的条约 -->
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="color:#fff; margin:0;"><i class="fa-solid fa-paper-plane" style="color:var(--gold);"></i> 我发起的条约</h3>
+        <button class="btn btn-gold btn-sm" onclick="openProposeModal()"><i class="fa-solid fa-plus"></i> 发起新条约</button>
+      </div>
+      <div id="sentList"><div class="loading-state"><div class="spinner"></div></div></div>
+    </div>
+  </div>
+</main>
+
+<!-- 发起条约弹窗 -->
+<div class="iecp-modal" id="proposeModal">
+  <div class="iecp-modal-box glass-2" style="max-width:600px">
+    <h3><i class="fa-solid fa-file-signature" style="color:var(--gold)"></i> 起草国际条约</h3>
+    <p class="modal-sub">向目标国家发送条约草案。对方接受后附加条款将强制生效。</p>
+    
+    <div class="field-group" style="margin-top: 16px;">
+      <div class="field">
+        <label>选择签署对象</label>
+        <select id="tReceiver" class="input-control" style="width:100%; padding:12px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--border); color:#fff;"></select>
+      </div>
+      <div class="field"><label>条约名称</label><input id="tTitle" type="text" placeholder="如：和平互不侵犯条约" style="width:100%; padding:12px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--border); color:#fff;"></div>
+      <div class="field"><label>条约正文（可选）</label><textarea id="tContent" placeholder="双方声明..." style="width:100%; min-height:80px; padding:12px; border-radius:8px; background:rgba(0,0,0,0.3); border:1px solid var(--border); color:#fff; resize:vertical;"></textarea></div>
+      
+      <label style="margin-top:20px; display:block; font-size:14px; color:var(--gold-2); font-weight:bold;">附加条款（双方签署后立即生效）</label>
+      
+      <!-- 🚨 修复复选框：原生 label 包裹，点击任意位置都能选中 -->
+      <label class="term-checkbox" for="tNoWar">
+        <input type="checkbox" id="tNoWar">
+        <div class="term-content">
+          <div class="term-title">互不侵犯（禁止战争）</div>
+          <div class="term-desc">双方无法向对方宣战</div>
+        </div>
+      </label>
+      
+      <label class="term-checkbox" for="tLimitOffense">
+        <input type="checkbox" id="tLimitOffense">
+        <div class="term-content">
+          <div class="term-title">限制进攻型兵种</div>
+          <div class="term-desc">乙方无法生产进攻型兵种（防御兵种不受限）</div>
+        </div>
+      </label>
+      
+      <label class="term-checkbox" for="tIndemnityCheck">
+        <input type="checkbox" id="tIndemnityCheck" onchange="document.getElementById('tIndemnityAmount').disabled = !this.checked;">
+        <div class="term-content" style="width:100%;">
+          <div class="term-title">要求乙方赔款 (₽)</div>
+          <div class="term-desc">签署后，资金将从甲方国库直接转移给乙方</div>
+          <div class="indemnity-input-wrap">
+            <input type="number" id="tIndemnityAmount" placeholder="输入金额" disabled>
+          </div>
+        </div>
+      </label>
+
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:24px;">
+      <button class="btn btn-ghost" onclick="closeProposeModal()">取消</button>
+      <button class="btn btn-gold" id="btnSubmitTreaty" onclick="submitTreaty()">发送草案</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/js/supabase-config.js"></script>
+<script src="assets/js/common.js"></script>
+<script>
+(function () {
+  var I = IECP; var profile = null; var allCountries = [];
+
+  I.requireAuth().then(function (ok) {
+    if (!ok) return;
+    I.initTopbar('diplomacy');
+    I.getProfile(true).then(function (p) {
+      profile = p;
+      loadCountries();
+      loadTreaties();
+    });
+  });
+
+  function loadCountries() {
+    I.client.from('profiles').select('id, username').neq('id', profile.id).then(function(res) {
+      allCountries = res.data || [];
+      var sel = I.$('#tReceiver');
+      sel.innerHTML = '<option value="">-- 请选择签署国 --</option>' + allCountries.map(c => `<option value="${c.id}">${I.escapeHtml(c.username)}</option>`).join('');
+    });
+  }
+
+  function loadTreaties() {
+    // 收到的条约
+    I.client.from('treaties').select('*, proposer:proposer_id(username, flag_url)').eq('receiver_id', profile.id).order('created_at', {ascending: false}).then(function(res) {
+      var list = res.data || [];
+      var html = '';
+      if (!list.length) html = '<div class="empty-state glass"><p>暂无收到的条约。</p></div>';
+      
+      list.forEach(function(t) {
+        var flag = t.proposer.flag_url || I.avatarFallback(t.proposer.username);
+        html += renderTreatyCard(t, t.proposer, flag, false);
+      });
+      I.$('#receivedList').innerHTML = html;
+    });
+
+    // 我发起的条约
+    I.client.from('treaties').select('*, receiver:receiver_id(username, flag_url)').eq('proposer_id', profile.id).order('created_at', {ascending: false}).then(function(res) {
+      var list = res.data || [];
+      var html = '';
+      if (!list.length) html = '<div class="empty-state glass"><p>你还没有发起过条约。</p></div>';
+      
+      list.forEach(function(t) {
+        var flag = t.receiver.flag_url || I.avatarFallback(t.receiver.username);
+        html += renderTreatyCard(t, t.receiver, flag, true);
+      });
+      I.$('#sentList').innerHTML = html;
+    });
+  }
+
+  function renderTreatyCard(t, otherParty, flag, isSent) {
+    var termsHtml = '';
+    if (t.terms) {
+      if (t.terms.no_war) termsHtml += `<div><i class="fa-solid fa-ban"></i> 互不侵犯（禁止宣战）</div>`;
+      if (t.terms.limit_offense) termsHtml += `<div><i class="fa-solid fa-shield-halved"></i> 限制进攻型兵种</div>`;
+      if (t.terms.indemnity) termsHtml += `<div><i class="fa-solid fa-money-bill-transfer"></i> 赔款：${I.fmtNumber(t.terms.indemnity)} ₽</div>`;
+    }
+    if (!termsHtml) termsHtml = '<div><i class="fa-solid fa-circle-info"></i> 无附加强制条款</div>';
+
+    var statusText = t.status === 'pending' ? '等待签署' : (t.status === 'signed' ? '已生效' : '已拒绝');
+    var statusCls = t.status === 'pending' ? 'pending' : (t.status === 'signed' ? 'signed' : '');
+
+    var actionsHtml = '';
+    if (!isSent && t.status === 'pending') {
+      actionsHtml = `
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn btn-gold" style="flex:1;" onclick="acceptTreaty('${t.id}')">同意签署</button>
+          <button class="btn btn-ghost" style="flex:1;" onclick="rejectTreaty('${t.id}')">拒绝</button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="treaty-card ${statusCls}">
+        <div class="treaty-header">
+          <h3 class="treaty-title">${I.escapeHtml(t.title)}</h3>
+          <span class="treaty-status ${statusCls}">${statusText}</span>
+        </div>
+        <div class="treaty-parties">
+          <img src="${I.escapeHtml(flag)}" style="width:36px;height:24px;border-radius:4px;object-fit:cover;">
+          <span>${isSent ? '接收方' : '发起方'}：<b>${I.escapeHtml(otherParty.username)}</b></span>
+          <span style="margin-left:auto; font-size:12px;">${I.fmtDate(t.created_at)}</span>
+        </div>
+        ${t.content ? `<div style="font-size:13px; color:var(--muted); margin-bottom:12px; font-style:italic;">"${I.escapeHtml(t.content)}"</div>` : ''}
+        <div class="treaty-terms">${termsHtml}</div>
+        ${actionsHtml}
+      </div>
+    `;
+  }
+
+  window.openProposeModal = function() {
+    I.$('#proposeModal').classList.add('open');
+  };
+  window.closeProposeModal = function() {
+    I.$('#proposeModal').classList.remove('open');
+  };
+
+  window.submitTreaty = function() {
+    var receiverId = I.$('#tReceiver').value;
+    var title = I.$('#tTitle').value.trim();
+    var content = I.$('#tContent').value.trim();
+    
+    if (!receiverId) return I.toast('请选择接收国', 'error');
+    if (!title) return I.toast('请输入条约名称', 'error');
+
+    var terms = {};
+    if (I.$('#tNoWar').checked) terms.no_war = true;
+    if (I.$('#tLimitOffense').checked) terms.limit_offense = true;
+    if (I.$('#tIndemnityCheck').checked) {
+      var amt = parseInt(I.$('#tIndemnityAmount').value);
+      if (!amt || amt <= 0) return I.toast('请输入正确的赔款金额', 'error');
+      if (amt > profile.balance) return I.toast('你的国库余额不足以支付该赔款', 'error');
+      terms.indemnity = amt;
+    }
+
+    var btn = I.$('#btnSubmitTreaty'); btn.disabled = true;
+    I.client.from('treaties').insert({
+      proposer_id: profile.id,
+      receiver_id: receiverId,
+      title: title,
+      content: content,
+      terms: terms
+    }).then(function(res) {
+      btn.disabled = false;
+      if (res.error) return I.toast('发送失败：' + res.error.message, 'error');
+      I.toast('条约草案已发送', 'success');
+      closeProposeModal();
+      loadTreaties();
+      
+      // 发送通知
+      I.client.from('notifications').insert({
+        user_id: receiverId, type: 'system', title: '收到新的条约草案',
+        content: `【${profile.username}】向你发送了《${title}》，请前往外交条约中心查看。`
+      });
+    });
+  };
+
+  window.acceptTreaty = function(id) {
+    if (!confirm('确认签署该条约？附加条款将立即生效。')) return;
+    I.toast('正在处理签署...', 'success', 1000);
+
+    I.client.from('treaties').select('*').eq('id', id).single().then(function(res) {
+      var treaty = res.data;
+      if (!treaty) return I.toast('条约不存在', 'error');
+      
+      var terms = treaty.terms || {};
+      
+      if (terms.indemnity > 0) {
+        I.client.rpc('add_balance', { uid: treaty.proposer_id, amount: -terms.indemnity, note: '签署条约赔款支出' });
+        I.client.rpc('add_balance', { uid: profile.id, amount: terms.indemnity, note: '签署条约赔款收入' });
+      }
+
+      I.client.from('treaties').update({ status: 'signed' }).eq('id', id).then(function(r) {
+        if (r.error) return I.toast('签署失败', 'error');
+        I.toast('条约已生效！', 'success');
+        loadTreaties();
+        I.client.from('notifications').insert({
+          user_id: treaty.proposer_id, type: 'system', title: '条约已生效',
+          content: `你发起的《${treaty.title}》已被【${profile.username}】签署并生效。`
+        });
+      });
+    });
+  };
+
+  window.rejectTreaty = function(id) {
+    if (!confirm('确定拒绝该条约吗？')) return;
+    I.client.from('treaties').update({ status: 'rejected' }).eq('id', id).then(function(res) {
+      if (res.error) return I.toast('操作失败', 'error');
+      I.toast('已拒绝该条约', 'success');
+      loadTreaties();
+    });
+  };
+})();
+</script>
+</body>
+</html>

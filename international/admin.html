@@ -153,6 +153,7 @@ function renderLayout() {
       <button class="admin-tab" onclick="switchTab(this, 'tab-wars')"><i class="fa-solid fa-crosshairs"></i> 战争监控</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-shop')"><i class="fa-solid fa-crown"></i> 官方上架</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-shop-mgr')"><i class="fa-solid fa-list-check"></i> 官方商品管理</button>
+      <button class="admin-tab" onclick="switchTab(this, 'tab-email')"><i class="fa-solid fa-envelope"></i> 邮件群发</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-broadcast')"><i class="fa-solid fa-rocket"></i> 全服空投</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-notify')"><i class="fa-solid fa-bullhorn"></i> 全服通知</button>
       <button class="admin-tab" onclick="switchTab(this, 'tab-disaster')"><i class="fa-solid fa-cloud-bolt"></i> 灾害设置</button>
@@ -260,7 +261,34 @@ function renderLayout() {
       </div>
     </div>
 
-    <!-- 6. 全服空投 -->
+    <!-- 🚨 6. 邮件群发 -->
+    <div id="tab-email" class="admin-panel">
+      <div class="panel-card">
+        <h3><i class="fa-solid fa-envelope" style="color:var(--gold);"></i> 全服电子邮箱群发</h3>
+        <div style="background:rgba(79,195,247,0.1); border:1px solid rgba(79,195,247,0.3); border-radius:8px; padding:12px; margin-bottom:20px; font-size:13px; color:#94a3b8; line-height:1.6;">
+          <b style="color:var(--cyan);"><i class="fa-solid fa-circle-info"></i> 操作说明：</b><br>
+          出于安全和隐私限制，前端无法直接读取底层邮箱列表。请先在 Supabase 的 SQL Editor 中执行：<br>
+          <code style="color:var(--gold-2); background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;">SELECT email FROM auth.users;</code><br>
+          将查出的邮箱复制，并用逗号（,）隔开粘贴在下方，点击发送会唤起您电脑上的邮箱软件。
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <label style="font-size:12px; color:var(--muted);">收件人邮箱列表 (逗号分隔)</label>
+          <textarea id="emailRecipients" class="input-control" style="min-height:60px;" placeholder="admin@qq.com, player1@163.com, player2@gmail.com..."></textarea>
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:12px; color:var(--muted);">邮件主题</label>
+          <input type="text" id="emailSubject" class="input-control" placeholder="IECP 重要更新通知">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:12px; color:var(--muted);">邮件正文 (纯文本)</label>
+          <textarea id="emailBody" class="input-control" style="min-height:120px;" placeholder="尊敬的国家元首，您好……"></textarea>
+        </div>
+        <button class="btn btn-gold" onclick="sendBatchEmail()"><i class="fa-solid fa-paper-plane"></i> 唤起邮件客户端发送</button>
+      </div>
+    </div>
+
+    <!-- 7. 全服空投 -->
     <div id="tab-broadcast" class="admin-panel">
       <div class="panel-card">
         <h3>全服物资空投</h3>
@@ -321,7 +349,7 @@ function renderLayout() {
       </div>
     </div>
 
-    <!-- 7. 全服通知 -->
+    <!-- 8. 全服通知 -->
     <div id="tab-notify" class="admin-panel">
       <div class="panel-card">
         <h3>发送全服系统通知</h3>
@@ -331,7 +359,7 @@ function renderLayout() {
       </div>
     </div>
 
-    <!-- 8. 灾害设置 -->
+    <!-- 9. 灾害设置 -->
     <div id="tab-disaster" class="admin-panel">
       <div class="panel-card">
         <h3>全服自动灾害概率与损失比例</h3>
@@ -540,7 +568,6 @@ window.deleteUser = async function(userId) {
   
   I.toast('正在清理关联数据...', 'info', 2000);
   
-  // 尝试在删除主表前，清理关联表的数据（防止外键冲突导致静默失败）
   const tablesToDelete = [
     { table: 'notifications', col: 'user_id' },
     { table: 'balance_logs', col: 'country_id' },
@@ -567,13 +594,11 @@ window.deleteUser = async function(userId) {
     { table: 'wars', col: 'defender_id' }
   ];
 
-  // 循环删除关联数据（如果某表没权限或不存在，忽略报错）
   for (let i = 0; i < tablesToDelete.length; i++) {
     var t = tablesToDelete[i];
     await I.client.from(t.table).delete().eq(t.col, userId);
   }
 
-  // 最后删除主表
   const { error } = await I.client.from('profiles').delete().eq('id', userId);
   
   if (error) {
@@ -690,6 +715,29 @@ window.triggerGlobalDisaster = async function() {
   } catch (err) {
     I.toast('降灾执行出错：' + err.message, 'error');
   }
+};
+
+// 🚨 邮件群发逻辑
+window.sendBatchEmail = function() {
+  var recipients = I.$('#emailRecipients').value.trim();
+  var subject = I.$('#emailSubject').value.trim();
+  var body = I.$('#emailBody').value.trim();
+
+  if (!recipients) return I.toast('请输入收件人邮箱列表', 'error');
+  if (!subject) return I.toast('请输入邮件主题', 'error');
+  if (!body) return I.toast('请输入邮件正文', 'error');
+
+  // 清理收件人列表（处理换行、空格等）
+  var emailList = recipients.replace(/\s+/g, ',').split(',').filter(function(e) { return e.length > 0; }).join(',');
+
+  // 构建 mailto 链接
+  var mailtoLink = 'mailto:' + emailList + 
+                   '?subject=' + encodeURIComponent(subject) + 
+                   '&body=' + encodeURIComponent(body);
+
+  // 尝试唤起系统默认邮箱客户端
+  window.location.href = mailtoLink;
+  I.toast('已尝试唤起邮件客户端，请检查。', 'success');
 };
 
 window.doBroadcast = async function() {
