@@ -124,6 +124,7 @@
 <script>
 (function () {
   var I = IECP; var profile = null; var myRes = null; var myMil = null; var myQueue = []; var customUnits = {}; var timer = null; var activeTab = 'all';
+  var timeReduction = 0; // 全局保存制造加速百分比
 
   var UNITS = [
     { type: 'scouts', name: '侦察兵', icon: 'fa-binoculars', category: 'army', power: 2, cost: { food: 5 }, desc: '配备轻型全地形载具，深入前线获取敌方部署与地形信息。', time: 3, buff: '视野扩展：提高战场先手与暴击率' },
@@ -217,8 +218,9 @@
     var carriers = myMil.carriers || 0; var awacs = myMil.awacs || 0;
     var sam = myMil.sam || 0; var ciws = myMil.ciws || 0;
 
-    var timeReduction = (1 - Math.pow(0.9, supply) * Math.pow(0.95, transport)) * 100;
+    timeReduction = (1 - Math.pow(0.9, supply) * Math.pow(0.95, transport)) * 100;
     if (timeReduction > 80) timeReduction = 80;
+    
     var attackBuff = (Math.pow(1.02, carriers) - 1) * 100;
     if (attackBuff > 50) attackBuff = 50;
     var defenseBuff = (Math.pow(1.05, awacs) - 1) * 100;
@@ -264,6 +266,10 @@
                   </select>
                 </div>
               </div>
+              <div class="form-row">
+                <div class="form-group" style="flex:3;"><label>战术介绍/特色 (可选)</label><input id="cDesc" placeholder="例如：搭载电磁轨道炮的终极兵器..."></div>
+                <div class="form-group" style="flex:1;"><label>制造数量</label><input type="number" id="cQty" value="1" min="1" oninput="updateCustomPreview()"></div>
+              </div>
               
               <div class="form-row" style="margin-bottom:0;">
                 <div class="form-group"><label>耗油 (战力x2)</label><input type="number" id="cOil" value="10" min="0" oninput="updateCustomPreview()"></div>
@@ -275,8 +281,8 @@
               </div>
               
               <div id="customPreview" style="background:rgba(79,195,247,0.1); border:1px solid rgba(79,195,247,0.3); padding:12px; border-radius:8px; margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
-                <div style="font-size:14px; color:#fff;"><i class="fa-solid fa-bolt" style="color:var(--gold-2);"></i> 预计战力：<b id="previewPower" style="color:var(--gold-2); font-size:18px; margin-left:5px;">50</b></div>
-                <div style="font-size:14px; color:#fff;"><i class="fa-regular fa-clock" style="color:var(--cyan);"></i> 制造耗时：<b id="previewTime" style="color:var(--cyan); font-size:18px; margin-left:5px;">30</b> 秒</div>
+                <div style="font-size:14px; color:#fff;"><i class="fa-solid fa-bolt" style="color:var(--gold-2);"></i> 单个战力：<b id="previewPower" style="color:var(--gold-2); font-size:18px; margin-left:5px;">50</b></div>
+                <div style="font-size:14px; color:#fff;"><i class="fa-regular fa-clock" style="color:var(--cyan);"></i> 总耗时：<b id="previewTime" style="color:var(--cyan); font-size:18px; margin-left:5px;">30</b> 秒</div>
               </div>
             </div>
           </div>
@@ -302,8 +308,8 @@
                 <div class="unit-count">分类: ${catName} | 库存: <b>${customInv[id]}</b></div>
               </div>
             </div>
-            <div class="unit-desc">由最高统帅部亲自批准设立的专属 ${catName} 特殊作战单位，具备超越常规部队的战场适应性。</div>
-            <div class="unit-buff"><i class="fa-solid fa-star" style="color:var(--cyan)"></i> 专属特色：独一无二的定制外观与核心战力，可在交易行作为战略物资流通。</div>
+            <div class="unit-desc">${I.escapeHtml(cu.description || '由最高统帅部亲自批准设立的专属特殊作战单位。')}</div>
+            <div class="unit-buff"><i class="fa-solid fa-star" style="color:var(--cyan)"></i> 专属特色：独一无二的定制外观，可在交易行作为战略物资流通。</div>
             
             <div class="build-row" style="margin-top:16px;">
               <button class="btn btn-gold" onclick="location.href='market.html'" style="flex:1;"><i class="fa-solid fa-store"></i> 前往交易行售卖</button>
@@ -354,11 +360,18 @@
     var oil = parseInt(I.$('#cOil').value) || 0; var iron = parseInt(I.$('#cIron').value) || 0;
     var gas = parseInt(I.$('#cGas').value) || 0; var rare = parseInt(I.$('#cRare').value) || 0;
     var food = parseInt(I.$('#cFood').value) || 0; var money = parseInt(I.$('#cMoney').value) || 0;
-    var power = Math.floor((oil * 2) + (iron * 3) + (gas * 1.5) + (rare * 5) + (food * 0.5));
-    I.$('#previewPower').innerText = power;
-    var build_time = Math.floor((oil + iron + gas + rare + food) * 1.5 - (money / 500));
-    if (build_time < 10) build_time = 10;
-    I.$('#previewTime').innerText = build_time;
+    var qty = parseInt(I.$('#cQty').value) || 1;
+    
+    var singlePower = Math.floor((oil * 2) + (iron * 3) + (gas * 1.5) + (rare * 5) + (food * 0.5));
+    I.$('#previewPower').innerText = singlePower;
+
+    var singleTime = Math.floor((oil + iron + gas + rare + food) * 1.5 - (money / 500));
+    if (singleTime < 10) singleTime = 10;
+    
+    // 总耗时 = 单个耗时 * 数量 * 制造加速缩减
+    var totalTime = Math.floor(singleTime * qty * (1 - timeReduction / 100));
+    if (totalTime < 1) totalTime = 1;
+    I.$('#previewTime').innerText = totalTime;
   };
 
   window.previewImg = function(input) {
@@ -371,15 +384,23 @@
 
   window.createCustomUnit = function() {
     var name = I.$('#cName').value.trim();
+    var desc = I.$('#cDesc').value.trim();
     var cat = I.$('#cCategory').value;
+    var qty = parseInt(I.$('#cQty').value) || 1;
+    
     var oil = parseInt(I.$('#cOil').value) || 0; var iron = parseInt(I.$('#cIron').value) || 0;
     var gas = parseInt(I.$('#cGas').value) || 0; var rare = parseInt(I.$('#cRare').value) || 0;
     var food = parseInt(I.$('#cFood').value) || 0; var money = parseInt(I.$('#cMoney').value) || 0;
     var file = I.$('#cImg').files[0];
 
     if (!name) return I.toast('请填写单位名称', 'error');
+    if (qty < 1) return I.toast('数量必须大于 0', 'error');
     if (oil <= 0 && iron <= 0 && gas <= 0 && rare <= 0 && food <= 0) return I.toast('必须消耗至少一种战略资源', 'error');
-    if ((myRes.oil||0) < oil || (myRes.iron_ore||0) < iron || (myRes.gas||0) < gas || (myRes.rare_metal||0) < rare || (myRes.food||0) < food || profile.balance < money) return I.toast('资源或资金不足！', 'error');
+    
+    // 检查总资源是否足够
+    if ((myRes.oil||0) < oil*qty || (myRes.iron_ore||0) < iron*qty || (myRes.gas||0) < gas*qty || (myRes.rare_metal||0) < rare*qty || (myRes.food||0) < food*qty || profile.balance < money*qty) {
+      return I.toast('资源或资金不足！', 'error');
+    }
 
     var btn = event.target; btn.disabled = true; I.toast('正在生成图传...', 'success');
 
@@ -391,24 +412,32 @@
 
     uploadPromise.then(function(imgUrl) {
       var power = Math.floor((oil * 2) + (iron * 3) + (gas * 1.5) + (rare * 5) + (food * 0.5));
-      var build_time = Math.floor((oil + iron + gas + rare + food) * 1.5 - (money / 500)); 
-      if(build_time < 10) build_time = 10;
+      var single_time = Math.floor((oil + iron + gas + rare + food) * 1.5 - (money / 500)); 
+      if(single_time < 10) single_time = 10;
+      var total_time = Math.floor(single_time * qty * (1 - timeReduction / 100));
+      if(total_time < 1) total_time = 1;
 
+      // 扣除总资源
       I.client.from('country_resources').update({ 
-        oil: (myRes.oil||0) - oil, iron_ore: (myRes.iron_ore||0) - iron,
-        gas: (myRes.gas||0) - gas, rare_metal: (myRes.rare_metal||0) - rare, food: (myRes.food||0) - food
+        oil: (myRes.oil||0) - oil*qty, iron_ore: (myRes.iron_ore||0) - iron*qty,
+        gas: (myRes.gas||0) - gas*qty, rare_metal: (myRes.rare_metal||0) - rare*qty, food: (myRes.food||0) - food*qty
       }).eq('country_id', profile.id).then(function(){
-        I.client.rpc('add_balance', { uid: profile.id, amount: -money, note: '研发自定义单位' }).then(function(){
+        // 扣除总资金
+        I.client.rpc('add_balance', { uid: profile.id, amount: -money*qty, note: '研发自定义单位 ×' + qty }).then(function(){
+          // 写入自定义兵种图鉴（按次记录，数量在队列里体现）
           I.client.from('custom_units').insert({
-            creator_id: profile.id, name: name, category: cat, image_url: imgUrl, power: power,
-            cost_oil: oil, cost_iron: iron, cost_money: money, build_time: build_time
+            creator_id: profile.id, name: name, description: desc || null, category: cat, image_url: imgUrl, power: power,
+            cost_oil: oil, cost_iron: iron, cost_money: money, build_time: single_time
           }).select().single().then(function(res) {
             if (res.error) return I.toast('研发失败: ' + res.error.message, 'error');
             var newId = res.data.id;
-            var endT = new Date(); endT.setSeconds(endT.getSeconds() + build_time);
-            I.client.from('military_queue').insert({ country_id: profile.id, unit_type: 'custom_' + newId, amount: 1, end_time: endT.toISOString() }).then(function(){
+            
+            // 插入队列
+            var endT = new Date(); endT.setSeconds(endT.getSeconds() + total_time);
+            I.client.from('military_queue').insert({ country_id: profile.id, unit_type: 'custom_' + newId, amount: qty, end_time: endT.toISOString() }).then(function(){
               I.toast('研发成功，已加入队列！', 'success');
-              I.$('#cName').value = ''; I.$('#cImg').value = ''; I.$('#cImgPreview').style.display = 'none'; I.$('#cImgIcon').style.display = 'block';
+              I.$('#cName').value = ''; I.$('#cDesc').value = ''; I.$('#cQty').value = 1;
+              I.$('#cImg').value = ''; I.$('#cImgPreview').style.display = 'none'; I.$('#cImgIcon').style.display = 'block';
               loadData();
             });
           });
@@ -421,35 +450,64 @@
     var qty = parseInt(I.$('#qty_' + type).value, 10);
     if (!qty || qty < 1) return I.toast('数量错误', 'error');
     
-    // 🚨 判断兵种是否为进攻型
     var targetUnit = UNITS.find(u => u.type === type);
     var isOffensive = targetUnit && targetUnit.category !== 'defense';
 
     if (isOffensive) {
-      // 检查是否受到限制进攻条约的约束
-      I.client.from('treaties').select('*')
-        .eq('receiver_id', profile.id)
-        .eq('status', 'signed')
-        .then(function(checkRes) {
-          var treaties = checkRes.data || [];
-          var hasLimit = treaties.some(t => t.terms && t.terms.limit_offense === true);
-          
-          if (hasLimit) {
-            return I.toast('受已签署条约限制，你目前无法制造进攻型兵种！', 'error');
-          }
-
-          // 原本的造兵逻辑
-          I.client.rpc('start_training', { c_id: profile.id, u_type: type, u_amount: qty }).then(function(res) {
-            if (res.error) return I.toast('失败', 'error'); I.toast('已加入队列', 'success'); loadData(); 
-          });
-        });
-    } else {
-      // 防御型兵种直接制造
-      I.client.rpc('start_training', { c_id: profile.id, u_type: type, u_amount: qty }).then(function(res) {
-        if (res.error) return I.toast('失败', 'error'); I.toast('已加入队列', 'success'); loadData(); 
+      I.client.from('treaties').select('*').eq('receiver_id', profile.id).eq('status', 'signed').then(function(checkRes) {
+        var treaties = checkRes.data || [];
+        var hasLimit = treaties.some(t => t.terms && t.terms.limit_offense === true);
+        
+        if (hasLimit) {
+          return I.toast('受已签署条约限制，你目前无法制造进攻型兵种！', 'error');
+        }
+        doBuild(targetUnit, qty);
       });
+    } else {
+      doBuild(targetUnit, qty);
     }
   };
+
+  // 🚨 核心修复：纯前端批量制造逻辑，彻底告别 RPC 问题
+  function doBuild(unit, qty) {
+    // 检查总资源
+    var cost = unit.cost;
+    if ((myRes.oil||0) < (cost.oil || 0)*qty || 
+        (myRes.iron_ore||0) < (cost.iron_ore || 0)*qty || 
+        (myRes.gas||0) < (cost.gas || 0)*qty || 
+        (myRes.rare_metal||0) < (cost.rare_metal || 0)*qty || 
+        (myRes.food||0) < (cost.food || 0)*qty) {
+      return I.toast('战略资源不足！', 'error');
+    }
+
+    // 计算时间并应用科技加速
+    var totalTime = Math.floor(unit.time * qty * (1 - timeReduction / 100));
+    if (totalTime < 1) totalTime = 1;
+
+    // 扣除资源
+    I.client.from('country_resources').update({
+      oil: (myRes.oil||0) - (cost.oil || 0)*qty,
+      iron_ore: (myRes.iron_ore||0) - (cost.iron_ore || 0)*qty,
+      gas: (myRes.gas||0) - (cost.gas || 0)*qty,
+      rare_metal: (myRes.rare_metal||0) - (cost.rare_metal || 0)*qty,
+      food: (myRes.food||0) - (cost.food || 0)*qty
+    }).eq('country_id', profile.id).then(function(res){
+      if(res.error) return I.toast('扣除资源失败', 'error');
+      
+      // 写入队列
+      var endT = new Date(); endT.setSeconds(endT.getSeconds() + totalTime);
+      I.client.from('military_queue').insert({
+        country_id: profile.id, 
+        unit_type: unit.type, 
+        amount: qty, 
+        end_time: endT.toISOString()
+      }).then(function(r){
+        if(r.error) return I.toast('加入队列失败：' + r.error.message, 'error');
+        I.toast(`成功制造 ${qty} 个 ${unit.name}，已加入队列`, 'success'); 
+        loadData(); 
+      });
+    });
+  }
 
   function renderQueue() {
     var panel = I.$('#queuePanel'); var list = I.$('#queueList');
@@ -497,7 +555,11 @@
         } else {
           var start = new Date(q.created_at); var total = end - start; var current = now - start;
           if (barEl) barEl.style.width = Math.max(0, Math.min(100, (current / total) * 100)) + '%';
-          var diff = Math.floor((end - now) / 1000); timeEl.textContent = `${Math.floor(diff / 60)}分 ${diff % 60}秒`;
+          var diff = Math.floor((end - now) / 1000); 
+          
+          var h = Math.floor(diff / 3600); var m = Math.floor((diff % 3600) / 60); var s = diff % 60;
+          if (h > 0) timeEl.textContent = `${h}时 ${m}分`;
+          else timeEl.textContent = `${m}分 ${s}秒`;
         }
       });
     }, 1000);
