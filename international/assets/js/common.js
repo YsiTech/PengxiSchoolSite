@@ -133,6 +133,7 @@
     ];
     var endItems = [
     { id:'intelligence', icon:'fa-user-secret', text:'资料情报', href:'intelligence.html' },
+     { id:'simulator', icon:'fa-gamepad', text:'战场模拟', href:'simulator.html' },
      { id:'wars', icon:'fa-shield-halved', text:'战争系统', href:'wars.html' } ];
     
     var isMobile = window.innerWidth <= 768;
