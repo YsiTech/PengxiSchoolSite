@@ -173,144 +173,151 @@
   </div>
 </div>
 
+<!-- 🚨 核心：Supabase SDK 多源自动降级加载（防屏蔽） -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>if(!window.supabase){document.write('<script src="https://unpkg.com/@supabase/supabase-js@2"><\/script>');}</script>
+<script>if(!window.supabase){document.write('<script src="https://cdn.bootcdn.net/ajax/libs/supabase-js/2.39.3/supabase.min.js"><\/script>');}</script>
+<script>if(!window.supabase){document.write('<script src="https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/supabase/2.39.3/supabase.min.js"><\/script>');}</script>
+
 <script src="assets/js/supabase-config.js"></script>
 <script src="assets/js/common.js"></script>
+
 <script>
-// 粒子星空
-(function initParticles() {
-  const canvas = document.getElementById('particleCanvas'); const ctx = canvas.getContext('2d');
-  let width, height; let particles = [];
-  function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resize); resize();
-  class Particle {
-    constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3; this.radius = Math.random() * 1.5 + 0.5; }
-    update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
-    draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(79, 195, 247, 0.3)'; ctx.fill(); }
+  // 检查核心组件是否加载成功
+  if (!window.IECP || !window.IECP.client) {
+    document.getElementById('msgReg').innerHTML = '网络异常，所有节点均无法连接。请切换 WiFi/流量 或刷新重试。';
+    document.getElementById('msgReg').className = 'auth-msg error';
+    throw new Error('IECP SDK not loaded');
   }
-  for (let i = 0; i < 70; i++) particles.push(new Particle());
-  function animate() {
-    ctx.clearRect(0, 0, width, height);
-    for (let i = 0; i < particles.length; i++) {
-      particles[i].update(); particles[i].draw();
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(79, 195, 247, ${0.15 - dist / 1000})`; ctx.stroke(); }
-      }
+
+  // 粒子星空
+  (function initParticles() {
+    const canvas = document.getElementById('particleCanvas'); const ctx = canvas.getContext('2d');
+    let width, height; let particles = [];
+    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    class Particle {
+      constructor() { this.x = Math.random() * width; this.y = Math.random() * height; this.vx = (Math.random() - 0.5) * 0.3; this.vy = (Math.random() - 0.5) * 0.3; this.radius = Math.random() * 1.5 + 0.5; }
+      update() { this.x += this.vx; this.y += this.vy; if (this.x < 0 || this.x > width) this.vx *= -1; if (this.y < 0 || this.y > height) this.vy *= -1; }
+      draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fillStyle = 'rgba(79, 195, 247, 0.3)'; ctx.fill(); }
     }
-    requestAnimationFrame(animate);
-  }
-  animate();
-})();
-
-// 文件预览
-document.getElementById('regFlag').addEventListener('change', function() {
-  var file = this.files[0];
-  if (file) {
-    this.parentNode.classList.add('has-file');
-    document.getElementById('flagName').innerText = file.name;
-    var reader = new FileReader();
-    reader.onload = function(e) { document.getElementById('flagImgPreview').src = e.target.result; };
-    reader.readAsDataURL(file);
-  }
-});
-document.getElementById('regEmblem').addEventListener('change', function() {
-  var file = this.files[0];
-  if (file) {
-    this.parentNode.classList.add('has-file');
-    document.getElementById('emblemName').innerText = file.name;
-    var reader = new FileReader();
-    reader.onload = function(e) { document.getElementById('emblemImgPreview').src = e.target.result; };
-    reader.readAsDataURL(file);
-  }
-});
-
-function setMsg(text, type) {
-  var el = document.getElementById('msgReg');
-  el.innerText = text;
-  el.className = 'auth-msg ' + (type || '');
-}
-
-async function handleRegister(e) {
-  e.preventDefault();
-  if (!window.IECP || !IECP.client) return setMsg('核心组件未加载，请检查网络并刷新页面', 'error');
-
-  const email = document.getElementById('regEmail').value.trim();
-  const username = document.getElementById('regUsername').value.trim();
-  const pwd = document.getElementById('regPassword').value;
-  const pwd2 = document.getElementById('regPassword2').value;
-  const social = document.getElementById('regSocial').value.trim();
-  const capital = document.getElementById('regCapital').value.trim();
-  const lang = document.getElementById('regLanguage').value.trim();
-  const desc = document.getElementById('regDescription').value.trim();
-  const flagFile = document.getElementById('regFlag').files[0];
-  const emblemFile = document.getElementById('regEmblem').files[0];
-
-  if (pwd !== pwd2) return setMsg('两次输入的密码不一致', 'error');
-  if (pwd.length < 6) return setMsg('密码至少 6 位', 'error');
-  if (!flagFile || !emblemFile) return setMsg('请上传国旗和国徽', 'error');
-
-  const btn = document.getElementById('btnRegister');
-  btn.disabled = true; btn.innerText = '正在建立国家...';
-  setMsg('', '');
-
-  try {
-    // 🚨 核心逻辑优化：先尝试注册或登录
-    let { data: authData, error: authErr } = await IECP.client.auth.signUp({ email: email, password: pwd, options: { data: { nickname: username } } });
-
-    if (authErr) {
-      // 如果被拦截，可能是老用户，尝试直接登录
-      let loginRes = await IECP.client.auth.signInWithPassword({ email, password: pwd });
-      if (loginRes.error) {
-         throw new Error('该邮箱已被注册，且密码不正确！请直接返回登录。');
+    for (let i = 0; i < 70; i++) particles.push(new Particle());
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update(); particles[i].draw();
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x; const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) { ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.strokeStyle = `rgba(79, 195, 247, ${0.15 - dist / 1000})`; ctx.stroke(); }
+        }
       }
-      authData = loginRes.data;
-      setMsg('检测到旧账号残留，正在为您补全国家档案...', 'success');
-    } else {
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+
+  // 文件预览
+  document.getElementById('regFlag').addEventListener('change', function() {
+    var file = this.files[0];
+    if (file) {
+      this.parentNode.classList.add('has-file');
+      document.getElementById('flagName').innerText = file.name;
+      var reader = new FileReader();
+      reader.onload = function(e) { document.getElementById('flagImgPreview').src = e.target.result; };
+      reader.readAsDataURL(file);
+    }
+  });
+  document.getElementById('regEmblem').addEventListener('change', function() {
+    var file = this.files[0];
+    if (file) {
+      this.parentNode.classList.add('has-file');
+      document.getElementById('emblemName').innerText = file.name;
+      var reader = new FileReader();
+      reader.onload = function(e) { document.getElementById('emblemImgPreview').src = e.target.result; };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  function setMsg(text, type) {
+    var el = document.getElementById('msgReg');
+    el.innerText = text;
+    el.className = 'auth-msg ' + (type || '');
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    
+    if (!window.IECP || !window.IECP.client) {
+      setMsg('核心组件连接中断，请刷新页面重试！', 'error');
+      return;
+    }
+
+    const email = document.getElementById('regEmail').value.trim();
+    const username = document.getElementById('regUsername').value.trim();
+    const pwd = document.getElementById('regPassword').value;
+    const pwd2 = document.getElementById('regPassword2').value;
+    const social = document.getElementById('regSocial').value.trim();
+    const capital = document.getElementById('regCapital').value.trim();
+    const lang = document.getElementById('regLanguage').value.trim();
+    const desc = document.getElementById('regDescription').value.trim();
+    const flagFile = document.getElementById('regFlag').files[0];
+    const emblemFile = document.getElementById('regEmblem').files[0];
+
+    if (pwd !== pwd2) return setMsg('两次输入的密码不一致', 'error');
+    if (pwd.length < 6) return setMsg('密码至少 6 位', 'error');
+    if (!flagFile || !emblemFile) return setMsg('请上传国旗和国徽', 'error');
+
+    const btn = document.getElementById('btnRegister');
+    btn.disabled = true; btn.innerText = '正在建立国家...';
+    setMsg('', '');
+
+    try {
+      const { data: authData, error: authErr } = await IECP.client.auth.signUp({
+        email: email, password: pwd, options: { data: { nickname: username } }
+      });
+
+      if (authErr) {
+        if (authErr.message.includes('User already registered') || authErr.message.includes('already exists')) {
+          throw new Error('该邮箱已被注册！请直接点击下方 "返回登录" 进行登录。');
+        }
+        throw new Error(authErr.message);
+      }
+      
+      if (!authData.user) throw new Error('注册失败，请重试');
+      if (!authData.session) throw new Error('注册成功，但需前往邮箱点击验证链接后才能登录。');
+
+      const userId = authData.user.id;
+
+      const uploadFile = async (bucket, file, prefix) => {
+        const ext = file.name.split('.').pop();
+        const path = `${userId}/${prefix}-${Date.now()}.${ext}`;
+        const { error } = await IECP.client.storage.from(bucket).upload(path, file);
+        if (error) throw new Error(`${prefix} 上传失败：${error.message}`);
+        return IECP.client.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+      };
+
       setMsg('正在上传国旗与国徽...', 'success');
+      const flagUrl = await uploadFile('flags', flagFile, 'flag');
+      const emblemUrl = await uploadFile('emblems', emblemFile, 'emblem');
+
+      setMsg('正在建立国家档案...', 'success');
+      const { error: dbErr } = await IECP.client.from('profiles').insert({
+        id: userId, username: username, social_system: social, capital: capital,
+        official_language: lang, description: desc || null, flag_url: flagUrl, emblem_url: emblemUrl,
+        balance: 100000, influence: 0
+      });
+
+      if (dbErr) throw new Error('档案写入失败：' + dbErr.message);
+
+      setMsg('建立成功！正在跳转...', 'success');
+      setTimeout(() => location.replace('index.html'), 1000);
+
+    } catch (err) {
+      setMsg(err.message, 'error');
+      btn.disabled = false; btn.innerText = '立即建国';
     }
-
-    if (!authData.user) throw new Error('无法获取用户信息');
-    const userId = authData.user.id;
-
-    // 检查是否已有 profiles 记录
-    let profileCheck = await IECP.client.from('profiles').select('id').eq('id', userId).maybeSingle();
-    if (profileCheck.data) {
-       throw new Error('该账号已经建立过国家了！请返回登录。');
-    }
-
-    // 上传图片
-    const uploadFile = async (bucket, file, prefix) => {
-      const ext = file.name.split('.').pop();
-      const path = `${userId}/${prefix}-${Date.now()}.${ext}`;
-      const { error } = await IECP.client.storage.from(bucket).upload(path, file);
-      if (error) throw new Error(`${prefix} 上传失败：${error.message}`);
-      return IECP.client.storage.from(bucket).getPublicUrl(path).data.publicUrl;
-    };
-
-    const flagUrl = await uploadFile('flags', flagFile, 'flag');
-    const emblemUrl = await uploadFile('emblems', emblemFile, 'emblem');
-
-    setMsg('正在写入国家数据终端...', 'success');
-
-    // 写入档案
-    const { error: dbErr } = await IECP.client.from('profiles').insert({
-      id: userId, username: username, social_system: social, capital: capital,
-      official_language: lang, description: desc || null, flag_url: flagUrl, emblem_url: emblemUrl,
-      balance: 100000, influence: 0 // 给点初始启动资金
-    });
-
-    if (dbErr) throw new Error('档案写入失败：' + dbErr.message);
-
-    setMsg('建立成功！正在跳转...', 'success');
-    setTimeout(() => location.replace('index.html'), 1000);
-
-  } catch (err) {
-    setMsg(err.message, 'error');
-    btn.disabled = false; btn.innerText = '立即建国';
   }
-}
 </script>
 </body>
 </html>

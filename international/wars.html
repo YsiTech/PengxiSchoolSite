@@ -13,7 +13,7 @@
   @keyframes rotate { 100% { transform: rotate(360deg); } }
   .intel-terminal { position: absolute; top: 15px; left: 15px; width: 340px; background: rgba(10, 14, 26, 0.85); backdrop-filter: blur(12px); border-left: 3px solid var(--red); border-radius: 8px; padding: 12px; z-index: 10; font-family: var(--mono); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
   .intel-title { color: var(--red); font-weight: bold; margin-bottom: 8px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(239,68,68,0.3); padding-bottom: 6px; font-size: 13px;}
-  .intel-list { display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
+  .intel-list { display: flex; flex-direction: column; gap: 8px; max-height: 120px; overflow-y: auto; scrollbar-width: none; -ms-overflow-style: none; }
   .intel-list::-webkit-scrollbar { display: none; }
   .intel-item { color: var(--ink-2); font-size: 12px; line-height: 1.4; white-space: normal; word-break: break-all; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 6px; }
   .intel-item:last-child { border-bottom: none; }
@@ -93,7 +93,14 @@
         <div class="intel-item" style="color:var(--cyan);">[系统] 正在接入全球战术网络...</div>
       </div>
     </div>
-    <div id="warMap"></div>
+    <div id="warMap">
+      <!-- 加载失败备用提示 -->
+      <div id="mapFallback" style="display:none; width:100%; height:100%; align-items:center; justify-content:center; flex-direction:column; color:var(--red);">
+        <i class="fa-solid fa-triangle-exclamation" style="font-size:40px; margin-bottom:12px;"></i>
+        <p>战术地图组件加载失败，请检查您的网络或代理设置。</p>
+        <button class="btn btn-ghost btn-sm" onclick="location.reload()">重新连接</button>
+      </div>
+    </div>
     <div class="map-legend">
       <div class="legend-item"><div class="legend-color" style="background:rgba(212,175,55,0.85)"></div> 我国领土</div>
       <div class="legend-item"><div class="legend-color" style="background:rgba(34,197,94,0.85)"></div> 盟友领地</div>
@@ -136,6 +143,9 @@
   </div>
 </div>
 
+<div class="lock-on-effect" id="lockOnEffect"></div>
+
+<!-- 🚨 已修复为国内稳定可用的 jsdelivr CDN -->
 <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/dist/echarts.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -267,6 +277,13 @@
   });
 
   function initMap() {
+    // 🚨 核心修复：检查 echarts 是否加载成功
+    if (typeof echarts === 'undefined') {
+      var fb = document.getElementById('mapFallback');
+      if (fb) { fb.style.display = 'flex'; }
+      return;
+    }
+
     myChart = echarts.init(document.getElementById('warMap'));
     myChart.setOption({
       backgroundColor: 'transparent',
@@ -351,12 +368,10 @@
     } catch (err) {}
   }
 
-  // 🚨 核心修改：广播直接推送至 GLOBAL INTEL 终端
   function showBroadcast(msg) {
     var list = I.$('#intelList');
     if (!list) return;
     
-    // 移除“全球区域暂时和平”的占位符
     if (list.children.length === 1 && list.children[0].innerText.includes('正在接入') || list.children.length === 1 && list.children[0].innerText.includes('全球区域暂时和平')) {
       list.innerHTML = '';
     }
@@ -365,11 +380,9 @@
     var newItem = document.createElement('div');
     newItem.className = 'intel-item';
     
-    // 如果是战报，高亮显示
     var isWar = msg.includes('【') || msg.includes('战') || msg.includes('攻');
     var color = isWar ? '#ef4444' : '#4fc3f7';
     
-    // 带点动画效果
     newItem.style.opacity = '0';
     newItem.style.transition = 'opacity 0.5s ease-in';
     newItem.innerHTML = `<span style="color:${color};">[${timeStr}]</span> ${I.escapeHtml(msg)}`;
@@ -377,7 +390,6 @@
     list.insertBefore(newItem, list.firstChild);
     setTimeout(() => { newItem.style.opacity = '1'; }, 10);
 
-    // 终端里最多保留 12 条消息，防止越堆越多
     if (list.children.length > 12) {
       list.removeChild(list.lastChild);
     }
@@ -473,7 +485,6 @@
       });
       if(!html) html = '<div class="intel-item" style="color:var(--cyan);">[系统] 全球区域暂时和平。</div>';
       
-      // 只在刚加载时覆盖，避免把刚推送的广播覆盖掉
       var list = document.getElementById('intelList');
       if (list && list.innerText.includes('正在接入全球战术网络')) {
         list.innerHTML = html;
@@ -574,15 +585,12 @@
         I.toast('进攻失败：' + r.msg, 'error');
       }
 
-      // 发送 WebSocket 消息
       if (ws && ws.readyState === WebSocket.OPEN) { 
         ws.send(JSON.stringify({ type: 'system', msg: broadcastMsg })); 
       }
       
-      // 🚨 本地强制显示广播，保证自己一定能看到，且滚动在左侧终端
       showBroadcast(broadcastMsg);
       
-      // 刷新军队数据
       loadData(); 
     });
   }
